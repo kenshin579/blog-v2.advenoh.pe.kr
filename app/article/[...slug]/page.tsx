@@ -8,9 +8,9 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
 interface ArticlePageProps {
-  params: {
+  params: Promise<{
     slug: string[];
-  };
+  }>;
 }
 
 // Static generation: 모든 article slug 생성
@@ -24,7 +24,15 @@ export async function generateStaticParams() {
 
 // Metadata 생성
 export async function generateMetadata({ params }: ArticlePageProps) {
-  const slug = params.slug.join('/');
+  const resolvedParams = await params;
+
+  if (!resolvedParams.slug || !Array.isArray(resolvedParams.slug)) {
+    return {
+      title: '게시글을 찾을 수 없습니다',
+    };
+  }
+
+  const slug = resolvedParams.slug.join('/');
   const article = await getArticle(slug);
 
   if (!article) {
@@ -47,7 +55,13 @@ export async function generateMetadata({ params }: ArticlePageProps) {
 }
 
 export default async function ArticlePage({ params }: ArticlePageProps) {
-  const slug = params.slug.join('/');
+  const resolvedParams = await params;
+
+  if (!resolvedParams.slug || !Array.isArray(resolvedParams.slug)) {
+    notFound();
+  }
+
+  const slug = resolvedParams.slug.join('/');
   const article = await getArticle(slug);
 
   if (!article) {

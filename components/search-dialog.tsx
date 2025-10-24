@@ -77,8 +77,8 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
     }
 
     try {
-      const searchResults = miniSearch.search(searchQuery, { limit: 10 });
-      setResults(searchResults as unknown as SearchDocument[]);
+      const searchResults = miniSearch.search(searchQuery);
+      setResults(searchResults.slice(0, 10) as unknown as SearchDocument[]);
     } catch (error) {
       console.error('Search error:', error);
       setResults([]);

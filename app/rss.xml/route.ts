@@ -1,5 +1,7 @@
 import { getAllArticles } from '@/lib/articles';
 
+export const dynamic = 'force-static';
+
 export async function GET() {
   const articles = await getAllArticles();
   const siteUrl = 'https://advenoh.pe.kr';

@@ -9,4 +9,4 @@ const nextConfig = {
   // assetPrefix: '', // CDN 사용시 설정
 };
 
-module.exports = nextConfig;
+export default nextConfig;
