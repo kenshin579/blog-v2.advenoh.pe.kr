@@ -4,11 +4,10 @@
   "type": "module",
   "license": "MIT",
   "scripts": {
-    "dev": "NODE_ENV=development tsx server/index.ts",
-    "build": "vite build && esbuild server/index.ts --platform=node --packages=external --bundle --format=esm --outdir=dist",
-    "start": "NODE_ENV=production node dist/index.js",
+    "dev": "next dev",
+    "build": "npm run generate:manifest && npm run generate:search && npm run copy:images && next build",
+    "start": "next start",
     "check": "tsc",
-    "db:push": "drizzle-kit push",
     "generate:manifest": "tsx scripts/generate-content-manifest.ts",
     "generate:search": "tsx scripts/generate-search-index.ts",
     "copy:images": "tsx scripts/copy-images.ts"
