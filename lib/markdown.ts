@@ -53,7 +53,15 @@ export async function parseMarkdown(markdown: string, slug: string): Promise<Art
     .use(rehypeStringify) // hast → HTML
     .process(content);
 
-  const html = String(result);
+  let html = String(result);
+
+  // 상대 경로 이미지만 /images/{slug}/{filename} 형식으로 변환
+  // HTTP/HTTPS URL이나 절대 경로는 그대로 유지
+  html = html.replace(
+    /<img([^>]*)\ssrc="(?!http|\/)(.*?)"/g,
+    `<img$1 src="/images/${slug}/$2"`
+  );
+
   const firstImage = extractFirstImage(content);
 
   return {
