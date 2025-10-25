@@ -37,6 +37,7 @@ export function SiteHeader() {
 
           <div className="flex items-center gap-2">
             <SocialLinks />
+            <ThemeToggle />
             <Button
               variant="outline"
               size="sm"
@@ -58,7 +59,6 @@ export function SiteHeader() {
             >
               <Search className="h-5 w-5" />
             </Button>
-            <ThemeToggle />
           </div>
         </div>
       </header>
