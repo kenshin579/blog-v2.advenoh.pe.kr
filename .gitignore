@@ -13,3 +13,4 @@ out/
 # Old architecture (moved for reference)
 client.old/
 server.old/
+tsconfig*
