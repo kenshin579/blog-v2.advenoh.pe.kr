@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Linkedin, Instagram, TrendingUp, LucideIcon } from 'lucide-react';
+import { Linkedin, Instagram, TrendingUp, Github, LucideIcon } from 'lucide-react';
 import { socialLinks } from '@/lib/site-config';
 import { Button } from '@/components/ui/button';
 
@@ -10,6 +10,7 @@ const iconMap: Record<string, LucideIcon> = {
   Linkedin,
   Instagram,
   TrendingUp,
+  Github,
 };
 
 export function SocialLinks() {
