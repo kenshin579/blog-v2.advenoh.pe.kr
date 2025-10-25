@@ -87,7 +87,10 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
 
   // 결과 선택
   const handleSelect = (slug: string) => {
-    router.push(`/article/${slug}`);
+    // Category를 제외한 article title만 추출
+    const parts = slug.split('/');
+    const title = parts[parts.length - 1];
+    router.push(`/${title}`);
     onOpenChange(false);
     setQuery('');
     setResults([]);
