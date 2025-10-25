@@ -1,4 +1,4 @@
-import { getArticle, getAllArticles, getRelatedArticles } from '@/lib/articles';
+import { getArticleByTitle, getAllArticles, getRelatedArticles, getArticleTitleFromSlug } from '@/lib/articles';
 import { extractTOC, calculateReadingTime } from '@/lib/markdown';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,16 +9,19 @@ import { notFound } from 'next/navigation';
 
 interface ArticlePageProps {
   params: Promise<{
-    slug: string[];
+    slug: string;
   }>;
 }
 
-// Static generation: 모든 article slug 생성
+// output: 'export' 모드에서는 동적 파라미터 비활성화 필수
+export const dynamicParams = false;
+
+// Static generation: 모든 article slug 생성 (category 제거)
 export async function generateStaticParams() {
   const articles = await getAllArticles();
 
   return articles.map((article) => ({
-    slug: article.slug.split('/'),
+    slug: getArticleTitleFromSlug(article.slug),
   }));
 }
 
@@ -26,14 +29,15 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: ArticlePageProps) {
   const resolvedParams = await params;
 
-  if (!resolvedParams.slug || !Array.isArray(resolvedParams.slug)) {
+  if (!resolvedParams.slug) {
     return {
       title: '게시글을 찾을 수 없습니다',
     };
   }
 
-  const slug = resolvedParams.slug.join('/');
-  const article = await getArticle(slug);
+  // URL 디코딩
+  const decodedSlug = decodeURIComponent(resolvedParams.slug);
+  const article = await getArticleByTitle(decodedSlug);
 
   if (!article) {
     return {
@@ -42,7 +46,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   }
 
   return {
-    title: `${article.frontmatter.title} | Advenoh IT Blog`,
+    title: `${article.frontmatter.title} | Frank's IT Blog`,
     description: article.frontmatter.excerpt || article.frontmatter.title,
     openGraph: {
       title: article.frontmatter.title,
@@ -57,12 +61,13 @@ export async function generateMetadata({ params }: ArticlePageProps) {
 export default async function ArticlePage({ params }: ArticlePageProps) {
   const resolvedParams = await params;
 
-  if (!resolvedParams.slug || !Array.isArray(resolvedParams.slug)) {
+  if (!resolvedParams.slug) {
     notFound();
   }
 
-  const slug = resolvedParams.slug.join('/');
-  const article = await getArticle(slug);
+  // URL 디코딩: Next.js가 전달하는 slug는 URL-encoded 상태
+  const decodedSlug = decodeURIComponent(resolvedParams.slug);
+  const article = await getArticleByTitle(decodedSlug);
 
   if (!article) {
     notFound();
@@ -70,14 +75,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   const toc = extractTOC(article.html);
   const readingTime = calculateReadingTime(article.content);
-  const relatedArticles = await getRelatedArticles(slug, 3);
+
+  // slug에서 전체 경로를 가져와서 관련 글 검색 및 category 정보 가져오기
+  const { findArticleByTitle } = await import('@/lib/articles');
+  const manifestArticle = await findArticleByTitle(decodedSlug);
+  const relatedArticles = manifestArticle ? await getRelatedArticles(manifestArticle.slug, 3) : [];
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       {/* Article Header */}
       <header className="mb-8">
         <div className="flex items-center gap-2 mb-4">
-          <Badge>{slug.split('/')[0]}</Badge>
+          <Badge>{manifestArticle?.category || 'Uncategorized'}</Badge>
           <span className="text-sm text-muted-foreground">
             {formatDate(article.frontmatter.date)}
           </span>
@@ -145,7 +154,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <h2 className="text-2xl font-bold mb-4">관련 글</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {relatedArticles.map((related) => (
-              <Link key={related.slug} href={`/article/${related.slug}`}>
+              <Link key={related.slug} href={`/${getArticleTitleFromSlug(related.slug)}`}>
                 <Card className="h-full hover:shadow-lg transition-shadow">
                   <CardHeader>
                     <Badge variant="secondary" className="w-fit mb-2">

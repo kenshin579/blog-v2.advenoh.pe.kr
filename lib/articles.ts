@@ -178,6 +178,39 @@ export async function getAdjacentArticles(slug: string): Promise<{
 }
 
 /**
+ * Category를 제외한 article title만 추출
+ */
+export function getArticleTitleFromSlug(fullSlug: string): string {
+  const parts = fullSlug.split('/');
+  return parts[parts.length - 1];
+}
+
+/**
+ * Article title로 manifest에서 article 찾기
+ */
+export async function findArticleByTitle(title: string): Promise<ManifestArticle | null> {
+  const manifest = await loadManifest();
+
+  const found = manifest.articles.find(article => {
+    const articleTitle = getArticleTitleFromSlug(article.slug);
+    return articleTitle === title;
+  });
+
+  return found || null;
+}
+
+/**
+ * Article title로 전체 article 가져오기 (콘텐츠 포함)
+ */
+export async function getArticleByTitle(title: string): Promise<Article | null> {
+  const manifestArticle = await findArticleByTitle(title);
+  if (!manifestArticle) {
+    return null;
+  }
+  return getArticle(manifestArticle.slug);
+}
+
+/**
  * 캐시 클리어
  */
 export function clearCache() {

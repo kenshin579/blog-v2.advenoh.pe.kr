@@ -1,11 +1,11 @@
-import { getAllSeries, getArticlesBySeries } from '@/lib/articles';
+import { getAllSeries, getArticlesBySeries, getArticleTitleFromSlug } from '@/lib/articles';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { Separator } from '@/components/ui/separator';
 
 export const metadata = {
-  title: 'Series | Advenoh IT Blog',
+  title: "Series | Frank's IT Blog",
   description: '시리즈별로 정리된 기술 블로그 글 모음',
 };
 
@@ -52,7 +52,7 @@ export default async function SeriesPage() {
                 {series.articles.map((article) => (
                   <Link
                     key={article.slug}
-                    href={`/article/${article.slug}`}
+                    href={`/${getArticleTitleFromSlug(article.slug)}`}
                   >
                     <Card className="h-full hover:shadow-lg transition-shadow hover-elevate">
                       <CardHeader>
