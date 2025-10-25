@@ -5,11 +5,12 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
-    "build": "npm run generate:manifest && npm run generate:search && npm run copy:images && next build",
+    "build": "npm run generate:manifest && npm run generate:search && npm run generate:feeds && npm run copy:images && next build",
     "start": "npx serve@latest out -l 3000",
     "check": "tsc",
     "generate:manifest": "tsx scripts/generate-content-manifest.ts",
     "generate:search": "tsx scripts/generate-search-index.ts",
+    "generate:feeds": "tsx scripts/generate-feeds.ts",
     "copy:images": "tsx scripts/copy-images.ts"
   },
   "dependencies": {
@@ -91,7 +92,8 @@
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.20.5",
-    "typescript": "^5.6.3"
+    "typescript": "^5.6.3",
+    "xmlbuilder2": "^4.0.0"
   },
   "optionalDependencies": {
     "bufferutil": "^4.0.8"

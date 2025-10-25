@@ -88,9 +88,9 @@
 - 새 article 추가 시 재빌드 필요 (현재 워크플로우와 동일)
 
 **구현 방식:**
-- npm script로 빌드 전 sitemap/RSS 생성
-- `client/public/sitemap.xml`, `client/public/rss.xml`로 출력
-- 빌드 시 `dist/public/`로 복사되어 정적 파일로 서빙
+- npm script로 빌드 전 sitemap/RSS 생성 (generate:feeds)
+- `public/sitemap.xml`, `public/rss.xml`로 출력
+- Next.js 빌드 시 public/ 내용이 자동으로 정적 파일로 제공됨 (out/ 디렉토리)
 
 ### 🔄 검토된 대안: 런타임 동적 생성
 
@@ -115,11 +115,10 @@ scripts/
     sitemap.ts      # Sitemap 생성 로직
     rss.ts          # RSS 생성 로직
   config.ts         # 블로그 메타데이터 (title, description, baseUrl)
-client/
-  public/
-    sitemap.xml     # 생성된 sitemap (빌드 시 생성)
-    rss.xml         # 생성된 RSS 피드 (빌드 시 생성)
-    robots.txt      # 검색 엔진 크롤러 설정
+public/             # Next.js public 디렉토리 (루트)
+  sitemap.xml       # 생성된 sitemap (빌드 시 생성)
+  rss.xml           # 생성된 RSS 피드 (빌드 시 생성)
+  robots.txt        # 검색 엔진 크롤러 설정
 ```
 
 ### 3. 설정 파일 추가
@@ -135,33 +134,53 @@ export const blogConfig = {
 ```
 
 ### 4. Sitemap 생성 로직 (`scripts/generators/sitemap.ts`)
-- `client/public/articles/manifest.json`에서 article 목록 로드
+- `public/articles/manifest.json`에서 article 목록 로드
 - 각 article의 마크다운 파일에서 frontmatter (date) 추출
 - 정적 페이지 URL 추가 (/, /series)
 - 우선순위 및 변경 빈도 설정
-- XML 생성 및 `client/public/sitemap.xml`에 저장
+- XML 생성 및 `public/sitemap.xml`에 저장
 
 ### 5. RSS 생성 로직 (`scripts/generators/rss.ts`)
-- `client/public/articles/manifest.json`에서 article 목록 로드
+- `public/articles/manifest.json`에서 article 목록 로드
 - 각 article의 마크다운 파일에서 frontmatter 파싱
 - date 기준 정렬 (최신순, 최대 20개)
 - frontmatter에서 title, excerpt, date, tags 추출
 - excerpt를 HTML로 사용 (또는 markdown → HTML 변환)
-- RSS 2.0 XML 생성 및 `client/public/rss.xml`에 저장
+- RSS 2.0 XML 생성 및 `public/rss.xml`에 저장
 
 ### 6. 빌드 스크립트 수정
-`package.json`:
+
+**현재 빌드 프로세스** (`package.json`):
 ```json
 {
   "scripts": {
-    "prebuild": "tsx scripts/generate-feeds.ts",
-    "build": "vite build && tsc && vite build --ssr"
+    "build": "npm run generate:manifest && npm run generate:search && npm run copy:images && next build",
+    "generate:manifest": "tsx scripts/generate-content-manifest.ts",
+    "generate:search": "tsx scripts/generate-search-index.ts",
+    "copy:images": "tsx scripts/copy-images.ts"
   }
 }
 ```
 
+**수정 후** (sitemap/RSS 생성 추가):
+```json
+{
+  "scripts": {
+    "build": "npm run generate:manifest && npm run generate:search && npm run generate:feeds && npm run copy:images && next build",
+    "generate:manifest": "tsx scripts/generate-content-manifest.ts",
+    "generate:search": "tsx scripts/generate-search-index.ts",
+    "generate:feeds": "tsx scripts/generate-feeds.ts",
+    "copy:images": "tsx scripts/copy-images.ts"
+  }
+}
+```
+
+**변경 사항**:
+- `generate:feeds` 스크립트 추가: sitemap.xml과 rss.xml 생성
+- `build` 스크립트에 `npm run generate:feeds` 추가 (generate:search 다음, copy:images 전)
+
 ### 7. robots.txt 추가
-`client/public/robots.txt`:
+`public/robots.txt`:
 ```
 User-agent: *
 Allow: /
