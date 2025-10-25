@@ -1,92 +1,93 @@
 # TODO: Feature Section 구현
 
-## Phase 1: 기본 구조 및 UI
+## Phase 1: 기본 구조 및 UI ✅ 완료
 
-### 1.1 컴포넌트 파일 생성
-- [ ] `client/src/components/feature/` 디렉토리 생성
-- [ ] `client/src/components/feature/FeatureSection.tsx` 파일 생성
-- [ ] `client/src/components/feature/SearchBar.tsx` 파일 생성
-- [ ] `client/src/components/feature/CategoryFilter.tsx` 파일 생성
-- [ ] `client/src/components/feature/index.ts` export 파일 생성
+### 1.1 컴포넌트 파일 생성 ✅
+- [x] `components/feature/` 디렉토리 생성
+- [x] `components/feature/FeatureSection.tsx` 파일 생성
+- [x] `components/feature/SearchBar.tsx` 파일 생성
+- [x] `components/feature/CategoryFilter.tsx` 파일 생성
+- [x] `components/feature/index.ts` export 파일 생성
 
-### 1.2 SearchBar 컴포넌트 구현
-- [ ] shadcn/ui Input 컴포넌트 임포트
-- [ ] lucide-react Search 아이콘 추가
-- [ ] Props 인터페이스 정의 (`SearchBarProps`)
-- [ ] 클릭 핸들러 구현 (검색 모달 열기)
-- [ ] Placeholder 텍스트 추가 ("기술 블로그 글 검색... (⌘K)")
-- [ ] 접근성 속성 추가 (`role="button"`, `aria-label`)
-- [ ] 반응형 스타일링 (모바일/데스크톱)
-- [ ] 읽기 전용 상태 설정 (`readOnly`)
+### 1.2 SearchBar 컴포넌트 구현 ✅
+- [x] shadcn/ui Input 컴포넌트 임포트
+- [x] lucide-react Search 아이콘 추가
+- [x] Props 인터페이스 정의 (`SearchBarProps`)
+- [x] 클릭 핸들러 구현 (검색 모달 열기)
+- [x] Placeholder 텍스트 추가 ("기술 블로그 글 검색... (⌘K)")
+- [x] 접근성 속성 추가 (`role="button"`, `aria-label`)
+- [x] 반응형 스타일링 (모바일/데스크톱)
+- [x] 읽기 전용 상태 설정 (`readOnly`)
 
-### 1.3 CategoryFilter 컴포넌트 구현
-- [ ] shadcn/ui Badge 컴포넌트 임포트
-- [ ] Props 인터페이스 정의 (`CategoryFilterProps`, `CategoryInfo`)
-- [ ] "전체" 버튼 구현 (필터 초기화)
-- [ ] 카테고리 목록 렌더링 (map)
-- [ ] 선택 상태에 따른 variant 변경 (`default` vs `outline`)
-- [ ] 각 카테고리 옆 글 개수 표시
-- [ ] 클릭 핸들러 구현 (`onCategorySelect`)
-- [ ] 수평 스크롤 가능하도록 스타일링 (`flex-wrap`)
-- [ ] 반응형 디자인 (모바일: 자동 줄바꿈)
+### 1.3 CategoryFilter 컴포넌트 구현 ✅
+- [x] shadcn/ui Badge 컴포넌트 임포트
+- [x] Props 인터페이스 정의 (`CategoryFilterProps`, `CategoryInfo`)
+- [x] "전체" 버튼 구현 (필터 초기화)
+- [x] 카테고리 목록 렌더링 (map)
+- [x] 선택 상태에 따른 variant 변경 (`default` vs `outline`)
+- [x] 각 카테고리 옆 글 개수 표시
+- [x] 클릭 핸들러 구현 (`onCategorySelect`)
+- [x] 수평 스크롤 가능하도록 스타일링 (`flex-wrap`)
+- [x] 반응형 디자인 (모바일: 자동 줄바꿈)
 
-### 1.4 FeatureSection 컨테이너 구현
-- [ ] Props 인터페이스 정의 (`FeatureSectionProps`)
-- [ ] SearchBar 컴포넌트 통합
-- [ ] CategoryFilter 컴포넌트 통합
-- [ ] 배경색 스타일링 (`bg-muted/50` 또는 `bg-accent/5`)
-- [ ] 여백 스타일링 (padding, margin)
-- [ ] 반응형 레이아웃 (모바일: 세로, 데스크톱: 가로)
-- [ ] 구분선 추가 (`border-y`)
+### 1.4 FeatureSection 컨테이너 구현 ✅
+- [x] Props 인터페이스 정의 (`FeatureSectionProps`)
+- [x] SearchBar 컴포넌트 통합
+- [x] CategoryFilter 컴포넌트 통합
+- [x] 배경색 스타일링 (`bg-muted/50`)
+- [x] 여백 스타일링 (padding, margin)
+- [x] 반응형 레이아웃 (모바일: 세로, 데스크톱: 가로)
+- [x] 구분선 추가 (`border-y`)
 
-### 1.5 HomePage 통합
-- [ ] FeatureSection 컴포넌트 임포트
-- [ ] Header와 Article List 사이에 FeatureSection 배치
-- [ ] 기본 props 전달 (빈 categories 배열)
-- [ ] 브라우저에서 UI 확인
-- [ ] 반응형 디자인 테스트 (모바일/태블릿/데스크톱)
+### 1.5 HomePage 통합 ✅
+- [x] HomeContent 클라이언트 컴포넌트 분리
+- [x] FeatureSection 컴포넌트 임포트
+- [x] Header와 Article List 사이에 FeatureSection 배치
+- [x] SearchDialog 통합
+- [x] 브라우저에서 UI 확인
+- [x] 반응형 디자인 테스트 (모바일/태블릿/데스크톱)
 
-## Phase 2: 필터링 로직
+## Phase 2: 필터링 로직 ✅ 완료
 
-### 2.1 카테고리 데이터 집계
-- [ ] HomePage에 `useMemo`로 카테고리 집계 로직 구현
-- [ ] `Map<string, number>`로 태그 카운트 계산
-- [ ] 중복 제거 및 개수 집계
-- [ ] 개수 내림차순 정렬
-- [ ] `CategoryInfo[]` 타입으로 변환
-- [ ] articles 변경 시에만 재계산되도록 의존성 설정
+### 2.1 카테고리 데이터 집계 ✅
+- [x] HomeContent에 `useMemo`로 카테고리 집계 로직 구현
+- [x] `Map<string, number>`로 태그 카운트 계산
+- [x] 중복 제거 및 개수 집계
+- [x] 개수 내림차순 정렬
+- [x] `CategoryInfo[]` 타입으로 변환
+- [x] articles 변경 시에만 재계산되도록 의존성 설정
 
-### 2.2 필터링 상태 관리
-- [ ] `selectedCategory` state 추가 (`useState<string | null>`)
-- [ ] `setSelectedCategory` 핸들러 구현
-- [ ] FeatureSection에 props 전달
-- [ ] 초기값 `null`로 설정 (전체 표시)
+### 2.2 필터링 상태 관리 ✅
+- [x] `selectedCategory` state 추가 (`useState<string | null>`)
+- [x] `setSelectedCategory` 핸들러 구현
+- [x] FeatureSection에 props 전달
+- [x] 초기값 `null`로 설정 (전체 표시)
 
-### 2.3 필터링 로직 구현
-- [ ] `filteredArticles` useMemo 구현
-- [ ] `selectedCategory === null`일 때 전체 articles 반환
-- [ ] `selectedCategory` 있을 때 태그 필터링
-- [ ] `article.tags.includes(selectedCategory)` 조건
-- [ ] articles와 selectedCategory 의존성 설정
+### 2.3 필터링 로직 구현 ✅
+- [x] `filteredArticles` useMemo 구현
+- [x] `selectedCategory === null`일 때 전체 articles 반환
+- [x] `selectedCategory` 있을 때 태그 필터링
+- [x] `article.tags.includes(selectedCategory)` 조건
+- [x] articles와 selectedCategory 의존성 설정
 
-### 2.4 ArticleList 데이터 전달
-- [ ] ArticleList에 `filteredArticles` 전달 (기존 `articles` 대체)
-- [ ] 필터링 동작 테스트 (카테고리 클릭)
-- [ ] 카테고리 변경 시 목록 업데이트 확인
+### 2.4 ArticleList 데이터 전달 ✅
+- [x] ArticleList에 `filteredArticles` 전달 (기존 `articles` 대체)
+- [x] 필터링 동작 테스트 (카테고리 클릭)
+- [x] 카테고리 변경 시 목록 업데이트 확인
 
-### 2.5 빈 상태 처리
-- [ ] 필터링 결과 없을 때 메시지 표시
-- [ ] `filteredArticles.length === 0 && selectedCategory` 조건
-- [ ] "해당 카테고리에 글이 없습니다" 메시지
-- [ ] 초기화 버튼 추가
-- [ ] 카테고리 없을 때 처리 (categories.length === 0)
+### 2.5 빈 상태 처리 ✅
+- [x] 필터링 결과 없을 때 메시지 표시
+- [x] `filteredArticles.length === 0 && selectedCategory` 조건
+- [x] "해당 카테고리에 글이 없습니다" 메시지
+- [x] 초기화 버튼 추가
+- [x] 카테고리 없을 때 처리 (categories.length === 0)
 
-### 2.6 현재 필터 상태 표시
-- [ ] 선택된 카테고리 표시 UI 추가 (Article List 상단)
-- [ ] "필터: {category}" 텍스트 표시
-- [ ] 초기화 버튼 추가
-- [ ] 초기화 버튼 클릭 시 `setSelectedCategory(null)` 호출
-- [ ] 스타일링 (작고 눈에 띄지 않게)
+### 2.6 현재 필터 상태 표시 ✅
+- [x] 선택된 카테고리 표시 UI 추가 (Article List 상단)
+- [x] "필터: {category}" 텍스트 표시
+- [x] 초기화 버튼 추가
+- [x] 초기화 버튼 클릭 시 `setSelectedCategory(null)` 호출
+- [x] 스타일링 (작고 눈에 띄지 않게)
 
 ## Phase 3: 고급 기능 (선택사항)
 
@@ -163,12 +164,10 @@
 - [ ] Lighthouse 성능 점수 확인 (90점 이상)
 - [ ] 메모리 누수 확인 (Chrome DevTools)
 
-### 4.5 타입 체크 및 린트
-- [ ] TypeScript 타입 에러 해결 (`npm run check`)
-- [ ] Props 인터페이스 완전성 확인
-- [ ] ESLint 경고 해결
-- [ ] Prettier 포매팅 적용
-- [ ] 사용하지 않는 import 제거
+### 4.5 타입 체크 및 린트 ✅
+- [x] TypeScript 타입 에러 해결 (`npm run check`)
+- [x] Props 인터페이스 완전성 확인
+- [x] 빌드 성공 확인 (`npm run build`)
 
 ### 4.6 코드 리뷰 및 최적화
 - [ ] 컴포넌트 분리 적절성 검토
