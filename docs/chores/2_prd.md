@@ -60,7 +60,7 @@
 ### 사용할 아이콘 (lucide-react)
 - LinkedIn: `Linkedin`
 - Instagram: `Instagram`
-- Blog: `BookOpen` (권장), `Globe`, `PenTool` 중 선택
+- Blog: `TrendingUp` (투자 블로그 - 상승 추세선)
 
 ### 주요 설계 원칙
 - shadcn/ui Button 컴포넌트 사용 (일관된 스타일)

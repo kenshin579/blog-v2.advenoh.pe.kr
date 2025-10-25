@@ -14,7 +14,7 @@
 
 ### 1.2 소셜 링크 컴포넌트 생성
 - [x] `components/social-links.tsx` 파일 생성
-  - [x] lucide-react 아이콘 import (Linkedin, Instagram, BookOpen)
+  - [x] lucide-react 아이콘 import (Linkedin, Instagram, TrendingUp)
   - [x] iconMap 매핑 객체 생성
   - [x] SocialLinks 컴포넌트 구현
   - [x] Button 컴포넌트 사용 (variant="ghost", size="icon")
