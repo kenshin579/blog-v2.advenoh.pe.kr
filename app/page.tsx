@@ -1,11 +1,11 @@
-import { getAllArticles } from '@/lib/articles';
+import { getAllArticles, getArticleTitleFromSlug } from '@/lib/articles';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 
 export const metadata = {
-  title: 'Advenoh IT Blog',
+  title: "Frank's IT Blog",
   description: 'IT 기술 블로그 - 개발, 클라우드, 데이터베이스',
 };
 
@@ -15,7 +15,7 @@ export default async function HomePage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <header className="mb-12 text-center">
-        <h1 className="text-4xl font-bold mb-4">Advenoh IT Blog</h1>
+        <h1 className="text-4xl font-bold mb-4">Frank's IT Blog</h1>
         <p className="text-xl text-muted-foreground">
           개발, 클라우드, 데이터베이스 관련 기술 블로그
         </p>
@@ -25,7 +25,7 @@ export default async function HomePage() {
         {articles.map((article) => (
           <Link
             key={article.slug}
-            href={`/article/${article.slug}`}
+            href={`/${getArticleTitleFromSlug(article.slug)}`}
             className="group"
           >
             <Card className="h-full transition-all hover:shadow-lg hover-elevate">
