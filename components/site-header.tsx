@@ -16,7 +16,7 @@ export function SiteHeader() {
         <div className="container flex h-14 items-center justify-between">
           <div className="flex items-center gap-6">
             <Link href="/" className="font-bold text-xl">
-              Advenoh
+              Frank's IT Blog
             </Link>
             <nav className="hidden md:flex items-center gap-4">
               <Link
