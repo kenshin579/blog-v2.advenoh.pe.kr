@@ -21,7 +21,7 @@ export const socialLinks: SocialLink[] = [
   {
     name: 'Blog',
     url: 'https://investment.advenoh.pe.kr/',
-    icon: 'BookOpen',
+    icon: 'TrendingUp',
     ariaLabel: '투자 블로그 방문'
   }
 ];
