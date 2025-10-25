@@ -3,6 +3,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
+import { DEFAULT_ARTICLE_IMAGE } from '@/lib/constants';
 
 export const metadata = {
   title: "Frank's IT Blog",
@@ -29,15 +30,17 @@ export default async function HomePage() {
             className="group"
           >
             <Card className="h-full transition-all hover:shadow-lg hover-elevate">
-              {article.firstImage && (
-                <div className="aspect-video overflow-hidden rounded-t-lg">
-                  <img
-                    src={`/images/${article.slug}/${article.firstImage}`}
-                    alt={article.title}
-                    className="w-full h-full object-cover transition-transform group-hover:scale-105"
-                  />
-                </div>
-              )}
+              <div className="aspect-video overflow-hidden rounded-t-lg">
+                <img
+                  src={
+                    article.firstImage
+                      ? `/images/${article.slug}/${article.firstImage}`
+                      : DEFAULT_ARTICLE_IMAGE
+                  }
+                  alt={article.title}
+                  className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                />
+              </div>
               <CardHeader>
                 <div className="flex items-center gap-2 mb-2">
                   <Badge variant="secondary">{article.category}</Badge>
