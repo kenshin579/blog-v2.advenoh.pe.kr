@@ -1,8 +1,9 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
 import { DEFAULT_ARTICLE_IMAGE } from '@/lib/constants';
@@ -34,6 +35,7 @@ interface HomeContentProps {
 export function HomeContent({ articles }: HomeContentProps) {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [displayCount, setDisplayCount] = useState(10);
 
   // 카테고리 데이터 집계 (contents 폴더의 카테고리 사용)
   const categories = useMemo<CategoryInfo[]>(() => {
@@ -57,6 +59,21 @@ export function HomeContent({ articles }: HomeContentProps) {
       article.category === selectedCategory
     );
   }, [articles, selectedCategory]);
+
+  // 표시할 articles (pagination 적용)
+  const displayedArticles = useMemo(() => {
+    return filteredArticles.slice(0, displayCount);
+  }, [filteredArticles, displayCount]);
+
+  // 카테고리 변경 시 pagination 리셋
+  useEffect(() => {
+    setDisplayCount(10);
+  }, [selectedCategory]);
+
+  // "더 보기" 버튼 핸들러
+  const handleLoadMore = () => {
+    setDisplayCount(prev => prev + 10);
+  };
 
   return (
     <>
@@ -97,7 +114,7 @@ export function HomeContent({ articles }: HomeContentProps) {
         )}
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-          {filteredArticles.map((article) => (
+          {displayedArticles.map((article) => (
             <Link
               key={article.slug}
               href={`/${getArticleTitleFromSlug(article.slug)}`}
@@ -151,6 +168,19 @@ export function HomeContent({ articles }: HomeContentProps) {
             </Link>
           ))}
         </div>
+
+        {/* "더 보기" 버튼 */}
+        {filteredArticles.length > displayCount && (
+          <div className="flex justify-center mt-8">
+            <Button
+              onClick={handleLoadMore}
+              variant="outline"
+              size="lg"
+            >
+              더 보기 ({filteredArticles.length - displayCount}개 남음)
+            </Button>
+          </div>
+        )}
 
         {articles.length === 0 && (
           <div className="text-center py-12">
