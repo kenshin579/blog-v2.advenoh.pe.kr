@@ -13,6 +13,12 @@ export const socialLinks: SocialLink[] = [
     ariaLabel: 'LinkedIn 프로필 방문'
   },
   {
+    name: 'GitHub',
+    url: 'https://github.com/kenshin579',
+    icon: 'Github',
+    ariaLabel: 'GitHub 프로필 방문'
+  },
+  {
     name: 'Instagram',
     url: 'https://www.instagram.com/frank.photosnap',
     icon: 'Instagram',
