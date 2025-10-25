@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchDialog } from '@/components/search-dialog';
+import { SocialLinks } from '@/components/social-links';
 
 export function SiteHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
@@ -35,6 +36,7 @@ export function SiteHeader() {
           </div>
 
           <div className="flex items-center gap-2">
+            <SocialLinks />
             <Button
               variant="outline"
               size="sm"
