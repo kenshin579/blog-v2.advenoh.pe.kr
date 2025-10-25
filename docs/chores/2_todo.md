@@ -1,83 +1,86 @@
 # TODO: 헤더 소셜 링크 추가
 
-## Phase 1: 기본 구현 ⚡
+## Phase 1: 기본 구현 ✅
 
 ### 1.1 소셜 링크 설정 파일 생성
-- [ ] `lib/site-config.ts` 파일 생성
-  - [ ] SocialLink 인터페이스 정의
-  - [ ] socialLinks 배열 정의 (LinkedIn, Instagram, Blog)
-  - [ ] 실제 URL 사용:
+- [x] `lib/site-config.ts` 파일 생성
+  - [x] SocialLink 인터페이스 정의
+  - [x] socialLinks 배열 정의 (LinkedIn, Instagram, Blog)
+  - [x] 실제 URL 사용:
     - LinkedIn: https://www.linkedin.com/in/frank-oh-abb80b10/
     - Instagram: https://www.instagram.com/frank.photosnap
     - Blog: https://investment.advenoh.pe.kr/
-  - [ ] TypeScript 타입 export
+  - [x] TypeScript 타입 export
 
 ### 1.2 소셜 링크 컴포넌트 생성
-- [ ] `components/social-links.tsx` 파일 생성
-  - [ ] lucide-react 아이콘 import (Linkedin, Instagram, BookOpen)
-  - [ ] iconMap 매핑 객체 생성
-  - [ ] SocialLinks 컴포넌트 구현
-  - [ ] Button 컴포넌트 사용 (variant="ghost", size="icon")
-  - [ ] Next.js Link 컴포넌트 통합
-  - [ ] 접근성 속성 추가 (aria-label)
-  - [ ] 외부 링크 보안 설정 (target="_blank", rel="noopener noreferrer")
+- [x] `components/social-links.tsx` 파일 생성
+  - [x] lucide-react 아이콘 import (Linkedin, Instagram, BookOpen)
+  - [x] iconMap 매핑 객체 생성
+  - [x] SocialLinks 컴포넌트 구현
+  - [x] Button 컴포넌트 사용 (variant="ghost", size="icon")
+  - [x] Next.js Link 컴포넌트 통합
+  - [x] 접근성 속성 추가 (aria-label)
+  - [x] 외부 링크 보안 설정 (target="_blank", rel="noopener noreferrer")
 
 ### 1.3 헤더 컴포넌트 통합
-- [ ] `components/site-header.tsx` 수정
-  - [ ] SocialLinks 컴포넌트 import
-  - [ ] 우측 액션 영역에 SocialLinks 추가 (Search 앞에 배치)
-  - [ ] gap 간격 확인 및 조정
+- [x] `components/site-header.tsx` 수정
+  - [x] SocialLinks 컴포넌트 import
+  - [x] 우측 액션 영역에 SocialLinks 추가 (Search 앞에 배치)
+  - [x] gap 간격 확인 및 조정
 
 ---
 
-## Phase 2: 스타일링 및 시각적 검증 🎨
+## Phase 2: 스타일링 및 시각적 검증 ✅
 
 ### 2.1 Light Mode 확인
-- [ ] 브라우저에서 Light mode 활성화
-  - [ ] 아이콘 색상 적절성 확인
-  - [ ] hover 상태 색상 변화 확인
-  - [ ] 간격 및 정렬 확인
-  - [ ] 다른 헤더 요소와 조화 확인
+- [x] 브라우저에서 Light mode 활성화 (Playwright 테스트 완료)
+  - [x] 아이콘 색상 적절성 확인
+  - [x] hover 상태 색상 변화 확인
+  - [x] 간격 및 정렬 확인
+  - [x] 다른 헤더 요소와 조화 확인
 
 ### 2.2 Dark Mode 확인
-- [ ] 브라우저에서 Dark mode 활성화
-  - [ ] 아이콘 색상 적절성 확인
-  - [ ] hover 상태 색상 변화 확인
-  - [ ] 대비(contrast) 확인
+- [x] 브라우저에서 Dark mode 활성화 (Playwright 테스트 완료)
+  - [x] 아이콘 색상 적절성 확인
+  - [x] hover 상태 색상 변화 확인
+  - [x] 대비(contrast) 확인
 
 ### 2.3 반응형 테스트
-- [ ] 모바일 (< 768px)
-  - [ ] 아이콘 크기 및 터치 타겟 확인
-  - [ ] 간격 확인
-  - [ ] 화면에 잘 맞는지 확인
-- [ ] 태블릿 (768px - 1024px)
-  - [ ] 레이아웃 확인
-  - [ ] 간격 확인
-- [ ] 데스크톱 (> 1024px)
-  - [ ] 최종 레이아웃 확인
+- [x] 모바일 (< 768px) (Playwright 375px 테스트 완료)
+  - [x] 아이콘 크기 및 터치 타겟 확인
+  - [x] 간격 확인
+  - [x] 화면에 잘 맞는지 확인
+- [x] 태블릿 (768px - 1024px)
+  - [x] 레이아웃 확인
+  - [x] 간격 확인
+- [x] 데스크톱 (> 1024px) (Playwright 1280px 테스트 완료)
+  - [x] 최종 레이아웃 확인
 
 ---
 
-## Phase 3: 접근성 및 UX 검증 ♿
+## Phase 3: 접근성 및 UX 검증 ✅
 
 ### 3.1 키보드 네비게이션
-- [ ] Tab 키로 포커스 이동 테스트
-  - [ ] 모든 소셜 링크가 순서대로 포커스되는지 확인
-  - [ ] 포커스 표시가 명확한지 확인
-- [ ] Enter 키로 링크 활성화 테스트
-  - [ ] 각 링크가 새 탭에서 올바르게 열리는지 확인
+- [x] Tab 키로 포커스 이동 테스트 (Playwright 테스트 완료)
+  - [x] 모든 소셜 링크가 순서대로 포커스되는지 확인
+  - [x] 포커스 표시가 명확한지 확인
+- [x] Enter 키로 링크 활성화 테스트
+  - [x] 각 링크가 새 탭에서 올바르게 열리는지 확인
 
 ### 3.2 스크린 리더 테스트
-- [ ] aria-label이 올바르게 읽히는지 확인
-  - [ ] "LinkedIn 프로필 방문"
-  - [ ] "Instagram 프로필 방문"
-  - [ ] "블로그 방문"
-- [ ] 링크 목적이 명확한지 확인
+- [x] aria-label이 올바르게 읽히는지 확인 (Playwright JavaScript 검증 완료)
+  - [x] "LinkedIn 프로필 방문"
+  - [x] "Instagram 프로필 방문"
+  - [x] "투자 블로그 방문"
+- [x] 링크 목적이 명확한지 확인
 
 ### 3.3 외부 링크 보안 확인
-- [ ] `rel="noopener noreferrer"` 속성 확인
-- [ ] `target="_blank"` 동작 확인
-- [ ] 새 탭에서 올바른 URL이 열리는지 확인
+- [x] `rel="noopener noreferrer"` 속성 확인 (Playwright 검증 완료)
+- [x] `target="_blank"` 동작 확인 (Playwright 검증 완료)
+- [x] 새 탭에서 올바른 URL이 열리는지 확인
+  - [x] LinkedIn: https://www.linkedin.com/in/frank-oh-abb80b10/
+  - [x] Instagram: https://www.instagram.com/frank.photosnap
+  - [x] Blog: https://investment.advenoh.pe.kr/
 
 ---
 
@@ -100,34 +103,37 @@
 
 ---
 
-## Phase 5: 테스트 및 배포 🚀
+## Phase 5: 테스트 및 배포 ✅
 
 ### 5.1 E2E 테스트 (선택사항)
-- [ ] MCP Playwright로 E2E 테스트 작성
-  - [ ] 각 소셜 링크 클릭 테스트
-  - [ ] 새 탭에서 열리는지 확인
-  - [ ] 시각적 회귀 테스트 (스크린샷)
+- [x] MCP Playwright로 E2E 테스트 작성
+  - [x] 각 소셜 링크 클릭 테스트
+  - [x] 새 탭에서 열리는지 확인
+  - [x] 시각적 회귀 테스트 (스크린샷)
+    - Light mode: `header-social-links-light-mode-*.png`
+    - Dark mode: `header-social-links-dark-mode-*.png`
+    - Mobile: `mobile-header-social-links-*.png`
 
 ### 5.2 TypeScript 타입 체크
-- [ ] `npm run check` 실행
-  - [ ] 타입 에러 없는지 확인
-  - [ ] any 타입 사용 없는지 확인
+- [x] `npm run check` 실행
+  - [x] 타입 에러 없는지 확인
+  - [x] any 타입 사용 없는지 확인
 
 ### 5.3 빌드 테스트
-- [ ] `npm run build` 실행
-  - [ ] 빌드 에러 없는지 확인
-  - [ ] 빌드 크기 증가 확인 (< 1KB 예상)
+- [x] `npm run build` 실행
+  - [x] 빌드 에러 없는지 확인
+  - [x] 빌드 크기 증가 확인 (< 1KB 예상)
 
 ### 5.4 Git 커밋
-- [ ] 변경 사항 검토
-  - [ ] `git status` 확인
-  - [ ] `git diff` 확인
-- [ ] 논리적 단위로 커밋 분리
-  - [ ] Commit 1: `[#이슈번호] feat: 소셜 링크 설정 파일 추가`
+- [x] 변경 사항 검토
+  - [x] `git status` 확인
+  - [x] `git diff` 확인
+- [x] 논리적 단위로 커밋 분리
+  - [x] Commit 1: `feat: 소셜 링크 설정 파일 추가`
     - `lib/site-config.ts` 생성
-  - [ ] Commit 2: `[#이슈번호] feat: 소셜 링크 컴포넌트 구현`
+  - [x] Commit 2: `feat: 소셜 링크 컴포넌트 구현`
     - `components/social-links.tsx` 생성
-  - [ ] Commit 3: `[#이슈번호] feat: 헤더에 소셜 링크 통합`
+  - [x] Commit 3: `feat: 헤더에 소셜 링크 통합`
     - `components/site-header.tsx` 수정
 
 ### 5.5 배포 준비
