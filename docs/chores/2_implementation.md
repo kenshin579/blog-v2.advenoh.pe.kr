@@ -36,7 +36,7 @@ export const socialLinks: SocialLink[] = [
   {
     name: 'Blog',
     url: 'https://investment.advenoh.pe.kr/',
-    icon: 'BookOpen',
+    icon: 'TrendingUp',
     ariaLabel: '투자 블로그 방문'
   }
 ];
@@ -58,7 +58,7 @@ export const socialLinks: SocialLink[] = [
 'use client';
 
 import Link from 'next/link';
-import { Linkedin, Instagram, BookOpen, LucideIcon } from 'lucide-react';
+import { Linkedin, Instagram, TrendingUp, LucideIcon } from 'lucide-react';
 import { socialLinks } from '@/lib/site-config';
 import { Button } from '@/components/ui/button';
 
@@ -66,7 +66,7 @@ import { Button } from '@/components/ui/button';
 const iconMap: Record<string, LucideIcon> = {
   Linkedin,
   Instagram,
-  BookOpen,
+  TrendingUp,
 };
 
 export function SocialLinks() {
@@ -157,8 +157,8 @@ import { SocialLinks } from '@/components/social-links';
 - **Blog**: https://investment.advenoh.pe.kr/ (투자 블로그)
 
 **Blog 아이콘 선택**:
-- `BookOpen` 사용 (투자/지식 공유 블로그에 적합)
-- 필요시 `TrendingUp` (투자 관련), `LineChart` (투자 분석) 등으로 변경 가능
+- `TrendingUp` 사용 (투자 블로그에 적합 - 상승 추세선)
+- 대안: `LineChart` (투자 분석), `BarChart` (차트 분석)
 
 ### 5. 반응형 처리 (선택사항)
 
