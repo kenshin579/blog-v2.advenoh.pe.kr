@@ -1,9 +1,10 @@
 import { getArticleByTitle, getAllArticles, getRelatedArticles, getArticleTitleFromSlug } from '@/lib/articles';
 import { extractTOC, calculateReadingTime } from '@/lib/markdown';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { formatDate } from '@/lib/utils';
+import { DEFAULT_ARTICLE_IMAGE } from '@/lib/constants';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -154,16 +155,60 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <h2 className="text-2xl font-bold mb-4">관련 글</h2>
           <div className="grid gap-4 md:grid-cols-3">
             {relatedArticles.map((related) => (
-              <Link key={related.slug} href={`/${getArticleTitleFromSlug(related.slug)}`}>
-                <Card className="h-full hover:shadow-lg transition-shadow">
+              <Link
+                key={related.slug}
+                href={`/${getArticleTitleFromSlug(related.slug)}`}
+                className="group"
+              >
+                <Card className="h-full transition-all hover:shadow-lg hover:-translate-y-1">
+                  {/* 이미지 섹션 */}
+                  <div className="aspect-video overflow-hidden rounded-t-lg">
+                    <img
+                      src={
+                        related.firstImage
+                          ? `/images/${related.slug}/${related.firstImage}`
+                          : DEFAULT_ARTICLE_IMAGE
+                      }
+                      alt={related.title}
+                      className="w-full h-full object-cover transition-transform group-hover:scale-105"
+                    />
+                  </div>
+
+                  {/* 헤더 섹션 */}
                   <CardHeader>
-                    <Badge variant="secondary" className="w-fit mb-2">
-                      {related.category}
-                    </Badge>
-                    <CardTitle className="text-base line-clamp-2">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Badge variant="secondary">{related.category}</Badge>
+                      <span className="text-sm text-muted-foreground">
+                        {formatDate(related.date)}
+                      </span>
+                    </div>
+                    <CardTitle className="text-base line-clamp-2 group-hover:text-primary">
                       {related.title}
                     </CardTitle>
+                    {related.excerpt && (
+                      <CardDescription className="line-clamp-3">
+                        {related.excerpt}
+                      </CardDescription>
+                    )}
                   </CardHeader>
+
+                  {/* 태그 섹션 */}
+                  {related.tags && related.tags.length > 0 && (
+                    <CardContent>
+                      <div className="flex flex-wrap gap-2">
+                        {related.tags.slice(0, 3).map((tag) => (
+                          <Badge key={tag} variant="outline" className="text-xs">
+                            {tag}
+                          </Badge>
+                        ))}
+                        {related.tags.length > 3 && (
+                          <Badge variant="outline" className="text-xs">
+                            +{related.tags.length - 3}
+                          </Badge>
+                        )}
+                      </div>
+                    </CardContent>
+                  )}
                 </Card>
               </Link>
             ))}
