@@ -413,3 +413,30 @@ pre[class*="language-"] {
 .token.variable {
   @apply text-chart-4;
 }
+
+/* Article heading 링크의 underline 제거 */
+.prose a[href^="#"] {
+  text-decoration: none;
+}
+
+.prose a[href^="#"]:hover {
+  text-decoration: underline;
+}
+
+/* TOC 사이드바 스크롤바 스타일 (optional) */
+.prose aside::-webkit-scrollbar {
+  width: 4px;
+}
+
+.prose aside::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.prose aside::-webkit-scrollbar-thumb {
+  background: hsl(var(--muted-foreground) / 0.3);
+  border-radius: 2px;
+}
+
+.prose aside::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
+}
