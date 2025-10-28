@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Separator } from '@/components/ui/separator';
 import { formatDate } from '@/lib/utils';
 import { DEFAULT_ARTICLE_IMAGE } from '@/lib/constants';
+import { TableOfContents } from '@/components/article/table-of-contents';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -83,7 +84,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const relatedArticles = manifestArticle ? await getRelatedArticles(manifestArticle.slug, 3) : [];
 
   return (
-    <div className="container mx-auto px-4 py-8 max-w-4xl">
+    <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Article Header */}
       <header className="mb-8">
         <div className="flex items-center gap-2 mb-4">
@@ -117,35 +118,33 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
       <Separator className="mb-8" />
 
-      {/* Table of Contents */}
-      {toc.length > 0 && (
-        <aside className="mb-8 p-4 bg-muted rounded-lg">
-          <h2 className="text-lg font-semibold mb-3">목차</h2>
-          <nav>
-            <ul className="space-y-2">
-              {toc.map((item) => (
-                <li
-                  key={item.id}
-                  className={item.level === 3 ? 'ml-4' : ''}
-                >
-                  <a
-                    href={`#${item.id}`}
-                    className="text-sm hover:text-primary transition-colors"
-                  >
-                    {item.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
-          </nav>
-        </aside>
-      )}
+      {/* 2-Column Layout: Article + TOC Sidebar */}
+      <div className="flex gap-8 lg:gap-12">
+        {/* Main Content Column */}
+        <div className="flex-1 min-w-0">
+          {/* TOC - 작은 화면에서만 표시 */}
+          {toc.length > 0 && (
+            <aside className="lg:hidden mb-8 p-4 bg-muted rounded-lg">
+              <TableOfContents items={toc} />
+            </aside>
+          )}
 
-      {/* Article Content */}
-      <article
-        className="prose prose-neutral dark:prose-invert max-w-none mb-12"
-        dangerouslySetInnerHTML={{ __html: article.html }}
-      />
+          {/* Article Content */}
+          <article
+            className="prose prose-neutral dark:prose-invert max-w-none mb-12"
+            dangerouslySetInnerHTML={{ __html: article.html }}
+          />
+        </div>
+
+        {/* TOC Sidebar - 큰 화면에서만 표시 */}
+        {toc.length > 0 && (
+          <aside className="hidden lg:block w-64 flex-shrink-0">
+            <div className="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
+              <TableOfContents items={toc} />
+            </div>
+          </aside>
+        )}
+      </div>
 
       <Separator className="mb-8" />
 
