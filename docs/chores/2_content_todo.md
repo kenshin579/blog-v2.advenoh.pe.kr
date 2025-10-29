@@ -1,24 +1,24 @@
 # TOC 스크롤 연동 활성화 구현 TODO
 
 ## 단계 1: TableOfContents 컴포넌트 수정
-- [ ] `components/article/table-of-contents.tsx` 파일 열기
-- [ ] React import에 `useState`, `useEffect` 추가
+- [x] `components/article/table-of-contents.tsx` 파일 열기
+- [x] React import에 `useState`, `useEffect` 추가
 ```typescript
 import { useState, useEffect } from 'react';
 ```
-- [ ] `activeId` state 추가
+- [x] `activeId` state 추가
 ```typescript
 const [activeId, setActiveId] = useState<string | null>(null);
 ```
-- [ ] `useEffect` 내에 Intersection Observer 구현
-  - [ ] IntersectionObserver 생성 (rootMargin: `-20% 0px -35% 0px`, threshold: 1.0)
-  - [ ] 모든 TOC item의 heading 요소 관찰 시작
-  - [ ] `isIntersecting` 콜백에서 `setActiveId()` 호출
-  - [ ] cleanup 함수로 `observer.disconnect()` 추가
-- [ ] Active 스타일링 적용
-  - [ ] `className`에 조건부 스타일 추가: `activeId === item.id && "text-primary font-semibold border-l-2 border-primary pl-3"`
-  - [ ] `aria-current` 속성 추가: `activeId === item.id ? "location" : undefined`
-- [ ] 파일 저장
+- [x] `useEffect` 내에 Intersection Observer 구현
+  - [x] IntersectionObserver 생성 (rootMargin: `-20% 0px -35% 0px`, threshold: 1.0)
+  - [x] 모든 TOC item의 heading 요소 관찰 시작
+  - [x] `isIntersecting` 콜백에서 `setActiveId()` 호출
+  - [x] cleanup 함수로 `observer.disconnect()` 추가
+- [x] Active 스타일링 적용
+  - [x] `className`에 조건부 스타일 추가: `activeId === item.id && "text-primary font-semibold border-l-2 border-primary pl-3"`
+  - [x] `aria-current` 속성 추가: `activeId === item.id ? "location" : undefined`
+- [x] 파일 저장
 
 ## 단계 2: 기능 테스트
 - [ ] 개발 서버 실행 (`npm run dev`)
@@ -51,7 +51,7 @@ const [activeId, setActiveId] = useState<string | null>(null);
 - [ ] 포커스 표시: active 항목 포커스 가시성 확인
 
 ## 단계 8: 빌드 및 배포
-- [ ] 타입 체크 (`npm run check`)
-- [ ] 프로덕션 빌드 (`npm run build`)
-- [ ] 빌드 에러 없는지 확인
+- [x] 타입 체크 (`npm run check`)
+- [x] 프로덕션 빌드 (`npm run build`)
+- [x] 빌드 에러 없는지 확인
 - [ ] 배포 (Netlify 자동 배포)
