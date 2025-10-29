@@ -423,6 +423,16 @@ pre[class*="language-"] {
   text-decoration: underline;
 }
 
+/* Anchor 링크 스크롤 시 sticky 헤더 높이만큼 여유 공간 확보 */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  scroll-margin-top: 5rem; /* 80px = 헤더(56px) + 여유(24px) */
+}
+
 /* TOC 사이드바 스크롤바 스타일 (optional) */
 .prose aside::-webkit-scrollbar {
   width: 4px;
