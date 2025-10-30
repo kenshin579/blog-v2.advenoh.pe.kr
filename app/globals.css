@@ -423,6 +423,18 @@ pre[class*="language-"] {
   text-decoration: underline;
 }
 
+/* 인라인 코드 스타일 (backtick으로 감싼 텍스트) */
+.prose code:not([class*="language-"]) {
+  @apply font-mono text-sm px-1.5 py-0.5 rounded;
+  background-color: hsl(var(--muted));
+  color: hsl(var(--foreground));
+}
+
+/* 코드 블록 안의 인라인 코드는 별도 배경 없음 */
+.prose pre code {
+  @apply p-0 bg-transparent;
+}
+
 /* Anchor 링크 스크롤 시 sticky 헤더 높이만큼 여유 공간 확보 */
 .prose h1,
 .prose h2,
