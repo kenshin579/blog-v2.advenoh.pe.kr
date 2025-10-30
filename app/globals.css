@@ -430,6 +430,12 @@ pre[class*="language-"] {
   color: hsl(var(--foreground));
 }
 
+/* Tailwind Typography가 추가하는 backtick 문자 제거 */
+.prose code:not([class*="language-"])::before,
+.prose code:not([class*="language-"])::after {
+  content: none;
+}
+
 /* 코드 블록 안의 인라인 코드는 별도 배경 없음 */
 .prose pre code {
   @apply p-0 bg-transparent;
