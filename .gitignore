@@ -6,6 +6,9 @@ vite.config.ts.*
 *.tar.gz
 .idea
 
+# Build outputs
+public/
+
 # Next.js
 .next/
 out/
