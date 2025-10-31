@@ -7,15 +7,19 @@ import { SiteFooter } from '@/components/site-footer';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Advenoh IT Blog',
-    template: '%s | Advenoh IT Blog',
+    default: "Frank's IT Blog",
+    template: "%s | Frank's IT Blog",
   },
-  description: 'IT 기술 블로그 - 개발, 클라우드, 데이터베이스',
+  description: '개발, 클라우드, 데이터베이스 관련 기술 블로그',
+  applicationName: "Frank's IT Blog",
+  appleWebApp: {
+    title: "Frank's IT Blog",
+  },
   openGraph: {
     type: 'website',
     locale: 'ko_KR',
-    url: 'https://advenoh.pe.kr',
-    siteName: 'Advenoh IT Blog',
+    url: 'https://blog.advenoh.pe.kr',
+    siteName: "Frank's IT Blog",
   },
   twitter: {
     card: 'summary_large_image',
@@ -32,6 +36,24 @@ export default function RootLayout({
 }) {
   return (
     <html lang="ko" suppressHydrationWarning>
+      {/* JSON-LD WebSite Schema */}
+      <Script
+        id="website-schema"
+        type="application/ld+json"
+        strategy="beforeInteractive"
+        dangerouslySetInnerHTML={{
+          __html: JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'WebSite',
+            name: "Frank's IT Blog",
+            alternateName: '프랭크의 IT 블로그',
+            url: 'https://blog.advenoh.pe.kr',
+            description: '개발, 클라우드, 데이터베이스 관련 기술 블로그',
+            inLanguage: 'ko-KR',
+          }),
+        }}
+      />
+
       {/* Google AdSense */}
       <Script
         async
