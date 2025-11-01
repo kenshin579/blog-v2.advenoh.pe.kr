@@ -23,6 +23,7 @@ jobs:
       run: |
         docker run --rm \
           -v ${{ github.workspace }}:/workspace \
+          -e WORKSPACE_DIR=/workspace \
           -e CONTENT_DIR=contents \
           -e BLOG_URL=https://blog.advenoh.pe.kr \
           kenshin579/readme-generator:latest

@@ -30,6 +30,7 @@ docker-run:
 	@echo "  BLOG_URL=$(BLOG_URL)"
 	docker run --rm \
 		-v $(PWD)/../..:/workspace \
+		-e WORKSPACE_DIR=/workspace \
 		-e CONTENT_DIR=$(CONTENT_DIR) \
 		-e BLOG_URL=$(BLOG_URL) \
 		$(FULL_IMAGE)

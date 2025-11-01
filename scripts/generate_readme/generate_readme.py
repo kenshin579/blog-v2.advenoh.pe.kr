@@ -96,6 +96,8 @@ class Generator:
 
     def __count_toc_from_readme(self, filename):
         count = 0
+        if not os.path.exists(filename):
+            return 0
         with open(filename, 'r', encoding='utf-8') as file:
             for line in file:
                 if line.startswith('*'):
