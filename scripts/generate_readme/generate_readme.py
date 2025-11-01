@@ -23,6 +23,9 @@ from itertools import islice
 WORKSPACE_DIR = os.getenv('WORKSPACE_DIR', os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
 CONTENT_DIR = os.getenv('CONTENT_DIR', 'contents')
 BLOG_URL = os.getenv('BLOG_URL', 'https://blog.advenoh.pe.kr')
+PROJECT_TITLE = os.getenv('PROJECT_TITLE', "Frank's IT Blog")
+HITCOUNT_PATH = os.getenv('HITCOUNT_PATH', 'kenshin579/advenohpekr')
+NETLIFY_BADGE_ID = os.getenv('NETLIFY_BADGE_ID', '31900f77-681f-4ace-8b3b-906936f57a60')
 README_PATH = os.getenv('README_PATH', os.path.join(WORKSPACE_DIR, 'README.md'))
 HEADER_TEMPLATE = os.getenv('HEADER_TEMPLATE', 'data/HEADER.md')
 
@@ -67,13 +70,28 @@ class Generator:
             for line in islice(f, 1, 2):
                 return re.findall(r'title:\s*"([^"]+)"', line)[0]
 
+    def __generate_header(self):
+        """Generate header from template with environment variables"""
+        with open(README_HEADER_FILE, 'r', encoding='utf-8') as f:
+            template = f.read()
+
+        # Replace placeholders with environment variables
+        header = template.replace('{{HITCOUNT_PATH}}', HITCOUNT_PATH)
+        header = header.replace('{{NETLIFY_BADGE_ID}}', NETLIFY_BADGE_ID)
+        header = header.replace('{{PROJECT_TITLE}}', PROJECT_TITLE)
+
+        return header
+
     def __write_blog_list_to_file(self):
-        shutil.copyfile(README_HEADER_FILE, README_FILE)
+        # Generate and write header
+        header_content = self.__generate_header()
+        with open(README_FILE, 'w', encoding='utf-8') as out_file:
+            out_file.write(header_content)
 
         # write header to the file
         with open(README_FILE, 'a') as out_file:
             out_file.write('\nUpdated ' + datetime.now().strftime('%Y-%m-%d') + '\n\n')
-            out_file.write('현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.\n\n')
+            out_file.write(f'현재 [블로그]({BLOG_URL})에 작성된 내용입니다.\n\n')
 
             for category in sorted(self.toc_map):
                 out_file.write('## {}\n'.format(category))
