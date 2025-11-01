@@ -34,6 +34,8 @@
 
 ## Phase 3.5: Makefile 수정
 
+> **Note**: 이 Phase는 readme-generator 프로젝트에서 작업해야 합니다. blog 프로젝트에는 Makefile이 없습니다.
+
 - [ ] readme-generator 프로젝트의 `Makefile` 수정
 - [ ] 환경변수 기본값 추가
   - [ ] `PROJECT_TITLE` 기본값 설정
@@ -47,6 +49,8 @@
 - [ ] 변경사항 커밋
 
 ## Phase 4: 테스트
+
+> **Note**: 이 Phase는 readme-generator 프로젝트에서 작업해야 합니다.
 
 - [ ] 로컬에서 Docker 이미지 빌드
   ```bash
@@ -72,6 +76,8 @@
 
 ## Phase 5: Docker 이미지 배포
 
+> **Note**: 이 Phase는 readme-generator 프로젝트에서 작업해야 합니다.
+
 - [ ] Make를 사용하여 Docker 이미지 빌드 및 배포
   ```bash
   make docker-build
@@ -81,6 +87,8 @@
 
 ## Phase 6: Investment 프로젝트 적용
 
+> **Note**: Phase 4-5 완료 후 investment 프로젝트에서 작업합니다.
+
 - [ ] Investment 프로젝트의 `.github/workflows/generate-readme.yml` 업데이트
 - [ ] Investment 프로젝트별 환경변수 설정
   - [ ] `PROJECT_TITLE: "Frank's Investment"`
@@ -88,3 +96,14 @@
   - [ ] `HITCOUNT_PATH: kenshin579/investmentadvenohpekr`
   - [ ] `NETLIFY_BADGE_ID: [Investment Netlify ID 확인 필요]`
 - [ ] Investment 프로젝트에서 README 생성 확인
+
+---
+
+## ✅ Blog 프로젝트 작업 완료
+
+- [x] GitHub Issue #42 생성
+- [x] Feature 브랜치 `feat/#42-readme-generator-env-vars` 생성
+- [x] Phase 1-3 구현 완료
+- [x] 변경사항 커밋 완료 (commit: 4da7c88)
+
+**다음 단계**: readme-generator 프로젝트로 이동하여 Phase 3.5, 4, 5 작업 진행
