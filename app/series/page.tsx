@@ -82,7 +82,7 @@ export default async function SeriesPage() {
                                 variant="outline"
                                 className="text-xs"
                               >
-                                {tag}
+                                #{tag}
                               </Badge>
                             ))}
                             {article.tags.length > 2 && (

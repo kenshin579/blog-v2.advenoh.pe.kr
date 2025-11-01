@@ -164,7 +164,7 @@ export function SearchDialog({ open, onOpenChange }: SearchDialogProps) {
                         <div className="flex flex-wrap gap-1 mt-2">
                           {result.tags.slice(0, 3).map((tag) => (
                             <Badge key={tag} variant="outline" className="text-xs">
-                              {tag}
+                              #{tag}
                             </Badge>
                           ))}
                         </div>
