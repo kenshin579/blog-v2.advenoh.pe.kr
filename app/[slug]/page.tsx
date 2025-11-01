@@ -109,7 +109,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           <div className="flex flex-wrap gap-2">
             {article.frontmatter.tags.map((tag) => (
               <Badge key={tag} variant="outline">
-                {tag}
+                #{tag}
               </Badge>
             ))}
           </div>
@@ -197,7 +197,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
                       <div className="flex flex-wrap gap-2">
                         {related.tags.slice(0, 3).map((tag) => (
                           <Badge key={tag} variant="outline" className="text-xs">
-                            {tag}
+                            #{tag}
                           </Badge>
                         ))}
                         {related.tags.length > 3 && (

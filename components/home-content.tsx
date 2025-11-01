@@ -153,7 +153,7 @@ export function HomeContent({ articles }: HomeContentProps) {
                     <div className="flex flex-wrap gap-2">
                       {article.tags.slice(0, 3).map((tag) => (
                         <Badge key={tag} variant="outline" className="text-xs">
-                          {tag}
+                          #{tag}
                         </Badge>
                       ))}
                       {article.tags.length > 3 && (
