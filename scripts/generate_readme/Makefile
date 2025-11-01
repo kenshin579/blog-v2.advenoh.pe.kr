@@ -1,4 +1,4 @@
-.PHONY: docker-build docker-push docker-run docker-run-blog test help
+.PHONY: docker-build docker-push docker-run test help
 
 # Docker image configuration
 IMAGE_NAME := kenshin579/readme-generator
@@ -16,8 +16,7 @@ help:
 	@echo "Available targets:"
 	@echo "  docker-build         - Build Docker image"
 	@echo "  docker-push          - Push Docker image to Docker Hub"
-	@echo "  docker-run           - Run Docker container locally with custom env vars"
-	@echo "  docker-run-blog      - Run for Blog project (default settings)"
+	@echo "  docker-run           - Run Docker container locally"
 	@echo "  test                 - Run pytest tests"
 
 docker-build:
@@ -48,12 +47,3 @@ docker-run:
 test:
 	@echo "Running tests..."
 	pytest test_generate_readme.py -v
-
-# 프로젝트별 실행 타겟
-docker-run-blog:
-	@echo "Running for Blog project..."
-	$(MAKE) docker-run \
-		PROJECT_TITLE="Frank's IT Blog" \
-		BLOG_URL=https://blog.advenoh.pe.kr \
-		HITCOUNT_PATH=kenshin579/advenohpekr \
-		NETLIFY_BADGE_ID=31900f77-681f-4ace-8b3b-906936f57a60
