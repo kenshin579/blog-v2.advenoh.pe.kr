@@ -89,19 +89,48 @@ function main() {
 
   console.log(`✅ Found ${images.size} images`);
 
-  if (images.size === 0) {
-    console.log('ℹ️  No images to copy');
-    return;
-  }
+  if (images.size > 0) {
+    console.log('📋 Copying images to public/images/...');
+    const { copiedCount, skippedCount } = copyImages(images, publicImagesDir);
 
-  console.log('📋 Copying images to public/images/...');
-  const { copiedCount, skippedCount } = copyImages(images, publicImagesDir);
-
-  console.log(`✅ Copy complete!
+    console.log(`✅ Copy complete!
   - Copied: ${copiedCount} files
   - Skipped: ${skippedCount} files (unchanged)
   - Total: ${images.size} files
   `);
+  } else {
+    console.log('ℹ️  No images to copy from contents/');
+  }
+
+  // Copy default image
+  console.log('\n🔍 Copying default image...');
+  const defaultImageSource = path.join(
+    process.cwd(),
+    'attached_assets',
+    'generated_images',
+    'default.png'
+  );
+  const defaultImageDestDir = path.join(publicImagesDir, 'default');
+  const defaultImageDest = path.join(defaultImageDestDir, 'default.png');
+
+  // Check if source file exists
+  if (!fs.existsSync(defaultImageSource)) {
+    console.error(`❌ Default image not found: ${defaultImageSource}`);
+    return;
+  }
+
+  // Create destination directory if it doesn't exist
+  if (!fs.existsSync(defaultImageDestDir)) {
+    fs.mkdirSync(defaultImageDestDir, { recursive: true });
+  }
+
+  // Copy default image
+  try {
+    fs.copyFileSync(defaultImageSource, defaultImageDest);
+    console.log(`✅ Default image copied to ${defaultImageDest}`);
+  } catch (error) {
+    console.error(`❌ Failed to copy default image:`, error);
+  }
 }
 
 main();
