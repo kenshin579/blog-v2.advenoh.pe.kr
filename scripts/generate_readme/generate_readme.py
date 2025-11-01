@@ -19,14 +19,22 @@ from itertools import islice
 # Constants
 #
 ################################################################################################
-BLOG_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__))))
-BLOG_DIR_SCRIPT = '/'.join([BLOG_DIR, 'scripts', 'generate_readme'])
+# Environment variable support
+WORKSPACE_DIR = os.getenv('WORKSPACE_DIR', os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))))
+CONTENT_DIR = os.getenv('CONTENT_DIR', 'contents')
+BLOG_URL = os.getenv('BLOG_URL', 'https://blog.advenoh.pe.kr')
+README_PATH = os.getenv('README_PATH', os.path.join(WORKSPACE_DIR, 'README.md'))
+HEADER_TEMPLATE = os.getenv('HEADER_TEMPLATE', 'data/HEADER.md')
 
-BLOG_CONTENT_DIR = '/'.join([BLOG_DIR, 'contents', 'posts'])
-README_FILE = os.path.join(BLOG_DIR, 'README.md')
-README_HEADER_FILE = '/'.join([BLOG_DIR_SCRIPT, 'data', 'HEADER.md'])
+# Derived paths
+BLOG_DIR = WORKSPACE_DIR
+BLOG_DIR_SCRIPT = os.path.join(BLOG_DIR, 'scripts', 'generate_readme')
+BLOG_CONTENT_DIR = os.path.join(WORKSPACE_DIR, CONTENT_DIR)
+README_FILE = README_PATH
+README_HEADER_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), HEADER_TEMPLATE)
 
-BLOG_HOME_URL = 'https://blog.advenoh.pe.kr'
+# Legacy constant (for backward compatibility)
+BLOG_HOME_URL = BLOG_URL
 
 ################################################################################################
 # Functions
@@ -88,6 +96,8 @@ class Generator:
 
     def __count_toc_from_readme(self, filename):
         count = 0
+        if not os.path.exists(filename):
+            return 0
         with open(filename, 'r', encoding='utf-8') as file:
             for line in file:
                 if line.startswith('*'):
