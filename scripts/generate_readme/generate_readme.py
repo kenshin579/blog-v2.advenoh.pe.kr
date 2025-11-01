@@ -29,7 +29,7 @@ HEADER_TEMPLATE = os.getenv('HEADER_TEMPLATE', 'data/HEADER.md')
 # Derived paths
 BLOG_DIR = WORKSPACE_DIR
 BLOG_DIR_SCRIPT = os.path.join(BLOG_DIR, 'scripts', 'generate_readme')
-BLOG_CONTENT_DIR = os.path.join(WORKSPACE_DIR, CONTENT_DIR, 'posts')
+BLOG_CONTENT_DIR = os.path.join(WORKSPACE_DIR, CONTENT_DIR)
 README_FILE = README_PATH
 README_HEADER_FILE = os.path.join(os.path.dirname(os.path.realpath(__file__)), HEADER_TEMPLATE)
 
