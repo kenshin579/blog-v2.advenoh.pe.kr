@@ -34,19 +34,19 @@
 
 ## Phase 3.5: Makefile 수정
 
-> **Note**: 이 Phase는 readme-generator 프로젝트에서 작업해야 합니다. blog 프로젝트에는 Makefile이 없습니다.
+> **Note**: scripts/generate_readme/Makefile 수정 완료
 
-- [ ] readme-generator 프로젝트의 `Makefile` 수정
-- [ ] 환경변수 기본값 추가
-  - [ ] `PROJECT_TITLE` 기본값 설정
-  - [ ] `BLOG_URL` 기본값 설정
-  - [ ] `HITCOUNT_PATH` 기본값 설정
-  - [ ] `NETLIFY_BADGE_ID` 기본값 설정
-- [ ] `docker-run` 타겟에 환경변수 전달 추가
-- [ ] 프로젝트별 실행 타겟 추가
-  - [ ] `docker-run-blog` 타겟 추가
-  - [ ] `docker-run-investment` 타겟 추가
-- [ ] 변경사항 커밋
+- [x] readme-generator 프로젝트의 `Makefile` 수정
+- [x] 환경변수 기본값 추가
+  - [x] `PROJECT_TITLE` 기본값 설정
+  - [x] `BLOG_URL` 기본값 설정
+  - [x] `HITCOUNT_PATH` 기본값 설정
+  - [x] `NETLIFY_BADGE_ID` 기본값 설정
+- [x] `docker-run` 타겟에 환경변수 전달 추가
+- [x] 프로젝트별 실행 타겟 추가
+  - [x] `docker-run-blog` 타겟 추가
+  - [x] `docker-run-investment` 타겟 추가
+- [x] 변경사항 커밋 ✅ (commit: baa1655)
 
 ## Phase 4: 테스트
 
