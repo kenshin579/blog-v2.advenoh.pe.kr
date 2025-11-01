@@ -70,12 +70,16 @@
 
 > **Note**: 이 Phase는 readme-generator 프로젝트에서 작업해야 합니다.
 
-- [ ] Make를 사용하여 Docker 이미지 빌드 및 배포
+- [x] Make를 사용하여 Docker 이미지 빌드 및 배포
   ```bash
-  make docker-build
   make docker-push
   ```
-- [ ] GitHub Actions에서 동작 확인
+  - ✅ Multi-platform 이미지 배포 완료 (linux/amd64, linux/arm64)
+  - ✅ Docker Hub: `kenshin579/readme-generator:latest`
+- [x] GitHub Actions에서 동작 확인
+  - ✅ Workflow 파일 검증 완료
+  - ✅ 모든 환경변수 설정 확인
+  - ✅ 최신 Docker 이미지 사용 설정 확인
 
 ## Phase 6: Investment 프로젝트 적용
 
@@ -96,6 +100,8 @@
 - [x] GitHub Issue #42 생성
 - [x] Feature 브랜치 `feat/#42-readme-generator-env-vars` 생성
 - [x] Phase 1-3 구현 완료
-- [x] 변경사항 커밋 완료 (commit: 4da7c88)
+- [x] Phase 3.5 Makefile 환경변수 지원 완료
+- [x] Phase 4 로컬 테스트 완료
+- [x] Phase 5 Docker 이미지 배포 완료
 
-**다음 단계**: readme-generator 프로젝트로 이동하여 Phase 3.5, 4, 5 작업 진행
+**다음 단계**: Investment 프로젝트에서 Phase 6 작업 진행 (선택사항)
