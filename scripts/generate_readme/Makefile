@@ -17,12 +17,12 @@ help:
 	@echo "  test          - Run pytest tests"
 
 docker-build:
-	@echo "Building Docker image: $(FULL_IMAGE)"
+	@echo "Building Docker image: $(FULL_IMAGE) for local platform"
 	docker build -t $(FULL_IMAGE) .
 
 docker-push:
-	@echo "Pushing Docker image: $(FULL_IMAGE)"
-	docker push $(FULL_IMAGE)
+	@echo "Building and pushing multi-platform Docker image: $(FULL_IMAGE)"
+	docker buildx build --platform linux/amd64,linux/arm64 -t $(FULL_IMAGE) --push .
 
 docker-run:
 	@echo "Running Docker container with:"

@@ -10,6 +10,9 @@ on:
 
     branches:
     - master
+    - main
+
+  workflow_dispatch:  # 수동 실행 지원
 
 jobs:
   build:
