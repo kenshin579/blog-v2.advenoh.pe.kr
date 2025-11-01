@@ -10,6 +10,9 @@ on:
 
     branches:
     - master
+    - main
+
+  workflow_dispatch:  # 수동 실행 지원
 
 jobs:
   build:
@@ -30,9 +33,8 @@ jobs:
     - name: Create commits
       run: |
           echo "username: ${{github.actor}}"
-          echo "email: ${{github.email}}"
-        
-          git config user.name {{github.actor}}
+
+          git config user.name ${{github.actor}}
           git config user.email 'kenshin579@hotmail.com'
           git add README.md
           git commit -am "update README file"
