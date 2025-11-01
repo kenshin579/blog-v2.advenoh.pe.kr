@@ -1,4 +1,4 @@
-.PHONY: docker-build docker-push docker-run docker-run-blog docker-run-investment test help
+.PHONY: docker-build docker-push docker-run docker-run-blog test help
 
 # Docker image configuration
 IMAGE_NAME := kenshin579/readme-generator
@@ -18,7 +18,6 @@ help:
 	@echo "  docker-push          - Push Docker image to Docker Hub"
 	@echo "  docker-run           - Run Docker container locally with custom env vars"
 	@echo "  docker-run-blog      - Run for Blog project (default settings)"
-	@echo "  docker-run-investment - Run for Investment project"
 	@echo "  test                 - Run pytest tests"
 
 docker-build:
@@ -58,11 +57,3 @@ docker-run-blog:
 		BLOG_URL=https://blog.advenoh.pe.kr \
 		HITCOUNT_PATH=kenshin579/advenohpekr \
 		NETLIFY_BADGE_ID=31900f77-681f-4ace-8b3b-906936f57a60
-
-docker-run-investment:
-	@echo "Running for Investment project..."
-	$(MAKE) docker-run \
-		PROJECT_TITLE="Frank's Investment" \
-		BLOG_URL=https://investment.advenoh.pe.kr \
-		HITCOUNT_PATH=kenshin579/investmentadvenohpekr \
-		NETLIFY_BADGE_ID=YOUR_INVESTMENT_NETLIFY_ID
