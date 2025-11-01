@@ -52,27 +52,19 @@
 
 > **Note**: 이 Phase는 readme-generator 프로젝트에서 작업해야 합니다.
 
-- [ ] 로컬에서 Docker 이미지 빌드
+- [x] 로컬에서 Docker 이미지 빌드
   ```bash
-  docker build -t kenshin579/readme-generator:test .
+  make docker-build
   ```
-- [ ] 환경변수로 테스트 실행
+- [x] 환경변수로 테스트 실행
   ```bash
-  docker run --rm \
-    -v $(pwd):/workspace \
-    -e WORKSPACE_DIR=/workspace \
-    -e CONTENT_DIR=contents \
-    -e PROJECT_TITLE="Test Project" \
-    -e BLOG_URL=https://test.example.com \
-    -e HITCOUNT_PATH=test/path \
-    -e NETLIFY_BADGE_ID=test-id \
-    kenshin579/readme-generator:test
+  make docker-run-blog
   ```
-- [ ] 생성된 README.md 확인
-  - [ ] HitCount URL 올바른지 확인
-  - [ ] Netlify badge ID 올바른지 확인
-  - [ ] 제목 올바른지 확인
-  - [ ] 블로그 URL 올바른지 확인
+- [x] 생성된 README.md 확인
+  - [x] HitCount URL 올바른지 확인 ✅ `kenshin579/advenohpekr`
+  - [x] Netlify badge ID 올바른지 확인 ✅ `31900f77-681f-4ace-8b3b-906936f57a60`
+  - [x] 제목 올바른지 확인 ✅ `Frank's IT Blog - Table of Contents`
+  - [x] 블로그 URL 올바른지 확인 ✅ `https://blog.advenoh.pe.kr`
 
 ## Phase 5: Docker 이미지 배포
 
