@@ -30,7 +30,7 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
-  const [topN, setTopN] = useState<string>(''); // Top N 필터 (빈 문자열 = 전체 표시)
+  const [topN, setTopN] = useState<string>('50'); // Top N 필터 (기본값: 50)
 
   // 반응형 크기 조정
   useEffect(() => {
@@ -291,37 +291,9 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
 
   return (
     <div className="w-full mb-12 relative">
-      {/* Zoom 컨트롤 버튼 및 Top N 필터 */}
-      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleZoomIn}
-          className="bg-background/95 backdrop-blur shadow-md"
-          title="확대 (Zoom In)"
-        >
-          <ZoomIn className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleZoomOut}
-          className="bg-background/95 backdrop-blur shadow-md"
-          title="축소 (Zoom Out)"
-        >
-          <ZoomOut className="h-4 w-4" />
-        </Button>
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={handleZoomReset}
-          className="bg-background/95 backdrop-blur shadow-md"
-          title="초기화 (Reset)"
-        >
-          <Maximize2 className="h-4 w-4" />
-        </Button>
-
-        {/* Top N 필터 */}
+      {/* Top N 필터 및 Zoom 컨트롤 */}
+      <div className="absolute top-4 left-4 right-4 z-10 flex justify-between items-start">
+        {/* Top N 필터 (왼쪽) */}
         <div className="bg-background/95 backdrop-blur shadow-md border border-border rounded-md p-2">
           <Label htmlFor="topN" className="text-xs mb-1 block">
             Top N
@@ -336,6 +308,37 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
             onChange={(e) => setTopN(e.target.value)}
             className="h-8 w-20 text-sm"
           />
+        </div>
+
+        {/* Zoom 컨트롤 버튼 (오른쪽) */}
+        <div className="flex flex-col gap-2">
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleZoomIn}
+            className="bg-background/95 backdrop-blur shadow-md"
+            title="확대 (Zoom In)"
+          >
+            <ZoomIn className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleZoomOut}
+            className="bg-background/95 backdrop-blur shadow-md"
+            title="축소 (Zoom Out)"
+          >
+            <ZoomOut className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={handleZoomReset}
+            className="bg-background/95 backdrop-blur shadow-md"
+            title="초기화 (Reset)"
+          >
+            <Maximize2 className="h-4 w-4" />
+          </Button>
         </div>
       </div>
 
