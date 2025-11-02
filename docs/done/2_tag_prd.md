@@ -77,8 +77,8 @@
 
 ## 📚 관련 문서
 
-- 구현 내용: [2_tag_implementation.md](./2_tag_implementation.md)
-- TODO 체크리스트: [2_tag_todo.md](./2_tag_todo.md)
+- 구현 내용: [2_tag_implementation.md](2_tag_implementation.md)
+- TODO 체크리스트: [2_tag_todo.md](2_tag_todo.md)
 
 ## 🔍 관련 이슈
 

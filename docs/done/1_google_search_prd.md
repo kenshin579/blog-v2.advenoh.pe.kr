@@ -92,5 +92,5 @@
 
 ## 📚 관련 문서
 
-- [구현 가이드](./1_google_search_implementation.md)
-- [작업 목록](./1_google_search_todo.md)
+- [구현 가이드](1_google_search_implementation.md)
+- [작업 목록](1_google_search_todo.md)
