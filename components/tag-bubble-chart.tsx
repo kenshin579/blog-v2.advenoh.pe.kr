@@ -60,37 +60,62 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
     // Zoom이 적용될 그룹 생성
     const g = svg.append('g').attr('class', 'zoom-group');
 
-    // Bubble 크기 계산 (min-max scaling)
+    // 태그를 count 기준으로 정렬 (많은 것부터)
+    const sortedTags = [...tags].sort((a, b) => b.count - a.count);
+
+    // Bubble 크기 계산
     const minCount = d3.min(tags, (d) => d.count) || 1;
     const maxCount = d3.max(tags, (d) => d.count) || 1;
 
-    // 반응형 radius 범위
     const isMobile = width < 640;
-    const minRadius = isMobile ? 25 : 30;
-    const maxRadius = isMobile ? 70 : 100;
+    const minRadius = isMobile ? 20 : 25;
+    const maxRadius = isMobile ? 60 : 80;
 
     const radiusScale = d3
       .scaleSqrt()
       .domain([minCount, maxCount])
       .range([minRadius, maxRadius]);
 
-    // Bubble 노드 데이터 생성
-    const nodes: BubbleNode[] = tags.map((tag) => ({
-      id: tag.name,
-      name: tag.name,
-      count: tag.count,
-      radius: radiusScale(tag.count),
-    }));
+    // count에 따른 중심으로부터의 거리 계산 (큰 count = 중심 가까이)
+    const radiusFromCenter = d3
+      .scaleSqrt()
+      .domain([minCount, maxCount])
+      .range([Math.min(width, height) * 0.42, 0]); // 반전: 큰 값 = 0 (중심)
+
+    // Bubble 노드 데이터 생성 (초기 위치를 원형으로 배치)
+    const nodes: BubbleNode[] = sortedTags.map((tag, i) => {
+      const targetRadius = radiusFromCenter(tag.count);
+      const angle = (i / sortedTags.length) * Math.PI * 2;
+
+      return {
+        id: tag.name,
+        name: tag.name,
+        count: tag.count,
+        radius: radiusScale(tag.count),
+        x: width / 2 + Math.cos(angle) * targetRadius,
+        y: height / 2 + Math.sin(angle) * targetRadius,
+      };
+    });
 
     // Force simulation 설정
     const simulation = d3
       .forceSimulation(nodes)
-      .force('charge', d3.forceManyBody().strength(5))
-      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('charge', d3.forceManyBody().strength(-2))
+      .force('center', d3.forceCenter(width / 2, height / 2).strength(0.02))
+      .force(
+        'radial',
+        d3.forceRadial(
+          (d) => radiusFromCenter((d as BubbleNode).count),
+          width / 2,
+          height / 2
+        ).strength(2)
+      )
       .force(
         'collision',
-        d3.forceCollide<BubbleNode>().radius((d) => d.radius + 8)
-      );
+        d3.forceCollide<BubbleNode>().radius((d) => d.radius + 4).strength(1)
+      )
+      .alpha(1)
+      .alphaDecay(0.01);
 
     // Bubble 그룹 생성
     const bubbles = g
