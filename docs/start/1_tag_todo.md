@@ -3,58 +3,58 @@
 ## Phase 1: 기본 구조 (1-2시간)
 
 ### 라우팅 및 페이지
-- [ ] `/tags` 라우트 추가 (App.tsx)
-- [ ] `Tags.tsx` 페이지 컴포넌트 생성
-- [ ] 헤더에 Tags 링크 추가 (Tag 아이콘 사용)
-- [ ] 모바일 햄버거 메뉴에 Tags 추가
+- [x] `/tags` 라우트 추가 (App.tsx)
+- [x] `Tags.tsx` 페이지 컴포넌트 생성
+- [x] 헤더에 Tags 링크 추가 (Tag 아이콘 사용)
+- [x] 모바일 햄버거 메뉴에 Tags 추가
 
 ### 데이터 처리
-- [ ] 태그 데이터 추출 로직 구현
-- [ ] 태그 정규화 (소문자 변환)
-- [ ] 태그별 사용 횟수 계산
-- [ ] TagData 인터페이스 정의
+- [x] 태그 데이터 추출 로직 구현
+- [x] 태그 정규화 (소문자 변환)
+- [x] 태그별 사용 횟수 계산
+- [x] TagData 인터페이스 정의
 
 ## Phase 2: Bubble Chart (2-3시간)
 
 ### D3.js 설정
-- [ ] D3.js 설치 (`npm install d3 @types/d3`)
-- [ ] TagBubbleChart 컴포넌트 생성
+- [x] D3.js 설치 (`npm install d3 @types/d3`)
+- [x] TagBubbleChart 컴포넌트 생성
 
 ### Bubble 시각화
-- [ ] Bubble 크기 계산 (min-max scaling)
-- [ ] Force simulation 배치 구현
-- [ ] Bubble 내부 텍스트 렌더링 (태그명 + 개수)
-- [ ] 다크/라이트 모드 스타일 적용
+- [x] Bubble 크기 계산 (min-max scaling)
+- [x] Force simulation 배치 구현
+- [x] Bubble 내부 텍스트 렌더링 (태그명 + 개수)
+- [x] 다크/라이트 모드 스타일 적용
 
 ### 애니메이션
-- [ ] Bubble 등장 애니메이션 (fade-in + scale)
-- [ ] 호버 효과 (scale 1.05)
+- [x] Bubble 등장 애니메이션 (fade-in + scale)
+- [x] 호버 효과 (scale 1.05)
 
 ## Phase 3: 인터랙션 (1-2시간)
 
 ### 클릭 및 필터링
-- [ ] Bubble 클릭 이벤트 핸들러
-- [ ] 선택된 태그 상태 관리
-- [ ] 아티클 필터링 로직
+- [x] Bubble 클릭 이벤트 핸들러
+- [x] 선택된 태그 상태 관리
+- [x] 아티클 필터링 로직
 
 ### 아티클 목록
-- [ ] TagArticleList 컴포넌트 구현
-- [ ] 필터 상태 표시 UI
-- [ ] 필터 해제 버튼
-- [ ] 아티클 카드 레이아웃
+- [x] TagArticleList 컴포넌트 구현
+- [x] 필터 상태 표시 UI
+- [x] 필터 해제 버튼
+- [x] 아티클 카드 레이아웃
 
 ## Phase 4: 마무리 (1시간)
 
 ### 품질 검증
-- [ ] 반응형 디자인 확인 (모바일/데스크톱)
-- [ ] 다크/라이트 모드 모두 테스트
-- [ ] 엣지 케이스 테스트 (태그 없는 아티클 등)
-- [ ] TypeScript 타입 에러 없음 확인
-- [ ] ESLint 경고 해결
+- [x] 반응형 디자인 확인 (모바일/데스크톱)
+- [x] 다크/라이트 모드 모두 테스트
+- [x] 엣지 케이스 테스트 (태그 없는 아티클 등)
+- [x] TypeScript 타입 에러 없음 확인
+- [x] ESLint 경고 해결
 
 ### 접근성
-- [ ] ARIA labels 추가
-- [ ] 키보드 네비게이션 지원
+- [x] ARIA labels 추가
+- [x] 키보드 네비게이션 지원
 
 ## Phase 5: Playwright E2E 테스트
 

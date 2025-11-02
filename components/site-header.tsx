@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search } from 'lucide-react';
+import { Search, Tag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { SearchDialog } from '@/components/search-dialog';
@@ -31,6 +31,13 @@ export function SiteHeader() {
                 className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
               >
                 시리즈
+              </Link>
+              <Link
+                href="/tags"
+                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+              >
+                <Tag className="h-4 w-4" />
+                태그
               </Link>
             </nav>
           </div>
