@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 interface TagData {
   name: string;
@@ -25,6 +27,7 @@ interface BubbleNode extends d3.SimulationNodeDatum {
 export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
+  const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
 
   // 반응형 크기 조정
   useEffect(() => {
@@ -53,6 +56,9 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
     d3.select(svgRef.current).selectAll('*').remove();
 
     const svg = d3.select(svgRef.current);
+
+    // Zoom이 적용될 그룹 생성
+    const g = svg.append('g').attr('class', 'zoom-group');
 
     // Bubble 크기 계산 (min-max scaling)
     const minCount = d3.min(tags, (d) => d.count) || 1;
@@ -87,14 +93,14 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
       );
 
     // Bubble 그룹 생성
-    const bubbles = svg
-      .append('g')
+    const bubbles = g
       .selectAll('g')
       .data(nodes)
       .join('g')
       .attr('cursor', 'pointer')
       .attr('data-tag-bubble', (d) => d.name)
       .on('click', (event, d) => {
+        event.stopPropagation(); // zoom 이벤트와 충돌 방지
         if (onTagSelect) {
           onTagSelect(d.name);
         }
@@ -159,20 +165,94 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
       .delay((d, i) => i * 30)
       .style('opacity', 1);
 
+    // Zoom behavior 설정
+    const zoom = d3
+      .zoom<SVGSVGElement, unknown>()
+      .scaleExtent([0.5, 3]) // 최소 0.5x, 최대 3x 줌
+      .on('zoom', (event) => {
+        g.attr('transform', event.transform);
+      });
+
+    // SVG에 zoom 적용
+    svg.call(zoom);
+
+    // zoom behavior를 ref에 저장 (외부에서 제어 가능하도록)
+    zoomRef.current = zoom;
+
     // Cleanup
     return () => {
       simulation.stop();
     };
   }, [tags, dimensions, onTagSelect]);
 
+  // Zoom 제어 함수들
+  const handleZoomIn = () => {
+    if (svgRef.current && zoomRef.current) {
+      d3.select(svgRef.current)
+        .transition()
+        .duration(300)
+        .call(zoomRef.current.scaleBy, 1.3);
+    }
+  };
+
+  const handleZoomOut = () => {
+    if (svgRef.current && zoomRef.current) {
+      d3.select(svgRef.current)
+        .transition()
+        .duration(300)
+        .call(zoomRef.current.scaleBy, 0.7);
+    }
+  };
+
+  const handleZoomReset = () => {
+    if (svgRef.current && zoomRef.current) {
+      d3.select(svgRef.current)
+        .transition()
+        .duration(500)
+        .call(zoomRef.current.transform, d3.zoomIdentity);
+    }
+  };
+
   return (
-    <div className="w-full mb-12">
+    <div className="w-full mb-12 relative">
+      {/* Zoom 컨트롤 버튼 */}
+      <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleZoomIn}
+          className="bg-background/95 backdrop-blur shadow-md"
+          title="확대 (Zoom In)"
+        >
+          <ZoomIn className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleZoomOut}
+          className="bg-background/95 backdrop-blur shadow-md"
+          title="축소 (Zoom Out)"
+        >
+          <ZoomOut className="h-4 w-4" />
+        </Button>
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={handleZoomReset}
+          className="bg-background/95 backdrop-blur shadow-md"
+          title="초기화 (Reset)"
+        >
+          <Maximize2 className="h-4 w-4" />
+        </Button>
+      </div>
+
       <svg
         ref={svgRef}
         width={dimensions.width}
         height={dimensions.height}
-        className="mx-auto"
+        className="mx-auto border border-border rounded-lg"
       />
+
       {selectedTag && (
         <div className="text-center mt-4">
           <p className="text-lg font-medium">
@@ -181,6 +261,10 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
           </p>
         </div>
       )}
+
+      <div className="text-center mt-2 text-sm text-muted-foreground">
+        <p>💡 스크롤로 확대/축소, 드래그로 이동할 수 있습니다</p>
+      </div>
     </div>
   );
 }
