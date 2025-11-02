@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import * as d3 from 'd3';
 import { ZoomIn, ZoomOut, Maximize2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 interface TagData {
   name: string;
@@ -28,6 +30,7 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
   const svgRef = useRef<SVGSVGElement>(null);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const zoomRef = useRef<d3.ZoomBehavior<SVGSVGElement, unknown> | null>(null);
+  const [topN, setTopN] = useState<string>(''); // Top N 필터 (빈 문자열 = 전체 표시)
 
   // 반응형 크기 조정
   useEffect(() => {
@@ -61,7 +64,13 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
     const g = svg.append('g').attr('class', 'zoom-group');
 
     // 태그를 count 기준으로 정렬 (많은 것부터)
-    const sortedTags = [...tags].sort((a, b) => b.count - a.count);
+    let sortedTags = [...tags].sort((a, b) => b.count - a.count);
+
+    // Top N 필터 적용
+    const topNValue = parseInt(topN);
+    if (!isNaN(topNValue) && topNValue > 0) {
+      sortedTags = sortedTags.slice(0, topNValue);
+    }
 
     // Bubble 크기 계산
     const minCount = d3.min(tags, (d) => d.count) || 1;
@@ -97,7 +106,7 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
       };
     });
 
-    // Force simulation 설정
+    // Force simulation 설정 (빠른 안정화로 셔플링 최소화)
     const simulation = d3
       .forceSimulation(nodes)
       .force('charge', d3.forceManyBody().strength(-2))
@@ -114,8 +123,9 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
         'collision',
         d3.forceCollide<BubbleNode>().radius((d) => d.radius + 4).strength(1)
       )
-      .alpha(1)
-      .alphaDecay(0.01);
+      .alpha(0.3) // 낮은 초기 에너지로 셔플링 감소
+      .alphaDecay(0.05) // 빠른 감쇠로 빠르게 안정화
+      .velocityDecay(0.5); // 빠른 속도 감쇠
 
     // Bubble 그룹 생성
     const bubbles = g
@@ -135,23 +145,41 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
     bubbles
       .append('circle')
       .attr('r', (d) => d.radius)
-      .attr('fill', 'hsl(var(--primary))')
-      .attr('fill-opacity', 0.7)
-      .attr('stroke', 'hsl(var(--primary))')
-      .attr('stroke-width', 2)
+      .attr('fill', (d) =>
+        selectedTag && d.name.toLowerCase() === selectedTag.toLowerCase()
+          ? 'hsl(var(--destructive))' // 선택된 태그는 다른 색상
+          : 'hsl(var(--primary))'
+      )
+      .attr('fill-opacity', (d) =>
+        selectedTag && d.name.toLowerCase() === selectedTag.toLowerCase()
+          ? 0.9 // 선택된 태그는 더 진하게
+          : 0.7
+      )
+      .attr('stroke', (d) =>
+        selectedTag && d.name.toLowerCase() === selectedTag.toLowerCase()
+          ? 'hsl(var(--destructive))'
+          : 'hsl(var(--primary))'
+      )
+      .attr('stroke-width', (d) =>
+        selectedTag && d.name.toLowerCase() === selectedTag.toLowerCase()
+          ? 3 // 선택된 태그는 더 두껍게
+          : 2
+      )
       .style('transition', 'all 0.3s ease')
-      .on('mouseenter', function () {
+      .on('mouseenter', function (event, d) {
+        const isSelected = selectedTag && d.name.toLowerCase() === selectedTag.toLowerCase();
         d3.select(this)
           .transition()
           .duration(200)
-          .attr('fill-opacity', 0.9)
+          .attr('fill-opacity', isSelected ? 1 : 0.9)
           .attr('transform', 'scale(1.05)');
       })
-      .on('mouseleave', function () {
+      .on('mouseleave', function (event, d) {
+        const isSelected = selectedTag && d.name.toLowerCase() === selectedTag.toLowerCase();
         d3.select(this)
           .transition()
           .duration(200)
-          .attr('fill-opacity', 0.7)
+          .attr('fill-opacity', isSelected ? 0.9 : 0.7)
           .attr('transform', 'scale(1)');
       });
 
@@ -208,7 +236,30 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
     return () => {
       simulation.stop();
     };
-  }, [tags, dimensions, onTagSelect]);
+  }, [tags, dimensions, onTagSelect, topN]);
+
+  // selectedTag 변경 시 색상만 업데이트 (재배치 없음)
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    const svg = d3.select(svgRef.current);
+
+    // 모든 bubble의 circle 선택하여 색상 업데이트
+    svg.selectAll('[data-tag-bubble]').each(function () {
+      const bubble = d3.select(this);
+      const tagName = bubble.attr('data-tag-bubble');
+      const isSelected = selectedTag && tagName.toLowerCase() === selectedTag.toLowerCase();
+
+      bubble
+        .select('circle')
+        .transition()
+        .duration(300)
+        .attr('fill', isSelected ? 'hsl(var(--destructive))' : 'hsl(var(--primary))')
+        .attr('fill-opacity', isSelected ? 0.9 : 0.7)
+        .attr('stroke', isSelected ? 'hsl(var(--destructive))' : 'hsl(var(--primary))')
+        .attr('stroke-width', isSelected ? 3 : 2);
+    });
+  }, [selectedTag]);
 
   // Zoom 제어 함수들
   const handleZoomIn = () => {
@@ -240,7 +291,7 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
 
   return (
     <div className="w-full mb-12 relative">
-      {/* Zoom 컨트롤 버튼 */}
+      {/* Zoom 컨트롤 버튼 및 Top N 필터 */}
       <div className="absolute top-4 right-4 z-10 flex flex-col gap-2">
         <Button
           variant="outline"
@@ -269,6 +320,23 @@ export function TagBubbleChart({ tags, onTagSelect, selectedTag }: TagBubbleChar
         >
           <Maximize2 className="h-4 w-4" />
         </Button>
+
+        {/* Top N 필터 */}
+        <div className="bg-background/95 backdrop-blur shadow-md border border-border rounded-md p-2">
+          <Label htmlFor="topN" className="text-xs mb-1 block">
+            Top N
+          </Label>
+          <Input
+            id="topN"
+            type="number"
+            min="1"
+            max={tags.length}
+            placeholder="전체"
+            value={topN}
+            onChange={(e) => setTopN(e.target.value)}
+            className="h-8 w-20 text-sm"
+          />
+        </div>
       </div>
 
       <svg
