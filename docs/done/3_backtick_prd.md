@@ -78,8 +78,8 @@ pre[class*="language-"] {
 - **Risk**: 낮음 (간단한 스타일 추가)
 
 ## 관련 문서
-- **구현 가이드**: [3_backtick_implementation.md](./3_backtick_implementation.md)
-- **TODO 체크리스트**: [3_backtick_todo.md](./3_backtick_todo.md)
+- **구현 가이드**: [3_backtick_implementation.md](3_backtick_implementation.md)
+- **TODO 체크리스트**: [3_backtick_todo.md](3_backtick_todo.md)
 - **Design Guidelines**: [design_guidelines.md](../../design_guidelines.md)
 
 ## 참고

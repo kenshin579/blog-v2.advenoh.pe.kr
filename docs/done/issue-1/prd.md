@@ -307,8 +307,8 @@ blog-v2.advenoh.pe.kr/
 
 ### 8. 관련 문서
 
-- **구현 계획**: [implementation.md](./implementation.md) - 상세 구현 가이드
-- **작업 체크리스트**: [todo.md](./todo.md) - 단계별 작업 목록
+- **구현 계획**: [implementation.md](implementation.md) - 상세 구현 가이드
+- **작업 체크리스트**: [todo.md](todo.md) - 단계별 작업 목록
 
 ### 9. 참고 자료
 

@@ -90,11 +90,11 @@
 
 ## 4. 구현 상세
 
-구현 상세 내용은 [4_tag_bg_implementation.md](./4_tag_bg_implementation.md) 참조
+구현 상세 내용은 [4_tag_bg_implementation.md](4_tag_bg_implementation.md) 참조
 
 ## 5. 작업 체크리스트
 
-작업 단계별 체크리스트는 [4_tag_bg_todo.md](./4_tag_bg_todo.md) 참조
+작업 단계별 체크리스트는 [4_tag_bg_todo.md](4_tag_bg_todo.md) 참조
 
 ## 6. 승인 및 구현
 
