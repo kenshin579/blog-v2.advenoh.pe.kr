@@ -154,3 +154,124 @@ export function HomeContent({ articles }: HomeContentProps) {
 | 증가 개수 | 고정 +10개 | Viewport별 동적 (+6/+8/+12) |
 | Viewport 감지 | 없음 | Custom Hook으로 감지 |
 | 리사이즈 대응 | 없음 | 자동 재계산 |
+
+## 자동화 테스트 (MCP Playwright)
+
+구현 완료 후 MCP Playwright를 사용하여 브라우저에서 실제 동작을 검증합니다.
+
+### 테스트 시나리오
+
+#### 1. 모바일 Viewport 테스트 (< 768px)
+```bash
+# 브라우저 열기 (모바일 크기)
+mcp__playwright__playwright_navigate
+  url: "http://localhost:3000"
+  width: 375
+  height: 812
+  headless: false
+
+# 초기 article 개수 확인 (6개 예상)
+mcp__playwright__playwright_evaluate
+  script: "document.querySelectorAll('.grid > a').length"
+
+# 스크린샷 캡처
+mcp__playwright__playwright_screenshot
+  name: "mobile-initial-6-articles"
+  fullPage: true
+
+# "더 보기" 버튼 클릭
+mcp__playwright__playwright_click
+  selector: "button:has-text('더 보기')"
+
+# 증가 후 개수 확인 (12개 예상)
+mcp__playwright__playwright_evaluate
+  script: "document.querySelectorAll('.grid > a').length"
+```
+
+#### 2. 태블릿 Viewport 테스트 (768px ~ 1023px)
+```bash
+# 브라우저 열기 (태블릿 크기)
+mcp__playwright__playwright_navigate
+  url: "http://localhost:3000"
+  width: 768
+  height: 1024
+  headless: false
+
+# 초기 article 개수 확인 (8개 예상)
+mcp__playwright__playwright_evaluate
+  script: "document.querySelectorAll('.grid > a').length"
+
+# "더 보기" 버튼 클릭 후 확인 (16개 예상)
+```
+
+#### 3. 데스크톱 Viewport 테스트 (≥ 1024px)
+```bash
+# 브라우저 열기 (데스크톱 크기)
+mcp__playwright__playwright_navigate
+  url: "http://localhost:3000"
+  width: 1920
+  height: 1080
+  headless: false
+
+# 초기 article 개수 확인 (12개 예상)
+mcp__playwright__playwright_evaluate
+  script: "document.querySelectorAll('.grid > a').length"
+
+# "더 보기" 버튼 클릭 후 확인 (24개 예상)
+```
+
+#### 4. 리사이즈 동작 테스트
+```bash
+# 데스크톱에서 시작
+mcp__playwright__playwright_navigate
+  url: "http://localhost:3000"
+  width: 1920
+  height: 1080
+
+# 초기 개수 확인 (12개)
+mcp__playwright__playwright_evaluate
+  script: "document.querySelectorAll('.grid > a').length"
+
+# JavaScript로 viewport 크기 변경 (모바일로)
+mcp__playwright__playwright_evaluate
+  script: "window.resizeTo(375, 812)"
+
+# 약간 대기 (resize 이벤트 처리)
+# 변경 후 개수 확인 (6개로 리셋되어야 함)
+```
+
+#### 5. 카테고리 필터링 통합 테스트
+```bash
+# 브라우저 열기
+mcp__playwright__playwright_navigate
+  url: "http://localhost:3000"
+  width: 1920
+  height: 1080
+
+# 카테고리 선택 (예: "Spring")
+mcp__playwright__playwright_click
+  selector: "button:has-text('Spring')"
+
+# 필터링 후 개수 확인 (12개 또는 더 적을 수 있음)
+mcp__playwright__playwright_evaluate
+  script: "document.querySelectorAll('.grid > a').length"
+
+# "더 보기" 버튼 동작 확인
+```
+
+### 검증 포인트
+
+**자동화로 확인할 항목:**
+- [ ] 모바일 초기 로딩: 6개 정확히 표시
+- [ ] 태블릿 초기 로딩: 8개 정확히 표시
+- [ ] 데스크톱 초기 로딩: 12개 정확히 표시
+- [ ] "더 보기" 클릭: viewport별 증가량 정확
+- [ ] 리사이즈 시: 자동으로 개수 재계산
+- [ ] 카테고리 필터: pagination 리셋 동작
+- [ ] 콘솔 에러: 없음 확인
+
+**Playwright 장점:**
+- 실제 브라우저에서 실행 (Chrome/Firefox/Safari)
+- Viewport 크기 정확한 시뮬레이션
+- JavaScript 실행 및 DOM 검증
+- 스크린샷으로 시각적 확인 가능
