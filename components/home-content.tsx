@@ -6,9 +6,10 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { formatDate } from '@/lib/utils';
-import { DEFAULT_ARTICLE_IMAGE } from '@/lib/constants';
+import { DEFAULT_ARTICLE_IMAGE, INITIAL_DISPLAY_COUNT } from '@/lib/constants';
 import { FeatureSection, CategoryInfo } from './feature';
 import { SearchDialog } from './search-dialog';
+import { useViewportSize } from '@/hooks/use-viewport-size';
 
 // Category를 제외한 article title만 추출 (클라이언트 안전 버전)
 function getArticleTitleFromSlug(fullSlug: string): string {
@@ -33,9 +34,10 @@ interface HomeContentProps {
 }
 
 export function HomeContent({ articles }: HomeContentProps) {
+  const viewportSize = useViewportSize();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
-  const [displayCount, setDisplayCount] = useState(10);
+  const [displayCount, setDisplayCount] = useState(INITIAL_DISPLAY_COUNT[viewportSize]);
 
   // 카테고리 데이터 집계 (contents 폴더의 카테고리 사용)
   const categories = useMemo<CategoryInfo[]>(() => {
@@ -65,14 +67,19 @@ export function HomeContent({ articles }: HomeContentProps) {
     return filteredArticles.slice(0, displayCount);
   }, [filteredArticles, displayCount]);
 
+  // viewport 변경 시 pagination 리셋
+  useEffect(() => {
+    setDisplayCount(INITIAL_DISPLAY_COUNT[viewportSize]);
+  }, [viewportSize]);
+
   // 카테고리 변경 시 pagination 리셋
   useEffect(() => {
-    setDisplayCount(10);
-  }, [selectedCategory]);
+    setDisplayCount(INITIAL_DISPLAY_COUNT[viewportSize]);
+  }, [selectedCategory, viewportSize]);
 
   // "더 보기" 버튼 핸들러
   const handleLoadMore = () => {
-    setDisplayCount(prev => prev + 10);
+    setDisplayCount(prev => prev + INITIAL_DISPLAY_COUNT[viewportSize]);
   };
 
   return (
