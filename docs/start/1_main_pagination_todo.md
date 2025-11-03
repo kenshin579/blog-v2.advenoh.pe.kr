@@ -3,22 +3,22 @@
 ## Phase 1: Custom Hook 생성
 
 ### `hooks/use-viewport-size.ts`
-- [ ] 파일 생성: `hooks/use-viewport-size.ts`
-- [ ] `"use client"` 지시어 추가
-- [ ] `ViewportSize` 타입 정의 (`'mobile' | 'tablet' | 'desktop'`)
-- [ ] `useViewportSize` hook 구현
-  - [ ] `useState` 초기화 (`'desktop'` 기본값)
-  - [ ] `useEffect`에서 `handleResize` 함수 정의
-  - [ ] Breakpoint 로직 구현 (768px, 1024px)
-  - [ ] `window.addEventListener('resize')` 등록
-  - [ ] Cleanup 함수에서 이벤트 리스너 제거
-  - [ ] 초기 실행 `handleResize()` 호출
-- [ ] Hook export
+- [x] 파일 생성: `hooks/use-viewport-size.ts`
+- [x] `"use client"` 지시어 추가
+- [x] `ViewportSize` 타입 정의 (`'mobile' | 'tablet' | 'desktop'`)
+- [x] `useViewportSize` hook 구현
+  - [x] `useState` 초기화 (`'desktop'` 기본값)
+  - [x] `useEffect`에서 `handleResize` 함수 정의
+  - [x] Breakpoint 로직 구현 (768px, 1024px)
+  - [x] `window.addEventListener('resize')` 등록
+  - [x] Cleanup 함수에서 이벤트 리스너 제거
+  - [x] 초기 실행 `handleResize()` 호출
+- [x] Hook export
 
 ## Phase 2: 상수 정의
 
 ### `lib/constants.ts`
-- [ ] `INITIAL_DISPLAY_COUNT` 객체 추가
+- [x] `INITIAL_DISPLAY_COUNT` 객체 추가
   ```typescript
   export const INITIAL_DISPLAY_COUNT = {
     mobile: 6,
@@ -26,25 +26,25 @@
     desktop: 12
   } as const;
   ```
-- [ ] Export 확인
+- [x] Export 확인
 
 ## Phase 3: HomeContent 컴포넌트 수정
 
 ### `components/home-content.tsx`
-- [ ] Import 추가
-  - [ ] `useViewportSize` from `@/hooks/use-viewport-size`
-  - [ ] `INITIAL_DISPLAY_COUNT` from `@/lib/constants`
-- [ ] Hook 호출
-  - [ ] `const viewportSize = useViewportSize();` 추가
-- [ ] State 초기화 변경
-  - [ ] `displayCount` 초기값을 `INITIAL_DISPLAY_COUNT[viewportSize]`로 변경
-- [ ] Viewport 변경 감지 추가
-  - [ ] `useEffect` 추가 (의존성: `[viewportSize]`)
-  - [ ] Effect 내에서 `setDisplayCount(INITIAL_DISPLAY_COUNT[viewportSize])`
-- [ ] 카테고리 변경 Effect 수정
-  - [ ] 기존 Effect 의존성에 `viewportSize` 추가
-- [ ] `handleLoadMore` 함수 수정
-  - [ ] 증가량을 `INITIAL_DISPLAY_COUNT[viewportSize]`로 변경
+- [x] Import 추가
+  - [x] `useViewportSize` from `@/hooks/use-viewport-size`
+  - [x] `INITIAL_DISPLAY_COUNT` from `@/lib/constants`
+- [x] Hook 호출
+  - [x] `const viewportSize = useViewportSize();` 추가
+- [x] State 초기화 변경
+  - [x] `displayCount` 초기값을 `INITIAL_DISPLAY_COUNT[viewportSize]`로 변경
+- [x] Viewport 변경 감지 추가
+  - [x] `useEffect` 추가 (의존성: `[viewportSize]`)
+  - [x] Effect 내에서 `setDisplayCount(INITIAL_DISPLAY_COUNT[viewportSize])`
+- [x] 카테고리 변경 Effect 수정
+  - [x] 기존 Effect 의존성에 `viewportSize` 추가
+- [x] `handleLoadMore` 함수 수정
+  - [x] 증가량을 `INITIAL_DISPLAY_COUNT[viewportSize]`로 변경
 
 ## Phase 4: 검증
 
