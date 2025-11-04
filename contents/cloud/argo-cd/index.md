@@ -28,7 +28,7 @@ Argo CD는 GitOps 기반의 CD 도구이고 다음과 같은 여러 기능을 �
 - 타겟 환경(Git 저장소에 지정된 대로)에 application 자동 배포 지원
 - 쿠버네티스 manifest 파일을 생성해주는 여러 템플릿 포맷을 지원
     - `Kustomize, Helm charts, plain-YAML, Ksonnet, Jsonnet`
-- Pull deployment 방식를 지원
+- Pull deployment 방식을 지원
     - Argo CD는 k8s manifest의 변경을 pull하는 방식
 - 여러 클러스터를 관리하고 배포하는 기능
 - SSO 통합 인증 지원 (OIDC, OAuth2, LDAP, SAML 2.0, GitHub, GitLab, Microsoft, LinkedIn)
@@ -67,7 +67,7 @@ Argo CD는 **3가지 컨포넌트**로 이루어져 있다. Argo CD가 하는 �
 
 ## When?
 
-- CD (Continuous Delivery) 도구로써 쿠너베티스 환경에 application을 자동 배포하는데 적합한 도구이다
+- CD (Continuous Delivery) 도구로서 쿠버네티스 환경에 application을 자동 배포하는데 적합한 도구이다
 
 ## Why?
 
@@ -121,7 +121,7 @@ $ kubectl port-forward svc/argocd-server -n argocd 8080:443
 
 ![Argo CD Web](image-20220306144129359.png)
 
-admin 계정의 초기 암호는 자동으로 생성되어 `argocd-initial-admin-secret` 시크린에서 base64 값으로 저장되어 있다. `kubectl` 명령어 사용하여 간단하게 암호를 확인한다.
+admin 계정의 초기 암호는 자동으로 생성되어 `argocd-initial-admin-secret` 시크릿에서 base64 값으로 저장되어 있다. `kubectl` 명령어 사용하여 간단하게 암호를 확인한다.
 
 ```bash
 kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d; echo
@@ -167,9 +167,9 @@ $ argocd app create guestbook --port-forward-namespace argocd --repo https://git
 - path
     - Repository에서 path로 application directory를 지정한다
 - dest-server
-    - 대상이 되는 쿠버네티이스 클러스터 URL를 지정한다
+    - 대상이 되는 쿠버네티스 클러스터 URL를 지정한다
 - dest-namespace
-    - application을 생성할 대상 네이스페이스를 지정한다
+    - application을 생성할 대상 네임스페이스를 지정한다
 
 
 
