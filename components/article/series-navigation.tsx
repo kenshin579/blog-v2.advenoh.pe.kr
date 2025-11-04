@@ -50,11 +50,11 @@ export function SeriesNavigation({
                 </span>
                 {isCurrent ? (
                   <span
-                    className="font-bold flex-1 flex items-center justify-between"
+                    className="font-bold flex items-center gap-2"
                     aria-current="page"
                   >
                     <span>{article.title}</span>
-                    <span className="ml-2">←</span>
+                    <span>←</span>
                   </span>
                 ) : (
                   <Link
