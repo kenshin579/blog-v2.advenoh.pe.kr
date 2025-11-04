@@ -2,33 +2,33 @@
 
 ## Phase 1: 컴포넌트 생성
 
-- [ ] `components/article/series-navigation.tsx` 파일 생성
-- [ ] SeriesNavigationProps 인터페이스 정의
-- [ ] SeriesNavigation 컴포넌트 구현
-  - [ ] Card 컴포넌트로 컨테이너 구성
-  - [ ] 시리즈 이름 헤더 표시 (📚 아이콘 포함)
-  - [ ] 아티클 목록 ol 태그로 구현
-  - [ ] 인덱스 기반 번호 표시 (index + 1)
-  - [ ] 현재 아티클: 굵은 글씨 + ← 화살표
-  - [ ] 다른 아티클: Link 컴포넌트로 구현
-- [ ] 접근성: aria-current="page" 추가
+- [x] `components/article/series-navigation.tsx` 파일 생성
+- [x] SeriesNavigationProps 인터페이스 정의
+- [x] SeriesNavigation 컴포넌트 구현
+  - [x] Card 컴포넌트로 컨테이너 구성
+  - [x] 시리즈 이름 헤더 표시 (📚 아이콘 포함)
+  - [x] 아티클 목록 ol 태그로 구현
+  - [x] 인덱스 기반 번호 표시 (index + 1)
+  - [x] 현재 아티클: 굵은 글씨 + ← 화살표
+  - [x] 다른 아티클: Link 컴포넌트로 구현
+- [x] 접근성: aria-current="page" 추가
 
 ## Phase 2: Article Page 수정
 
-- [ ] `app/[slug]/page.tsx` 파일 열기
-- [ ] import 추가
-  - [ ] SeriesNavigation 컴포넌트 import
-  - [ ] getArticlesBySeries 함수 import
-  - [ ] ManifestArticle 타입 import (필요시)
-- [ ] 시리즈 데이터 로드 로직 추가 (line 84 이후)
-  - [ ] seriesArticles 변수 선언
-  - [ ] manifestArticle.series 확인
-  - [ ] getArticlesBySeries() 호출
-  - [ ] 날짜순 정렬 (오래된 글부터: a.date - b.date)
-- [ ] 컴포넌트 삽입 (line 117-119 사이)
-  - [ ] 조건부 렌더링 구현 (series 있고 articles.length > 1)
-  - [ ] SeriesNavigation 컴포넌트 배치
-  - [ ] props 전달 (seriesName, articles, currentSlug)
+- [x] `app/[slug]/page.tsx` 파일 열기
+- [x] import 추가
+  - [x] SeriesNavigation 컴포넌트 import
+  - [x] getArticlesBySeries 함수 import
+  - [x] ManifestArticle 타입 import (필요시)
+- [x] 시리즈 데이터 로드 로직 추가 (line 84 이후)
+  - [x] seriesArticles 변수 선언
+  - [x] manifestArticle.series 확인
+  - [x] getArticlesBySeries() 호출
+  - [x] 날짜순 정렬 (오래된 글부터: a.date - b.date)
+- [x] 컴포넌트 삽입 (line 117-119 사이)
+  - [x] 조건부 렌더링 구현 (series 있고 articles.length > 1)
+  - [x] SeriesNavigation 컴포넌트 배치
+  - [x] props 전달 (seriesName, articles, currentSlug)
 
 ## Phase 3: 테스트
 
@@ -65,6 +65,6 @@
 
 ## Phase 4: 마무리
 
-- [ ] 타입 에러 확인 (`npm run check`)
-- [ ] 코드 정리 및 주석 추가
-- [ ] Git commit
+- [x] 타입 에러 확인 (`npm run check`)
+- [x] 코드 정리 및 주석 추가
+- [x] Git commit

@@ -1,4 +1,4 @@
-import { getArticleByTitle, getAllArticles, getRelatedArticles, getArticleTitleFromSlug } from '@/lib/articles';
+import { getArticleByTitle, getAllArticles, getRelatedArticles, getArticleTitleFromSlug, getArticlesBySeries } from '@/lib/articles';
 import { extractTOC, calculateReadingTime } from '@/lib/markdown';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
@@ -6,6 +6,7 @@ import { Separator } from '@/components/ui/separator';
 import { formatDate } from '@/lib/utils';
 import { DEFAULT_ARTICLE_IMAGE } from '@/lib/constants';
 import { TableOfContents } from '@/components/article/table-of-contents';
+import { SeriesNavigation } from '@/components/article/series-navigation';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -83,6 +84,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   const manifestArticle = await findArticleByTitle(decodedSlug);
   const relatedArticles = manifestArticle ? await getRelatedArticles(manifestArticle.slug, 3) : [];
 
+  // 시리즈 데이터 가져오기 및 날짜순 정렬
+  let seriesArticles: Awaited<ReturnType<typeof getArticlesBySeries>> = [];
+  if (manifestArticle?.series) {
+    const articles = await getArticlesBySeries(manifestArticle.series);
+    seriesArticles = articles.sort((a, b) =>
+      new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
       {/* Article Header */}
@@ -115,6 +125,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           </div>
         )}
       </header>
+
+      {/* 시리즈 네비게이션 */}
+      {manifestArticle?.series && seriesArticles.length > 1 && (
+        <SeriesNavigation
+          seriesName={manifestArticle.series}
+          articles={seriesArticles}
+          currentSlug={manifestArticle.slug}
+        />
+      )}
 
       <Separator className="mb-8" />
 
