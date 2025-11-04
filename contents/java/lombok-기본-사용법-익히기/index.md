@@ -275,7 +275,7 @@ equals()와 hashCode()를 자동 생성해주는 어노테이션입니다.
 - 제외시킬 필드 지정
     - @EqualsAndHashCode.Exclude
 
-바닐라 자바 코드가 너무 길어서 간출렸습니다. 실제 코드는 컴파일된 클래스 파일으로 확인해보세요.
+바닐라 자바 코드가 너무 길어서 생략했습니다. 실제 코드는 컴파일된 클래스 파일으로 확인해보세요.
 
 ```java
 //Ex1 - Lombok
@@ -347,13 +347,13 @@ public class PersonExclude {
 }
 ```
 
-### @NoArgsConstructor, @AllArgsConstructor, @RequiredArgsContructor
+### @NoArgsConstructor, @AllArgsConstructor, @RequiredArgsConstructor
 
 생성자를 자동으로 생성해주는 어노테이션입니다. 필드 선언순서에 따라 생성자 인자가 정해집니다. 나중에 리펙토링을 하게 되면 인자 순서가 변경될 수 있다는 점을 기억하면 좋을 것 같습니다.
 
 - NoArgsConstructor : 인자 없는 생성자
 - AllArgsConstructor : 모든 필드를 인자로 받는 생성자
-- RequiredArgsContructor(staticName=“of") : static factory 메서드를 생성함
+- RequiredArgsConstructor(staticName=“of") : static factory 메서드를 생성함
 
 ```java
 //Ex1 - Lombok
@@ -568,7 +568,7 @@ public class Car {
             return this;
         }
 
-        public Car build() {]
+        public Car build() {
             return new Car(this.wheels, this.color);
         }
 

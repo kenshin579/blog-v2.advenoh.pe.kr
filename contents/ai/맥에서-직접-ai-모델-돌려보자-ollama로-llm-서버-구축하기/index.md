@@ -104,7 +104,7 @@ Ollama는 API를 제공하므로, curl을 사용하여 직접 호출할 수도 �
 
 ### 3.3 Python으로 호출해보기
 
-Python 에서는 langchain library를 제공하고 있어서 이걸 이요해서 `LLM`을 사용할 수 있다.
+Python 에서는 langchain library를 제공하고 있어서 이걸 이용해서 `LLM`을 사용할 수 있다.
 
 ```python
 from unittest import TestCase
@@ -132,7 +132,7 @@ class Test(TestCase):
 
 ## 4. Ollama 명령어 모음
 
-`ollama` 명령어는 다양한 명령어를 제공하고 자주 사용하는 명령어은 다음과 같다.
+`ollama` 명령어는 다양한 명령어를 제공하고 자주 사용하는 명령어는 다음과 같다.
 
 - 모델 리스트 확인
 
