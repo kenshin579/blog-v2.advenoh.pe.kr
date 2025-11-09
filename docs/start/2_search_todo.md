@@ -178,38 +178,38 @@ npm run dev
 - [ ] ⌘K 단축키 동작 확인
 - [ ] 헤더 검색 기능 유지 확인
 
-### 5.2 통합 테스트 - MCP Playwright
+### 5.2 통합 테스트 - MCP Playwright ✅
 
 **메인 페이지 Inline 검색 테스트**
-- [ ] 메인 페이지 접속
+- [x] 메인 페이지 접속
   ```
   mcp__playwright__playwright_navigate
   - url: http://localhost:3000
   ```
-- [ ] FeatureSection 내 검색란 확인
-- [ ] 검색어 입력 및 결과 표시 확인
-- [ ] 검색 결과 클릭 시 페이지 이동
+- [x] FeatureSection 내 검색란 확인
+- [x] 검색어 입력 및 결과 표시 확인
+- [x] 검색 결과 클릭 시 페이지 이동
 
 **헤더 팝업 검색 테스트**
-- [ ] 헤더 검색 버튼 클릭
+- [x] 헤더 검색 버튼 클릭 (⌘K 단축키 사용)
   ```
   mcp__playwright__playwright_click
   - selector: button[aria-label="검색"]
   ```
-- [ ] SearchDialog 모달 표시 확인
-- [ ] 모달 내 검색 기능 확인
-- [ ] ⌘K 단축키 테스트
+- [x] SearchDialog 모달 표시 확인
+- [x] 모달 내 검색 기능 확인
+- [x] ⌘K 단축키 테스트
   ```
   mcp__playwright__playwright_press_key
   - key: Meta+k
   ```
 
 **검색 방식 공존 확인**
-- [ ] 메인 페이지에서 Inline 검색 실행
-- [ ] 결과 클릭 후 글 페이지 이동
-- [ ] 헤더 검색 버튼으로 팝업 검색 실행
-- [ ] 두 검색 결과 일관성 비교
-- [ ] 전체 시나리오 스크린샷 캡처
+- [x] 메인 페이지에서 Inline 검색 실행
+- [x] 결과 클릭 후 글 페이지 이동
+- [x] 헤더 검색 버튼으로 팝업 검색 실행
+- [x] 두 검색 결과 일관성 비교
+- [x] 전체 시나리오 스크린샷 캡처
 
 ### 5.3 최종 점검
 - [ ] 모든 기능 정상 동작
