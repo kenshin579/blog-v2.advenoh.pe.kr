@@ -1,56 +1,56 @@
 # 검색 기능 개선 TODO
 
-## Phase 1: 기본 구현
+## Phase 1: 기본 구현 ✅
 
 ### 1.1 의존성 설치
-- [ ] `use-debounce` 패키지 설치
+- [x] `use-debounce` 패키지 설치
   ```bash
   npm install use-debounce
   ```
 
 ### 1.2 공통 검색 Hook 생성
-- [ ] `hooks/use-search.ts` 파일 생성
-  - [ ] MiniSearch 인스턴스 초기화
-  - [ ] 검색 인덱스 로딩 함수 (`loadSearchIndex`)
-  - [ ] 검색 실행 함수 (`search`)
-  - [ ] 검색 결과 초기화 함수 (`clearResults`)
-  - [ ] 로딩 상태 관리 (`isLoading`)
+- [x] `hooks/use-search.ts` 파일 생성
+  - [x] MiniSearch 인스턴스 초기화
+  - [x] 검색 인덱스 로딩 함수 (`loadSearchIndex`)
+  - [x] 검색 실행 함수 (`search`)
+  - [x] 검색 결과 초기화 함수 (`clearResults`)
+  - [x] 로딩 상태 관리 (`isLoading`)
 
 ### 1.3 Inline 검색 컴포넌트 생성
-- [ ] `components/feature/inline-search-bar.tsx` 파일 생성
-  - [ ] 검색 Input 필드 구현
-  - [ ] Debounce 적용 (300ms)
-  - [ ] Popover로 결과 Dropdown 구현
-  - [ ] 검색 결과 렌더링 (카테고리, 제목, excerpt, 태그)
-  - [ ] 결과 클릭 시 페이지 이동 핸들러
-  - [ ] 포커스 시 검색 인덱스 로딩
-  - [ ] ESC 키로 Dropdown 닫기
+- [x] `components/feature/inline-search-bar.tsx` 파일 생성
+  - [x] 검색 Input 필드 구현
+  - [x] Debounce 적용 (300ms)
+  - [x] Popover로 결과 Dropdown 구현
+  - [x] 검색 결과 렌더링 (카테고리, 제목, excerpt, 태그)
+  - [x] 결과 클릭 시 페이지 이동 핸들러
+  - [x] 포커스 시 검색 인덱스 로딩
+  - [x] ESC 키로 Dropdown 닫기
 
 ### 1.4 FeatureSection 수정
-- [ ] `components/feature/feature-section.tsx` 수정
-  - [ ] `SearchBar` import 제거
-  - [ ] `InlineSearchBar` import 추가
-  - [ ] `onSearchClick` prop 제거
-  - [ ] `InlineSearchBar` 컴포넌트로 교체
+- [x] `components/feature/feature-section.tsx` 수정
+  - [x] `SearchBar` import 제거
+  - [x] `InlineSearchBar` import 추가
+  - [x] `onSearchClick` prop 제거
+  - [x] `InlineSearchBar` 컴포넌트로 교체
 
-## Phase 2: 스타일 및 반응형
+## Phase 2: 스타일 및 반응형 ✅
 
 ### 2.1 반응형 디자인
-- [ ] 데스크톱 레이아웃 확인 (≥768px)
-  - [ ] 검색란 너비: `max-w-2xl`
-  - [ ] Dropdown 너비: 검색란과 동일
-  - [ ] 최대 높이: 500px
-- [ ] 모바일 레이아웃 확인 (<768px)
-  - [ ] 검색란 너비: `w-full`
-  - [ ] Dropdown 화면 너비 대응
-  - [ ] 최대 높이: 500px
+- [x] 데스크톱 레이아웃 확인 (≥768px)
+  - [x] 검색란 너비: `max-w-2xl`
+  - [x] Dropdown 너비: 검색란과 동일
+  - [x] 최대 높이: 500px
+- [x] 모바일 레이아웃 확인 (<768px)
+  - [x] 검색란 너비: `w-full`
+  - [x] Dropdown 화면 너비 대응
+  - [x] 최대 높이: 500px
 
 ### 2.2 다크모드 대응
-- [ ] 라이트모드 색상 확인
-- [ ] 다크모드 색상 확인
-- [ ] 호버 상태 색상 확인
+- [x] 라이트모드 색상 확인
+- [x] 다크모드 색상 확인
+- [x] 호버 상태 색상 확인
 
-## Phase 3: 테스트 (MCP Playwright 사용)
+## Phase 3: 테스트 (MCP Playwright 사용) ✅
 
 ### 3.1 기능 테스트 - MCP Playwright
 
@@ -60,36 +60,36 @@ npm run dev
 ```
 
 **MCP Playwright 도구 사용**
-- [ ] 브라우저 열기 및 메인 페이지 접속
+- [x] 브라우저 열기 및 메인 페이지 접속
   ```
   mcp__playwright__playwright_navigate
   - url: http://localhost:3000
   - headless: false
   ```
 
-- [ ] 검색란 포커스 테스트
-  - [ ] 검색란 클릭 (`mcp__playwright__playwright_click`)
-  - [ ] 포커스 상태 확인
-  - [ ] Dropdown 표시 확인
+- [x] 검색란 포커스 테스트
+  - [x] 검색란 클릭 (`mcp__playwright__playwright_click`)
+  - [x] 포커스 상태 확인
+  - [x] Dropdown 표시 확인
 
-- [ ] 검색 기능 테스트
-  - [ ] 검색어 입력 (`mcp__playwright__playwright_fill`)
+- [x] 검색 기능 테스트
+  - [x] 검색어 입력 (`mcp__playwright__playwright_fill`)
     - selector: `input[placeholder*="검색"]`
     - value: "React"
-  - [ ] Dropdown 표시 대기 (300ms + debounce)
-  - [ ] 검색 결과 렌더링 확인
-  - [ ] 스크린샷 캡처 (`mcp__playwright__playwright_screenshot`)
+  - [x] Dropdown 표시 대기 (300ms + debounce)
+  - [x] 검색 결과 렌더링 확인
+  - [x] 스크린샷 캡처 (`mcp__playwright__playwright_screenshot`)
 
-- [ ] 검색 결과 클릭 테스트
-  - [ ] 첫 번째 결과 클릭
-  - [ ] 페이지 이동 확인
-  - [ ] URL 변경 확인
+- [x] 검색 결과 클릭 테스트
+  - [x] 첫 번째 결과 클릭
+  - [x] 페이지 이동 확인
+  - [x] URL 변경 확인
 
-- [ ] Dropdown 닫기 테스트
-  - [ ] 검색란 포커스
-  - [ ] 외부 클릭 시 Dropdown 닫힘 확인
-  - [ ] ESC 키 (`mcp__playwright__playwright_press_key`) 입력
-  - [ ] Dropdown 닫힘 확인
+- [x] Dropdown 닫기 테스트
+  - [x] 검색란 포커스
+  - [x] 외부 클릭 시 Dropdown 닫힘 확인
+  - [x] ESC 키 (`mcp__playwright__playwright_press_key`) 입력
+  - [x] Dropdown 닫힘 확인
 
 ### 3.2 수동 테스트
 - [ ] 검색 기능
