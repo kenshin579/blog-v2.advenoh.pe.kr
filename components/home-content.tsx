@@ -88,7 +88,6 @@ export function HomeContent({ articles }: HomeContentProps) {
         categories={categories}
         selectedCategory={selectedCategory}
         onCategorySelect={setSelectedCategory}
-        onSearchClick={() => setIsSearchOpen(true)}
       />
 
       <div className="container mx-auto px-4 py-8">
