@@ -103,32 +103,32 @@ npm run dev
   - [ ] ESC 키로 Dropdown 닫기
   - [ ] 검색란 포커스 상태 관리
 
-### 3.3 반응형 테스트 - MCP Playwright
+### 3.3 반응형 테스트 - MCP Playwright ✅
 
 **데스크톱 테스트**
-- [ ] 뷰포트 설정: 1920x1080
+- [x] 뷰포트 설정: 1920x1080
   ```
   mcp__playwright__playwright_navigate
   - url: http://localhost:3000
   - width: 1920
   - height: 1080
   ```
-  - [ ] 검색란 너비 확인 (max-w-2xl)
-  - [ ] Dropdown 너비 확인
-  - [ ] 스크린샷 캡처
+  - [x] 검색란 너비 확인 (max-w-2xl)
+  - [x] Dropdown 너비 확인
+  - [x] 스크린샷 캡처
 
 **모바일 테스트**
-- [ ] 뷰포트 설정: 375x667 (iPhone SE)
+- [x] 뷰포트 설정: 375x667 (iPhone SE)
   ```
   mcp__playwright__playwright_navigate
   - url: http://localhost:3000
   - width: 375
   - height: 667
   ```
-  - [ ] 검색란 너비 확인 (w-full)
-  - [ ] Dropdown 화면 대응 확인
-  - [ ] 터치 인터랙션 테스트
-  - [ ] 스크린샷 캡처
+  - [x] 검색란 너비 확인 (w-full)
+  - [x] Dropdown 화면 대응 확인
+  - [x] 터치 인터랙션 테스트
+  - [x] 스크린샷 캡처
 
 ### 3.4 브라우저 호환성 - MCP Playwright
 
