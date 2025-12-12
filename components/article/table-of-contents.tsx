@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { cn } from '@/lib/utils';
 import { TOCItem } from '@/lib/markdown';
 
@@ -10,10 +10,34 @@ interface TableOfContentsProps {
 
 export function TableOfContents({ items }: TableOfContentsProps) {
   const [activeId, setActiveId] = useState<string | null>(null);
+  const isClickScrollingRef = useRef(false);
+  const clickTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  // 클릭 핸들러: 즉시 activeId 설정 및 Observer 일시 비활성화
+  const handleClick = useCallback((id: string) => {
+    // 이전 타임아웃 정리
+    if (clickTimeoutRef.current) {
+      clearTimeout(clickTimeoutRef.current);
+    }
+
+    // 즉시 activeId 설정
+    setActiveId(id);
+    isClickScrollingRef.current = true;
+
+    // 스크롤 완료 후 Observer 다시 활성화 (500ms 후)
+    clickTimeoutRef.current = setTimeout(() => {
+      isClickScrollingRef.current = false;
+    }, 500);
+  }, []);
 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
+        // 클릭으로 인한 스크롤 중에는 Observer 무시
+        if (isClickScrollingRef.current) {
+          return;
+        }
+
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             setActiveId(entry.target.id);
@@ -21,8 +45,9 @@ export function TableOfContents({ items }: TableOfContentsProps) {
         });
       },
       {
-        rootMargin: '-20% 0px -35% 0px',
-        threshold: 1.0,
+        // scroll-margin-top(80px)에 맞춰 rootMargin 조정
+        rootMargin: '-80px 0px -35% 0px',
+        threshold: 0,
       }
     );
 
@@ -37,6 +62,9 @@ export function TableOfContents({ items }: TableOfContentsProps) {
     // cleanup
     return () => {
       observer.disconnect();
+      if (clickTimeoutRef.current) {
+        clearTimeout(clickTimeoutRef.current);
+      }
     };
   }, [items]);
 
@@ -55,6 +83,7 @@ export function TableOfContents({ items }: TableOfContentsProps) {
           >
             <a
               href={`#${item.id}`}
+              onClick={() => handleClick(item.id)}
               className={cn(
                 "hover:text-primary transition-colors block py-1",
                 activeId === item.id && "text-primary font-semibold border-l-2 border-primary pl-3"
