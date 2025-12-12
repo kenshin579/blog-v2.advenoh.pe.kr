@@ -26,7 +26,7 @@ export function TableOfContents({ items }: TableOfContentsProps) {
       }
     );
 
-    // 모든 h2, h3 요소 관찰
+    // 모든 h1, h2, h3 요소 관찰
     items.forEach((item) => {
       const element = document.getElementById(item.id);
       if (element) {
@@ -48,8 +48,9 @@ export function TableOfContents({ items }: TableOfContentsProps) {
           <li
             key={item.id}
             className={cn(
-              item.level === 2 && 'font-medium',
-              item.level === 3 && 'ml-4 text-muted-foreground'
+              item.level === 1 && 'font-semibold text-base',
+              item.level === 2 && 'ml-2 font-medium',
+              item.level === 3 && 'ml-6 text-muted-foreground'
             )}
           >
             <a
