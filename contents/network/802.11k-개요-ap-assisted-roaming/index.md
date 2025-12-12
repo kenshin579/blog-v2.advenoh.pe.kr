@@ -4,10 +4,10 @@ description: "802.11k 표준의 무선 자원 측정(RRM) 기능으로 인접 AP
 date: 2025-12-11
 update: 2025-12-11
 tags:
-  - 802.11
-  - 802.11k
-  - 802.11v
-  - 802.11r
+  - "802.11"
+  - "802.11k"
+  - "802.11v"
+  - "802.11r"
   - Wi-Fi Roaming
   - Wi-Fi 로밍
   - Neighbor Report
