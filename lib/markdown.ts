@@ -86,7 +86,7 @@ function extractFirstImage(content: string): string | undefined {
  * Table of Contents 추출
  */
 export function extractTOC(html: string): TOCItem[] {
-  const headingRegex = /<h([2-3])\s+id="([^"]+)">(?:<a[^>]*>)?([^<]+)(?:<\/a>)?<\/h[2-3]>/g;
+  const headingRegex = /<h([1-3])\s+id="([^"]+)">(?:<a[^>]*>)?([^<]+)(?:<\/a>)?<\/h[1-3]>/g;
   const toc: TOCItem[] = [];
   let match;
 
