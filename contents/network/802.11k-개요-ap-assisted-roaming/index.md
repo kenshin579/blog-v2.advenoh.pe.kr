@@ -1,6 +1,6 @@
 ---
 title: "802.11k 개요 - AP Assisted Roaming "
-description: "802.11k 개요 - AP Assisted Roaming "
+description: "802.11k 표준의 무선 자원 측정(RRM) 기능으로 인접 AP 정보를 제공하여 빠르고 효율적인 Wi-Fi 로밍을 구현하는 방법을 설명합니다"
 date: 2025-12-11
 update: 2025-12-11
 tags:
@@ -8,6 +8,17 @@ tags:
   - 802.11k
   - 802.11v
   - 802.11r
+  - Wi-Fi Roaming
+  - Wi-Fi 로밍
+  - Neighbor Report
+  - Neighbor List
+  - Cisco
+  - WLC
+  - RRM
+  - Handover
+  - RSSI
+  - WLAN
+  - 무선 네트워크
 ---
 
 # 1. 개요
@@ -50,8 +61,6 @@ tags:
 > 802.11ac 표준을 사용하고 있음
 >
 > 맥에서는 `Opt` 누른 상태에서 Wifi 클릭하면 상세한 정보를 볼 수 있다
-
-
 
 ![Wi-Fi 세대](image-20251212001948988.png)
 
@@ -238,7 +247,7 @@ WLC(Wireless LAN Controller) 설정에서 802.11k 기능을 활성화하면, AP�
 - 스펙 문서에서 확인하기 - Intel AX200은 지원을 하고 있음
   - 참고: [Intel Wi-Fi 6 AX200 Module](https://www.mouser.com/pdfDocs/wi-fi-6-ax200-module-brief.pdf?srsltid=AfmBOoqxpUZORCd39TcN0BdUdTdOjvJhT4Om7rkgxgqLIFDLAkJGvt1b)
 
-![IEEE WLAND](image-20251212002230930.png)
+![IEEE WLAN](image-20251212002230930.png)
 
 - 명령어로 확인하는 방법
 
