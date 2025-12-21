@@ -17,3 +17,8 @@ out/
 client.old/
 server.old/
 tsconfig*
+
+# Python
+__pycache__/
+*.pyc
+*.egg-info/

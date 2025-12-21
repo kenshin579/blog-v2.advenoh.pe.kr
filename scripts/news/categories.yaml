@@ -1,0 +1,95 @@
+# config/categories.yaml
+# 카테고리 및 키워드 정의
+# 각 글은 첫 번째 매칭된 카테고리에 속함
+
+categories:
+  - name: Cloud & Infra
+    emoji: "☁️"
+    keywords:
+      # Cloud
+      - aws
+      - gcp
+      - azure
+      - cloud
+      - serverless
+      - lambda
+      - ec2
+      - s3
+      - 클라우드
+      - 서버리스
+      # Kubernetes
+      - kubernetes
+      - k8s
+      - helm
+      - kubectl
+      - container
+      - docker
+      - pod
+      - 쿠버네티스
+      - 컨테이너
+      - 도커
+      # DevOps
+      - ci/cd
+      - jenkins
+      - github actions
+      - terraform
+      - ansible
+      - devops
+
+  - name: AI / ML
+    emoji: "🤖"
+    keywords:
+      - ai
+      - ml
+      - machine learning
+      - deep learning
+      - llm
+      - gpt
+      - openai
+      - tensorflow
+      - pytorch
+      - 인공지능
+      - 머신러닝
+      - 딥러닝
+      - claude
+      - gemini
+
+  - name: Development
+    emoji: "💻"
+    keywords:
+      # Backend
+      - api
+      - rest
+      - graphql
+      - microservice
+      - spring
+      - django
+      - fastapi
+      # Frontend
+      - react
+      - vue
+      - angular
+      - javascript
+      - typescript
+      - css
+      # Database
+      - database
+      - sql
+      - nosql
+      - mongodb
+      - postgresql
+      - redis
+
+  - name: Security
+    emoji: "🔒"
+    keywords:
+      - security
+      - vulnerability
+      - cve
+      - authentication
+      - oauth
+      - 보안
+
+  - name: Misc
+    emoji: "📌"
+    keywords: []  # 기본 카테고리 (매칭 안 된 글)

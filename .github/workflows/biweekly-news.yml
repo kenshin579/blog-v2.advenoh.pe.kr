@@ -1,0 +1,39 @@
+name: IT Biweekly News Generator
+
+on:
+  schedule:
+    # 매월 1일, 15일 09:00 KST (00:00 UTC)
+    - cron: '0 0 1,15 * *'
+  workflow_dispatch: # 수동 실행
+
+jobs:
+  generate-news:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -e ./scripts/news
+
+      - name: Generate news article
+        env:
+          BLOG_IT_NEWS_SUPABASE_URL: ${{ secrets.BLOG_IT_NEWS_SUPABASE_URL }}
+          BLOG_IT_NEWS_SUPABASE_API_KEY: ${{ secrets.BLOG_IT_NEWS_SUPABASE_API_KEY }}
+        run: python scripts/news/main.py
+
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v6
+        with:
+          title: "[News] IT Biweekly News - ${{ env.DATE_RANGE }}"
+          body: |
+            자동 생성된 IT Biweekly News 아티클입니다.
+
+            리뷰 후 merge 해주세요.
+          branch: news/biweekly-${{ env.DATE }}
+          labels: news, auto-generated
+          commit-message: "[News] Add IT Biweekly News ${{ env.DATE_RANGE }}"
