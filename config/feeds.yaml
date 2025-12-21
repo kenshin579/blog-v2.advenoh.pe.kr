@@ -1,0 +1,17 @@
+# config/feeds.yaml
+# RSS/Atom Feed URL 목록
+# 소스 이름은 RSS Feed의 title 필드에서 자동 추출
+
+feeds:
+  # Cloud Providers
+  - https://aws.amazon.com/blogs/aws/feed/
+  - https://cloud.google.com/blog/rss
+
+  # Kubernetes & Container
+  - https://kubernetes.io/feed.xml
+
+  # AI & ML
+  - https://openai.com/blog/rss/
+
+  # Tech Companies
+  - https://netflixtechblog.com/feed
