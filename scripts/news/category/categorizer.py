@@ -19,8 +19,9 @@ def load_categories(config_path: str | None = None) -> list[dict]:
         카테고리 목록
     """
     if config_path is None:
-        # category/ -> news/ -> scripts/ -> project_root/
-        config_path = Path(__file__).parent.parent.parent.parent / "config" / "categories.yaml"
+        # scripts/news/categories.yaml
+        # category/ -> news/
+        config_path = Path(__file__).parent.parent / "categories.yaml"
 
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)

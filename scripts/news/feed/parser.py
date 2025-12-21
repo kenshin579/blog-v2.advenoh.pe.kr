@@ -21,9 +21,9 @@ def load_feeds(config_path: str | None = None) -> list[str]:
         RSS Feed URL 목록
     """
     if config_path is None:
-        # 프로젝트 루트의 config/feeds.yaml
-        # feed/ -> news/ -> scripts/ -> project_root/
-        config_path = Path(__file__).parent.parent.parent.parent / "config" / "feeds.yaml"
+        # scripts/news/feeds.yaml
+        # feed/ -> news/
+        config_path = Path(__file__).parent.parent / "feeds.yaml"
 
     with open(config_path, "r", encoding="utf-8") as f:
         config = yaml.safe_load(f)
