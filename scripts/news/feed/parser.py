@@ -51,6 +51,9 @@ def fetch_feed(feed_url: str) -> str:
         timeout=30,
     )
     response.raise_for_status()
+    # UTF-8 인코딩 명시 (일부 서버가 Content-Type 헤더에 인코딩을 지정하지 않으면
+    # requests가 ISO-8859-1로 기본 가정하여 한글이 깨지는 문제 방지)
+    response.encoding = "utf-8"
     return response.text
 
 
