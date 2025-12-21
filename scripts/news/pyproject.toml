@@ -17,7 +17,8 @@ dev = [
 ]
 
 [tool.setuptools]
-py-modules = ["db_client", "feed_parser", "categorizer", "markdown_generator", "generate_news"]
+packages = ["modules"]
+py-modules = ["main"]
 
 [build-system]
 requires = ["setuptools>=61.0"]

@@ -1,17 +1,22 @@
-"""IT Biweekly News 생성 메인 스크립트"""
+"""IT Biweekly News 생성 메인 스크립트
+
+Usage:
+    python scripts/news/main.py
+"""
 
 import os
-import sys
+from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 
-# 프로젝트 루트를 PYTHONPATH에 추가
-sys.path.insert(0, str(Path(__file__).parent))
-
-from categorizer import categorize_articles, merge_small_categories
-from db_client import DBClient
-from feed_parser import collect_all_feeds
-from markdown_generator import generate_markdown, get_output_path
+from modules import (
+    DBClient,
+    categorize_articles,
+    collect_all_feeds,
+    generate_markdown,
+    get_output_path,
+    merge_small_categories,
+)
 
 
 def main():
@@ -48,7 +53,6 @@ def main():
     # 3. 카테고리 분류
     categorized = categorize_articles(new_articles)
     print("Categorized articles:")
-    from collections import Counter
     category_counts = Counter(a["category"] for a in categorized)
     for cat, count in category_counts.most_common():
         print(f"  - {cat}: {count}")

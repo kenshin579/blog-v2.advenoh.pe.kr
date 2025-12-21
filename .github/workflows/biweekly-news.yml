@@ -24,7 +24,7 @@ jobs:
         env:
           BLOG_IT_NEWS_SUPABASE_URL: ${{ secrets.BLOG_IT_NEWS_SUPABASE_URL }}
           BLOG_IT_NEWS_SUPABASE_API_KEY: ${{ secrets.BLOG_IT_NEWS_SUPABASE_API_KEY }}
-        run: python scripts/news/generate_news.py
+        run: python scripts/news/main.py
 
       - name: Create Pull Request
         uses: peter-evans/create-pull-request@v6
