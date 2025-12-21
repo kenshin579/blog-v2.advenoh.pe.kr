@@ -4,7 +4,16 @@
 
 feeds:
   # 개발
-  - https://yozm.wishket.com/magazine/sitemap-news.xml
+  - https://yozm.wishket.com/magazine
+  - https://medium.com/daangn
+  - https://jbee.io/
+  - https://techblog.lycorp.co.jp/ko
+  - https://medium.com/musinsa-tech
+  - https://tech.kakao.com
 
   # IT
-  - https://jeho.page/feed.xml
+  - https://jeho.page
+  - https://channy.creation.net/blog/category/blog
+  - https://news.hada.io
+  - https://lemontia.tistory.com
+  - https://techneedle.com
