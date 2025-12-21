@@ -3,15 +3,8 @@
 # 소스 이름은 RSS Feed의 title 필드에서 자동 추출
 
 feeds:
-  # Cloud Providers
-  - https://aws.amazon.com/blogs/aws/feed/
-  - https://cloud.google.com/blog/rss
+  # 개발
+  - https://yozm.wishket.com/magazine/sitemap-news.xml
 
-  # Kubernetes & Container
-  - https://kubernetes.io/feed.xml
-
-  # AI & ML
-  - https://openai.com/blog/rss/
-
-  # Tech Companies
-  - https://netflixtechblog.com/feed
+  # IT
+  - https://jeho.page/feed.xml
