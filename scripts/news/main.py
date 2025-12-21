@@ -9,14 +9,10 @@ from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from modules import (
-    DBClient,
-    categorize_articles,
-    collect_all_feeds,
-    generate_markdown,
-    get_output_path,
-    merge_small_categories,
-)
+from category import categorize_articles, merge_small_categories
+from db import DBClient
+from feed import collect_all_feeds
+from markdown import generate_markdown, get_output_path
 
 
 def main():

@@ -19,7 +19,7 @@ def load_categories(config_path: str | None = None) -> list[dict]:
         카테고리 목록
     """
     if config_path is None:
-        # modules/ -> news/ -> scripts/ -> project_root/
+        # category/ -> news/ -> scripts/ -> project_root/
         config_path = Path(__file__).parent.parent.parent.parent / "config" / "categories.yaml"
 
     with open(config_path, "r", encoding="utf-8") as f:

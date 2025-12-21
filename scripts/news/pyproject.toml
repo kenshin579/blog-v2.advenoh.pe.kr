@@ -17,7 +17,7 @@ dev = [
 ]
 
 [tool.setuptools]
-packages = ["modules"]
+packages = ["feed", "category", "markdown", "db"]
 py-modules = ["main"]
 
 [build-system]
