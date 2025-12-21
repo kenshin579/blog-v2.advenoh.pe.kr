@@ -86,14 +86,17 @@ series: "{series_name}"
     return frontmatter + body
 
 
-def get_output_path(end_date: datetime) -> str:
+def get_output_path(end_date: datetime, base_dir: str = "") -> str:
     """출력 파일 경로 생성
 
     Args:
         end_date: 수집 종료 날짜
+        base_dir: 프로젝트 루트 경로 (선택)
 
     Returns:
         출력 파일 경로
     """
     date_str = end_date.strftime("%Y-%m-%d")
-    return f"contents/news/biweekly-news-{date_str}/index.md"
+    if base_dir:
+        return f"{base_dir}/contents/biweekly/news-{date_str}/index.md"
+    return f"contents/biweekly/news-{date_str}/index.md"
