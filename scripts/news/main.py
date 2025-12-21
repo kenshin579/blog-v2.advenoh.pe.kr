@@ -9,7 +9,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from category import categorize_articles, merge_small_categories
+from category import categorize_articles
 from db import DBClient
 from feed import collect_all_feeds
 from markdown import generate_markdown, get_output_path
@@ -53,14 +53,13 @@ def main():
     for cat, count in category_counts.most_common():
         print(f"  - {cat}: {count}")
 
-    # 4. 작은 카테고리 통합 (5개 미만 → Misc)
-    categorized = merge_small_categories(categorized)
-
-    # 5. Markdown 생성
+    # 4. Markdown 생성
     markdown_content = generate_markdown(categorized, start_date, end_date)
 
-    # 6. 파일 저장
-    output_path = get_output_path(end_date)
+    # 5. 파일 저장
+    script_dir = Path(__file__).parent
+    project_root = script_dir.parent.parent
+    output_path = get_output_path(end_date, str(project_root))
     output_dir = Path(output_path).parent
     output_dir.mkdir(parents=True, exist_ok=True)
 
@@ -69,7 +68,7 @@ def main():
 
     print(f"Generated: {output_path}")
 
-    # 7. DB에 수집 결과 저장
+    # 6. DB에 수집 결과 저장
     if db:
         try:
             issue_date = end_date.strftime("%Y-%m-%d")
@@ -78,7 +77,7 @@ def main():
         except Exception as e:
             print(f"Warning: Could not save to DB: {e}")
 
-    # 8. GitHub Action 환경변수 설정
+    # 7. GitHub Action 환경변수 설정
     github_env = os.environ.get("GITHUB_ENV")
     if github_env:
         with open(github_env, "a") as f:
