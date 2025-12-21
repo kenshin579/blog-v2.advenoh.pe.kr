@@ -45,13 +45,25 @@ flowchart LR
 #### 설정 파일 예시 (YAML)
 ```yaml
 # config/feeds.yaml
+# 메인 도메인 URL 또는 직접 RSS URL 모두 지원
 feeds:
-  - https://aws.amazon.com/blogs/aws/feed/
-  - https://cloud.google.com/blog/rss
+  # 메인 도메인 (자동으로 RSS feed 탐지)
+  - https://aws.amazon.com/blogs/aws/
+  - https://yozm.wishket.com
+
+  # 직접 RSS URL (기존 방식도 지원)
   - https://kubernetes.io/feed.xml
   - https://openai.com/blog/rss/
-  - https://netflixtechblog.com/feed
 ```
+
+#### RSS Feed 자동 탐지
+> **기능**: 메인 도메인 URL만 입력해도 RSS feed를 자동으로 찾아줍니다.
+
+**탐지 순서:**
+1. HTML `<link rel="alternate">` 태그에서 RSS/Atom URL 추출
+2. 일반적인 feed 경로 시도 (`/feed`, `/rss.xml`, `/atom.xml` 등)
+3. robots.txt에서 sitemap URL 확인
+4. sitemap.xml에서 글 목록 추출 (RSS 없는 경우 fallback)
 
 > **Note**: 소스 이름은 RSS Feed의 `title` 필드에서 자동으로 추출
 

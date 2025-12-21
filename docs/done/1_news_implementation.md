@@ -6,15 +6,26 @@
 /scripts
   /news
     pyproject.toml        # Python 의존성 및 프로젝트 설정
-    generate_news.py      # 메인 스크립트
-    feed_parser.py        # RSS 파싱 모듈
-    categorizer.py        # 카테고리 분류 모듈
-    markdown_generator.py # Markdown 생성 모듈
-    db_client.py          # Supabase DB 클라이언트
+    main.py               # 메인 스크립트
+    feeds.yaml            # RSS Feed 목록
+    categories.yaml       # 카테고리 및 키워드 정의
 
-/config
-  feeds.yaml              # RSS Feed 목록
-  categories.yaml         # 카테고리 및 키워드 정의
+    /feed
+      __init__.py
+      parser.py           # RSS 파싱 모듈
+      discovery.py        # RSS 자동 탐지 모듈 (NEW)
+
+    /category
+      __init__.py
+      categorizer.py      # 카테고리 분류 모듈
+
+    /markdown
+      __init__.py
+      generator.py        # Markdown 생성 모듈
+
+    /db
+      __init__.py
+      client.py           # Supabase DB 클라이언트
 
 /.github
   /workflows
@@ -28,15 +39,19 @@
 ### 2.1 feeds.yaml
 
 ```yaml
-# config/feeds.yaml
+# scripts/news/feeds.yaml
+# 메인 도메인 URL 또는 직접 RSS URL 모두 지원
 feeds:
-  - https://aws.amazon.com/blogs/aws/feed/
-  - https://cloud.google.com/blog/rss
+  # 메인 도메인 (자동으로 RSS feed 탐지)
+  - https://aws.amazon.com/blogs/aws/
+  - https://yozm.wishket.com
+
+  # 직접 RSS URL (기존 방식도 지원)
   - https://kubernetes.io/feed.xml
-  - https://openai.com/blog/rss/
-  - https://netflixtechblog.com/feed
+  - https://jeho.page/feed.xml
 ```
 
+> **RSS 자동 탐지**: 메인 도메인만 입력해도 RSS feed를 자동으로 찾아줍니다.
 > 소스 이름은 RSS Feed의 `title` 필드에서 자동 추출
 
 ### 2.2 categories.yaml
@@ -150,6 +165,10 @@ dependencies = [
     "feedparser>=6.0.0",
     "pyyaml>=6.0",
     "supabase>=2.0.0",
+    "requests>=2.31.0",
+    "beautifulsoup4>=4.12.0",   # RSS 자동 탐지용
+    "lxml>=5.0.0",               # XML 파싱용
+    "python-dateutil>=2.8.0",    # 날짜 파싱용
 ]
 
 [project.optional-dependencies]
@@ -195,73 +214,128 @@ class DBClient:
             }).execute()
 ```
 
-### 3.3 feed_parser.py
+### 3.3 discovery.py (NEW - RSS 자동 탐지)
+
+```python
+"""RSS Feed 자동 탐지 모듈
+
+메인 도메인 URL에서 RSS/Atom feed를 자동으로 찾아주는 기능 제공
+"""
+from urllib.parse import urljoin, urlparse
+import requests
+from bs4 import BeautifulSoup
+
+COMMON_FEED_PATHS = [
+    "/feed", "/feed.xml", "/rss", "/rss.xml",
+    "/atom.xml", "/index.xml", "/feed/atom", "/feed/rss",
+]
+
+class DiscoveryResult:
+    """Feed 탐지 결과"""
+    def __init__(self, url: str, feed_type: str, discovered_url: str | None = None):
+        self.url = url
+        self.feed_type = feed_type  # 'rss', 'sitemap', 'none'
+        self.discovered_url = discovered_url
+
+
+def discover_feed(url: str) -> DiscoveryResult:
+    """메인 URL에서 RSS feed URL 자동 탐지
+
+    탐지 순서:
+    1. URL이 이미 feed인지 확인
+    2. HTML에서 link 태그로 RSS URL 추출
+    3. 일반적인 feed 경로 시도
+    4. sitemap fallback
+    """
+    # 1. 이미 feed URL인지 확인
+    if is_feed_url(url):
+        return DiscoveryResult(url, "rss", url)
+
+    # 2. HTML에서 link 태그 확인
+    feed_url = find_feed_from_html(url)
+    if feed_url and is_feed_url(feed_url):
+        return DiscoveryResult(url, "rss", feed_url)
+
+    # 3. 일반적인 feed 경로 시도
+    feed_url = try_common_feed_paths(url)
+    if feed_url:
+        return DiscoveryResult(url, "rss", feed_url)
+
+    # 4. sitemap fallback
+    sitemap_url = find_sitemap(url)
+    if sitemap_url:
+        return DiscoveryResult(url, "sitemap", sitemap_url)
+
+    return DiscoveryResult(url, "none", None)
+
+
+def is_feed_url(url: str) -> bool:
+    """URL이 유효한 RSS/Atom feed인지 확인"""
+    # ... content-type 및 XML 내용으로 확인
+
+
+def find_feed_from_html(url: str) -> str | None:
+    """HTML에서 <link rel="alternate"> 태그로 RSS URL 추출"""
+    # ... BeautifulSoup으로 link 태그 파싱
+
+
+def try_common_feed_paths(url: str) -> str | None:
+    """일반적인 feed 경로들 시도"""
+    # ... COMMON_FEED_PATHS 순회
+
+
+def find_sitemap(url: str) -> str | None:
+    """Sitemap URL 찾기 (robots.txt 또는 일반 경로)"""
+    # ... robots.txt 파싱 및 /sitemap.xml 시도
+```
+
+### 3.4 feed_parser.py
 
 ```python
 """RSS Feed 파싱 모듈"""
 import feedparser
 import yaml
 from datetime import datetime, timedelta
-
-
-def load_feeds(config_path: str = "config/feeds.yaml") -> list[str]:
-    """Feed URL 목록 로드"""
-    with open(config_path, "r", encoding="utf-8") as f:
-        config = yaml.safe_load(f)
-    return config.get("feeds", [])
+from .discovery import discover_feed
 
 
 def parse_feed(feed_url: str, days: int = 14) -> list[dict]:
     """RSS Feed 파싱 및 최근 글 필터링"""
-    feed = feedparser.parse(feed_url)
-    cutoff_date = datetime.now() - timedelta(days=days)
-    articles = []
-
-    # Feed title에서 소스 이름 추출
-    source_name = feed.feed.get("title", feed_url)
-
-    for entry in feed.entries:
-        # 발행일 파싱
-        published = entry.get("published_parsed") or entry.get("updated_parsed")
-        if published:
-            pub_date = datetime(*published[:6])
-            if pub_date < cutoff_date:
-                continue
-        else:
-            pub_date = None
-
-        # SEO 태그 및 카테고리 추출
-        tags = [tag.get("term", "") for tag in entry.get("tags", [])]
-        rss_categories = [cat.get("term", "") for cat in entry.get("categories", [])]
-
-        articles.append({
-            "url": entry.get("link", ""),
-            "title": entry.get("title", ""),
-            "source_name": source_name,
-            "published_at": pub_date.isoformat() if pub_date else None,
-            "tags": tags,                    # RSS feed의 tags 필드 (SEO 태그)
-            "rss_categories": rss_categories,  # RSS feed의 categories 필드
-        })
-
-    return articles
+    # ... 기존 로직 유지
 
 
-def collect_all_feeds(config_path: str = "config/feeds.yaml") -> list[dict]:
-    """모든 Feed에서 글 수집"""
+def parse_sitemap(sitemap_url: str, days: int = 14) -> list[dict]:
+    """Sitemap에서 글 목록 추출 (RSS가 없는 경우 fallback)"""
+    # BeautifulSoup으로 sitemap.xml 파싱
+    # lastmod 날짜로 필터링
+    # URL에서 제목 추출
+
+
+def collect_all_feeds(config_path: str | None = None) -> list[dict]:
+    """모든 Feed에서 글 수집 (자동 탐지 포함)"""
     feed_urls = load_feeds(config_path)
     all_articles = []
 
     for url in feed_urls:
-        try:
-            articles = parse_feed(url)
-            all_articles.extend(articles)
-        except Exception as e:
-            print(f"Error parsing {url}: {e}")
+        # Feed URL 자동 탐지
+        result = discover_feed(url)
+
+        if result.feed_type == "rss":
+            articles = parse_feed(result.discovered_url)
+            print(f"[RSS] Collected {len(articles)} from {url}")
+        elif result.feed_type == "sitemap":
+            articles = parse_sitemap(result.discovered_url)
+            print(f"[Sitemap] Collected {len(articles)} from {url}")
+        else:
+            print(f"[Warning] No feed found for {url}")
+            continue
+
+        all_articles.extend(articles)
 
     return all_articles
 ```
 
-### 3.4 categorizer.py
+### 3.5 categorizer.py
 
 ```python
 """카테고리 분류 모듈"""
@@ -347,7 +421,7 @@ def merge_small_categories(articles: list[dict]) -> list[dict]:
     return articles
 ```
 
-### 3.5 markdown_generator.py
+### 3.6 markdown_generator.py
 
 ```python
 """Markdown 생성 모듈"""
@@ -424,7 +498,7 @@ def get_output_path(end_date: datetime) -> str:
     return f"contents/news/biweekly-news-{date_str}/index.md"
 ```
 
-### 3.6 generate_news.py (메인 스크립트)
+### 3.7 generate_news.py (메인 스크립트)
 
 ```python
 """IT Biweekly News 생성 메인 스크립트"""
