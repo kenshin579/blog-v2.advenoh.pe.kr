@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2025-11-01
+Updated 2025-12-21
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -140,6 +140,9 @@ Updated 2025-11-01
 * [맥 iTerm2에서 Alt 키 매핑 설정하는 방법](https://blog.advenoh.pe.kr/맥-iterm2에서-alt-키-매핑-설정하는-방법/)
 * [맥환경에서 countdown shell script으로 집중력 강화하기](https://blog.advenoh.pe.kr/맥환경에서-countdown-shell-script으로-집중력-강화하기/)
 * [여러 페이지 있는 PDF 파일 PNG로 변환하기](https://blog.advenoh.pe.kr/여러-페이지-있는-pdf-파일-png로-변환하기/)
+
+## Network
+* [802.11k 개요 - AP Assisted Roaming ](https://blog.advenoh.pe.kr/802.11k-개요-ap-assisted-roaming/)
 
 ## Node
 * [Node.js 모듈 NPM 저장소에 배포하기](https://blog.advenoh.pe.kr/node-모듈-npm-저장소에-배포하기/)
