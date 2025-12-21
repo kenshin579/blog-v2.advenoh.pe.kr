@@ -28,31 +28,71 @@ categories:
       - 쿠버네티스
       - 컨테이너
       - 도커
-      # DevOps
+      - kubestronaut
+      - istio
+      - argocd
+      # DevOps & GitOps
       - ci/cd
       - jenkins
       - github actions
       - terraform
       - ansible
       - devops
+      - gitops
+      - 인프라
+      - infra
 
   - name: AI / ML
     emoji: "🤖"
     keywords:
+      # Core AI/ML
       - ai
       - ml
       - machine learning
       - deep learning
       - llm
-      - gpt
-      - openai
-      - tensorflow
-      - pytorch
       - 인공지능
       - 머신러닝
       - 딥러닝
+      # AI Models & Companies
+      - gpt
+      - openai
       - claude
+      - anthropic
       - gemini
+      - llama
+      - mistral
+      - kanana
+      - 카나나
+      - codex
+      # AI Frameworks
+      - tensorflow
+      - pytorch
+      - tensor
+      - 텐서
+      - transformer
+      - 트랜스포머
+      # AI Concepts
+      - multimodal
+      - 멀티모달
+      - rag
+      - embedding
+      - 임베딩
+      - fine-tuning
+      - 파인튜닝
+      - prompt
+      - 프롬프트
+      # AI Agent
+      - ai agent
+      - ai 에이전트
+      - agentic
+      - mcp
+      # AI Coding
+      - vibe coding
+      - 바이브 코딩
+      - copilot
+      - cursor
+      - ai 코딩
 
   - name: Development
     emoji: "💻"
@@ -65,13 +105,30 @@ categories:
       - spring
       - django
       - fastapi
+      - 백엔드
+      - backend
       # Frontend
       - react
       - vue
       - angular
       - javascript
+      - 자바스크립트
       - typescript
       - css
+      - 프론트엔드
+      - frontend
+      # Programming Languages
+      - python
+      - 파이썬
+      - pycon
+      - java
+      - 자바
+      - go
+      - golang
+      - rust
+      - kotlin
+      - 코틀린
+      - swift
       # Database
       - database
       - sql
@@ -79,6 +136,33 @@ categories:
       - mongodb
       - postgresql
       - redis
+      - orm
+      # Architecture & Concepts
+      - 아키텍처
+      - architecture
+      - 리팩토링
+      - refactoring
+      - 코드 품질
+      - code quality
+      - 디버깅
+      - debugging
+      - cdn
+      - proxy
+      - 캐시
+      - cache
+      # Tools & Libraries
+      - ide
+      - vscode
+      - intellij
+      - 라이브러리
+      - library
+      - analytics
+      - 애널리틱스
+      - git
+      - npm
+      - 3d
+      - cad
+      - openscad
 
   - name: Security
     emoji: "🔒"
