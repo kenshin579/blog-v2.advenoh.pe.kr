@@ -5,6 +5,7 @@ Usage:
 """
 
 import os
+import sys
 from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
@@ -38,9 +39,9 @@ def main():
         new_articles = [a for a in articles if a["url"] not in existing_urls]
         print(f"Found {len(new_articles)} new articles (filtered {len(existing_urls)} existing)")
     except Exception as e:
-        print(f"Warning: Could not connect to DB, processing all articles: {e}")
-        new_articles = articles
-        db = None
+        print(f"Error: Could not connect to DB: {e}")
+        print("DB connection is required. Exiting.")
+        sys.exit(1)
 
     if not new_articles:
         print("No new articles to process")
@@ -56,7 +57,16 @@ def main():
     # 4. Markdown 생성
     markdown_content = generate_markdown(categorized, start_date, end_date)
 
-    # 5. 파일 저장
+    # 5. DB에 수집 결과 저장 (파일 저장 전에 먼저 수행)
+    try:
+        issue_date = end_date.strftime("%Y-%m-%d")
+        db.save_articles(categorized, issue_date)
+        print(f"Saved {len(categorized)} articles to database")
+    except Exception as e:
+        print(f"Error: Could not save to DB: {e}")
+        sys.exit(1)
+
+    # 6. 파일 저장 (DB 저장 성공 후)
     script_dir = Path(__file__).parent
     project_root = script_dir.parent.parent
     output_path = get_output_path(end_date, str(project_root))
@@ -67,15 +77,6 @@ def main():
         f.write(markdown_content)
 
     print(f"Generated: {output_path}")
-
-    # 6. DB에 수집 결과 저장
-    if db:
-        try:
-            issue_date = end_date.strftime("%Y-%m-%d")
-            db.save_articles(categorized, issue_date)
-            print(f"Saved {len(categorized)} articles to database")
-        except Exception as e:
-            print(f"Warning: Could not save to DB: {e}")
 
     # 7. GitHub Action 환경변수 설정
     github_env = os.environ.get("GITHUB_ENV")
