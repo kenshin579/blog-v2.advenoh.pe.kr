@@ -2,10 +2,10 @@
 
 ## Phase 1: Workflow 생성
 
-- [ ] `.github/workflows/supabase-keepalive.yml` 파일 생성
-- [ ] cron 스케줄 설정 (6일마다: `0 0 */6 * *`)
-- [ ] Python 환경 및 supabase 패키지 설치 step 추가
-- [ ] Supabase ping 로직 구현
+- [x] `.github/workflows/supabase-keepalive.yml` 파일 생성
+- [x] cron 스케줄 설정 (6일마다: `0 0 */6 * *`)
+- [x] Python 환경 및 supabase 패키지 설치 step 추가
+- [x] Supabase ping 로직 구현
 
 ## Phase 2: 테스트
 
