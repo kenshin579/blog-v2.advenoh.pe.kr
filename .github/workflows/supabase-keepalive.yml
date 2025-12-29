@@ -1,0 +1,40 @@
+name: Supabase Keepalive
+
+on:
+  schedule:
+    # 6일마다 실행 (00:00 UTC)
+    # 7일 pause 정책보다 짧은 주기
+    - cron: '0 0 */6 * *'
+  workflow_dispatch: # 수동 실행
+
+jobs:
+  keepalive:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install supabase
+
+      - name: Ping Supabase
+        env:
+          SUPABASE_URL: ${{ secrets.BLOG_IT_NEWS_SUPABASE_URL }}
+          SUPABASE_KEY: ${{ secrets.BLOG_IT_NEWS_SUPABASE_API_KEY }}
+        run: |
+          python -c "
+          import os
+          from supabase import create_client
+
+          url = os.environ['SUPABASE_URL']
+          key = os.environ['SUPABASE_KEY']
+          client = create_client(url, key)
+
+          # 활동을 위한 간단한 쿼리
+          result = client.table('collected_articles').select('id').limit(1).execute()
+          print(f'Keepalive ping successful: {len(result.data)} rows checked')
+          "
