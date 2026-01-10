@@ -2,9 +2,9 @@ name: Supabase Keepalive
 
 on:
   schedule:
-    # 6일마다 실행 (00:00 UTC)
+    # 2일마다 실행 (00:00 UTC)
     # 7일 pause 정책보다 짧은 주기
-    - cron: '0 0 */6 * *'
+    - cron: '0 0 */2 * *'
   workflow_dispatch: # 수동 실행
 
 jobs:
