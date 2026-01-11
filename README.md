@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2025-12-21
+Updated 2026-01-11
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -14,6 +14,9 @@ Updated 2025-12-21
 * [Algorithm 2개의 array에서 common value 찾기](https://blog.advenoh.pe.kr/algorithm-2개의-array에서-common-value-찾기/)
 * [Algorithm 괄호 기호가 Valid한지 체크하기](https://blog.advenoh.pe.kr/algorithm-괄호-기호가-Valid한지-체크하기/)
 * [Algorithm 정수값에서 1이 설정된 bit를 카운트하기](https://blog.advenoh.pe.kr/algorithm-정수값에서-1이-설정된-bit를-카운트하기/)
+
+## Biweekly
+* [Frank's IT Biweekly News (2025-12-18 ~ 2026-01-01)](https://blog.advenoh.pe.kr/news-2026-01-01/)
 
 ## Cloud
 * [(Docker-1) Docker 도커 명령어 모음](https://blog.advenoh.pe.kr/docker-도커-명령어-모음/)
