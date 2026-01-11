@@ -10,7 +10,7 @@ from collections import Counter
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from category import categorize_articles
+from category import categorize_articles, categorize_with_fallback
 from db import DBClient
 from feed import collect_all_feeds
 from markdown import generate_markdown, get_output_path
@@ -47,8 +47,8 @@ def main():
         print("No new articles to process")
         return
 
-    # 3. 카테고리 분류
-    categorized = categorize_articles(new_articles)
+    # 3. 카테고리 분류 (AI 우선, 실패 시 키워드 매칭)
+    categorized = categorize_with_fallback(new_articles)
     print("Categorized articles:")
     category_counts = Counter(a["category"] for a in categorized)
     for cat, count in category_counts.most_common():
