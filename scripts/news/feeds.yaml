@@ -4,16 +4,22 @@
 
 feeds:
   # 개발
-  - https://yozm.wishket.com/magazine
-  - https://medium.com/daangn
+  - https://bcho.tistory.com/
+  - https://blog.bytebytego.com/
+  - https://helloworld.kurly.com/
   - https://jbee.io/
-  - https://techblog.lycorp.co.jp/ko
+  - https://medium.com/daangn
   - https://medium.com/musinsa-tech
+  - https://techblog.yogiyo.co.kr/
+  - https://techblog.lycorp.co.jp/ko
   - https://tech.kakao.com
+  - https://yozm.wishket.com/magazine
+  - https://developers.googleblog.com/
 
   # IT
   - https://jeho.page
-  - https://channy.creation.net/blog/category/blog
   - https://news.hada.io
-  - https://lemontia.tistory.com
   - https://techneedle.com
+
+  # AI
+  - https://www.44bits.io/ko/feed/all
