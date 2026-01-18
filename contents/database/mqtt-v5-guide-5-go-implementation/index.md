@@ -17,15 +17,15 @@ tags:
   - Grafana
 ---
 
-# 10장. Go + Paho (v5) 사용법
+# 1. Go + Paho (v5) 사용법
 
 이 장에서는 Go 언어로 MQTT v5 클라이언트를 구현하는 방법을 다룹니다. Eclipse Paho 프로젝트에서 제공하는 `paho.golang` 패키지를 사용하며, 특히 자동 재연결을 지원하는 `autopaho` 패키지의 사용법을 중심으로 설명한다. 앞서 배운 개념들을 실제 코드로 구현하는 방법을 익히면 바로 프로덕션에 적용할 수 있다.
 
-## 10.1 Paho v5 구조 이해
+## 1.1 Paho v5 구조 이해
 
 Go에서 MQTT v5를 사용하려면 `eclipse/paho.golang` 패키지를 사용한다. 이 패키지는 두 가지 레벨의 API를 제공한다. `paho` 패키지는 저수준 API로 세밀한 제어가 가능하고, `autopaho` 패키지는 자동 재연결 등 편의 기능이 포함된 고수준 API이다. 실무에서는 대부분 `autopaho`를 사용하는 것이 좋다.
 
-### 주요 패키지
+### 1.1.1 주요 패키지
 
 ```go
 import (
@@ -34,7 +34,7 @@ import (
 )
 ```
 
-### ClientConfig (autopaho)
+### 1.1.2 ClientConfig (autopaho)
 
 ```go
 config := autopaho.ClientConfig{
@@ -59,7 +59,7 @@ config := autopaho.ClientConfig{
 }
 ```
 
-### ConnectionManager
+### 1.1.3 ConnectionManager
 
 ```go
 // 연결 시작
@@ -72,7 +72,7 @@ err = cm.AwaitConnection(ctx)
 err = cm.Disconnect(ctx)
 ```
 
-### Handler 구조
+### 1.1.4 Handler 구조
 
 ```go
 // 메시지 수신 핸들러
@@ -86,9 +86,9 @@ router := paho.NewStandardRouter()
 router.RegisterHandler("sensor/#", messageHandler)
 ```
 
-## 10.2 기본 사용 흐름
+## 1.2 기본 사용 흐름
 
-### Connect (연결)
+### 1.2.1 Connect (연결)
 
 ```go
 package main
@@ -134,7 +134,7 @@ func main() {
 }
 ```
 
-### Subscribe (구독)
+### 1.2.2 Subscribe (구독)
 
 ```go
 func setupSubscription(cm *autopaho.ConnectionManager, router *paho.StandardRouter) {
@@ -152,7 +152,7 @@ func setupSubscription(cm *autopaho.ConnectionManager, router *paho.StandardRout
 }
 ```
 
-### Publish (발행)
+### 1.2.3 Publish (발행)
 
 ```go
 func publishMessage(cm *autopaho.ConnectionManager) {
@@ -174,9 +174,9 @@ func publishMessage(cm *autopaho.ConnectionManager) {
 }
 ```
 
-## 10.3 재연결 구현 방식
+## 1.3 재연결 구현 방식
 
-### 자동 재연결 설정
+### 1.3.1 자동 재연결 설정
 
 ```go
 config := autopaho.ClientConfig{
@@ -188,7 +188,7 @@ config := autopaho.ClientConfig{
 }
 ```
 
-### OnConnectionUp
+### 1.3.2 OnConnectionUp
 
 연결 성공 시 호출된다. 재구독에 사용한다.
 
@@ -215,7 +215,7 @@ func resubscribe(cm *autopaho.ConnectionManager) {
 }
 ```
 
-### OnServerDisconnect
+### 1.3.3 OnServerDisconnect
 
 Broker가 연결을 끊었을 때 호출된다.
 
@@ -227,7 +227,7 @@ config.ClientConfig.OnServerDisconnect = func(d *paho.Disconnect) {
 }
 ```
 
-### OnClientError
+### 1.3.4 OnClientError
 
 클라이언트 에러 발생 시 호출된다.
 
@@ -237,9 +237,9 @@ config.ClientConfig.OnClientError = func(err error) {
 }
 ```
 
-## 10.4 안전한 Handler 설계
+## 1.4 안전한 Handler 설계
 
-### Blocking 금지
+### 1.4.1 Blocking 금지
 
 메시지 핸들러에서 오래 걸리는 작업을 하면 안 된다.
 
@@ -265,7 +265,7 @@ go func() {
 }()
 ```
 
-### Worker Pool 패턴
+### 1.4.2 Worker Pool 패턴
 
 ```go
 type MessageProcessor struct {
@@ -311,15 +311,15 @@ func handler(msg *paho.Publish) {
 
 ---
 
-# 11장. 운영 관점 MQTT v5
+# 2. 운영 관점 MQTT v5
 
 MQTT 시스템을 프로덕션에서 안정적으로 운영하려면 적절한 모니터링과 장애 대응 전략이 필요한다. 이 장에서는 반드시 모니터링해야 할 핵심 지표와 흔히 발생하는 장애 시나리오별 대응 방법을 다룹니다. 사전에 이러한 상황들을 준비해두면 장애 발생 시 빠르게 대응할 수 있다.
 
-## 11.1 모니터링 포인트
+## 2.1 모니터링 포인트
 
 MQTT 시스템의 건강 상태를 파악하기 위해 다음 지표들을 모니터링해야 한다. 대부분의 Broker가 이러한 메트릭을 제공하며, EMQX나 HiveMQ 같은 엔터프라이즈 Broker는 대시보드를 통해 시각화할 수 있다.
 
-### 연결 수
+### 2.1.1 연결 수
 
 연결 수는 시스템 부하를 가장 직접적으로 나타내는 지표이다. 갑작스러운 연결 수 변화는 네트워크 장애나 클라이언트 문제를 의미할 수 있다.
 
@@ -334,7 +334,7 @@ MQTT 시스템의 건강 상태를 파악하기 위해 다음 지표들을 모�
 - 연결 실패율: 1% 이상
 ```
 
-### 메시지 처리율
+### 2.1.2 메시지 처리율
 
 ```
 # 모니터링 항목
@@ -348,7 +348,7 @@ MQTT 시스템의 건강 상태를 파악하기 위해 다음 지표들을 모�
 - 대기열 증가: 1000개 이상
 ```
 
-### 재연결 빈도
+### 2.1.3 재연결 빈도
 
 ```
 # 모니터링 항목
@@ -361,9 +361,9 @@ MQTT 시스템의 건강 상태를 파악하기 위해 다음 지표들을 모�
 - 전체 재연결률 급증
 ```
 
-## 11.2 장애 시나리오별 대응
+## 2.2 장애 시나리오별 대응
 
-### Broker 재시작
+### 2.2.1 Broker 재시작
 
 ```
 # 현상
@@ -376,7 +376,7 @@ MQTT 시스템의 건강 상태를 파악하기 위해 다음 지표들을 모�
 3. Broker 클러스터링 고려
 ```
 
-### 네트워크 Flap
+### 2.2.2 네트워크 Flap
 
 ```
 # 현상
@@ -389,7 +389,7 @@ MQTT 시스템의 건강 상태를 파악하기 위해 다음 지표들을 모�
 3. 회로 차단기 패턴 적용
 ```
 
-### Client 폭증
+### 2.2.3 Client 폭증
 
 ```
 # 현상
@@ -403,11 +403,11 @@ MQTT 시스템의 건강 상태를 파악하기 위해 다음 지표들을 모�
 3. 불필요한 연결 정리
 ```
 
-## 11.3 Mosquitto 모니터링 도구
+## 2.3 Mosquitto 모니터링 도구
 
 Mosquitto를 사용하는 경우 다양한 방법으로 Broker 상태를 모니터링할 수 있다. 환경과 규모에 따라 적합한 도구를 선택하세요.
 
-### $SYS Topic (내장 기능)
+### 2.3.1 $SYS Topic (내장 기능)
 
 Mosquitto는 자체 상태 정보를 `$SYS/#` Topic으로 발행한다. 별도 설치 없이 바로 사용할 수 있어 빠른 상태 확인에 유용한다.
 
@@ -437,7 +437,7 @@ mosquitto_sub -h localhost -t '$SYS/#' -v
 sys_interval 10
 ```
 
-### MQTT Explorer (GUI 도구)
+### 2.3.2 MQTT Explorer (GUI 도구)
 
 개발 및 테스트 환경에서 가장 쉽게 사용할 수 있는 데스크톱 앱이다.
 
@@ -457,7 +457,7 @@ Username: (선택)
 Password: (선택)
 ```
 
-### Prometheus + Grafana
+### 2.3.3 Prometheus + Grafana
 
 프로덕션 환경에서 권장하는 방식이다. 메트릭 수집, 저장, 시각화, 알림까지 통합 관리할 수 있다.
 
@@ -515,7 +515,7 @@ scrape_configs:
 2. Data Source에 Prometheus 추가
 3. Dashboard Import에서 Mosquitto 템플릿 검색 또는 직접 생성
 
-### Cedalo Management Center
+### 2.3.4 Cedalo Management Center
 
 Mosquitto를 만든 Cedalo에서 제공하는 공식 상용 관리 도구이다.
 
@@ -527,7 +527,7 @@ Mosquitto를 만든 Cedalo에서 제공하는 공식 상용 관리 도구이다.
   - 클러스터 모니터링
   - 감사 로그
 
-### 환경별 추천 도구
+### 2.3.5 환경별 추천 도구
 
 | 환경 | 추천 도구 | 이유 |
 |------|----------|------|
@@ -569,11 +569,11 @@ func handleSysMessage(msg *paho.Publish) {
 
 ---
 
-# 12장. MQTT v5 사용 판단 기준
+# 3. MQTT v5 사용 판단 기준
 
 모든 기술에는 적합한 사용처가 있다. MQTT는 강력한 프로토콜이지만, 모든 상황에 적합한 것은 아닙니다. 이 장에서는 MQTT를 선택해야 하는 상황과 다른 기술을 선택해야 하는 상황을 명확히 구분한다. 잘못된 기술 선택은 프로젝트 전체에 영향을 미치므로, 프로젝트 초기에 올바른 판단을 내리는 것이 중요한다.
 
-## MQTT를 써야 하는 경우
+## 3.1 MQTT를 써야 하는 경우
 
 다음과 같은 요구사항이 있다면 MQTT가 좋은 선택이다. 하나 이상 해당된다면 MQTT를 검토해볼 가치가 있다.
 
@@ -605,7 +605,7 @@ func handleSysMessage(msg *paho.Publish) {
    - 이벤트 브로드캐스트
    ```
 
-## MQTT를 쓰면 안 되는 경우
+## 3.2 MQTT를 쓰면 안 되는 경우
 
 1. **단순 요청-응답만 필요할 때**
    ```
@@ -629,7 +629,7 @@ func handleSysMessage(msg *paho.Publish) {
    → WebSocket 직접 사용 또는 MQTT over WebSocket
    ```
 
-## HTTP / gRPC와의 경계
+## 3.3 HTTP / gRPC와의 경계
 
 | 기준 | HTTP | gRPC | MQTT |
 |------|------|------|------|
@@ -641,15 +641,15 @@ func handleSysMessage(msg *paho.Publish) {
 
 ---
 
-# 13장. 스터디 마무리
+# 4. 스터디 마무리
 
 이 스터디를 통해 MQTT v5의 핵심 개념부터 실무 적용까지 전체적인 그림을 그릴 수 있게 되었기를 바랍니다. 마지막으로 배운 내용을 정리하고, 실무에 적용하기 전에 확인해야 할 체크리스트를 제공한다.
 
-## 13.1 핵심 요약
+## 4.1 핵심 요약
 
 지금까지 배운 내용 중 가장 중요한 포인트들을 정리한다. 이 내용들은 MQTT 기반 시스템을 설계하고 구현할 때 항상 염두에 두어야 한다.
 
-### MQTT v5의 본질
+### 4.1.1 MQTT v5의 본질
 
 1. **Pub/Sub 패턴**
    - Publisher와 Subscriber가 서로 몰라도 됨
@@ -666,7 +666,7 @@ func handleSysMessage(msg *paho.Publish) {
    - User Properties로 확장성
    - Shared Subscription으로 로드 분산
 
-### 신뢰성은 애플리케이션 책임
+### 4.1.2 신뢰성은 애플리케이션 책임
 
 MQTT가 보장하는 것:
 - QoS에 따른 전달 보장
@@ -684,9 +684,9 @@ MQTT가 보장하지 않는 것:
 
 ---
 
-# 부록: 실습 환경 설정
+# 5. 부록: 실습 환경 설정
 
-## Mosquitto Broker 설치 (Docker)
+## 5.1 Mosquitto Broker 설치 (Docker)
 
 ```bash
 # Mosquitto 실행
@@ -702,14 +702,14 @@ docker run -d --name mosquitto \
   eclipse-mosquitto
 ```
 
-## 기본 설정 파일 (mosquitto.conf)
+## 5.2 기본 설정 파일 (mosquitto.conf)
 
 ```
 listener 1883
 allow_anonymous true
 ```
 
-## 테스트 명령어
+## 5.3 테스트 명령어
 
 ```bash
 # 구독 (터미널 1)
@@ -719,7 +719,7 @@ mosquitto_sub -h localhost -t "test/#" -v
 mosquitto_pub -h localhost -t "test/hello" -m "Hello MQTT!"
 ```
 
-## Go 의존성
+## 5.4 Go 의존성
 
 ```bash
 go get github.com/eclipse/paho.golang@latest
@@ -727,7 +727,7 @@ go get github.com/eclipse/paho.golang@latest
 
 ---
 
-## 참고 자료
+# 6. 참고
 
 - [MQTT v5 스펙](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
 - [Eclipse Paho Go Client](https://github.com/eclipse/paho.golang)

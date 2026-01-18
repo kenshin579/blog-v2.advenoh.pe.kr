@@ -15,15 +15,15 @@ tags:
   - 메시지 설계
 ---
 
-# 3장. Topic 설계
+# 1. Topic 설계
 
 Topic 설계는 MQTT 시스템의 **가장 중요한 설계 결정**이다. 한 번 정해진 Topic 구조는 나중에 변경하기 매우 어렵다. 이미 운영 중인 시스템에서 Topic을 변경하려면 모든 Publisher와 Subscriber를 동시에 수정해야 하기 때문이다. 따라서 처음부터 확장성과 유지보수성을 고려한 설계가 필수이다.
 
 이 장에서는 Topic 네이밍 규칙, Wildcard 사용법, 그리고 실무에서 검증된 Best Practice를 다룹니다. 이 내용을 숙지하면 수천 개의 디바이스가 연결된 시스템에서도 효율적으로 메시지를 관리할 수 있다.
 
-## 3.1 Topic 구조와 규칙
+## 1.1 Topic 구조와 규칙
 
-### 계층적 네이밍
+### 1.1.1 계층적 네이밍
 
 Topic은 슬래시(/)로 계층을 나눕니다. 이 구조는 파일 시스템의 디렉터리 구조와 유사한다. 계층적 구조를 사용하면 Wildcard를 통해 특정 범위의 메시지만 구독할 수 있어 매우 유연한 메시지 필터링이 가능한다. 예를 들어, 3층의 모든 센서 데이터만 구독하거나, 특정 건물의 모든 온도 데이터만 구독하는 것이 가능해집니다.
 
@@ -37,7 +37,7 @@ acme/hq/3f/meeting-room-a/humidity
 acme/hq/3f/meeting-room-b/temperature
 ```
 
-### 네이밍 규칙
+### 1.1.2 네이밍 규칙
 
 1. **소문자 사용 권장**
    ```
@@ -58,11 +58,11 @@ acme/hq/3f/meeting-room-b/temperature
    지역/건물/층/방/센서종류
    ```
 
-## 3.2 Wildcard
+## 1.2 Wildcard
 
 Wildcard는 **Subscribe할 때만** 사용할 수 있다. Publish할 때는 사용할 수 없다. Wildcard를 사용하면 여러 Topic을 한 번에 구독할 수 있어 코드가 간결해지고 관리가 용이해집니다. 하지만 과도한 Wildcard 사용은 불필요한 메시지를 수신하게 되어 성능 저하를 일으킬 수 있으므로 주의가 필요한다.
 
-### + (Single-Level Wildcard)
+### 1.2.1 + (Single-Level Wildcard)
 
 한 단계만 대체한다. 정확히 하나의 Topic 레벨을 대신하며, 빈 레벨은 매칭되지 않는다. 특정 위치의 값만 다른 여러 Topic을 구독할 때 유용한다.
 
@@ -78,7 +78,7 @@ Wildcard는 **Subscribe할 때만** 사용할 수 있다. Publish할 때는 사�
   home/temperature ✗ (0단계)
 ```
 
-### # (Multi-Level Wildcard)
+### 1.2.2 # (Multi-Level Wildcard)
 
 해당 위치부터 모든 하위 레벨을 대체한다.
 
@@ -95,7 +95,7 @@ Wildcard는 **Subscribe할 때만** 사용할 수 있다. Publish할 때는 사�
   home/#/temperature (X) - 잘못된 사용
 ```
 
-### 왜 Subscribe 전용인가?
+### 1.2.3 왜 Subscribe 전용인가?
 
 Publish할 때 Wildcard를 쓸 수 있다면?
 
@@ -111,9 +111,9 @@ PUBLISH topic: home/+/temperature, payload: 25
 
 Wildcard는 "여러 곳에서 받겠다"는 의미이지, "여러 곳에 보내겠다"는 의미가 아닙니다.
 
-## 3.3 Topic 설계 Best Practice
+## 1.3 Topic 설계 Best Practice
 
-### Command / Event / State 분리
+### 1.3.1 Command / Event / State 분리
 
 메시지의 성격에 따라 Topic을 분리하세요.
 
@@ -137,7 +137,7 @@ device/light-001/state/brightness
 - Event는 놓쳐도 될 수 있음 → QoS 0 가능
 - State는 최신 값만 중요 → Retained Message 사용
 
-### 버전 관리 전략
+### 1.3.2 버전 관리 전략
 
 API처럼 Topic에도 버전을 넣을 수 있다.
 
@@ -155,7 +155,7 @@ mycompany/v1/device/sensor-001/temperature
 - 의미가 바뀔 때
 - Breaking change가 있을 때
 
-### 과도한 Wildcard의 문제
+### 1.3.3 과도한 Wildcard의 문제
 
 ```
 # 위험한 구독
@@ -180,15 +180,15 @@ home/livingroom/humidity
 
 ---
 
-# 4장. MQTT v5 메시지 모델
+# 2. MQTT v5 메시지 모델
 
 MQTT 메시지는 단순히 데이터만 담는 것이 아닙니다. v5에서는 Payload 외에도 User Properties, Message Expiry Interval 등 다양한 메타데이터를 함께 전송할 수 있다. 이 장에서는 메시지를 구성하는 요소들과 각각의 활용 방법을 알아봅니다. 올바른 메시지 모델링은 시스템의 확장성과 유지보수성에 큰 영향을 미칩니다.
 
-## 4.1 Payload
+## 2.1 Payload
 
 Payload는 메시지의 **본문**이다. 실제 데이터가 들어가며, MQTT 프로토콜은 Payload의 형식을 강제하지 않는다. JSON, XML, Binary, 심지어 단순 문자열도 가능한다. 이러한 유연성은 장점이자 단점이다. 형식의 자유도가 높은 만큼 Publisher와 Subscriber 간의 명확한 약속(계약)이 필요한다.
 
-### JSON 형식
+### 2.1.1 JSON 형식
 
 가장 많이 사용되는 형식이다. 대부분의 프로그래밍 언어에서 JSON 파싱 라이브러리를 제공하므로 구현이 쉽고, 사람이 읽을 수 있어 디버깅에 유리한다.
 
@@ -209,7 +209,7 @@ Payload는 메시지의 **본문**이다. 실제 데이터가 들어가며, MQTT
 - 크기가 큼
 - 파싱 비용
 
-### Binary 형식
+### 2.1.2 Binary 형식
 
 배터리로 동작하는 소형 IoT 기기에서 사용한다.
 
@@ -226,7 +226,7 @@ Payload는 메시지의 **본문**이다. 실제 데이터가 들어가며, MQTT
 - 사람이 읽기 어려움
 - 스키마 관리 필요
 
-### Schema 없는 통신의 책임
+### 2.1.3 Schema 없는 통신의 책임
 
 MQTT는 Payload의 형식을 강제하지 않는다.
 
@@ -243,11 +243,11 @@ hello world
 3. 유효성 검증
 4. 문서화
 
-## 4.2 User Properties
+## 2.2 User Properties
 
 v5에서 추가된 기능으로, 메시지에 **메타데이터**를 추가할 수 있다.
 
-### 메타데이터 전달
+### 2.2.1 메타데이터 전달
 
 ```
 Payload: {"temperature": 25}
@@ -260,7 +260,7 @@ User Properties:
 
 Payload를 건드리지 않고 추가 정보를 전달할 수 있다.
 
-### Correlation 정보
+### 2.2.2 Correlation 정보
 
 Request/Response 패턴에서 요청과 응답을 매칭할 때 사용한다.
 
@@ -274,7 +274,7 @@ User Properties:
   correlation-id: req-12345  # 같은 ID로 매칭
 ```
 
-### Trace ID 전달 패턴
+### 2.2.3 Trace ID 전달 패턴
 
 분산 시스템에서 로그 추적에 유용한다.
 
@@ -290,11 +290,11 @@ User Properties:
 [server] trace-id=abc-xyz-123 -> Received and processed
 ```
 
-## 4.3 Message Expiry Interval
+## 2.3 Message Expiry Interval
 
 메시지의 **유효 시간(TTL)**을 설정한다.
 
-### TTL 개념
+### 2.3.1 TTL 개념
 
 ```
 PUBLISH
@@ -309,7 +309,7 @@ PUBLISH
 3. TTL 내에 전달되지 않으면 메시지 삭제
 4. Subscriber가 받을 때 남은 시간 확인 가능
 
-### 늦게 도착한 메시지 처리 전략
+### 2.3.2 늦게 도착한 메시지 처리 전략
 
 ```
 # 상황: Subscriber가 오프라인이었다가 연결됨
@@ -333,7 +333,7 @@ if (now - message.timestamp) > threshold:
 
 ---
 
-## FAQ
+# 3. FAQ
 
 ### Q: Topic에 Wildcard를 지원하나요?
 
@@ -390,7 +390,7 @@ router.RegisterHandler("home/+/temperature", func(msg *paho.Publish) {
 
 ---
 
-## 참고 자료
+# 4. 참고
 
 - [MQTT v5 스펙](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
 - [EMQX Topic 설계 가이드](https://www.emqx.io/docs)

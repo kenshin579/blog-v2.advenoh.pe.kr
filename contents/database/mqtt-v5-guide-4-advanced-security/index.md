@@ -17,15 +17,15 @@ tags:
   - 인증
 ---
 
-# 8장. MQTT v5 고급 기능
+# 1. MQTT v5 고급 기능
 
 MQTT v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, HTTP 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룹니다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
 
-## 8.1 Shared Subscription
+## 1.1 Shared Subscription
 
 여러 Subscriber가 **메시지를 나눠서** 처리하는 기능이다. 일반적인 MQTT 구독에서는 같은 Topic을 구독하는 모든 Subscriber가 동일한 메시지를 받는다. 하지만 Shared Subscription을 사용하면 메시지가 구독자들 사이에 분배되어 로드 밸런싱 효과를 얻을 수 있다. 이는 대량의 메시지를 처리해야 하는 시스템에서 수평 확장을 가능하게 한다.
 
-### 개념
+### 1.1.1 개념
 
 Shared Subscription의 핵심은 같은 그룹 내의 Subscriber들이 메시지를 분배받는다는 것이다. 이를 통해 단일 Subscriber의 처리 한계를 넘어서는 대량의 메시지를 처리할 수 있다.
 
@@ -50,7 +50,7 @@ $share/mygroup/sensor/temperature
 # 다른 그룹은 독립적으로 모든 메시지 수신
 ```
 
-### 로드 분산 vs 순서 보장
+### 1.1.2 로드 분산 vs 순서 보장
 
 **로드 분산 관점:**
 ```
@@ -68,7 +68,7 @@ Message 3 → Subscriber A
 # 전체 순서 보장 안 됨!
 ```
 
-### 언제 쓰면 안 되는가
+### 1.1.3 언제 쓰면 안 되는가
 
 ```
 # 쓰면 안 되는 경우
@@ -86,11 +86,11 @@ Message 3 → Subscriber A
    - 알림 발송
 ```
 
-## 8.2 Request / Response 패턴
+## 1.2 Request / Response 패턴
 
 MQTT로 HTTP처럼 요청-응답을 구현하는 패턴이다.
 
-### Response Topic
+### 1.2.1 Response Topic
 
 응답을 받을 Topic을 요청에 포함시킵니다. 전체 흐름을 이해하는 것이 중요한다.
 
@@ -121,7 +121,7 @@ MQTT로 HTTP처럼 요청-응답을 구현하는 패턴이다.
 - **응답자**는 요청의 `response_topic`으로 **PUBLISH**하여 응답
 - 요청과 응답 모두 PUBLISH이며, 구독은 응답을 받기 위한 사전 준비
 
-### Correlation Data
+### 1.2.2 Correlation Data
 
 요청과 응답을 매칭하는 데이터이다.
 
@@ -143,7 +143,7 @@ func onMessage(msg Message) {
 }
 ```
 
-### Timeout 처리
+### 1.2.3 Timeout 처리
 
 응답이 안 오면 어떻게 할까요?
 
@@ -172,11 +172,11 @@ func requestWithTimeout(request Message, timeout time.Duration) (Response, error
 - 타임아웃 시 재시도 또는 에러 처리
 - 오래된 응답은 무시
 
-## 8.3 Reason Code
+## 1.3 Reason Code
 
 모든 응답에 **성공/실패 이유**를 포함한다.
 
-### 성공/실패 세분화
+### 1.3.1 성공/실패 세분화
 
 ```
 # 연결 응답 Reason Code 예시
@@ -191,7 +191,7 @@ func requestWithTimeout(request Message, timeout time.Duration) (Response, error
 135 = Not authorized
 ```
 
-### 장애 원인 파악
+### 1.3.2 장애 원인 파악
 
 ```go
 // 연결 실패 시
@@ -217,15 +217,15 @@ v5: "연결 실패 - Reason Code 134: Bad User Name or Password"
 
 ---
 
-# 9장. 보안
+# 2. 보안
 
 MQTT 시스템의 보안은 세 가지 축으로 구성된다: 인증(Authentication), 인가(Authorization), 그리고 암호화(Encryption). 인증은 "당신이 누구인가"를 확인하고, 인가는 "무엇을 할 수 있는가"를 결정하며, 암호화는 "통신 내용이 노출되지 않는가"를 보장한다. 특히 IoT 환경에서는 수많은 디바이스가 연결되므로 보안 설계가 더욱 중요한다.
 
-## 9.1 인증
+## 2.1 인증
 
 Client가 **누구인지** 확인한다. MQTT에서는 연결 시점에 인증이 이루어지며, 한 번 인증된 연결은 세션이 유지되는 동안 유효한다. 인증에 실패하면 Broker는 연결을 거부하고, v5에서는 Reason Code를 통해 실패 원인을 알려줍니다.
 
-### Username / Password
+### 2.1.1 Username / Password
 
 가장 기본적인 인증 방식이다. 설정이 간단하여 개발 및 테스트 환경에서 많이 사용된다. 하지만 보안 수준이 높지 않으므로 프로덕션에서는 TLS와 함께 사용하거나 다른 인증 방식을 고려해야 한다.
 
@@ -243,7 +243,7 @@ config := paho.Connect{
 - 비밀번호 관리 필요
 - 각 디바이스별 고유 인증 정보 권장
 
-### Token 기반 인증
+### 2.1.2 Token 기반 인증
 
 JWT 등의 토큰을 사용하는 방식이다.
 
@@ -262,11 +262,11 @@ config := paho.Connect{
 - 추가 정보 포함 가능 (권한 등)
 - 비밀번호 저장 불필요
 
-## 9.2 인가
+## 2.2 인가
 
 인증된 Client가 **무엇을 할 수 있는지** 결정한다. ACL(Access Control List)은 **Broker 측에서 설정**하며, 클라이언트 코드가 아닌 Broker의 설정 파일이나 관리 시스템에서 구성한다.
 
-### Broker별 ACL 설정 방식
+### 2.2.1 Broker별 ACL 설정 방식
 
 | Broker | 설정 방식 |
 |--------|----------|
@@ -275,7 +275,7 @@ config := paho.Connect{
 | **HiveMQ** | XML 설정 또는 Extension |
 | **VerneMQ** | `vmq.acl` 파일 또는 플러그인 |
 
-### Topic 기반 ACL
+### 2.2.2 Topic 기반 ACL
 
 **Mosquitto 설정 예시:**
 
@@ -295,7 +295,7 @@ user admin
 topic readwrite #             # 모든 토픽 읽기/쓰기
 ```
 
-### ACL 변경 적용 방법
+### 2.2.3 ACL 변경 적용 방법
 
 ACL 파일을 수정한 후에는 Broker에 변경 사항을 적용해야 한다.
 
@@ -316,7 +316,7 @@ ACL 파일을 수정한 후에는 Broker에 변경 사항을 적용해야 한다
 | **HiveMQ** | O | Control Center에서 즉시 반영 |
 | **VerneMQ** | △ | `vmq-admin` CLI로 리로드 |
 
-### Mosquitto Dynamic Security 플러그인
+### 2.2.4 Mosquitto Dynamic Security 플러그인
 
 Mosquitto 2.0부터 제공되는 **Dynamic Security 플러그인**을 사용하면 Broker 재시작 없이 런타임에 사용자, 그룹, ACL을 관리할 수 있다.
 
@@ -348,7 +348,7 @@ mosquitto_ctrl dynsec addClientRole sensor-001 sensor-role
 - JSON 기반 설정으로 백업/복원 용이
 - `mosquitto_ctrl` CLI 또는 MQTT 메시지로 관리 가능
 
-### mosquitto-go-auth 플러그인
+### 2.2.5 mosquitto-go-auth 플러그인
 
 외부 시스템과 연동하여 동적으로 ACL을 체크하려면 **mosquitto-go-auth** 플러그인을 사용할 수 있다. 이 오픈소스 플러그인은 매 요청마다 외부 Backend에서 권한을 조회하므로, Broker 재시작 없이 실시간으로 권한 변경이 반영된다.
 
@@ -412,7 +412,7 @@ func checkACL(w http.ResponseWriter, r *http.Request) {
 
 프로덕션 환경에서는 동적 변경이 가능한 방식을 선택하는 것이 운영에 유리한다.
 
-### Publish / Subscribe 권한 분리
+### 2.2.6 Publish / Subscribe 권한 분리
 
 ```
 # 센서는 자기 데이터만 발행
@@ -426,11 +426,11 @@ dashboard:
   subscribe: sensor/+/data
 ```
 
-## 9.3 TLS
+## 2.3 TLS
 
 통신 내용을 **암호화**한다. MQTT는 기본적으로 평문 통신을 하므로, 인터넷을 통한 통신이나 민감한 데이터 전송 시 TLS를 반드시 적용해야 한다.
 
-### MQTT 포트 규약
+### 2.3.1 MQTT 포트 규약
 
 | 포트 | 프로토콜 | 설명 |
 |------|----------|------|
@@ -438,14 +438,14 @@ dashboard:
 | **8883** | MQTTS (TLS) | 프로덕션 표준 |
 | **8084** | WSS (WebSocket + TLS) | 브라우저 연결 시 |
 
-### TLS 인증 방식
+### 2.3.2 TLS 인증 방식
 
 | 방식 | 설명 | 사용 사례 |
 |------|------|----------|
 | **Server Auth Only** | 클라이언트가 서버 인증서 검증 | 일반적인 웹 서비스와 동일 |
 | **Mutual TLS (mTLS)** | 서버와 클라이언트 상호 인증 | 높은 보안이 필요한 IoT |
 
-### Mosquitto TLS 설정
+### 2.3.3 Mosquitto TLS 설정
 
 **1. 인증서 생성 (테스트용 Self-signed)**
 
@@ -498,7 +498,7 @@ services:
       - ./certs:/mosquitto/certs
 ```
 
-### Go 클라이언트 TLS 설정
+### 2.3.4 Go 클라이언트 TLS 설정
 
 ```go
 import (
@@ -538,7 +538,7 @@ func main() {
 }
 ```
 
-### Mutual TLS (mTLS) 설정
+### 2.3.5 Mutual TLS (mTLS) 설정
 
 클라이언트도 인증서를 제출해야 하는 양방향 인증이다.
 
@@ -566,7 +566,7 @@ func createMutualTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error
 }
 ```
 
-### 성능과 보안의 균형
+### 2.3.6 성능과 보안의 균형
 
 | 항목 | TLS 1.2 | TLS 1.3 |
 |------|---------|---------|
@@ -580,11 +580,11 @@ func createMutualTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error
 - 하드웨어 암호화 가속 지원 여부 확인
 - 리소스 제약 시 VPN으로 네트워크 레벨 보안 대체 고려
 
-## 9.4 MQTT over WebSocket
+## 2.4 MQTT over WebSocket
 
 브라우저는 TCP 소켓을 직접 사용할 수 없기 때문에, 웹 애플리케이션에서 MQTT를 사용하려면 WebSocket으로 감싸야 한다. MQTT over WebSocket을 사용하면 프론트엔드에서도 실시간으로 MQTT Topic을 구독하고 메시지를 발행할 수 있다.
 
-### 동작 원리
+### 2.4.1 동작 원리
 
 ```
 [IoT 디바이스]                   [MQTT Broker]                  [웹 브라우저]
@@ -604,7 +604,7 @@ func createMutualTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error
 - 같은 Topic을 공유하며 서로 메시지를 주고받을 수 있음
 - Broker 입장에서는 연결 방식만 다를 뿐 동일한 클라이언트
 
-### Mosquitto WebSocket 설정
+### 2.4.2 Mosquitto WebSocket 설정
 
 ```bash
 # mosquitto.conf
@@ -624,7 +624,7 @@ certfile /mosquitto/certs/server.crt
 keyfile /mosquitto/certs/server.key
 ```
 
-### 프론트엔드 연동 (JavaScript)
+### 2.4.3 프론트엔드 연동 (JavaScript)
 
 **MQTT.js 설치:**
 
@@ -683,7 +683,7 @@ function sendCommand(deviceId, command) {
 client.end();
 ```
 
-### React Hook 예시
+### 2.4.4 React Hook 예시
 
 ```javascript
 import { useEffect, useState } from 'react';
@@ -745,7 +745,7 @@ function Dashboard() {
 }
 ```
 
-### 실제 사용 사례
+### 2.4.5 실제 사용 사례
 
 | 사용 사례 | 설명 |
 |----------|------|
@@ -756,7 +756,7 @@ function Dashboard() {
 | **라이브 모니터링** | 서버/장비 상태 실시간 확인 |
 | **협업 도구** | 문서 동시 편집 상태 공유 |
 
-### WebSocket vs HTTP Polling
+### 2.4.6 WebSocket vs HTTP Polling
 
 | 항목 | WebSocket (MQTT) | HTTP Polling |
 |------|------------------|--------------|
@@ -773,7 +773,7 @@ function Dashboard() {
 
 ---
 
-## 참고 자료
+# 3. 참고
 
 - [MQTT v5 스펙](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
 - [Mosquitto 문서](https://mosquitto.org/documentation/)
