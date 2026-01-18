@@ -1,6 +1,6 @@
 ---
 title: "802.11k 개요 - AP Assisted Roaming "
-description: "802.11k 표준의 무선 자원 측정(RRM) 기능으로 인접 AP 정보를 제공하여 빠르고 효율적인 Wi-Fi 로밍을 구현하는 방법을 설명합니다"
+description: "802.11k 표준의 무선 자원 측정(RRM) 기능으로 인접 AP 정보를 제공하여 빠르고 효율적인 Wi-Fi 로밍을 구현하는 방법을 설명한다"
 date: 2025-12-11
 update: 2025-12-11
 tags:

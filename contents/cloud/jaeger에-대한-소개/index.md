@@ -12,7 +12,7 @@ tags:
   - 분산추적
 ---
 
-> 본 내용은 저희 Platform Engineering 팀내 CNCF 스터디를 위해 준비한 자료입니다. 저희가 하는 로봇 플랫폼 개발에 관심이 있는 분들은 아래 링크를 참고해주시고 도전적이고 열정적으로 같이 일하실 분은 많이 지원해주세요.
+> 본 내용은 저희 Platform Engineering 팀내 CNCF 스터디를 위해 준비한 자료이다. 저희가 하는 로봇 플랫폼 개발에 관심이 있는 분들은 아래 링크를 참고해주시고 도전적이고 열정적으로 같이 일하실 분은 많이 지원해주세요.
 >
 > - 네이버는 왜 제2사옥 1784를 지었을 까요?  https://www.youtube.com/watch?v=WG7JHLfClEo
 > - 네이버 랩스 - https://www.naverlabs.com/
@@ -291,7 +291,7 @@ r.Use(otelgin.Middleware("todo-service")) //이렇게 하면 끝
 
 Jaeger를 도입하는 건 결국 운영 관리 비용이 들기 때문에 되도록이면 사내 APM/Distributed trace system을 사용하는게 베스트일 것이다. 우리 사내에서는 이미 Pinpoint를 제공하고 있어서 이걸로 사용하는게 좋을 듯하다.
 
-> [1784](https://www.navercorp.com/naver/1784) 사옥에서 이미 서비스 운용 중인데, 인프라적으로나 개발적으로 할일도 많고 일손이 많이 부족합니다. 로봇 플랫폼 개발에 관심있는 분들은 많이 지원 부탁드려요.
+> [1784](https://www.navercorp.com/naver/1784) 사옥에서 이미 서비스 운용 중인데, 인프라적으로나 개발적으로 할일도 많고 일손이 많이 부족한다. 로봇 플랫폼 개발에 관심있는 분들은 많이 지원 부탁드려요.
 
 이번에 처음 알게 되었지만, Pinpoint도 CNCF의 프로젝트로 포함되어 있었다.
 

@@ -20,7 +20,7 @@ series: "Spring JPA"
 
 # 1. 들어가며
 
-JPA 연관관계 매핑에 대한 내용은 [JPA 연관관계 매핑 정리](https://blog.advenoh.pe.kr/jpa-연관관계-매핑-정리/) 포스팅을 참고해주세요. 이번 포스팅에서는 JPA에서 가장 자주 사용하는 다대일(N:1)과 그 반대 방향인 일대다(1:N) 연관관계에 대해서 알아보겠습니다.
+JPA 연관관계 매핑에 대한 내용은 [JPA 연관관계 매핑 정리](https://blog.advenoh.pe.kr/jpa-연관관계-매핑-정리/) 포스팅을 참고해주세요. 이번 포스팅에서는 JPA에서 가장 자주 사용하는 다대일(N:1)과 그 반대 방향인 일대다(1:N) 연관관계에 대해서 알아보자.
 
 > - Post (일)
 > - Comment (다)
@@ -48,11 +48,11 @@ JPA 연관관계 매핑에 대한 내용은 [JPA 연관관계 매핑 정리](htt
 
 ### 3.1.1 다대일 단방향
 
-Post와 Comment 코드를 보면서 알아보겠습니다.
+Post와 Comment 코드를 보면서 알아보자.
 
 ![](image2.png)
 
-Post 엔티티에는 연관관계 관련 어노테이션은 없습니다.
+Post 엔티티에는 연관관계 관련 어노테이션은 없다.
 
 ```java
 @Getter
@@ -96,18 +96,18 @@ public class Comment extends DateAudit {
 }
 ```
 
-Comment 엔티티에만 Post 필드가 있어서 @ManyToOne 어노테이션으로 단방향으로 관계를 맺습니다.
+Comment 엔티티에만 Post 필드가 있어서 @ManyToOne 어노테이션으로 단방향으로 관계를 맺는다.
 
 - @ManyToOne
     - 다대일 관계로 설정한다
 - @JoinColumn
     - 외래 키인 post_id를 지정한다
 
-JoinColumn과 ManyToOne 옵션 설정에 대한 설명은 다음과 같습니다.
+JoinColumn과 ManyToOne 옵션 설정에 대한 설명은 다음과 같다.
 
 #### 3.1.1.1 @JoinColumn의 속성
 
-@JoinColumn 어노테이션은 외래 키를 매핑할 때 사용하는 어노테이션이고 기본 속성은 다음과 같습니다.
+@JoinColumn 어노테이션은 외래 키를 매핑할 때 사용하는 어노테이션이고 기본 속성은 다음과 같다.
 
 | 속성                                                         | 설명                                                         |
 | ------------------------------------------------------------ | ------------------------------------------------------------ |
@@ -117,7 +117,7 @@ JoinColumn과 ManyToOne 옵션 설정에 대한 설명은 다음과 같습니다
 
 #### 3.1.1.2 @ManyToOne의 속성
 
-@ManyToOne 어노테이션은 다대일 연관관계로 매핑할 때 사용되고 속성에 따라서 쿼리 구문 생성이 조금씩 다르게 생성됩니다. 조회하는 경우에는 쿼리가 어떻게 생성이 되는지 로그로 확인할 필요가 있습니다.
+@ManyToOne 어노테이션은 다대일 연관관계로 매핑할 때 사용되고 속성에 따라서 쿼리 구문 생성이 조금씩 다르게 생성된다. 조회하는 경우에는 쿼리가 어떻게 생성이 되는지 로그로 확인할 필요가 있다.
 
 | 속성         | 설명                                                         |
 | ------------ | ------------------------------------------------------------ |
@@ -130,9 +130,9 @@ JoinColumn과 ManyToOne 옵션 설정에 대한 설명은 다음과 같습니다
 
 > Post(부모) -> Comment(자식)
 
-Cascade 옵션은 부모 엔터티를 영속 상태로 만들 때 연관관계로 맺어진 자식 엔터티도 함께 영속 상태로 만들어 주고 싶을 때 설정할 수 있는 기능입니다. 여러 값은 다음과 같이 설정할 수 있습니다.
+Cascade 옵션은 부모 엔터티를 영속 상태로 만들 때 연관관계로 맺어진 자식 엔터티도 함께 영속 상태로 만들어 주고 싶을 때 설정할 수 있는 기능이다. 여러 값은 다음과 같이 설정할 수 있다.
 
-Post와 Comment관계에서는 별도로 cascade 설정은 하지 않았습니다. Post를 생성할 때 Comment는 없을 수 있으니까요.
+Post와 Comment관계에서는 별도로 cascade 설정은 하지 않았다. Post를 생성할 때 Comment는 없을 수 있으니까요.
 
 | 속성 값 | 설명                                                         |
 | ------- | ------------------------------------------------------------ |
@@ -143,9 +143,9 @@ Post와 Comment관계에서는 별도로 cascade 설정은 하지 않았습니�
 | MERGE   | 부모 엔티티가 detach 상태에서 자식 엔터티를 추가/변경한 이후에 부모 엔티티가 merge를 수행하면 자식 엔터티도 변경사항이 적용된다. |
 | ALL     | 모두 cascade 옵셕이 전용된다.                                |
 
-지금까지 ManyToOne 어노테이션에서 적용할 수 있는 여러 옵션을 알아보았습니다. 다대일로 설계한 엔터티가 제대로 저장/조회가 잘되는지 Unit Test에서 확인합니다.
+지금까지 ManyToOne 어노테이션에서 적용할 수 있는 여러 옵션을 알아보았다. 다대일로 설계한 엔터티가 제대로 저장/조회가 잘되는지 Unit Test에서 확인한다.
 
-Post 객체를 하나를 생성하고 저장이 잘되었는지 조회해서 실제 저장 값을 확인합니다.
+Post 객체를 하나를 생성하고 저장이 잘되었는지 조회해서 실제 저장 값을 확인한다.
 
 ```java
 @Slf4j
@@ -168,7 +168,7 @@ public class PostRepositoryTest {
 }
 ```
 
-Comment 엔티티도 저장하고 조회해보겠습니다. Post 객체도 생성해서 저장합니다.
+Comment 엔티티도 저장하고 조회해보자. Post 객체도 생성해서 저장한다.
 
 ```java
 
@@ -206,11 +206,11 @@ public class CommentRepositoryTest {
 
 ### 3.1.2 다대일 양방향
 
-다대일 양방향은 Post와 Comment 엔터티에 서로를 참조하는 필드가 존재합니다.
+다대일 양방향은 Post와 Comment 엔터티에 서로를 참조하는 필드가 존재한다.
 
 ![](image3.png)
 
-Post와 Comment 코드를 보면서 양방향인 경우에는 코드가 어떻게 달라지는 지 알아보겠습니다.
+Post와 Comment 코드를 보면서 양방향인 경우에는 코드가 어떻게 달라지는 지 알아보자.
 
 ```java
 @ToString(exclude = "post")
@@ -231,7 +231,7 @@ public class Comment extends DateAudit {
 }
 ```
 
-Comment 엔티티는 기존과 같습니다.
+Comment 엔티티는 기존과 같다.
 
 ```java
 @Entity
@@ -250,13 +250,13 @@ public class Post extends DateAudit {
 		...(생략)...
 }
 ```
-Post -> Comment는 일대다인 관계로 @OneToMany 어노테이션을 사용했고 List<Comment> comments 컬렉션으로 선언하였습니다.
+Post -> Comment는 일대다인 관계로 @OneToMany 어노테이션을 사용했고 List<Comment> comments 컬렉션으로 선언하였다.
 
 #### 3.1.2.1 연관관계 주인
 
-테이블은 외래 키 하나만 존재하는 반면에 객체를 양방향으로 설정하면 외래 키를 관리하는 곳이 2곳이 생깁니다. 한쪽에서만 관리하도록 하기 위해서 연관관계 주인을 설정할 필요가 있습니다.
+테이블은 외래 키 하나만 존재하는 반면에 객체를 양방향으로 설정하면 외래 키를 관리하는 곳이 2곳이 생깁니다. 한쪽에서만 관리하도록 하기 위해서 연관관계 주인을 설정할 필요가 있다.
 
-다대일에서는 다 쪽이 연관관계 주인이 되므로 @OneToMany에서 mappedBy 속성의 값으로 연관관계 주인을 지정해줘야 합니다. 코드에서는 comments는 연관관계 주인이 아니므로 mappedBy로 Comment 엔티티에 있는 post가 연관관계의 주인이라고 선언하여 알려줍니다.
+다대일에서는 다 쪽이 연관관계 주인이 되므로 @OneToMany에서 mappedBy 속성의 값으로 연관관계 주인을 지정해줘야 한다. 코드에서는 comments는 연관관계 주인이 아니므로 mappedBy로 Comment 엔티티에 있는 post가 연관관계의 주인이라고 선언하여 알려줍니다.
 
 - 연관관계 주인 (ex. Comment.post)
     - 여기서만 연관관계를 설정할 수 있다.
@@ -275,7 +275,7 @@ comment.setPost(post); //(1) 코멘트 -> 포스트
 post.getComments().add(comment); //(2) 포스트 -> 코멘트 - 저장시 사용되지 않는다
 ```
 
-양방양으로 설정하여 DB뿐만이 아니라 객체 저장/조회 시에도 제대로 반영하기 위해서 위와 같은 코드를 작성해줘야 합니다. 하지만, 실수로 post.*getComments*().add(commnet)를 호출하지 않아 양방향이 깨질 수 도 있습니다. 이를 방지 하기 위해서 연관관계 설정 시 실수 없이 설정하도록 편의 메서드를 작성하는 게 좋습니다.
+양방양으로 설정하여 DB뿐만이 아니라 객체 저장/조회 시에도 제대로 반영하기 위해서 위와 같은 코드를 작성해줘야 한다. 하지만, 실수로 post.*getComments*().add(commnet)를 호출하지 않아 양방향이 깨질 수 도 있다. 이를 방지 하기 위해서 연관관계 설정 시 실수 없이 설정하도록 편의 메서드를 작성하는 게 좋다.
 
 ```java
 public class Comment extends DateAudit {
@@ -325,7 +325,7 @@ public class Post extends DateAudit {
 
 ### 3.2.1 무한 루프에 빠지는 경우
 
-영방향 매핑때에는 무한 루프에 빠질 수 있어서 주의가 필요합니다. 예를 들어 Comment.toString()에서 getPost()를 호출하게 되면 무한 루프에 빠질 수 있습니다.
+영방향 매핑때에는 무한 루프에 빠질 수 있어서 주의가 필요한다. 예를 들어 Comment.toString()에서 getPost()를 호출하게 되면 무한 루프에 빠질 수 있다.
 
 - 엔티티를 JSON으로 변환하는 경우
     - [Jackson에서 Infinite Recursion에 해결하는 방법](https://blog.advenoh.pe.kr/jackson에서-infinite-recursion-이슈-해결방법/)을 참고해주세요
@@ -336,7 +336,7 @@ public class Post extends DateAudit {
 
 ## 4.1 언제 양반향, 단방향을 사용해야 하나?
 
-비지니스 로직에 따라서 무엇을 사용할 지 결정하면 됩니다.
+비지니스 로직에 따라서 무엇을 사용할 지 결정하면 된다.
 
 - 단반향
 
@@ -348,7 +348,7 @@ public class Post extends DateAudit {
     - ex. 부서 -> 직원, 직원 -> 부서
     - 직원이 어느 부서에서 근무하는 지를 알기 위해서 알고 싶고 또한 한 부서에 어떤 직원이 있는지 도 알고 싶은 경우에는 양반향으로 설정할 수 있다
 
-어느 것을 사용할지 확실하지 않을 때는 우선 단방향으로 매핑을 사용하고 반대 반향으로 객체 그래프 탐색이 필요한 경우에는 양방향으로 변경해서 사용하면 됩니다.
+어느 것을 사용할지 확실하지 않을 때는 우선 단방향으로 매핑을 사용하고 반대 반향으로 객체 그래프 탐색이 필요한 경우에는 양방향으로 변경해서 사용하면 된다.
 
 ## 4.2 fetch = FetchType.LAZY로 설정하면 언제 데이터를 로딩해서 가져오게 되는가?
 
@@ -396,7 +396,7 @@ public void save_post_comment_확인_eager_loading() throws JsonProcessingExcept
 }
 ```
 
-findById() 메서드 실행시 Comment와 Post를 JOIN해서 데이터를 가져오는 것을 확인할 수 있습니다.
+findById() 메서드 실행시 Comment와 Post를 JOIN해서 데이터를 가져오는 것을 확인할 수 있다.
 
 ```sql
 select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as create_d2_0_0_, comment0_.updated_dt as updated_3_0_0_, comment0_.author as author4_0_0_, comment0_.content as content5_0_0_, comment0_.post_id as post_id6_0_0_, post1_.post_id as post_id1_1_1_, post1_.create_dt as create_d2_1_1_, post1_.updated_dt as updated_3_1_1_, post1_.author as author4_1_1_, post1_.content as content5_1_1_, post1_.like_count as like_cou6_1_1_, post1_.title as title7_1_1_ from comment comment0_ inner join post post1_ on comment0_.post_id=post1_.post_id where comment0_.comment_id=?
@@ -406,7 +406,7 @@ select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as create_d2_
 
 ### 4.2.2 지연 로딩
 
-fetch 옵션에 FetchType.LAZY로 설정하면 Comment 엔터티 조회시 바로 DB에서 Post 엔티티를 조회하지 않습니다.
+fetch 옵션에 FetchType.LAZY로 설정하면 Comment 엔터티 조회시 바로 DB에서 Post 엔티티를 조회하지 않는다.
 
 ```java
 @Table(name = "comment")
@@ -444,15 +444,15 @@ public void save_post_comment_확인_lazy_loading_test() throws JsonProcessingEx
 }
 ```
 
-(1)에서 Post 엔티티를 가져올 때 조회되지 않고 Post 객체를 실제 사용하는 getAuthor() 메서드가 호출될 때 DB에서 오게 됩니다.
+(1)에서 Post 엔티티를 가져올 때 조회되지 않고 Post 객체를 실제 사용하는 getAuthor() 메서드가 호출될 때 DB에서 오게 된다.
 
-> (2)를 호출하면 select 구문은 실행되지 않지만, author를 잘 가져오는 것을 확인할 수 있습니다. 조회 대상이 영속 컨텍스트에 이미 존재 하기 때문에 프록시로 DB를 호출하여 반환하지 않고 객체를 바로 반환해주고 있습니다.
+> (2)를 호출하면 select 구문은 실행되지 않지만, author를 잘 가져오는 것을 확인할 수 있다. 조회 대상이 영속 컨텍스트에 이미 존재 하기 때문에 프록시로 DB를 호출하여 반환하지 않고 객체를 바로 반환해주고 있다.
 
 ## 4.3 @ManyToOne 옵션 중에 optional 속성이 true, false인 경우에 쿼리 구문이 어떻게 다르게 생성이 되나?
 
 ### 4.3.1 @ManyToOne (optional=true)인 경우 - 선택적인 관계
 
-기본값이 optional=true이기 때문에 Post 객체는 null이 될 수 있습니다. @JoinColumn의 nullable=true(기본값) 속성인 경우에도 null로 저장될 수 있다는 의미이기도 합니다.
+기본값이 optional=true이기 때문에 Post 객체는 null이 될 수 있다. @JoinColumn의 nullable=true(기본값) 속성인 경우에도 null로 저장될 수 있다는 의미이기도 한다.
 
 ```java
 @Table(name = "comment")
@@ -468,7 +468,7 @@ public class Comment extends DateAudit {
 Comment foundComment = commentRepository.findById(1L).get();
 ```
 
-select 구문으로 조회하면 null을 포함될 수 있어서 아래와 같이 LEFT OUTER JOIN으로 생성됩니다.
+select 구문으로 조회하면 null을 포함될 수 있어서 아래와 같이 LEFT OUTER JOIN으로 생성된다.
 
 ```sql
 Hibernate: select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as create_d2_0_0_, comment0_.updated_dt as updated_3_0_0_, comment0_.author as author4_0_0_, comment0_.content as content5_0_0_, comment0_.post_id as post_id6_0_0_, post1_.post_id as post_id1_1_1_, post1_.create_dt as create_d2_1_1_, post1_.updated_dt as updated_3_1_1_, post1_.author as author4_1_1_, post1_.content as content5_1_1_, post1_.like_count as like_cou6_1_1_, post1_.title as title7_1_1_ from comment comment0_ left outer join post post1_ on comment0_.post_id=post1_.post_id where comment0_.comment_id=?
@@ -478,7 +478,7 @@ Hibernate: select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as
 
 ### 4.3.2 @ManyToOne(optional=false) 인 경우 - 필수적인 관계
 
-optional=true로 지정하면 Post 객체는 null이 될 수 없기 때문에 필수적으로 포함되어야 합니다. @JoinColumn(nullable=false) 어노테이션 사용하는 경우에도 같습니다.
+optional=true로 지정하면 Post 객체는 null이 될 수 없기 때문에 필수적으로 포함되어야 한다. @JoinColumn(nullable=false) 어노테이션 사용하는 경우에도 같다.
 
 ```java
 @Table(name = "comment")
@@ -489,17 +489,17 @@ public class Comment extends DateAudit {
     private Post post;
 }
 ```
-select 쿼리 구문을 보면 INNER JOIN으로 생성이 됩니다.
+select 쿼리 구문을 보면 INNER JOIN으로 생성이 된다.
 
 ```sql
 select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as create_d2_0_0_, comment0_.updated_dt as updated_3_0_0_, comment0_.author as author4_0_0_, comment0_.content as content5_0_0_, comment0_.post_id as post_id6_0_0_, post1_.post_id as post_id1_1_1_, post1_.create_dt as create_d2_1_1_, post1_.updated_dt as updated_3_1_1_, post1_.author as author4_1_1_, post1_.content as content5_1_1_, post1_.like_count as like_cou6_1_1_, post1_.title as title7_1_1_ from comment comment0_ inner join post post1_ on comment0_.post_id=post1_.post_id where comment0_.comment_id=?
 ```
 
-엔티티의 속성 구성후 쿼리 구문을 로그로 확인하면서 원하는 쿼리인 지 확인하는 습관이 필요합니다.
+엔티티의 속성 구성후 쿼리 구문을 로그로 확인하면서 원하는 쿼리인 지 확인하는 습관이 필요한다.
 
 # 5. 정리
 
-JPA 연관관계에서 가장 기본이 되는 다대일 관계에 대해서 알아보았습니다. 이외에도 일대일 그리고 다대다 관계도 익숙해질 수 있도록 시리즈 포스팅에서 알아보겠습니다.
+JPA 연관관계에서 가장 기본이 되는 다대일 관계에 대해서 알아보았다. 이외에도 일대일 그리고 다대다 관계도 익숙해질 수 있도록 시리즈 포스팅에서 알아보자.
 
 # 6. 참고
 

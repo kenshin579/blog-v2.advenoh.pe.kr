@@ -12,11 +12,11 @@ tags:
 
 # 1. 들어가며
 
-Jackson에서 양방향 관계 (Bidirectional Relationship)로 맺어진 객체는 무한 재귀가 발생하는 문제가 있습니다. 구체적인 예를 들어 어떤 상황에서 발생하는 지 살펴보고 어떤 방법으로 해결 가능한지도 알아보겠습니다.
+Jackson에서 양방향 관계 (Bidirectional Relationship)로 맺어진 객체는 무한 재귀가 발생하는 문제가 있다. 구체적인 예를 들어 어떤 상황에서 발생하는 지 살펴보고 어떤 방법으로 해결 가능한지도 알아보자.
 
 ## 1.1 무한 재귀
 
-Customer와 Order 두 객체는 서로 순환 참조 (Circular Reference)를 하고 있습니다. Customer 객체가 Order 객체를 가지고 있고 Order 객체가 Customer 객체를 가지고 있는 경우입니다.
+Customer와 Order 두 객체는 서로 순환 참조 (Circular Reference)를 하고 있다. Customer 객체가 Order 객체를 가지고 있고 Order 객체가 Customer 객체를 가지고 있는 경우이다.
 
 ```java
 @Setter
@@ -38,7 +38,7 @@ public class Order {
 }
 ```
 
-Customer 객체를 Jackson에서 직렬화(serialization) 할 경우 JsonMappingException 예외가 발생하게 됩니다.
+Customer 객체를 Jackson에서 직렬화(serialization) 할 경우 JsonMappingException 예외가 발생하게 된다.
 
 ```java
 @Test(expected = JsonMappingException.class)
@@ -58,7 +58,7 @@ public void infinite_recursion_이슈_발생() throws JsonProcessingException {
 }
 ```
 
-JsonMappingException 예외 오류 메시지입니다.
+JsonMappingException 예외 오류 메시지이다.
 
 ![](image_1.png)
 
@@ -76,14 +76,14 @@ JsonMappingException 예외 오류 메시지입니다.
 
 ## 3.1 @JsonManagedReference와 @JsonBackReference 어노테이션 사용
 
-Jackson 2.0 버전 이전에 순환 참조를 해결하기 위해서 사용했던 어노테이션입니다.
+Jackson 2.0 버전 이전에 순환 참조를 해결하기 위해서 사용했던 어노테이션이다.
 
 * @JsonManagedReference
     * 양방향 관계에서 정방향 참조할 변수에 어노테이션을 추가하면 직렬화에 포함된다
 * @JsonBackReference
     * 양방향 관계에서 역방향 참조로 어노테이션을 추가하면 직렬화에서 제외된다
 
-Customer 객체에서 Order 객체에 @JsonManagedReference를 추가하고 Order에서는 Customer 객체에 @JsonBackReference 어노테이션을 추가하여 직렬화에서 Customer 객체를 제외 시켰습니다.
+Customer 객체에서 Order 객체에 @JsonManagedReference를 추가하고 Order에서는 Customer 객체에 @JsonBackReference 어노테이션을 추가하여 직렬화에서 Customer 객체를 제외 시켰다.
 
 ```java
 @Setter
@@ -132,7 +132,7 @@ public void infinite_recursion_해결책_JsonManagedReference_JsonBackReference(
 
 ## 3.2 @JsonIdentityInfo - 추천방식
 
-Jackson 2.0 이후부터 새롭게 추가된 어노테이션입니다. @JsonIdentityInfo 어노테이션을 추가해서 직렬화에 포함 시킬 속성 값을 ‘property’ 속성에 지정합니다.
+Jackson 2.0 이후부터 새롭게 추가된 어노테이션이다. @JsonIdentityInfo 어노테이션을 추가해서 직렬화에 포함 시킬 속성 값을 ‘property’ 속성에 지정한다.
 
 * @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class)
     * generator = ObjectIdGenerators.PropertyGenerator.class 클래스는 순환 참조시 사용할 Id를 생성하는데 사용되는 클래스이다
@@ -195,7 +195,7 @@ public class Customer {
 }
 ```
 
-@JsonIdentityReference 어노테이션을 사용하지 않을 경우에는 아래와 같이 객체의 전체 내용을 직렬화 합니다.
+@JsonIdentityReference 어노테이션을 사용하지 않을 경우에는 아래와 같이 객체의 전체 내용을 직렬화 한다.
 
 ```java
 @Test
@@ -213,7 +213,7 @@ public void JsonIdentityReferenceAnnotation이_없는_경우() throws JsonProces
 
 ![](image_6.png)
 
-하지만, @JsonIdentityReference 어노테이션을 사용하는 경우에는 직렬화시 객체 ID로만 직렬화 합니다.
+하지만, @JsonIdentityReference 어노테이션을 사용하는 경우에는 직렬화시 객체 ID로만 직렬화 한다.
 
 ```java
 @Test
@@ -233,7 +233,7 @@ public void JsonIdentityReferenceAnnotation이_없는_경우() throws JsonProces
 
 ## 3.3 @JsonIgnore 어노테이션 사용
 
-마지막으로 제일 간단하게 해결할 수 있는 방법은 직렬화 할때 순환 참조 되는 속성에 @JsonIgnore 어노테이션을 추가하여 직렬화에서 제외시키는 방법입니다.
+마지막으로 제일 간단하게 해결할 수 있는 방법은 직렬화 할때 순환 참조 되는 속성에 @JsonIgnore 어노테이션을 추가하여 직렬화에서 제외시키는 방법이다.
 
 ```java
 @Setter
@@ -271,13 +271,13 @@ public class CustomerTest {
 
 **실행 화면**
 
-Unit Test을 실행해보면 customer 정보는 Order 객체에서 제외된 것을 확인할 수 있습니다.
+Unit Test을 실행해보면 customer 정보는 Order 객체에서 제외된 것을 확인할 수 있다.
 
 ![](image_7.png)
 
 # 4. 정리
 
-웹 어플리케이션에서 데이터 전송시 일반적으로 JSON 포멧을 사용하고 있고 서버단에서를 JSON 처리를 위해 Jackson 라이브러리를 많이 사용하고 있습니다. 객체 간에 서로 참조하여 순환 참조가 발생하게 되면 무한 재귀로 StackOverflowError가 발생합니다. 이를 해결 하기 위해 3가지 방법을 알아보았습니다.
+웹 어플리케이션에서 데이터 전송시 일반적으로 JSON 포멧을 사용하고 있고 서버단에서를 JSON 처리를 위해 Jackson 라이브러리를 많이 사용하고 있다. 객체 간에 서로 참조하여 순환 참조가 발생하게 되면 무한 재귀로 StackOverflowError가 발생한다. 이를 해결 하기 위해 3가지 방법을 알아보았다.
 
 # 5. 참고
 

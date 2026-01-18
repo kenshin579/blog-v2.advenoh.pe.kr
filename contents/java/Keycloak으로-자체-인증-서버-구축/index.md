@@ -1,6 +1,6 @@
 ---
 title: "Keycloak으로 자체 인증 서버 구축"
-description: "Keycloak의 핵심 개념과 기능(SSO·OAuth2·OIDC·SAML·MFA·User Federation) 및 구성 요소를 소개하고, 도커로 로컬 인증 서버를 빠르게 구축하는 방법을 정리합니다"
+description: "Keycloak의 핵심 개념과 기능(SSO·OAuth2·OIDC·SAML·MFA·User Federation) 및 구성 요소를 소개하고, 도커로 로컬 인증 서버를 빠르게 구축하는 방법을 정리한다"
 date: 2025-09-08
 update: 2025-09-08
 tags:

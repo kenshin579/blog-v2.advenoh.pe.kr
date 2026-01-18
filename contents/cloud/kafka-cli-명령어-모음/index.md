@@ -17,7 +17,7 @@ series: "Apache Kafka"
 ---
 
 
-Kafka 사용시 [Ahkq](https://github.com/tchiotludo/akhq) UI를 대부분 사용하고 있지만, Trouble-shooting이나 스크립트 작성을 하는 경우에는 Kafka CLI를 사용하는 경우도 종종있다. 자주 사용하는 Kafka CLI 명령어를 정리합니다.
+Kafka 사용시 [Ahkq](https://github.com/tchiotludo/akhq) UI를 대부분 사용하고 있지만, Trouble-shooting이나 스크립트 작성을 하는 경우에는 Kafka CLI를 사용하는 경우도 종종있다. 자주 사용하는 Kafka CLI 명령어를 정리한다.
 
 로컬환경에서 Kafka를 실행하는 방법은 그전 [포스팅](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/)을 참고해주세요.
 

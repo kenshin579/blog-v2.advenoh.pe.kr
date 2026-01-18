@@ -12,7 +12,7 @@ tags:
 ---
 
 # 1. Problem
-괄호 기호가 OPEN, CLOSE 매칭이 제대로 되도록 확인하는 코드 문제입니다.
+괄호 기호가 OPEN, CLOSE 매칭이 제대로 되도록 확인하는 코드 문제이다.
 
 ```java
 public boolean solution(String str) {
@@ -21,7 +21,7 @@ public boolean solution(String str) {
 ```
 
 **1.1 입력 / 결과**
-입력 가능한 String 값은 아래와 같습니다.
+입력 가능한 String 값은 아래와 같다.
 
 - ()()() —> true
 - )( —> false
@@ -31,8 +31,8 @@ public boolean solution(String str) {
 
 ## 2.1 Approach 1
 
-이 문제를 쉽게 해결하는 방법은 **스택 자료구조**를 이용하는 것입니다.
-기본 아이디어는 다음과 같습니다.
+이 문제를 쉽게 해결하는 방법은 **스택 자료구조**를 이용하는 것이다.
+기본 아이디어는 다음과 같다.
 
 1. String의 한 char씩 스킨한다
 1. OPEN\_괄호 ‘(‘ 을 만나면 스택에 push하고
@@ -64,7 +64,7 @@ public boolean solution(String str) {
 }
 ```
 
-소스코드는 [github](https://github.com/kenshin579/tutorials-interview-questions/blob/master/src/main/java/com/google/ValidParenthesis.java) 에서도 확인할 수 있습니다.
+소스코드는 [github](https://github.com/kenshin579/tutorials-interview-questions/blob/master/src/main/java/com/google/ValidParenthesis.java) 에서도 확인할 수 있다.
 
 # 3. Reference
 

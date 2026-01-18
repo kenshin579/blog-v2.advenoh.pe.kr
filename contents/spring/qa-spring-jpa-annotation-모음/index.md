@@ -14,29 +14,29 @@ tags:
   - 데이터베이스
 ---
 
-개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료입니다.
-미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
+개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료이다.
+미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사한다.
 
 # Q&A 전체 목록
 
 ## <span style="color:orange">[답변완료]</span>
 
-쉽게 찾기 위해서 알파벳 순으로 정리합니다.
+쉽게 찾기 위해서 알파벳 순으로 정리한다.
 
 ## <span style="color:brown">@EntityScan</span>
 
-이 어노테이션으로 엔티티 클래스를 스캔할 곳을 지정하는데 사용합니다. 메인 어플리케이션 패키지 내에 엔티티 클래스가 없는 경우 이 어노테이션을 사용해서 패키지 밖에 존재하는 엔티티를 지정할 수 있습니다. 기존적으로 @EnableAutoConfiguration 어노테이션에 의해서 지정한 곳에서 엔티티를 스캔합니다.
+이 어노테이션으로 엔티티 클래스를 스캔할 곳을 지정하는데 사용한다. 메인 어플리케이션 패키지 내에 엔티티 클래스가 없는 경우 이 어노테이션을 사용해서 패키지 밖에 존재하는 엔티티를 지정할 수 있다. 기존적으로 @EnableAutoConfiguration 어노테이션에 의해서 지정한 곳에서 엔티티를 스캔한다.
 
 참고
 * [https://dzone.com/articles/spring-boot-entity-scan](https://dzone.com/articles/spring-boot-entity-scan)
 
 ## <span style="color:brown">@UniqueConstraint</span>
 
-이 어노테이션은 JPA 컬럼 2개 이상 unique하게 설정하려고 할때 사용합니다.
+이 어노테이션은 JPA 컬럼 2개 이상 unique하게 설정하려고 할때 사용한다.
 
 ![](image_3.png)
 
-참고로 하나의 컬럼에 unique 한 설정을 하려면 아래와 같습니다.
+참고로 하나의 컬럼에 unique 한 설정을 하려면 아래와 같다.
 
 ![](image_2.png)
 
@@ -53,7 +53,7 @@ tags:
 
 ## <span style="color:brown">@BatchSize(size=30)</span>
 
-이 어노테이션은 JPA의 N+1을 해결할 수 있는 방법중에 하나로 연관된 엔티티를 조회할 때 지정된 size 만큼 SQL의 IN 절을 사용해서 사이즈만큰 한번에 가져와서 조회합니다.
+이 어노테이션은 JPA의 N+1을 해결할 수 있는 방법중에 하나로 연관된 엔티티를 조회할 때 지정된 size 만큼 SQL의 IN 절을 사용해서 사이즈만큰 한번에 가져와서 조회한다.
 
 ![](image_4.png)
 

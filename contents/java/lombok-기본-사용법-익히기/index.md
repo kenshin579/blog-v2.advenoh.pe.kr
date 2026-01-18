@@ -12,14 +12,14 @@ tags:
 ---
 
 # 1. 들어가며
-Lombok는 자바에서 작성해야 하는 boilerplate code(ex. getter/setter, constructor, toString)를 선언한 어노테이션을 통해서 자동으로 생성해주는 라이브러리입니다.
+Lombok는 자바에서 작성해야 하는 boilerplate code(ex. getter/setter, constructor, toString)를 선언한 어노테이션을 통해서 자동으로 생성해주는 라이브러리이다.
 
-코드 자체가 더 간결해져 가독성도 높아지고 더 빠르게 개발할 수 있는 장점이 있습니다. 하지만, Lombok 사용 시 주의가 필요한 부분이 분명히 존재합니다. (참조 : Lombok Pitfall)
-그래서 올바로 알고 주의해서 사용하기를 권장합니다. 이 포스팅에서는 자주 사용되는 어노테이션 위주로 작성하도록 하겠습니다.
+코드 자체가 더 간결해져 가독성도 높아지고 더 빠르게 개발할 수 있는 장점이 있다. 하지만, Lombok 사용 시 주의가 필요한 부분이 분명히 존재한다. (참조 : Lombok Pitfall)
+그래서 올바로 알고 주의해서 사용하기를 권장한다. 이 포스팅에서는 자주 사용되는 어노테이션 위주로 작성하도록 하자.
 
 # 2. 환경 설정
 
-아래 환경 기반으로 코드가 작성되어 있습니다. IDE에서 Lombok 플러그인을 설치해야 어노테이션이 인식됩니다.
+아래 환경 기반으로 코드가 작성되어 있다. IDE에서 Lombok 플러그인을 설치해야 어노테이션이 인식된다.
 
 - OS: Mac OS
 - IDE: Intelij
@@ -44,7 +44,7 @@ pom.xml 파일에 lombok dependency를 추가해줍니다.
 
 # 3. 대표적인 예제
 
-자주 사용되는 어노테이션 위주로 살펴보도록 하겠습니다.
+자주 사용되는 어노테이션 위주로 살펴보도록 하자.
 
 - @NonNull
 - @Getter, @Setter
@@ -88,11 +88,11 @@ public class NonNullExample extends Something {
 }
 ```
 
-위와 같이 바닐라 버전의 자바 소스를 보고 싶다면 IDE에서 Java Bytecode Decompiler 플러그인 활성화 이후 해당 class를 클릭하면 소스코드를 직접 확인할 수 있습니다.
+위와 같이 바닐라 버전의 자바 소스를 보고 싶다면 IDE에서 Java Bytecode Decompiler 플러그인 활성화 이후 해당 class를 클릭하면 소스코드를 직접 확인할 수 있다.
 
 ## @Getter, @Setter
 
-클래스 필드에 대한 getter와 setter 메서드를 생성해주고 여러 옵션으로 다양한 코드를 자동생성할 수 있습니다. Setter는 필드가 final이 아닌 필드에 대해서 메서드가 생성됩니다.
+클래스 필드에 대한 getter와 setter 메서드를 생성해주고 여러 옵션으로 다양한 코드를 자동생성할 수 있다. Setter는 필드가 final이 아닌 필드에 대해서 메서드가 생성된다.
 
 - 클래스 전체에 적용
 
@@ -212,7 +212,7 @@ public class PersonSetterChain {
 
 ## @ToString
 
-클래스의 toString 메서드를 자동으로 생성해주고 옵션을 주어 toString에 제외 시킬 필드 속성도 지정할 수 있습니다.
+클래스의 toString 메서드를 자동으로 생성해주고 옵션을 주어 toString에 제외 시킬 필드 속성도 지정할 수 있다.
 
 - 메서드에서 제외시킬 필드 지정
 
@@ -270,12 +270,12 @@ public class PersonExclude {
 
 ## @EqualsAndHashCode
 
-equals()와 hashCode()를 자동 생성해주는 어노테이션입니다.
+equals()와 hashCode()를 자동 생성해주는 어노테이션이다.
 
 - 제외시킬 필드 지정
     - @EqualsAndHashCode.Exclude
 
-바닐라 자바 코드가 너무 길어서 생략했습니다. 실제 코드는 컴파일된 클래스 파일으로 확인해보세요.
+바닐라 자바 코드가 너무 길어서 생략했다. 실제 코드는 컴파일된 클래스 파일으로 확인해보세요.
 
 ```java
 //Ex1 - Lombok
@@ -349,7 +349,7 @@ public class PersonExclude {
 
 ## @NoArgsConstructor, @AllArgsConstructor, @RequiredArgsConstructor
 
-생성자를 자동으로 생성해주는 어노테이션입니다. 필드 선언순서에 따라 생성자 인자가 정해집니다. 나중에 리펙토링을 하게 되면 인자 순서가 변경될 수 있다는 점을 기억하면 좋을 것 같습니다.
+생성자를 자동으로 생성해주는 어노테이션이다. 필드 선언순서에 따라 생성자 인자가 정해집니다. 나중에 리펙토링을 하게 되면 인자 순서가 변경될 수 있다는 점을 기억하면 좋을 것 같다.
 
 - NoArgsConstructor : 인자 없는 생성자
 - AllArgsConstructor : 모든 필드를 인자로 받는 생성자
@@ -403,7 +403,7 @@ public class PersonArgs {
 
 ## @Data
 
-@Data 어노테이션은 아래 모든 어노테이션이 적용되는 어노테이션입니다.
+@Data 어노테이션은 아래 모든 어노테이션이 적용되는 어노테이션이다.
 
 - @ToString
 - @EqualsAndHashCode
@@ -439,7 +439,7 @@ public class Person {
 
 ## @Builder
 
-어노테이션 하나로 [Builder Pattern](https://en.wikipedia.org/wiki/Builder_pattern#Java) 을 생성해줍니다. 빌더 패턴은 여러 설정하고 객체를 만들어주는 패턴입니다. 더 자세한 내용은 아래 참조를 확인해주세요.
+어노테이션 하나로 [Builder Pattern](https://en.wikipedia.org/wiki/Builder_pattern#Java) 을 생성해줍니다. 빌더 패턴은 여러 설정하고 객체를 만들어주는 패턴이다. 더 자세한 내용은 아래 참조를 확인해주세요.
 
 ```java
 //Lombok 사용
@@ -510,7 +510,7 @@ public class Car {
 
 ## @Slf4j, (@Log, @Log4j, @Log4j2, etc)
 
-원하는 로깅 프레임워크를 선택해서 선언하면 보다 쉽게 로그를 사용할 수 있습니다.
+원하는 로깅 프레임워크를 선택해서 선언하면 보다 쉽게 로그를 사용할 수 있다.
 
 ```java
 //Lombok 사용
@@ -582,7 +582,7 @@ public class Car {
 
 ## Lombok Configuration
 
-Lombok에서 제공하는 기능에 대해서 사용하지 못하게 하는 설정등이 가능합니다. 프로젝트 루트에 lombok.config 파일을 생성해서 원하는 설정를 key=value 형식으로 작성하면 됩니다. 구체적인 설정은 해당 [Lombok Configuration system](https://projectlombok.org/features/configuration) 을 참조해주세요.
+Lombok에서 제공하는 기능에 대해서 사용하지 못하게 하는 설정등이 가능한다. 프로젝트 루트에 lombok.config 파일을 생성해서 원하는 설정를 key=value 형식으로 작성하면 된다. 구체적인 설정은 해당 [Lombok Configuration system](https://projectlombok.org/features/configuration) 을 참조해주세요.
 
 예 - 설정(@NonNull 사용 금지)
 
@@ -590,7 +590,7 @@ Lombok에서 제공하는 기능에 대해서 사용하지 못하게 하는 설�
 lombok.nonNull.flagUsage=error
 ```
 
-IDE에서는 표시되지 않지만, 컴파일시 오류가 발생합니다.
+IDE에서는 표시되지 않지만, 컴파일시 오류가 발생한다.
 
 ![](AF8820D7-66DA-4A4C-97F3-67FB7C867D8A.png)
 

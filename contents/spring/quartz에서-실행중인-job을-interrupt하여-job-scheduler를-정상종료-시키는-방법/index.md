@@ -20,7 +20,7 @@ series: "Spring Quartz"
 
 # 1. 들어가며
 
-본 포스팅은 Quartz 튜터리얼에서 4번째 시리즈로 Quartz 서버를 셧다운 시킬 때 gradefully하게 처리하는 방법에 대해서 다룹니다. 셧다운 이벤트가 발생하면 실행 중인 Quartz Job에 내부 interrupt() 함수가 호출이 되고 interrupt로 노티를 받으면 개발자가 알아서 close 로직을 짜면 됩니다. 실행 쓰레드를 kill 할 수도 있고 (비추천) 실행 중인 Job을 기다리고 다음 스케줄에서 제외시킬 수도 있습니다.
+본 포스팅은 Quartz 튜터리얼에서 4번째 시리즈로 Quartz 서버를 셧다운 시킬 때 gradefully하게 처리하는 방법에 대해서 다룹니다. 셧다운 이벤트가 발생하면 실행 중인 Quartz Job에 내부 interrupt() 함수가 호출이 되고 interrupt로 노티를 받으면 개발자가 알아서 close 로직을 짜면 된다. 실행 쓰레드를 kill 할 수도 있고 (비추천) 실행 중인 Job을 기다리고 다음 스케줄에서 제외시킬 수도 있다.
 
 # 2. 개발 환경
 
@@ -32,20 +32,20 @@ series: "Spring Quartz"
 
 # 3. Quartz에서 ShutdownHook 등록하고 기존 Job을 Interruptable Job으로 구현하기
 
-실행 중인 Job을 gracefully하게 셧다운 하려면 2가지만 설정해주면 됩니다.
+실행 중인 Job을 gracefully하게 셧다운 하려면 2가지만 설정해주면 된다.
 
 # 3.1 Quartz 설정에 SchedulerFactoryBean에 대한 ShutdownHook 등록하기
 
-Quartz에서 사용하는 SchedulerFactoryBean은 SmartLifeCycle 인터페이스를 구현하고 있습니다.
+Quartz에서 사용하는 SchedulerFactoryBean은 SmartLifeCycle 인터페이스를 구현하고 있다.
 
 ```java
 public class SchedulerFactoryBean extends SchedulerAccessor implements FactoryBean<Scheduler>,
 BeanNameAware, ApplicationContextAware, InitializingBean, DisposableBean, SmartLifecycle
 ```
 
-스프링의 SmartLifeCycle은 콜백 인터페이스로 여러 LifeCycle에 대한 메서드를 가지고 있고 어플리케이션이 종료되거나 시작될 때 정의된 메서드가 호출됩니다.
+스프링의 SmartLifeCycle은 콜백 인터페이스로 여러 LifeCycle에 대한 메서드를 가지고 있고 어플리케이션이 종료되거나 시작될 때 정의된 메서드가 호출된다.
 
-QuartzConfiguration 파일에 gracefulShutdownHookForQuartz 메서드를 빈으로 정의하여 Shutdown Hook을 등록합니다.
+QuartzConfiguration 파일에 gracefulShutdownHookForQuartz 메서드를 빈으로 정의하여 Shutdown Hook을 등록한다.
 
 ```java
 @Bean
@@ -102,7 +102,7 @@ public SmartLifecycle gracefulShutdownHookForQuartz(@Qualifier("schedulerFactory
 }
 ```
 
-Gracefully 하게 셧다운 해야 하기 때문에 저희가 관심 있는 메서드는 stop() 메서드입니다. 이 메서드가 호출되면 Quartz 스케줄러에서 현재 실행 중인 모든 Job을 조회하여 실행 중인 Job의 interrupt() 메서드를 호출합니다. Job에서는 어떻게 처리할 수 있는지 다음 장에서 설명할게요.
+Gracefully 하게 셧다운 해야 하기 때문에 저희가 관심 있는 메서드는 stop() 메서드이다. 이 메서드가 호출되면 Quartz 스케줄러에서 현재 실행 중인 모든 Job을 조회하여 실행 중인 Job의 interrupt() 메서드를 호출한다. Job에서는 어떻게 처리할 수 있는지 다음 장에서 설명할게요.
 
 ```java
 private void interruptJobs(SchedulerFactoryBean schedulerFactoryBean) throws SchedulerException {
@@ -117,7 +117,7 @@ private void interruptJobs(SchedulerFactoryBean schedulerFactoryBean) throws Sch
 
 3.2 Quartz Job에 InterruptableJob 인터페이스를 implements하여 구현하기
 
-Interrupt 가능한 Job을 구현하려면 InterrutableJob 인터페이스를 구현하고 interrupt() 메서드를 구현해주면 됩니다. 이미 짐작 하셨겠지만, 셧다운시 3.1에서 정의한 SmartLifeCycle의 stop() 메서드에 의해 호출이 되고 현재 실행 중인 Job의 쓰레드를 interrupt 시킵니다.
+Interrupt 가능한 Job을 구현하려면 InterrutableJob 인터페이스를 구현하고 interrupt() 메서드를 구현해주면 된다. 이미 짐작 하셨겠지만, 셧다운시 3.1에서 정의한 SmartLifeCycle의 stop() 메서드에 의해 호출이 되고 현재 실행 중인 Job의 쓰레드를 interrupt 시킵니다.
 
 ```java
 public class CronJob2 extends QuartzJobBean implements InterruptableJob {
@@ -145,7 +145,7 @@ public class CronJob2 extends QuartzJobBean implements InterruptableJob {
 
 # 4. 정리
 
-실행 중인 Job을 Gracefully 하게 셧다운 시키는 방법에 대해서 알아보았습니다. 다음 포스팅은 Quartz 튜터리얼 시리지로의 마지막으로 Quartz 어드민 UI 구현에 대해서 알아보겠습니다.
+실행 중인 Job을 Gracefully 하게 셧다운 시키는 방법에 대해서 알아보았다. 다음 포스팅은 Quartz 튜터리얼 시리지로의 마지막으로 Quartz 어드민 UI 구현에 대해서 알아보자.
 
 # 5. 참고
 

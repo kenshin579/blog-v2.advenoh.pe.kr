@@ -20,11 +20,11 @@ series: "Spring JPA"
 
 # 1. 들어가며
 
-JPA로 작업하다 보면 N+1 문제에 맞닥뜨리게 되는데요. N+1은 언제 발생할 수 있는 이슈이고 이를 해결하기 위해서 어떤 방법들이 있는지 알아보겠습니다.
+JPA로 작업하다 보면 N+1 문제에 맞닥뜨리게 되는데요. N+1은 언제 발생할 수 있는 이슈이고 이를 해결하기 위해서 어떤 방법들이 있는지 알아보자.
 
 # 2. 개발 환경
 
-포스팅에서 언급한 코드는 github에 올라가 있습니다.
+포스팅에서 언급한 코드는 github에 올라가 있다.
 
 * OS : Mac OS
 * IDE: Intellij
@@ -34,9 +34,9 @@ JPA로 작업하다 보면 N+1 문제에 맞닥뜨리게 되는데요. N+1은 �
 
 # 3. N+1 문제 및 해결 방법
 
-JPA에서 N+1 발생 시 성능에 큰 영향을 줄 수 있기 때문에 JPA로 개발하고 있다면 꼭 알아두어야 하겠습니다. N+1은 언제 발생할 수 있는 같이 알아보겠습니다.
+JPA에서 N+1 발생 시 성능에 큰 영향을 줄 수 있기 때문에 JPA로 개발하고 있다면 꼭 알아두어야 하자. N+1은 언제 발생할 수 있는 같이 알아보자.
 
-`Post`와 `Comment` 엔티티는 다음과 같습니다.
+`Post`와 `Comment` 엔티티는 다음과 같다.
 
 ![](image_1.png)
 
@@ -44,7 +44,7 @@ JPA에서 N+1 발생 시 성능에 큰 영향을 줄 수 있기 때문에 JPA로
 
 ### 3.1.1 즉시 로딩 (fetchType.EAGER) 변경후 findAll()로 조회하는 경우
 
-`Post`와 `Comment` 엔티티 간에 다대일 양방향 연관 관계입니다. @OneToMany 언노테이션의 fetch의 기본값은 지연 로딩이지만, 즉시 로딩으로 변경하면 N+1 문제가 발생할 수 있습니다.
+`Post`와 `Comment` 엔티티 간에 다대일 양방향 연관 관계이다. @OneToMany 언노테이션의 fetch의 기본값은 지연 로딩이지만, 즉시 로딩으로 변경하면 N+1 문제가 발생할 수 있다.
 
 ```java
 @Table(name = "post")
@@ -77,7 +77,7 @@ public class Comment extends DateAudit {
 }
 ```
 
-`findAll()` 메서드로 Post 전체를 조회해보겠습니다.
+`findAll()` 메서드로 Post 전체를 조회해보자.
 
 ```java
 @Test
@@ -87,9 +87,9 @@ public void test_N1_문제_발생_즉시로딩_하는_경우() throws JsonProces
 }
 ```
 
-4개의 `Post`와 각 `Post`에 2개의 `Comment`를 생성하고 나서 findAll() 메서드로 조회합니다.
+4개의 `Post`와 각 `Post`에 2개의 `Comment`를 생성하고 나서 findAll() 메서드로 조회한다.
 
-실제 실행되는 쿼리를 살펴보면 먼저 `Post` select 쿼리를 실행합니다. 그리고 해당 `Post`에 대해서 `Comment`를 조회하기 위해서 `Post`의 수만큼 4번의 쿼리가 추가로 발생합니다. 데이터의 수만큼 조회하는 것을 **N+1 문제**라고 합니다. 데이터가 많을수록 쿼리 해야 하는 수가 많아져서 성능에도 큰 영향을 주게 됩니다.
+실제 실행되는 쿼리를 살펴보면 먼저 `Post` select 쿼리를 실행한다. 그리고 해당 `Post`에 대해서 `Comment`를 조회하기 위해서 `Post`의 수만큼 4번의 쿼리가 추가로 발생한다. 데이터의 수만큼 조회하는 것을 **N+1 문제**라고 한다. 데이터가 많을수록 쿼리 해야 하는 수가 많아져서 성능에도 큰 영향을 주게 된다.
 
 ```sql
 Hibernate: select post0_.post_id as post_id1_1_, post0_.create_dt as create_d2_1_, post0_.updated_dt as updated_3_1_, post0_.author as author4_1_, post0_.content as content5_1_, post0_.like_count as like_cou6_1_, post0_.title as title7_1_ from post post0_
@@ -103,7 +103,7 @@ Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id
 Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id as comment_1_0_0_, commentlis0_.comment_id as comment_1_0_1_, commentlis0_.create_dt as create_d2_0_1_, commentlis0_.updated_dt as updated_3_0_1_, commentlis0_.author as author4_0_1_, commentlis0_.content as content5_0_1_, commentlis0_.post_id as post_id6_0_1_ from comment commentlis0_ where commentlis0_.post_id=?
 ```
 
-가장 빠르게 해결하는 방법은 지연 로딩으로 변경하는 것입니다.
+가장 빠르게 해결하는 방법은 지연 로딩으로 변경하는 것이다.
 
 ```java
 @Table(name = "post")
@@ -125,13 +125,13 @@ List<Post> posts = postRepository.findAll(); //N+1 발생하지 않음
 }
 ```
 
-변경 이후 `findAll()` 메서드로 호출하면 지연 로딩이기 때문에 `Post` select 쿼리만 실행됩니다.
+변경 이후 `findAll()` 메서드로 호출하면 지연 로딩이기 때문에 `Post` select 쿼리만 실행된다.
 
 
 ```sql
 Hibernate: select post0_.post_id as post_id1_1_, post0_.create_dt as create_d2_1_, post0_.updated_dt as updated_3_1_, post0_.author as author4_1_, post0_.content as content5_1_, post0_.like_count as like_cou6_1_, post0_.title as title7_1_ from post post0_
 ```
-지연 로딩은 실제 `Comment`의 값을 조회하는 경우에만 해당 select 쿼리가 발생합니다.
+지연 로딩은 실제 `Comment`의 값을 조회하는 경우에만 해당 select 쿼리가 발생한다.
 
 ```java
 log.info("post : {}", posts.get(0).getCommentList()); //조회 쿼리가 실행된다
@@ -140,11 +140,11 @@ log.info("post : {}", posts.get(0).getCommentList()); //조회 쿼리가 실행�
 Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id as comment_1_0_0_, commentlis0_.comment_id as comment_1_0_1_, commentlis0_.create_dt as create_d2_0_1_, commentlis0_.updated_dt as updated_3_0_1_, commentlis0_.author as author4_0_1_, commentlis0_.content as content5_0_1_, commentlis0_.post_id as post_id6_0_1_ from comment commentlis0_ where commentlis0_.post_id=?
 ```
 
-이미 짐작하셨겠지만, loop으로 조회하면 즉시 로딩하는 것과 같은 결과가 발생합니다.
+이미 짐작하셨겠지만, loop으로 조회하면 즉시 로딩하는 것과 같은 결과가 발생한다.
 
 ### 3.1.2 지연 로딩(LAZY) 변경 + Loop으로 조회하는 경우
 
-@OneToMany에서 fetch를 지연 로딩으로 변경한 이후에 loop으로 조회해보겠습니다.
+@OneToMany에서 fetch를 지연 로딩으로 변경한 이후에 loop으로 조회해보자.
 
 ```java
 @Table(name = "post")
@@ -173,7 +173,7 @@ public void test_N1_문제_발생_지연로딩설정_loop으로_조회하는_경
 
 ```
 
-[3.1.1]()에서와 같이 동일하게 N+1 이슈가 발생합니다.
+[3.1.1]()에서와 같이 동일하게 N+1 이슈가 발생한다.
 
 ```sql
 Hibernate: select post0_.post_id as post_id1_1_, post0_.create_dt as create_d2_1_, post0_.updated_dt as updated_3_1_, post0_.author as author4_1_, post0_.content as content5_1_, post0_.like_count as like_cou6_1_, post0_.title as title7_1_ from post post0_
@@ -189,9 +189,9 @@ Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id
 
 ### 3.1.3 N+1이 발생하는 원인
 
-`JpaRepository`에 정의한 인터페이스 메서드를 실행하면 JPA는 메서드 이름을 분석해서 JPQL를 생성하여 실행하게 됩니다.  JPQL은 SQL을 추상화한 객체지향 쿼리 언어로서 특정 SQL에 종속되지 않고 엔티티 객체와 필드 이름을 가지고 쿼리를 합니다.
+`JpaRepository`에 정의한 인터페이스 메서드를 실행하면 JPA는 메서드 이름을 분석해서 JPQL를 생성하여 실행하게 된다.  JPQL은 SQL을 추상화한 객체지향 쿼리 언어로서 특정 SQL에 종속되지 않고 엔티티 객체와 필드 이름을 가지고 쿼리를 한다.
 
-그면 지연 로딩 + loop으로 조회 시 왜 N+1 쿼리가 생성이 되어 실행되는지 알아보겠습니다.
+그면 지연 로딩 + loop으로 조회 시 왜 N+1 쿼리가 생성이 되어 실행되는지 알아보자.
 
 ```java
 @Transactional
@@ -208,13 +208,13 @@ public void test_N1_문제_발생_지연로딩설정_loop으로_조회하는_경
 }
 ```
 
-(1) 지연로딩으로 findAll() 실행시 `Post` 객체 관련된 정보를 조회합니다.
+(1) 지연로딩으로 findAll() 실행시 `Post` 객체 관련된 정보를 조회한다.
 
 ```sql
 select post0_.post_id as post_id1_1_, post0_.create_dt as create_d2_1_, post0_.updated_dt as updated_3_1_, post0_.author as author4_1_, post0_.content as content5_1_, post0_.like_count as like_cou6_1_, post0_.title as title7_1_ from post post0_ 
 ```
 
-(2) 여기서 Comment 정보를 조회하면, Post에 대한 조회는 이미 끝난 상태라서 JOIN으로 쿼리가 생성이 안 됩니다. 단지 Post에 대한 정보 ID로 조회할 수밖에 없어서 where comment.postId=? 형식으로 JPQL 쿼리를 생성합니다. 이로 인해 매번 조회 쿼리가 생성이 되어 N 번 실행하는 이슈가 발생합니다.
+(2) 여기서 Comment 정보를 조회하면, Post에 대한 조회는 이미 끝난 상태라서 JOIN으로 쿼리가 생성이 안 된다. 단지 Post에 대한 정보 ID로 조회할 수밖에 없어서 where comment.postId=? 형식으로 JPQL 쿼리를 생성한다. 이로 인해 매번 조회 쿼리가 생성이 되어 N 번 실행하는 이슈가 발생한다.
 
 ```sql
 Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id as comment_1_0_0_, commentlis0_.comment_id as comment_1_0_1_, commentlis0_.create_dt as create_d2_0_1_, commentlis0_.updated_dt as updated_3_0_1_, commentlis0_.author as author4_0_1_, commentlis0_.content as content5_0_1_, commentlis0_.post_id as post_id6_0_1_ from comment commentlis0_ where commentlis0_.post_id=?
@@ -224,11 +224,11 @@ Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id
 
 ## 3.2 해결 방안
 
-N+1을 어떻게 해결할 수 있는지에 대해서 알아보겠습니다.
+N+1을 어떻게 해결할 수 있는지에 대해서 알아보자.
 
 ### 3.2.1 JPQL 페치 조인 사용 - 추천
 
-JPQL에 fetch join 키워드를 사용해서 join 대상을 함께 조회할 수 있습니다. `Post` 조회 시 `p.commentList`도 같이 join 해서 조회해옵니다.
+JPQL에 fetch join 키워드를 사용해서 join 대상을 함께 조회할 수 있다. `Post` 조회 시 `p.commentList`도 같이 join 해서 조회해옵니다.
 
 ```java
 @Repository
@@ -237,7 +237,7 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     List<Post> findAllWithFetchJoin();
 }
 ```
-지연 로딩 설정 이후에 loop을 사용하면 그전 예제에서는 N+1이 발생했지만, `findAllWithFetchJoin()` 메서드 실행때에는 관련 대상을 한 번에 조회하여 N+1 이슈가 발생하지 않습니다.
+지연 로딩 설정 이후에 loop을 사용하면 그전 예제에서는 N+1이 발생했지만, `findAllWithFetchJoin()` 메서드 실행때에는 관련 대상을 한 번에 조회하여 N+1 이슈가 발생하지 않는다.
 
 ```java
 @Transactional
@@ -254,7 +254,7 @@ public void test_N1_문제_해결방법_fetch_join_사용() {
 }
 ```
 
-로그에서도 left outer join으로 조회해 오는 것을 볼 수 있습니다.
+로그에서도 left outer join으로 조회해 오는 것을 볼 수 있다.
 
 
 ```sql
@@ -263,7 +263,7 @@ Hibernate: select post0_.post_id as post_id1_1_0_, commentlis1_.comment_id as co
 
 ### 3.2.2 Batch Size 지정 + 즉시 로딩
 
-JPQL 페치 조인 대신 Batch 크기를 지정하는 방법도 있습니다. @BatchSize 어노테이션에 size를 지정하고 fetch 타입은 즉시로 설정합니다.
+JPQL 페치 조인 대신 Batch 크기를 지정하는 방법도 있다. @BatchSize 어노테이션에 size를 지정하고 fetch 타입은 즉시로 설정한다.
 
 ```java
 @Table(name = "post")
@@ -293,7 +293,7 @@ Hibernate: select commentlis0_.post_id as post_id6_0_1_, commentlis0_.comment_id
 Hibernate: select commentlis0_.post_id as post_id6_0_1_, commentlis0_.comment_id as comment_1_0_1_, commentlis0_.comment_id as comment_1_0_0_, commentlis0_.create_dt as create_d2_0_0_, commentlis0_.updated_dt as updated_3_0_0_, commentlis0_.author as author4_0_0_, commentlis0_.content as content5_0_0_, commentlis0_.post_id as post_id6_0_0_ from comment commentlis0_ where commentlis0_.post_id in (?, ?)
 ```
 
-`findAll()`로 호출할 때마다 where in 쿼리를 이용해서 배치 사이즈만큼 조회해옵니다. 배치 사이즈를 넘는 경우에는 추가로 조회해오는 쿼리가 생성됩니다.
+`findAll()`로 호출할 때마다 where in 쿼리를 이용해서 배치 사이즈만큼 조회해옵니다. 배치 사이즈를 넘는 경우에는 추가로 조회해오는 쿼리가 생성된다.
 
 Batch 사이즈 지정으로 해결하는 방법은 글로벌 패치 전략을 즉시 로딩으로 변경해야 하고 또한 배치 사이즈만큼만 조회할 수 있어서 N+1 문제를 완벽하게 해결하지 않아 권장하는 해결방법은 아닙니다.
 
@@ -309,7 +309,7 @@ Batch 사이즈 지정으로 해결하는 방법은 글로벌 패치 전략을 �
 
 ## 4.2 페치 조인 사용시 주의사항은 없나?
 
-페치 조인은 연관된 엔티티를 한번에 조회할 수 있어서 조회 횟수를 줄여 성능 최적화시 많이 사용됩니다. 하지만, 페치 조인은 다음과 같은 한계점이 존재합니다.
+페치 조인은 연관된 엔티티를 한번에 조회할 수 있어서 조회 횟수를 줄여 성능 최적화시 많이 사용된다. 하지만, 페치 조인은 다음과 같은 한계점이 존재한다.
 
 참고 - 책 : 자바 ORM 표준 JPA 프로그래밍
 

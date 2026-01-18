@@ -12,8 +12,8 @@ tags:
   - 자바
 ---
 
-개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료입니다.
-미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
+개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료이다.
+미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사한다.
 
 # Q&A 전체 목록
 
@@ -23,7 +23,7 @@ tags:
 
 ![](image_4.png)
 
-이 어노테이션은 클래스 필드에서 null이 되는 필드는 JSON으로 serialize할 때 제외하도록 하는 어노테이션입니다. 위 코드에서는 stringValue 변수는 JSON으로 저장되지 않습니다.
+이 어노테이션은 클래스 필드에서 null이 되는 필드는 JSON으로 serialize할 때 제외하도록 하는 어노테이션이다. 위 코드에서는 stringValue 변수는 JSON으로 저장되지 않는다.
 
 용어
 * 자바 객체를 JSON 으로 변환하는 작업을 serialize 라고 표현하고 JSON -> 객체는 deserialize이라고 한다
@@ -35,7 +35,7 @@ tags:
 
 ![](image_2.png)
 
-직렬화시 해당 필드를 포함시키지 않고 싶을 때 변수위에 선언하는 어노테이션입니다. 이 예제에서는 JPA를 통해 domain 객체를 얻어올 때 암호가 있으면 안되기 때문에 @JsonIgnore 어노테이션을 적용하였습니다.
+직렬화시 해당 필드를 포함시키지 않고 싶을 때 변수위에 선언하는 어노테이션이다. 이 예제에서는 JPA를 통해 domain 객체를 얻어올 때 암호가 있으면 안되기 때문에 @JsonIgnore 어노테이션을 적용하였다.
 
 참고
 
@@ -52,7 +52,7 @@ tags:
 
 ## <span style="color:brown">4. @JsonIgnoreProperties에서 allowGetters를 true로 세팅하면 어떻게 되나?</span>
 
-@JsonIgnoreProperties로 무시하려는 프로퍼티를 지정할 때 allowGetters를 true로 해주면, JSON serialization (Object -> JSON)으로는 지정한 필드는 적용이 되지만, deserialization (JSON -> Object)에서는 제외된다는 의미입니다.
+@JsonIgnoreProperties로 무시하려는 프로퍼티를 지정할 때 allowGetters를 true로 해주면, JSON serialization (Object -> JSON)으로는 지정한 필드는 적용이 되지만, deserialization (JSON -> Object)에서는 제외된다는 의미이다.
 
 ![](image_3.png)
 

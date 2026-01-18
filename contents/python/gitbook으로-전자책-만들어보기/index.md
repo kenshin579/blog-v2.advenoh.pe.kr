@@ -15,7 +15,7 @@ tags:
 
 # 1. 개요
 
-요즘은 콘텐츠 시대라고 해도 과언이 아닙니다. 특정 방송 회사가 콘텐츠를 만들기보다 개인이 직접 좋은 콘텐츠를 만들어 유튜브와 같은 플랫폼에서 퍼블리쉬하는 시대로 바뀌었습니다. [리디북스](https://ridibooks.com/?genre=general) 와 같은 eBook 리더기가 보급되고 점점 활성화되면서 eBook 시장에도 개인이 직접 책을 만들 수 있는 여러 도구와 플랫폼이제공되고 있습니다.
+요즘은 콘텐츠 시대라고 해도 과언이 아닙니다. 특정 방송 회사가 콘텐츠를 만들기보다 개인이 직접 좋은 콘텐츠를 만들어 유튜브와 같은 플랫폼에서 퍼블리쉬하는 시대로 바뀌었다. [리디북스](https://ridibooks.com/?genre=general) 와 같은 eBook 리더기가 보급되고 점점 활성화되면서 eBook 시장에도 개인이 직접 책을 만들 수 있는 여러 도구와 플랫폼이제공되고 있다.
 
 - 애플
     - [iBooks Author](https://www.apple.com/kr/ibooks-author/)
@@ -36,32 +36,32 @@ tags:
 
 # 2. Gitbook 설치
 
-설치 방법은 맥 OS 기반으로 작성되었습니다. GitBook을 설치 하기 위해는 NodeJS가 기본적으로 설치되어 있어야 합니다. 없는 경우에는 아래 명령어로 설치합니다.
+설치 방법은 맥 OS 기반으로 작성되었다. GitBook을 설치 하기 위해는 NodeJS가 기본적으로 설치되어 있어야 한다. 없는 경우에는 아래 명령어로 설치한다.
 
 ```bash
 $ brew install nodejs
 ```
 
-NPM를 통해 gitbook 패키지를 설치합니다.
+NPM를 통해 gitbook 패키지를 설치한다.
 
 ```bash
 $ npm install gitbook-cli -g
 $ gitbook --version
 ```
 
-전자책 포맷과 PDF를 생성하려면 ebook-convert 명령어가 필요합니다.
+전자책 포맷과 PDF를 생성하려면 ebook-convert 명령어가 필요한다.
 
 ```bash
 $ brew cask install calibre
 ```
 
-\$PATH 환경변수에 /usr/local/bin 폴더가 포함되어 있어야 합니다.
+\$PATH 환경변수에 /usr/local/bin 폴더가 포함되어 있어야 한다.
 
 # 3. 사용방법
 
 ## 3.1 첫 GitBook 프로젝트 만들기
 
-아래 명령어로 책의 boilerplate를 생성합니다. 기본적으로 README.md와 SUMMARY.md가 생성됩니다.
+아래 명령어로 책의 boilerplate를 생성한다. 기본적으로 README.md와 SUMMARY.md가 생성된다.
 
 ```bash
 $ gitbook init
@@ -74,7 +74,7 @@ $ git clone https://github.com/kenshin579/app-korean-catholic-bible.git
 $ cd app-korean-catholic-bible/example/gitbook_markup_sample
 ```
 
-아래 명령어로 웹사이트를 생성하여 브라우저에서도 볼 수 있습니다.
+아래 명령어로 웹사이트를 생성하여 브라우저에서도 볼 수 있다.
 
 ```bash
 $ gitbook serve
@@ -86,7 +86,7 @@ $ gitbook serve
 
 ## 3.2 eBooks과 PDF 생성하기
 
-여러 전자책 포맷으로 출력할 수 있습니다.
+여러 전자책 포맷으로 출력할 수 있다.
 
 ```bash
 $ gitbook pdf ./ ./mybook.pdf
@@ -100,11 +100,11 @@ $ gitbook mobi ./ ./mybook.mobi
 
 # 4. 플러그인
 
-GitBook의 여러 기능을 확장해주는 플러그인을 제공합니다. 어떤 플러그인은 있는지 찾는 방법과 설치 방법을 알아봅시다.
+GitBook의 여러 기능을 확장해주는 플러그인을 제공한다. 어떤 플러그인은 있는지 찾는 방법과 설치 방법을 알아봅시다.
 
 ## 4.1 플러그인 찾는 방법
 
-[gitbook 플러그인 사이트](http://plugins.gitbook.com) 에서 원하는 기능을 가진 플러그인을 검색할 수 있습니다.
+[gitbook 플러그인 사이트](http://plugins.gitbook.com) 에서 원하는 기능을 가진 플러그인을 검색할 수 있다.
 
 ## 4.2 플로그인 설정 및 설치
 
@@ -127,7 +127,7 @@ $ vi book.json
 ]
 ```
 
-설정이후 추가한 플러그인을 아래 명령어로 설치합니다.
+설정이후 추가한 플러그인을 아래 명령어로 설치한다.
 
 ```bash
 $ gitbook install
@@ -164,7 +164,7 @@ $ vi book.json
 
 # 6. GitBook Pages Examples
 
-대학에서나 개인 사이트로 GitBook을 많이 사용하고 있습니다. 아래 예제들을 통해서 어떤 다양한 플러그인을 사용하고 GitBook을 어떻게 꾸몄는지 알아보면 좋을 것 같습니다.
+대학에서나 개인 사이트로 GitBook을 많이 사용하고 있다. 아래 예제들을 통해서 어떤 다양한 플러그인을 사용하고 GitBook을 어떻게 꾸몄는지 알아보면 좋을 것 같다.
 
 - [https://www.gitbook.com/book/jackdougherty/datavizforall](https://www.gitbook.com/book/jackdougherty/datavizforall)
 - [https://typescript-kr.github.io/](https://typescript-kr.github.io/)

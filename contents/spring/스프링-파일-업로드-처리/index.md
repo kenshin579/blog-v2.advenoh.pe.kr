@@ -16,14 +16,14 @@ tags:
 
 # 1. 들어가며
 
-이번 포스팅에서는 스프링에서 파일 업로드를 어떻게 구현할 수 있는지에 대해서 알아보도록 하겠습니다. 스프링에서는 단일 파일 업로드뿐만이 아니라 아래와 같은 여러 방법으로 파일 업로드 기능을 제공합니다.
+이번 포스팅에서는 스프링에서 파일 업로드를 어떻게 구현할 수 있는지에 대해서 알아보도록 하자. 스프링에서는 단일 파일 업로드뿐만이 아니라 아래와 같은 여러 방법으로 파일 업로드 기능을 제공한다.
 
 - 단일 파일 업로드
 - 다중 파일 업로드
 - 파일 업로드 + 추가 정보 by @RequestParam 개별로
 - 파일 업로드 + 추가 정보 by @ModelAttribute 한번에 클래스와 매핑
 
-스프링은 MultipartResolver 인터페이스와 아래 2가지 구현체로 파일 업로드를 지원합니다.
+스프링은 MultipartResolver 인터페이스와 아래 2가지 구현체로 파일 업로드를 지원한다.
 
 - Servlet 3.0 Multipart Request 사용
     - 구현체 : StandardServletMultipartResolver
@@ -44,7 +44,7 @@ tags:
 
 # 3. 파일 업로드을 위한 설정
 
-파일 업로드를 위해 스프링에서 필요한 기본 설정에 대해서 알아봅시다. 언급했던 것처럼 스프링에서는 2가지 방법으로 파일 업로드를 설정할 수 있습니다. 본 포스팅에서는 첫 번째 StandardServletMultipartResolver 리졸뷰 위주로 설명을 하도록 하겠습니다. 두 번째인 CommonsMultipartResolver 리졸뷰를 사용해도 됩니다. 스프링 설정하는 경험이 있으면 어느 것을 사용하던 큰 어려움이 없을 것으로 생각됩니다. 필요한 내용은 참고 링크들을 참조해주시면 될 것 같아요.
+파일 업로드를 위해 스프링에서 필요한 기본 설정에 대해서 알아봅시다. 언급했던 것처럼 스프링에서는 2가지 방법으로 파일 업로드를 설정할 수 있다. 본 포스팅에서는 첫 번째 StandardServletMultipartResolver 리졸뷰 위주로 설명을 하도록 하자. 두 번째인 CommonsMultipartResolver 리졸뷰를 사용해도 된다. 스프링 설정하는 경험이 있으면 어느 것을 사용하던 큰 어려움이 없을 것으로 생각된다. 필요한 내용은 참고 링크들을 참조해주시면 될 것 같아요.
 
 - Servlet 3.0 Multipart Request (이 방법 위주로 설명)
     - standardServletMultipartResolver
@@ -84,7 +84,7 @@ Bean XML 정의 파일 설정
 </servlet>
 ```
 
-Multipart-config에서 여러 옵션을 설정하여 파일 업로드를 제한할 수 있습니다.
+Multipart-config에서 여러 옵션을 설정하여 파일 업로드를 제한할 수 있다.
 
 - **location** - 파일 업로드 시 임시로 저장하는 절대 경로이다
     - 디폴트 값 : "
@@ -137,7 +137,7 @@ public class MyWebAppInitializer extends AbstractAnnotationConfigDispatcherServl
 ```
 
 **2.1 (다른 방법) @MultipartConfig 어노테이션으로 파일 업로드 제한 설정**
-커스텀 서블릿을 생성하고 @MultipartConfig 어노테이션으로 multipart-config을 설정할 수 있습니다. 이 설정은 자세히 다루지 않겠습니다. 추가 설명은 [@MultipartConfig❲Servlet 3.x❳ 블로그](http://blog.naver.com/PostView.nhn?blogId=junsu60&logNo=220439479589) 를 참고해주세요.
+커스텀 서블릿을 생성하고 @MultipartConfig 어노테이션으로 multipart-config을 설정할 수 있다. 이 설정은 자세히 다루지 않자. 추가 설명은 [@MultipartConfig❲Servlet 3.x❳ 블로그](http://blog.naver.com/PostView.nhn?blogId=junsu60&logNo=220439479589) 를 참고해주세요.
 
 ```java
 @MultipartConfig(location=/tmp,
@@ -152,7 +152,7 @@ public class FileUploadServlet extends HttpServlet {
 
 ### 3.1.2 CommonsMultipartResolver 사용시 설정
 
-StandardServletMultipartResolver와 다르게 CommonsMultipartResolver 리졸뷰 사용 시 추가로 pom.xml 파일에 commons-fileupload 라이브러리를 추가해야 합니다.
+StandardServletMultipartResolver와 다르게 CommonsMultipartResolver 리졸뷰 사용 시 추가로 pom.xml 파일에 commons-fileupload 라이브러리를 추가해야 한다.
 
 **Dependency 추가**
 
@@ -164,11 +164,11 @@ StandardServletMultipartResolver와 다르게 CommonsMultipartResolver 리졸뷰
 </dependency>
 ```
 
-스프링 설정은 Bean 정의 파일이나 JavaConfig으로 설정 가능합니다.
+스프링 설정은 Bean 정의 파일이나 JavaConfig으로 설정 가능한다.
 
 **Bean XML 정의 파일 설정**
 
-스프링 설정에 CommonsMultipartResolver 빈을 등록합니다.
+스프링 설정에 CommonsMultipartResolver 빈을 등록한다.
 
 ```xml
 <bean id="multipartResolver" class="org.springframework.web.multipart.commons.CommonsMultipartResolver">
@@ -204,11 +204,11 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
 # 4. 파일 업로드 예제들
 
-지금까지는 스프링 관련 설정을 다루었습니다. 이제 뷰와 컨트롤러 단에서 어떻게 파일을 업로드할 수 있는지 알아보겠습니다. 파일을 업로드하는 방법에는 여러 가지가 있습니다. 예제를 통해서 서로 다른 점도 확인하겠습니다.
+지금까지는 스프링 관련 설정을 다루었다. 이제 뷰와 컨트롤러 단에서 어떻게 파일을 업로드할 수 있는지 알아보자. 파일을 업로드하는 방법에는 여러 가지가 있다. 예제를 통해서 서로 다른 점도 확인하자.
 
 ## 4.1 단일 파일 업로드
 
-단일 파일을 업로드하는 예제입니다. 뷰는 HTML의 input 태그 file 속성으로 작성하여 form 방식으로 파일 업로드를 할 수 있습니다. form 태그의 enctype 속성은 multipart/form-data로 세팅하여 브라우져가 파일 업로드 방식으로 동작하도록 설정합니다.
+단일 파일을 업로드하는 예제이다. 뷰는 HTML의 input 태그 file 속성으로 작성하여 form 방식으로 파일 업로드를 할 수 있다. form 태그의 enctype 속성은 multipart/form-data로 세팅하여 브라우져가 파일 업로드 방식으로 동작하도록 설정한다.
 
 **enctype 속성 값 목록**
 
@@ -237,7 +237,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
 ![](/media/spring/스프링-파일-업로드-처리/image_8.png)
 
-컨트롤러에서 업로드한 파일은 MultipartFile 변수를 사용하여 전달받습니다. MultipartFile 클래스는 파일에 대한 정보(파일 이름, 크기등)와 파일 관련 메서드(ex. 파일 저장)를 제공합니다. 대표적으로 사용하는 메서드는 다음과 같고 더 자세한 사항은 API를 참고해주세요.
+컨트롤러에서 업로드한 파일은 MultipartFile 변수를 사용하여 전달받는다. MultipartFile 클래스는 파일에 대한 정보(파일 이름, 크기등)와 파일 관련 메서드(ex. 파일 저장)를 제공한다. 대표적으로 사용하는 메서드는 다음과 같고 더 자세한 사항은 API를 참고해주세요.
 
 - transferTo() : 파일을 저장한다
 - getOriginalFilename() : 파일 이름을 String 값으로 반환한다
@@ -260,14 +260,14 @@ throws IOException {
 }
 ```
 
-Request parameter로 넘겨주는 파일 이름이 mediaFile로 넘겨줘서 @RequestRaram(“mediaFile”) 어노테이션으로 지정하였습니다. 그리고 파일이 빈파일이 아니면 정해진 다운로드 경로에 저장하고 결과 메시지는 fileUploadForm 뷰에 Model 클래스를 통해서 전달합니다.
+Request parameter로 넘겨주는 파일 이름이 mediaFile로 넘겨줘서 @RequestRaram(“mediaFile”) 어노테이션으로 지정하였다. 그리고 파일이 빈파일이 아니면 정해진 다운로드 경로에 저장하고 결과 메시지는 fileUploadForm 뷰에 Model 클래스를 통해서 전달한다.
 
 > 번외 Tips
-> Rest API 구현을 할 때 데이터 형식을 JSON으로 많이 사용해서 클라이언트와 서버 간에 주고받습니다. JSON 타입으로 주고받을때 기본적으로 encoding을 해서 보냅니다. 보내는 데이터가 적은 양이면 문제가 되지 않지만, 대용량의 JSON인 경우에는 성능에 큰 영향을 주게 됩니다. 이런 경우에 JSON 데이터를 stream으로 보내고 컨트롤러에서 MultipartFile로 받으면 스트림형식으로그냥 받기 때문에 성능이 많이 좋아집니다. 프로젝트 진행 시고려해볼 만한 부분입니다.
+> Rest API 구현을 할 때 데이터 형식을 JSON으로 많이 사용해서 클라이언트와 서버 간에 주고받는다. JSON 타입으로 주고받을때 기본적으로 encoding을 해서 보냅니다. 보내는 데이터가 적은 양이면 문제가 되지 않지만, 대용량의 JSON인 경우에는 성능에 큰 영향을 주게 된다. 이런 경우에 JSON 데이터를 stream으로 보내고 컨트롤러에서 MultipartFile로 받으면 스트림형식으로그냥 받기 때문에 성능이 많이 좋아집니다. 프로젝트 진행 시고려해볼 만한 부분이다.
 
 ## 4.2 다중 파일 업로드
 
-여러 파일을 업로드하는 방식은 단일 파일 업로드 예제와 매우 유사합니다. 차이점은 뷰에서 multiple 속성을 추가하여야사용자가 여러 파일을 선택할 수 있도록 해야 합니다.
+여러 파일을 업로드하는 방식은 단일 파일 업로드 예제와 매우 유사한다. 차이점은 뷰에서 multiple 속성을 추가하여야사용자가 여러 파일을 선택할 수 있도록 해야 한다.
 
 ```html
 <h3>다중 파일 업로드</h3>
@@ -288,7 +288,7 @@ Request parameter로 넘겨주는 파일 이름이 mediaFile로 넘겨줘서 @Re
 
 ![](/media/spring/스프링-파일-업로드-처리/image_1.png)
 
-컨트롤러에서는 MultipartFile 변수를 배열로 선언하여 여러 파일을 받을 수 있도록 합니다. 배열을 loop으로 돌면서 각 파일을 정해진 경로에 저장합니다. MultipartFile 클래스에서 제공하는 transferTo 메서드로 저장할 수도 있지만, 직접 OutpuStream 클래스로 파일을 저장할 수도 있습니다.
+컨트롤러에서는 MultipartFile 변수를 배열로 선언하여 여러 파일을 받을 수 있도록 한다. 배열을 loop으로 돌면서 각 파일을 정해진 경로에 저장한다. MultipartFile 클래스에서 제공하는 transferTo 메서드로 저장할 수도 있지만, 직접 OutpuStream 클래스로 파일을 저장할 수도 있다.
 
 ```java
 @PostMapping("/multipleFileUpload")
@@ -317,7 +317,7 @@ Model model) throws IOException {
 
 ## 4.3 파일 업로드 + 추가 정보 by @RequestParam
 
-이번 예제는 파일과 다른 입력 정보를 같이 보내는 예제입니다. 추가 입력을 받을 수 있도록 form을 수정합니다.
+이번 예제는 파일과 다른 입력 정보를 같이 보내는 예제이다. 추가 입력을 받을 수 있도록 form을 수정한다.
 
 ```html
 <h3>파일 업로드 + 추가 정보 by @RequestParam</h3>
@@ -342,7 +342,7 @@ Model model) throws IOException {
 
 ![](/media/spring/스프링-파일-업로드-처리/image_7.png)
 
-컨트롤러에서는 각 변수에 @RequestParam 어노테이션을 선언하여 입력 데이터를 개별로 받을 수 있게 합니다.
+컨트롤러에서는 각 변수에 @RequestParam 어노테이션을 선언하여 입력 데이터를 개별로 받을 수 있게 한다.
 
 ```java
 @PostMapping("/singleFileUploadWithAdditionalData")
@@ -365,9 +365,9 @@ public String singleFileUploadWith(@RequestParam("mediaFile") MultipartFile **fi
 
 ## 4.4 파일 업로드 + 추가 정보 by @ModelAttribute
 
-4.3 예제에서는 입력 데이터를 개별 변수에 저장하는 방식이었습니다. 하지만, 입력하는 데이터가 많을 때는 메서드인자가 많이 늘어나는 단점이 있습니다. @ModelAttribute어노테이션을 이용하면 입력한 데이터를 클래스로 한 번에 매핑 할 수 있습니다.
+4.3 예제에서는 입력 데이터를 개별 변수에 저장하는 방식이었다. 하지만, 입력하는 데이터가 많을 때는 메서드인자가 많이 늘어나는 단점이 있다. @ModelAttribute어노테이션을 이용하면 입력한 데이터를 클래스로 한 번에 매핑 할 수 있다.
 
-클래스 매핑을 위해 Form에서 입력하는 데이터 이름과 같은 변수를 포함하는 클래스를 아래와 같이 생성합니다.
+클래스 매핑을 위해 Form에서 입력하는 데이터 이름과 같은 변수를 포함하는 클래스를 아래와 같이 생성한다.
 
 ```java
 @Data
@@ -378,7 +378,7 @@ public class MediaVO {
 }
 ```
 
-사용자 입력 데이터를 받을 클래스 MediaVO를 인자로 선언합니다.
+사용자 입력 데이터를 받을 클래스 MediaVO를 인자로 선언한다.
 
 ```java
 @RequestMapping(value = "/uploadFileModelAttribute", method = RequestMethod.POST)
@@ -399,9 +399,9 @@ public String singleFileUploadWith( **@ModelAttribute MediaVO mediaVO**, Model m
 }
 ```
 
-업로드 파일과 입력 데이터는 MediaVO에 포함되어 있어서 원하는 데이터를 getter로 가져와 로직에서 사용합니다.
+업로드 파일과 입력 데이터는 MediaVO에 포함되어 있어서 원하는 데이터를 getter로 가져와 로직에서 사용한다.
 
-지금까지 스프링을 이용해서 파일 업로드를 알아보았습니다. 다음 시간에는 스프링 컨트롤러 예외처리에 대해서 알아보겠습니다.
+지금까지 스프링을 이용해서 파일 업로드를 알아보았다. 다음 시간에는 스프링 컨트롤러 예외처리에 대해서 알아보자.
 
 # 5. 참고
 

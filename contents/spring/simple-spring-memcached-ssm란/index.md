@@ -18,7 +18,7 @@ tags:
 
 # 1. 들어가며
 
-In-memory DB로 Memcached를 사용하면 자바에서는 [simple-spring-memcached](https://github.com/ragnor/simple-spring-memcached) (SSM) 라이브러리를 자주 사용됩니다. SSM 어노테이션으로 메서드에 선언하면 쉽게 관련 데이터가 캐시에서 관리됩니다. 스프링에서도 버전 3.1부터는 캐시 서비스 추상화 기능이 지원되어 비즈니스 로직 변경 없이 쉽게 다양한 캐시 구현체(ex. Ehcache, Redis)로 교체가 가능하게 되었습니다. 스프링에서 제공하는 캐시 기능은 다른 포스팅에서 더 자세히 다루도록 하겠습니다.
+In-memory DB로 Memcached를 사용하면 자바에서는 [simple-spring-memcached](https://github.com/ragnor/simple-spring-memcached) (SSM) 라이브러리를 자주 사용된다. SSM 어노테이션으로 메서드에 선언하면 쉽게 관련 데이터가 캐시에서 관리된다. 스프링에서도 버전 3.1부터는 캐시 서비스 추상화 기능이 지원되어 비즈니스 로직 변경 없이 쉽게 다양한 캐시 구현체(ex. Ehcache, Redis)로 교체가 가능하게 되었다. 스프링에서 제공하는 캐시 기능은 다른 포스팅에서 더 자세히 다루도록 하자.
 
 # 2. 개발 환경
 
@@ -30,11 +30,11 @@ In-memory DB로 Memcached를 사용하면 자바에서는 [simple-spring-memcach
 
 # 3. Simple Spring Memcached(SSM) 설정 및 사용법
 
-SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해야 합니다.
+SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해야 한다.
 
 ## 3.1 Maven dependency 추가
 
-라이브러리는 maven을 사용하였습니다. Simple-spring-memcached와 Memcache provider 중에 하나를 선택해서 pom.xml에 추가해줍니다. spymemcached와 xmemcached의 차이는 아래와 같습니다. 이 포스팅에서는 xmemcached로 위주로 설명합니다.
+라이브러리는 maven을 사용하였다. Simple-spring-memcached와 Memcache provider 중에 하나를 선택해서 pom.xml에 추가해줍니다. spymemcached와 xmemcached의 차이는 아래와 같다. 이 포스팅에서는 xmemcached로 위주로 설명한다.
 
 - spymemcached \* 단순 비동기, 단일 쓰레드 memcached 자바 라이브러리
 - **xmemcached (이 라이브러리 위주로 설명함)** \* 고성능 멀티 쓰레드 memcached 자바 라이브러리
@@ -71,10 +71,10 @@ SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해�
 
 ## 3.2 스프링 설정 파일
 
-스프링 빈 설정에 Memcached 관련 설정이 포함됩니다. Memcached의 서버 정보와 캐시 설정은 ConsistentHashing 방식으로 지정되어 있습니다.
+스프링 빈 설정에 Memcached 관련 설정이 포함된다. Memcached의 서버 정보와 캐시 설정은 ConsistentHashing 방식으로 지정되어 있다.
 
 > **추가 설명**
-> ConsistentHashing 방식은 여러 서버가 변경되더라도 각 서버에 할당된 데이터를 재분배하지 않고 다운된 서버의 데이터만 다른 서버로 재분배하는 방식입니다. K(keys) = 10,000, N(memcache 서버 수 : 슬롯) = 5대 => 각 서버마다 2000 keys만큼을 hashing 할 수 있다. 서버 장애 (1 서버 다운 A)가 발생한 A 서버의 key만 다른 서버로 재분배하는 방식이다.
+> ConsistentHashing 방식은 여러 서버가 변경되더라도 각 서버에 할당된 데이터를 재분배하지 않고 다운된 서버의 데이터만 다른 서버로 재분배하는 방식이다. K(keys) = 10,000, N(memcache 서버 수 : 슬롯) = 5대 => 각 서버마다 2000 keys만큼을 hashing 할 수 있다. 서버 장애 (1 서버 다운 A)가 발생한 A 서버의 key만 다른 서버로 재분배하는 방식이다.
 > 더 자세한 설명은 [Consistent Hashing](https://jistol.github.io/software%20engineering/2018/07/07/consistent-hashing-sample/) 를 참고해주세요.
 
 ```xml
@@ -105,7 +105,7 @@ SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해�
 
 ```
 
-simplesm-context.xml은 [SSM github](https://github.com/ragnor/simple-spring-memcached) 소스에 포함된 설정파일이고 SSM 사용 시 필요하므로 복사해서 사용하시면 됩니다.
+simplesm-context.xml은 [SSM github](https://github.com/ragnor/simple-spring-memcached) 소스에 포함된 설정파일이고 SSM 사용 시 필요하므로 복사해서 사용하시면 된다.
 
 ## 3.3 SSM Cache 대표 어노테이션
 
@@ -128,7 +128,7 @@ simplesm-context.xml은 [SSM github](https://github.com/ragnor/simple-spring-mem
     - @IncrementCounterInCache
     - @DecrementCounterInCache
 
-대부분의 SSM 어노테이션은 Cache Action과 Cache Type으로 구분할 수 있습니다.
+대부분의 SSM 어노테이션은 Cache Action과 Cache Type으로 구분할 수 있다.
 
 | **Cache Action** | **Description**                                 |
 | ---------------- | ----------------------------------------------- |
@@ -142,9 +142,9 @@ simplesm-context.xml은 [SSM github](https://github.com/ragnor/simple-spring-mem
 | SingleCache    | 캐시 키는 SSM 어노테이션으로 선언된 메서드 인자로 생성되며 인자가 하나인 경우에 사용된다.<br/>ㅁ. 인자가 List 타입인 경우에는 캐시 키로 생성해서 사용할 수 없다<br/>ex. Person getUser(int int) |
 | MultiCache     | 캐시 키는 SSM 어노테이션으로 선언된 메서드 여러 인자로 생성된다. 인자중에 한개가 List 타입 형이여야하며 반환결과도 List 타입이여야 한다. 반환된 결과 List의 각 요소는 지정된 캐시 키로 저장된다.<br/>ex. List<Person> getUserFromData(List workInfo) |
 
-SingleCache와 MultiCache인 경우 반드시 메서드 인자 중에 @ParameterValueKeyProvider 어노테이션을 지정해야 합니다.
+SingleCache와 MultiCache인 경우 반드시 메서드 인자 중에 @ParameterValueKeyProvider 어노테이션을 지정해야 한다.
 
-기본 캐시 어노테이션 외에도 여러 어노테이션과 같이 사용하는 속성들이 존재하며 예제를 통해서 더 자세히 알아보도록 하겠습니다.
+기본 캐시 어노테이션 외에도 여러 어노테이션과 같이 사용하는 속성들이 존재하며 예제를 통해서 더 자세히 알아보도록 하자.
 
 - 기타 어노테이션 및 속성
     - @CacheName(“QuoteApp”) : 관련 캐시를 하나로 묶을 수 있는 개념이고 클래스외에도 메서드에도 선언할 수 있다
@@ -163,7 +163,7 @@ SingleCache와 MultiCache인 경우 반드시 메서드 인자 중에 @Parameter
 
 **@ReadThroughAssignCache 예제**
 
-@ReadThroughAssignCache 어노테이션은 인자가 없는 메서드에 적용할 수 있습니다. 캐시 영역에서 네임스페이스 ‘area’ 이름으로 key : value (all : List<Product)가 저장이 됩니다.
+@ReadThroughAssignCache 어노테이션은 인자가 없는 메서드에 적용할 수 있다. 캐시 영역에서 네임스페이스 ‘area’ 이름으로 key : value (all : List<Product)가 저장이 된다.
 
 @ReadThroughAssignCache(namespace = "area", assignedKey="all")
 
@@ -176,7 +176,7 @@ public List<Product> findAllProducts() {
 }
 ```
 
-각 캐시 어노테이션마다 차이점을 쉽게 알기 위해서 유닛 테스트로 작성을 했습니다. 각 테스트마다 원하는 결과를 얻기 위해서 매 테스트마다 memcache를 flush 하도록 작성되어 있습니다. @ReadThroughAssignCache 어노테이션은 캐시에서 읽어 드릴때 없으면 저장하기 때문에 아래 코드에서는 Comment #1 때에 캐시에 저장하고 Comment #2 때는 캐시에서 데이터를 가져오는 것을 확인할 수 있습니다.
+각 캐시 어노테이션마다 차이점을 쉽게 알기 위해서 유닛 테스트로 작성을 했다. 각 테스트마다 원하는 결과를 얻기 위해서 매 테스트마다 memcache를 flush 하도록 작성되어 있다. @ReadThroughAssignCache 어노테이션은 캐시에서 읽어 드릴때 없으면 저장하기 때문에 아래 코드에서는 Comment #1 때에 캐시에 저장하고 Comment #2 때는 캐시에서 데이터를 가져오는 것을 확인할 수 있다.
 
 ```java
 @Test
@@ -200,11 +200,11 @@ public void testReadThroughAssignCache() {
 
 ![](image_29.png)
 
-캐시에 저장하고 값을 확인하는 과정을 실시간으로 확인하려면 telnet으로 로그인하여 watch 명령어를 실행하면 됩니다. 더 자세한 사항은 #3.4 Memcached 유용한 명령어 모음을 참고해주세요.
+캐시에 저장하고 값을 확인하는 과정을 실시간으로 확인하려면 telnet으로 로그인하여 watch 명령어를 실행하면 된다. 더 자세한 사항은 #3.4 Memcached 유용한 명령어 모음을 참고해주세요.
 
 **@ReadThroughSingleCache**
 
-@ReadThroughSingleCache 어노테이션은 인자가 하나인 경우에만 사용합니다. 인자에 @ParameterValueKeyProvider 어노테이션을 선언하면 @CacheKeyMethod로 지정된 메서드는 캐시 키를 생성하는 데 사용되고 없는 경우에는 toString() 메서드가 사용됩니다.
+@ReadThroughSingleCache 어노테이션은 인자가 하나인 경우에만 사용한다. 인자에 @ParameterValueKeyProvider 어노테이션을 선언하면 @CacheKeyMethod로 지정된 메서드는 캐시 키를 생성하는 데 사용되고 없는 경우에는 toString() 메서드가 사용된다.
 
 ```java
 @ReadThroughSingleCache(namespace = "area")
@@ -220,7 +220,7 @@ public String getName() {
 }
 ```
 
-이 어노테이션도 읽어드릴 때 캐시에 없으면 캐시에 저장하기 때문에 코드상에서 Comment #1일 때 저장하고 Comment #2일 때 캐시에서 값을 얻어오는 것을 watch 명령어로 통해서 확인할 수 있습니다.
+이 어노테이션도 읽어드릴 때 캐시에 없으면 캐시에 저장하기 때문에 코드상에서 Comment #1일 때 저장하고 Comment #2일 때 캐시에서 값을 얻어오는 것을 watch 명령어로 통해서 확인할 수 있다.
 
 ```java
 @Test
@@ -246,8 +246,8 @@ public void testReadThroughSingleCache() {
 
 **@ReadThroughMultiCache**
 
-MultiCache는 메서드 인자 중에 List 타입인 자가 있어야 합니다. 그리고 캐시 되는 key : value 값은 인자의 List 요소와 반환 결과 요소가 각각 key : value로 캐시에 저장됩니다.
-stats cachedump 명령어로 key 값을 확인해보면 알 수 있습니다. cachedump 결과 포맷에 대한 설명은 **#3.4 Memcached 유용한 명령어 모음** 을 참고해주세요.
+MultiCache는 메서드 인자 중에 List 타입인 자가 있어야 한다. 그리고 캐시 되는 key : value 값은 인자의 List 요소와 반환 결과 요소가 각각 key : value로 캐시에 저장된다.
+stats cachedump 명령어로 key 값을 확인해보면 알 수 있다. cachedump 결과 포맷에 대한 설명은 **#3.4 Memcached 유용한 명령어 모음** 을 참고해주세요.
 
 ![](image_14.png)
 
@@ -259,7 +259,7 @@ public List<Integer> getIncrementValue(@ParameterValueKeyProvider List<Integer> 
 }
 ```
 
-getIncrementValue로 넘겨진 nums 리스트의 각 요소가 캐시에 저장이 안 되어 있어서 각 요소를 키로 저장하는 것을 watch 명령어로 확인할 수 있습니다. 두 번째로 getIncrementValue을 호출 할 때는 결과를 캐시에서 바로 가져옵니다. 눈치채신 분도 계시겠지만, 변환된 결과는 잘못되었습니다. 인자로 넘겨준 값이 1이기 때문에 [3, 4, 5, 6]이 반환되어야 하는데, 캐시에서 가져와서 [6, 7, 8, 9]이 반환되었습니다. 캐시 데이터와 실제 데이터 간의 동기화가 중요하면 개발할때는 이런 부분도 신경을 써서 작업을 해야 합니다.
+getIncrementValue로 넘겨진 nums 리스트의 각 요소가 캐시에 저장이 안 되어 있어서 각 요소를 키로 저장하는 것을 watch 명령어로 확인할 수 있다. 두 번째로 getIncrementValue을 호출 할 때는 결과를 캐시에서 바로 가져옵니다. 눈치채신 분도 계시겠지만, 변환된 결과는 잘못되었다. 인자로 넘겨준 값이 1이기 때문에 [3, 4, 5, 6]이 반환되어야 하는데, 캐시에서 가져와서 [6, 7, 8, 9]이 반환되었다. 캐시 데이터와 실제 데이터 간의 동기화가 중요하면 개발할때는 이런 부분도 신경을 써서 작업을 해야 한다.
 
 ```java
 @Test
@@ -284,11 +284,11 @@ public void testReadThroughMultiCache() {
 
 ### 3.3.2 Update Cache
 
-Update로 시작하는 어노테이션은 캐시에 저장된 값을 강제적으로 덮어쓰는 어노테이션입니다. Update에 대한 여러 어노테이션에 대해서 알아봅시다.
+Update로 시작하는 어노테이션은 캐시에 저장된 값을 강제적으로 덮어쓰는 어노테이션이다. Update에 대한 여러 어노테이션에 대해서 알아봅시다.
 
 **@UpdateAssignCache**
 
-AssignCache 어노테이션은 assignedKey로 지정된 값을 키로 사용합니다.
+AssignCache 어노테이션은 assignedKey로 지정된 값을 키로 사용한다.
 
 ```java
 @ReturnDataUpdateContent
@@ -303,7 +303,7 @@ public List<Product> resetPriceForAllProducts() {
 }
 ```
 
-아래 watch 모니터링 결과를 보면 Comment #1에서는 캐시에 데이터가 없어서 저장을 했고 Comment #2에서는 캐시에 있는 것을 확인했지만, 다시 덮어쓴 것을 볼 수 있습니다.
+아래 watch 모니터링 결과를 보면 Comment #1에서는 캐시에 데이터가 없어서 저장을 했고 Comment #2에서는 캐시에 있는 것을 확인했지만, 다시 덮어쓴 것을 볼 수 있다.
 
 ```java
 @Test
@@ -329,7 +329,7 @@ public void testUpdateAssignCache() {
 
 **@UpdateSingleCache**
 
-SingleCache이기 때문에 메서드 인자가 하나긴 경우에만 사용되며 Update로 시작하는 어노테이션이기 때문에 캐시에 있으면 덮어씁니다. @ParameterDataUpdateContent 어노테이션은 @Update\*Cache 어노테이션과 같이 사용되며 업데이트되는 값으로 메서드 인자에 선언합니다.
+SingleCache이기 때문에 메서드 인자가 하나긴 경우에만 사용되며 Update로 시작하는 어노테이션이기 때문에 캐시에 있으면 덮어씁니다. @ParameterDataUpdateContent 어노테이션은 @Update\*Cache 어노테이션과 같이 사용되며 업데이트되는 값으로 메서드 인자에 선언한다.
 
 ```java
 @UpdateSingleCache(namespace = "area")
@@ -341,7 +341,7 @@ public void changeProduct(@ParameterValueKeyProvider String productName, @Parame
 }
 ```
 
-@UpdateAssignCache와 동일하게 Comment #2에서도 캐시에 있는 데이터를 다시 쓰는 것을 확인할 수 있습니다.
+@UpdateAssignCache와 동일하게 Comment #2에서도 캐시에 있는 데이터를 다시 쓰는 것을 확인할 수 있다.
 
 ```java
 @Test
@@ -367,7 +367,7 @@ public void testUpdateSingleCache() {
 
 **@UpdateMultiCache**
 
-@ReturnDataUpdateContent 어노테이션은 @Update\*Cache 어노테이션과 같이 사용되며 업데이트되는 반환 값에 표시하는 데 사용합니다. 다른 MultiCache어노테이션과 같이 List 타임인 경우에만 사용됩니다.
+@ReturnDataUpdateContent 어노테이션은 @Update\*Cache 어노테이션과 같이 사용되며 업데이트되는 반환 값에 표시하는 데 사용한다. 다른 MultiCache어노테이션과 같이 List 타임인 경우에만 사용된다.
 
 ```java
 @ReturnDataUpdateContent
@@ -415,11 +415,11 @@ public void testUpdateMultiCache() {
 
 ### 3.3.3 Invalidate Cache
 
-Invalidate로 시작하는 어노테이션은 캐시에 해당 키가 존재하면 캐시에서 삭제합니다.
+Invalidate로 시작하는 어노테이션은 캐시에 해당 키가 존재하면 캐시에서 삭제한다.
 
 **@InvalidateAssignCache**
 
-@InvalidateAssignCache는 assignedKey로 지정한 키가 캐시에 있다면 해당 키를 삭제합니다. 강제로 캐시에서 삭제하는 기능으로 캐시에 최신 데이터를 가져오고 싶을 때 사용할 수 있습니다.
+@InvalidateAssignCache는 assignedKey로 지정한 키가 캐시에 있다면 해당 키를 삭제한다. 강제로 캐시에서 삭제하는 기능으로 캐시에 최신 데이터를 가져오고 싶을 때 사용할 수 있다.
 
 ```java
 @InvalidateAssignCache(namespace = "area", assignedKey = "all")
@@ -429,7 +429,7 @@ public List<Product> getAllProductsFromMemory() {
 }
 ```
 
-Comment #1에서 findAllProduct 메서드에 의해서 캐시에 저장되지만, 다음 라인에서 캐시에서 삭제되어 cachedump로 결과를 확인하면 저장된 키가 없는 것을 확인할 수 있습니다.
+Comment #1에서 findAllProduct 메서드에 의해서 캐시에 저장되지만, 다음 라인에서 캐시에서 삭제되어 cachedump로 결과를 확인하면 저장된 키가 없는 것을 확인할 수 있다.
 
 ```java
 @Test
@@ -445,7 +445,7 @@ public void testInvalidateAssignCache() {
 ```
 
 **stats cachedump 결과**
-캐시에서 삭제되어 아무 결과가 없습니다.
+캐시에서 삭제되어 아무 결과가 없다.
 
 ![](image_2.png)
 
@@ -459,7 +459,7 @@ public void testInvalidateAssignCache() {
 
 **@InvalidateSingleCache**
 
-SingleCache 이기 때문에 하나의 인자인 경우에 사용되면 invalidate 어노테이션으로 캐시에 저장된 키가 있다면 삭제합니다.
+SingleCache 이기 때문에 하나의 인자인 경우에 사용되면 invalidate 어노테이션으로 캐시에 저장된 키가 있다면 삭제한다.
 
 ```java
 @InvalidateSingleCache(namespace = "area")
@@ -469,7 +469,7 @@ public Product getProductFromMemory(@ParameterValueKeyProvider String name) {
 }
 ```
 
-Comment #2에서 캐시에서 삭제된 결과를 stats cachedump 명령어로 확인할 수 있습니다.
+Comment #2에서 캐시에서 삭제된 결과를 stats cachedump 명령어로 확인할 수 있다.
 
 ```java
 @Test
@@ -485,7 +485,7 @@ public void testInvalidateSingleCache() { //todo: 여기서부터 작업하면 �
 ```
 
 **stats cachedump 결과**
-캐시에서 삭제되어 아무 결과가 없습니다.
+캐시에서 삭제되어 아무 결과가 없다.
 
 ![](image_13.png)
 
@@ -499,7 +499,7 @@ public void testInvalidateSingleCache() { //todo: 여기서부터 작업하면 �
 
 **@InvalidateMultiCache**
 
-MultiCache로 인자와 반환 값이 List 타입 이어야 하는 메서드에 적용되며 캐시에 저장된 키가 있다면 캐시에서 삭제됩니다.
+MultiCache로 인자와 반환 값이 List 타입 이어야 하는 메서드에 적용되며 캐시에 저장된 키가 있다면 캐시에서 삭제된다.
 
 ```java
 @InvalidateMultiCache(namespace = "area")
@@ -534,7 +534,7 @@ public void testInvalidateMultiCache() {
 ```
 
 **stats cachedump 결과**
-캐시에서 삭제되어 아무 결과가 없습니다.
+캐시에서 삭제되어 아무 결과가 없다.
 
 ![](image_3.png)
 
@@ -550,7 +550,7 @@ public void testInvalidateMultiCache() {
 
 ### 3.4.1 watch
 
-Memcached는 watch 명령어을 제공해서 캐시에 저장되거나 값을 얻어올 때 실시간으로 이벤트를 확인할 수 있습니다.
+Memcached는 watch 명령어을 제공해서 캐시에 저장되거나 값을 얻어올 때 실시간으로 이벤트를 확인할 수 있다.
 
 명령어 : watch <options>
 
@@ -565,7 +565,7 @@ watch fetchers mutations evictions
 
 ### 3.4.2 stats cachedump
 
-이 명령어는 Memcached 팀에서 지원하지 않는 기능으로 추후 버전에서 삭제될 수 있지만, 현재 1.5.12 버전에서는 존재합니다.
+이 명령어는 Memcached 팀에서 지원하지 않는 기능으로 추후 버전에서 삭제될 수 있지만, 현재 1.5.12 버전에서는 존재한다.
 
 명령어 : stats cachedump <slabs_id> <limit>
 인자값 :
@@ -585,11 +585,11 @@ watch fetchers mutations evictions
 
 ### 3.5.1 Expiration 지정시 30일 이내로 하자
 
-expiration이 30일을 넘으면 무한 값으로 계산됩니다.
+expiration이 30일을 넘으면 무한 값으로 계산된다.
 
 ### 3.5.2 toString()을 override 하자
 
-캐시 key로 지정된 인자가 primitive 타입이 아닌 오브젝트타입인 경우에는 toString() 메서드를 이용해서 key를 생성합니다. toString()을 override 하지 않으면 Object.toString()을 사용하며 기본 구현은 아래와 같이 클래스 이름과 hashcode()를 사용해서 값을 반환합니다. hashCode는 메모리 주소를 의존하기 때문에 메모리 주소가 변경되면 캐시가 적용이 안 되는 경우가 발생할 수 있어 toString()을 어버라이드 하거나 @CacheKeyMethod을사용을 권장합니다.
+캐시 key로 지정된 인자가 primitive 타입이 아닌 오브젝트타입인 경우에는 toString() 메서드를 이용해서 key를 생성한다. toString()을 override 하지 않으면 Object.toString()을 사용하며 기본 구현은 아래와 같이 클래스 이름과 hashcode()를 사용해서 값을 반환한다. hashCode는 메모리 주소를 의존하기 때문에 메모리 주소가 변경되면 캐시가 적용이 안 되는 경우가 발생할 수 있어 toString()을 어버라이드 하거나 @CacheKeyMethod을사용을 권장한다.
 
 return getClass().getName() + "@" + Integer.toHexString(hashCode())
 
@@ -598,11 +598,11 @@ return getClass().getName() + "@" + Integer.toHexString(hashCode())
 캐시에 저장되는 값이 오브젝트인 경우에는 해당 오브젝트는 직렬화가 가능해야 하면 serialVersionUID도 생성하는 것을 잊지 말자.
 
 > Tips
-> Serializable로 구현한 오브젝트에 serialVersionUID 없는 경우에는 JVM에서 자동으로 생성합니다. 클래스 변경에 따라서 serialVersionUID가 자동으로 바뀌면 역직렬화시 문제가 발생할 수 있기 때문에 직업 명시하는 게 좋습니다. IntellijIDE에서도 자동으로 생성해주는 plugin(GeneateSerialVersionUID)이 존재합니다.
+> Serializable로 구현한 오브젝트에 serialVersionUID 없는 경우에는 JVM에서 자동으로 생성한다. 클래스 변경에 따라서 serialVersionUID가 자동으로 바뀌면 역직렬화시 문제가 발생할 수 있기 때문에 직업 명시하는 게 좋다. IntellijIDE에서도 자동으로 생성해주는 plugin(GeneateSerialVersionUID)이 존재한다.
 
 ### 3.5.4 Cache key 길이는 250자로 제한된다
 
-key의 최대 길이는 250자이면 넘을 경우 IllegalArgumentException 이 발생합니다.
+key의 최대 길이는 250자이면 넘을 경우 IllegalArgumentException 이 발생한다.
 
 # 4. 참고
 

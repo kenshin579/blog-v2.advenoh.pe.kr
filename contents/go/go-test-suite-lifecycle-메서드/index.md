@@ -82,7 +82,7 @@ func (ets *ExampleTestSuite) TestExample1() {}
 
 
 
-작성한 전체 [테스트 코드](https://github.com/kenshin579/tutorials-go/blob/master/go-testing/suite_test.go)입니다.
+작성한 전체 [테스트 코드](https://github.com/kenshin579/tutorials-go/blob/master/go-testing/suite_test.go)이다.
 
 ```go
 type ExampleTestSuite struct {
@@ -110,7 +110,7 @@ func (ets *ExampleTestSuite) BeforeTest(suiteName, testName string) {
 func (ets *ExampleTestSuite) TestExample1() {
 	fmt.Println("TestExample1")
   assert.Equal(ets.T(), ets.TestValue, 5) //이렇게도 assert 확인할 수 있지만, 
-	ets.Equal(ets.TestValue, 5) //assert 체크하려면 이렇게 사용하시면 됩니다.
+	ets.Equal(ets.TestValue, 5) //assert 체크하려면 이렇게 사용하시면 된다.
 }
 
 func (ets *ExampleTestSuite) TestExample2() {

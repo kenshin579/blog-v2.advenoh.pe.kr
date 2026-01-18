@@ -10,7 +10,7 @@ tags:
 series: "Frank's IT News 2026 상반기"
 ---
 
-2주간의 주요 IT 뉴스를 카테고리별로 정리했습니다.
+2주간의 주요 IT 뉴스를 카테고리별로 정리했다.
 
 ---
 
@@ -26,7 +26,7 @@ series: "Frank's IT News 2026 상반기"
 - [LLM과 자연어로 대화하게 두지 마세요](https://yozm.wishket.com/magazine/detail/3520) - 요즘IT » 피드
 - [Figma와 Gemini 3.0 통합은 ‘디자인 실무’를 어떻게 바꿀까?](https://yozm.wishket.com/magazine/detail/3518) - 요즘IT » 피드
 - [AI가 요약해줘도, 왜 지식은 남지 않을까?](https://news.hada.io/topic?id=25467) - GeekNews - 개발/기술/스타트업 뉴스 서비스
-- [안티그래비티로 글로벌 유저 테스트 봇 만들어봤습니다](https://yozm.wishket.com/magazine/detail/3527) - 요즘IT » 피드
+- [안티그래비티로 글로벌 유저 테스트 봇 만들어봤다](https://yozm.wishket.com/magazine/detail/3527) - 요즘IT » 피드
 - [비개발자, 클로드 코드로 외주 개발 시작하기](https://yozm.wishket.com/magazine/detail/3525) - 요즘IT » 피드
 
 # 💻 Development
@@ -44,7 +44,7 @@ series: "Frank's IT News 2026 상반기"
 
 # 📌 Misc
 
-- [설문조사 대충 할 거면 안 하는 것이 낫습니다](https://yozm.wishket.com/magazine/detail/3533) - 요즘IT » 피드
+- [설문조사 대충 할 거면 안 하는 것이 낫다](https://yozm.wishket.com/magazine/detail/3533) - 요즘IT » 피드
 - [우리는 왜 ‘깊이’ 생각하기 어려워졌을까?](https://yozm.wishket.com/magazine/detail/3529) - 요즘IT » 피드
 - [당장 이직 안 해도 알아야 할 IT 커리어 탐색 전략](https://yozm.wishket.com/magazine/detail/3521) - 요즘IT » 피드
 - [입사 일주일 만에 일본 출장을? LINE Plus Developer Relations 뉴비의 바쁜 적응기](https://techblog.lycorp.co.jp/ko/a-business-trip-to-japan-only-after-1-week-joining) - LY Corporation Tech Blog
@@ -62,4 +62,4 @@ series: "Frank's IT News 2026 상반기"
 
 ---
 
-*이 글은 자동으로 생성되었습니다.*
+*이 글은 자동으로 생성되었다.*

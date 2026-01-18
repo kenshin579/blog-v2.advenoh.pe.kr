@@ -14,8 +14,8 @@ tags:
   - 질문
 ---
 
-개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료입니다.
-미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
+개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료이다.
+미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사한다.
 
 
 # Q&A 전체 목록
@@ -24,7 +24,7 @@ tags:
 
 ## <span style="color:brown">1. application.properties : server.compression.enabled 속성의 의미는?</span>
 
-스프링 부트에서 기본적으로 GZip 압축은 비활성화 되어 있습니다. 하지만, server.compression.enabled=true로 설정하면 웹 자원(ex. html, css)을 압축해서 클라이언트로 보내져서 응답 시간을 줄일 수 있는 장점이 있습니다.
+스프링 부트에서 기본적으로 GZip 압축은 비활성화 되어 있다. 하지만, server.compression.enabled=true로 설정하면 웹 자원(ex. html, css)을 압축해서 클라이언트로 보내져서 응답 시간을 줄일 수 있는 장점이 있다.
 
 참고
 * [https://www.callicoder.com/configuring-spring-boot-application/](https://www.callicoder.com/configuring-spring-boot-application/)
@@ -32,7 +32,7 @@ tags:
 
 ## <span style="color:brown">2. Quartz에서 @PersistJobDataAfterExecution 어노테이션의 의미는 뭔가? </span>
 
-Job 로직에서 JobDataMap 데이터를 수정하면 실행이후에 DB에 저장이 안됩니다. 하지만, @PersistJobDataAfterExecution 어노테이션을 클래스에 추가하면 JobDataMap을 수정한 데이터를 다음 실행 때에도 반영된 데이터를 읽을 수 있습니다.
+Job 로직에서 JobDataMap 데이터를 수정하면 실행이후에 DB에 저장이 안된다. 하지만, @PersistJobDataAfterExecution 어노테이션을 클래스에 추가하면 JobDataMap을 수정한 데이터를 다음 실행 때에도 반영된 데이터를 읽을 수 있다.
 
 ```java
 @PersistJobDataAfterExecution
