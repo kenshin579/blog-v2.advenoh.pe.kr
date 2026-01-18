@@ -15,7 +15,7 @@ tags:
   - restTemplate
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 스프링 프레임워크에서는 REST 서비스의 Endpoint를 호출할 수 있도록 크게 **2가지 방식인 동기, 비동기 REST Client을 제** 공합니다. 이번 포스팅에서는 동기방식인 RestTemplate에 대해서 알아보겠습니다.
 
@@ -45,7 +45,7 @@ RestTemplate은 스프링에서 제공하는 다른 여러 **Template 클래스 
 | exchange | any | HTTP 헤더를 새로 만들 수 있고 어떤 HTTP 메서드도 사용가능하다 |
 | execute | any | Request/Response 콜백을 수정할 수 있다 |
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 - OS : Mac OS
 - IDE: Intellij
@@ -67,19 +67,19 @@ RestTemplate은 스프링에서 제공하는 다른 여러 **Template 클래스 
 
 ![](image_12.png)
 
-## 3. RestTemplate의 동작원리
+# 3. RestTemplate의 동작원리
 
 RestTemplate의 동작원리에 대한 내용은 [빨간색코딩](https://sjh836.tistory.com/141) 블로그에 잘 정리가 되어 있어 별도로 정리는 하지 않았습니다. 해당 링크에 들어가서 더 자세한 설명을 참조해주세요.
 
 ![](image_2.png)
 
-## 4. RestTemplate 메서드 예제
+# 4. RestTemplate 메서드 예제
 
 RestTemplate에서 자주 사용하는 메서드 위주로 알아보겠습니다.
 
-### 4.1 GET 메서드
+## 4.1 GET 메서드
 
-#### 4.1.1 getForObject()
+### 4.1.1 getForObject()
 
 getForObject() 메서드는 GET을 수행하고 HTTP 응답을 객체 타입으로 변환해서 반환해주는 메서드입니다. 이 예제에서는 Employee 객체로 반환해줍니다.
 
@@ -122,7 +122,7 @@ public Employee getEmployee(@PathVariable Long id) {
 
 ![](image_19.png)
 
-#### 4.1.2 getForEntity()
+### 4.1.2 getForEntity()
 
 getForEntity() 메서드의 경우에는 응답을 ResponseEntity 객체로 받게 됩니다. getForObject()와 달리 HTTP 응답에 대한 추가 정보를 담고 있어서 GET 요청에 대한 응답 코드, 실제 데이터를 확인할 수 있습니다. 또한 ResponseEntity<T> 제네릭 타입에 따라서 응답을 String이나 Object 객체로 받을 수 있습니다.
 
@@ -143,7 +143,7 @@ public void test_getForEntity() {
 
 ![](image_1.png)
 
-#### 4.1.3 getForEntity()에 여러 값을 담은 params을 같이 넘겨주기
+### 4.1.3 getForEntity()에 여러 값을 담은 params을 같이 넘겨주기
 
 getForEntity() 메서드는 또한 여러 값을 담은 params를 인자로 받아서 GET 요청을 할 수 있습니다. 예제에서는 URL PATH에 필요한 name과 country 변수를 LinkedMultiValueMap 객체에 담아서 params로 넘겨주었습니다.
 
@@ -166,11 +166,11 @@ public void test_getForEntity_여러_path_variables을_넘겨주는_경우() {
 
 ![](image_20.png)
 
-### 4.2 POST
+## 4.2 POST
 
 다음은 POST 메서드에 대한 메서드들입니다.
 
-#### 4.2.1 postForObject() 해더 포함하지 않고 보내기
+### 4.2.1 postForObject() 해더 포함하지 않고 보내기
 
 postForObject()는 getForObject()와 같이 POST 요청에 대해서 반환 값을 해당 객체로 반환해주는 메서드입니다. Employee 객체를 POST의 body로 해서 보냅니다.
 
@@ -210,7 +210,7 @@ public ResponseEntity<Employee> saveEmployee(
 
 ![](image_17.png)
 
-#### 4.2.2 postForObject() 해더 포함해서 보내기
+### 4.2.2 postForObject() 해더 포함해서 보내기
 
 이번에는 헤더에 데이터를 실어서 보내 보겠습니다. Employee 객체와 custom 헤더를 인자로 넘겨 HttpEntity를 생성합니다. 생성한 HttpEntity를 postForObject에 담아서 보내면 Controller에서 @RequestHeader 어노테이션으로 값을 얻어올 수 있습니다.
 
@@ -240,7 +240,7 @@ public void testPostForObject_해데_포함해서_보내기() {
 
 ![](image_10.png)
 
-#### 4.2.3 postForEntity()
+### 4.2.3 postForEntity()
 
 postForEntity() 메서드는 ResponseEntity<T> 객체로 데이터를 받을 수 있습니다. 예제에서는 Employee 객체로 받는 대신 String으로 받는 예제여서 응답 body가 스트링 JSON 형태로 출력됩니다.
 
@@ -266,7 +266,7 @@ public void testPostForEntity_스트링값으로_받기() {
 
 ![](image_9.png)
 
-#### 4.2.4 postFoLocation()
+### 4.2.4 postFoLocation()
 
 postForLocation() 메서드는 객체를 반환하는 대신 생성된 리소스의 URI 위치를 반환합니다.
 
@@ -311,7 +311,7 @@ public ResponseEntity<Void> locationURI(
 
 ![](image_14.png)
 
-### 4.3 DELETE
+## 4.3 DELETE
 
 delete() 메서드는 HTTP DELETE을 수행하며 회원의 이름을 넘겨주면 매핑된 Controller의 deleteEmployeeByName 메서드가 실행됩니다.
 
@@ -339,7 +339,7 @@ public void deleteEmployeeByName(@PathVariable(value = "name") String name) {
 
 ![](image_7.png)
 
-### 4.4 PUT
+## 4.4 PUT
 
 put() 메서드도 다른 메서드(ex. postForObject)과 비슷합니다. PUT은 데이터를 업데이트하기 위해 요청을 보내기 때문에 body에 데이터를 실어서 보냅니다. 예제에서는 Address 객체를 실어서 보냅니다.
 
@@ -371,8 +371,8 @@ public void updateEmployee(@PathVariable(value = "name") String name, @RequestBo
 
 ![](image_8.png)
 
-### 4.5 Exchange()
-#### 4.5.1 Exchange()로 HTTP GET 메서드 실행하기
+## 4.5 Exchange()
+### 4.5.1 Exchange()로 HTTP GET 메서드 실행하기
 
 지금까지 HTTP 메서드 별로 RestTemplate에서 제공하는 API들을 같이 봤습니다. 별도의 메서드들도 제공하지만, 일반적으로 모두 처리가 가능한 하나의 메서드인 Exchange API도 제공합니다.
 앞에서 사용했던 getForObject() 메서드 대신에 exchange() 메서드를 사용해서 값을 조회해보겠습니다. 헤더에 값을 포함해서 호출하는 예제입니다.
@@ -419,7 +419,7 @@ public ResponseEntity<Employee> getEmployeeByExchangeMethod(
 
 ![](image_13.png)
 
-#### 4.5.2 exchange()로 객체 컬렉션을 받아보기
+### 4.5.2 exchange()로 객체 컬렉션을 받아보기
 
 단순히 하나의 객체(ex. 직원) 정보를 반환하는 메서드를 Controller에서 정의하지만, 전체 직원을 조회해서 List<Employee> 형태로 반환하는 EndPoint가 필요할 때가 있습니다.
 
@@ -467,7 +467,7 @@ public void test_get_lists_of_objects() {
 
 ![](image_18.png)
 
-### 4.6 optionsForAllow()
+## 4.6 optionsForAllow()
 
 optionsForAllow()는 해당 URI에서 지원하는 HTTP 메서드를 조회하는 메서드입니다.
 
@@ -489,7 +489,7 @@ public void test_optionsForAllow() {
 
 ![](image_6.png)
 
-### 4.7 Timeout 설정하기
+## 4.7 Timeout 설정하기
 
 RestTemplate 사용시 timeout과 같은 connection에 대한 설정을 추가로 할 수가 있습니다. 간단한 설정은 SimpleClientHttpRequestFactory 객체를 사용하면 되지만, 많은 기능을 제공하지 않아 실제 환경에서는 더 많은 기능(ex. retry)을 제공하는 별도의 HTTP Client 라이브러리를 사용합니다. 이 예제에서는 아파치의 httpclient를 추가하여 Read timeout을 설정하여 사용하겠습니다.
 
@@ -531,7 +531,7 @@ ClientHttpRequestFactory getRequestFactory() {
 
 ![](image_15.png)
 
-### 4.8 patchForObject()
+## 4.8 patchForObject()
 
 patchForObject()는 주어진 URL 주소로 HTTP Patch 메서드를 실행합니다. HTTP에서 리소스를 생성하는 메서드는 3가지가 있습니다. 간단하게 리뷰를 하고 Patch 예제 코드를 보겠습니다.
 
@@ -568,7 +568,7 @@ public void test_patchForObject() {
 }
 ```
 
-### 4.9 Execute()
+## 4.9 Execute()
 
 마지막으로 Execute() 메서드에 대해서 알아보겠습니다. Execute()는 콜백을 통해 요청 준비와 응답 추출을 완벽하게 제어하여 요청을 수행하는 가장 일반적인 메서드를 RestTemplate에서 제공합니다. 그래서 실제 지금까지 언급했던 메서드 getForObject(), put()등은 내부적으로 execute() 메서드를 호출하게 되어 있습니다.
 
@@ -619,7 +619,7 @@ RequestCallback requestCallback(final Address address) {
 
 ![](image_11.png)
 
-## 5. 참고
+# 5. 참고
 
 - RestTemplate
     - [https://www.baeldung.com/rest-template](https://www.baeldung.com/rest-template)

@@ -26,7 +26,7 @@ tags:
 
 # Usage
 
-### 명령어 사용법
+## 명령어 사용법
 
 - `-i` 옵션이 있는 경우에는 `interactive` 하게 실행하도록 되어 있어 로컬 브랜치를 삭제하기전에 `confirm` 확인을 받고 삭제하도록 되어 있다
 
@@ -37,7 +37,7 @@ Usage: cleanup_prune_local_branches.sh [-i]
 -i: Enable interactive mode with confirmation prompt for each branch deletion
 ```
 
-### 실행 예제
+## 실행 예제
 
 ```bash
 > cleanup_prune_local_branches.sh -i 
@@ -60,7 +60,7 @@ Deleting local branch: feat/#1987-robot-path-order
 =======[WARN] Are you sure you want to delete unused branch ? [y/N]
 ```
 
-## Source Code
+# Source Code
 
 다음은 해당 스크립트의 전체 소스 코드이다.
 

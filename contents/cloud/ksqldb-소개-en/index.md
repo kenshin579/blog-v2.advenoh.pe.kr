@@ -13,11 +13,11 @@ tags:
 ---
 
 
-## What
+# What
 
 `ksqlDB` (formerly Kafka SQL, KSQL) is a streaming SQL engine for Kafka. It provides an SQL interface that allows developers to easily perform streaming processing in Kafka using familiar SQL syntax. The feature provided by ksqlDB includes:
 
-### 1.1 Feature
+## 1.1 Feature
 
 - Real-time streaming processing made possible through a familiar and lightweight SQL syntax, similar to accessing relational databases
 - ksqlDB is designed to be fault-tolerant and scalable
@@ -27,14 +27,14 @@ tags:
 - Support user-defined functions for KSQL
     - Also support lambda functions
 
-#### Reference
+### Reference
 
 - https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-reference/functions/
 - https://docs.confluent.io/5.4.0/ksql/docs/developer-guide/udf.html
 - https://docs.ksqldb.io/en/latest/how-to-guides/use-lambda-functions/
 
 
-### 1.2 ksqlDB Architecture
+## 1.2 ksqlDB Architecture
 
 ![Diagram showing architecture of ksqlDB](image-20221026125901.png)
 
@@ -60,7 +60,7 @@ tags:
 
 > "RocksDB is an open-source database development project started by Facebook, optimized for large-scale data processing workloads such as server workloads, and optimized for high performance on fast storage, especially flash storage."
 
-##### Reference
+#### Reference
 
 - https://docs.confluent.io/5.4.3/ksql/docs/index.html
 - https://docs.ksqldb.io/en/latest/operate-and-deploy/how-it-works/
@@ -76,17 +76,17 @@ tags:
 - https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams+Internal+Data+Management
 - https://stackoverflow.com/questions/58621917/ksql-query-and-tables-storage
 
-## Why
+# Why
 
 Let's find out why we should use ksqlDB.
 
-### 1.Three Approaches for Processing Kafka Stream
+## 1.Three Approaches for Processing Kafka Stream
 
 
 
 ![Three Approaches for Processing Kafka Stream](image-20221024172234886.png)
 
-### 2. ksqlDB vs Kafka Streams
+## 2. ksqlDB vs Kafka Streams
 
 ![The Confluent Platform stack, with ksqlDB built on Kafka Streams](ksqldb-kafka-streams-core-kafka-stack.png)
 
@@ -108,11 +108,11 @@ Let's find out why we should use ksqlDB.
 - https://www.slideshare.net/ConfluentInc/ksqldb-253336471
 
 
-## Who
+# Who
 
 ksqlDB has been developed by Confluent since 2017.
 
-### History
+## History
 
 **Kafka**
 
@@ -143,7 +143,7 @@ Reference
 - https://www.linkedin.com/pulse/kafkas-origin-story-linkedin-tanvir-ahmed/
 
 
-## Where
+# Where
 
 Several companies are officially using ksqlDB. In Korea, LINE used ksqlDB to improve its AB Test Report system.
 
@@ -164,15 +164,15 @@ Several companies are officially using ksqlDB. In Korea, LINE used ksqlDB to imp
 
 ![Company using ksqlDB](image-20221017221925139.png)
 
-##### Reference
+#### Reference
 
 - https://stackshare.io/ksql
 - https://ksqldb.io/
 - https://www.confluent.io/ko-kr/product/ksqldb/
 
-## How
+# How
 
-### 1. Installation on local-machine
+## 1. Installation on local-machine
 
 To run multiple Kafka components in a local environment, we are going to use `docker-compose`. First, download the `docker-compose.yml` file.
 
@@ -216,13 +216,13 @@ ksql>
 
 
 
-### 2. KSQL Usage
+## 2. KSQL Usage
 
 Let's learn more about ksqlDB through some examples.
 
-### 2.1 Collections : Stream vs Table
+## 2.1 Collections : Stream vs Table
 
-#### 2.1.1 Stream
+### 2.1.1 Stream
 
 - A new stream can be created from a stream, table, or Kafka topic
 - Stream is an event collection that streams persistently and unlimitedly
@@ -252,7 +252,7 @@ WHERE profileId = 'c2309eec'
 
 
 
-#### 2.1.2 Table (Materialized view)
+### 2.1.2 Table (Materialized view)
 
 - Table data is a mutable event collection and the data has the current latest state
 - Rows can be changed and must have a primary key
@@ -289,16 +289,16 @@ SELECT ROUND(GEO_DISTANCE(la, lo, 37.4133, -122.1162), -1) AS distanceInMiles,
 - `COLLECT_LIST(col1)`
     - Return an array containing all values of col1
 
-##### Reference
+#### Reference
 
 - https://www.slideshare.net/ConfluentInc/ksqldb
 - https://devidea.tistory.com/73
 
 
 
-### 2.2 Query
+## 2.2 Query
 
-#### 2.2.1 Push Query (Continous Query)
+### 2.2.1 Push Query (Continous Query)
 
 - Push queries subscribes to real-time changing results
 - The `EMIT` clause continuously executes the query persistently
@@ -333,7 +333,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:9092 --topic locations
 
 
 
-#### 2.2.2 Pull Query (Classic Query)
+### 2.2.2 Pull Query (Classic Query)
 
 - Pull Query retrieves the current state of a table
 
@@ -342,20 +342,20 @@ $ kafka-console-producer.sh --bootstrap-server localhost:9092 --topic locations
 ksql> SELECT * from ridersNearMountainView WHERE distanceInMiles <= 10;
 ```
 
-##### Reference
+#### Reference
 - https://www.rittmanmead.com/blog/2017/10/ksql-streaming-sql-for-apache-kafka/
 - https://docs.ksqldb.io/en/latest/concepts/time-and-windows-in-ksqldb-queries/
 
 
-### 2. Control Center
+## 2. Control Center
 
 So far, we have only used ksqlDB in the CLI, but let's use the Control Center web UI. Go to [http://localhost:9021](http://localhost:9021/).
 
-### 2.1 Datagen Source Connector
+## 2.1 Datagen Source Connector
 
 Datagen Source Connector is a connector that generates mock data for development and testing. Depending on the configured values, it periodically generates data, allowing for continuous simulation of receiving data.
 
-#### 2.1.1 Generate Mock Data
+### 2.1.1 Generate Mock Data
 
 Let's generate mock data for `pageviews` and `users`.
 
@@ -393,7 +393,7 @@ Click **Topics > pageviews > Messages Tab**. We can see the data is being publis
 
 ![PageViews](image-20221023220301923.png)
 
-##### Reference
+#### Reference
 
 - https://docs.confluent.io/kafka-connectors/datagen/current/index.html#datagen-source-connector-for-cp
 - https://always-kimkim.tistory.com/entry/kafka-develop-kafka-connect-datagen
@@ -402,7 +402,7 @@ Click **Topics > pageviews > Messages Tab**. We can see the data is being publis
 
 
 
-### 2.2 Joins Collections
+## 2.2 Joins Collections
 
 The `Join` in ksqlDB and `Join` in traditional relational databases are similar in that they combine two or more sets of data. You can use the `Join` syntax to merge streams events that occur in real-time.
 
@@ -436,9 +436,9 @@ ksql> CREATE STREAM pageviews_region_like_89
 
 
 
-## 2.4 Windows
+# 2.4 Windows
 
-#### 2.4.1 Time
+### 2.4.1 Time
 
 ![Diagram showing records in a ksqlDB stream](ksql-stream-records.png)
 
@@ -446,7 +446,7 @@ ksql> CREATE STREAM pageviews_region_like_89
 - The timestamp is set by the producer application or the Kafka broker
 - The timestamp is used for time-dependent operations such as aggregation and join
 
-#### 2.4.2 Window
+### 2.4.2 Window
 
 ![Diagram showing the relationship between records and time in a ksqlDB stream](ksql-window.png)
 
@@ -454,7 +454,7 @@ ksql> CREATE STREAM pageviews_region_like_89
 - The period is represented by a Duration, which can be expressed as `WINDOWSTART`/`WINDOWEND`
 - `WINDOWSTART`/`WINDOWEND` can be declared in the SELECT clause when creating a Window query
 
-#### 2.4.1 Window Types
+### 2.4.1 Window Types
 
 There are three ways to define Time Windows in KSQL:
 
@@ -501,7 +501,7 @@ ksql> SELECT * FROM pageviews_per_region_89 EMIT CHANGES;
 
 - https://ojt90902.tistory.com/1117?category=1007571
 
-### 3. REST API
+## 3. REST API
 
 ```bash
 $ curl --location --request POST 'http://localhost:8088/ksql' \
@@ -545,7 +545,7 @@ The ksqlDB server provides a REST API, and the full API documentation is availab
 - https://rmoff.net/2019/01/17/ksql-rest-api-cheatsheet/
 - https://docs.ksqldb.io/en/latest/developer-guide/api/
 
-### 4. Connector Management
+## 4. Connector Management
 
 ksqlDB can run connectors in two modes, which determine how and where the connectors are executed.
 
@@ -570,14 +570,14 @@ ksql> CREATE SINK CONNECTOR `mongodb-test-sink-connector` WITH (
 );
 ```
 
-##### Reference
+#### Reference
 
 - https://medium.com/@rt.raviteja95/mongodb-connector-with-ksqldb-with-confluent-kafka-2a3b18dc4c25
 - https://docs.ksqldb.io/en/latest/how-to-guides/use-connector-management/
 
 
 
-### 5. KSQL Library
+## 5. KSQL Library
 
 - golang
     - https://github.com/VinGarcia/ksql
@@ -586,7 +586,7 @@ ksql> CREATE SINK CONNECTOR `mongodb-test-sink-connector` WITH (
     - https://www.baeldung.com/ksqldb
     - https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-clients/java-client/
 
-## When
+# When
 
 ksqlDB is used where real-time transformation, integration, and analysis of data are immediately required as it is based on Kafka for processing data. It can be used in various fields as follows:
 
@@ -598,25 +598,25 @@ ksqlDB is used where real-time transformation, integration, and analysis of data
 - Sensor data and IoT
 - Cybersecurity
 
-##### Reference
+#### Reference
 
 - https://developer.confluent.io/tutorials/
 - https://blog.voidmainvoid.net/227
 - https://github.com/confluentinc/ksql/tree/0.1.x/docs#ksql-documentation
 - https://www.confluent.io/blog/stream-processing-vs-batch-processing/
 
-## FAQ
+# FAQ
 
 Refer to the link below for various ksqlDB FAQs.
 
 - https://docs.ksqldb.io/en/latest/faq/
 
-### 1. Is ksqlDB Apache License 2.0?
+## 1. Is ksqlDB Apache License 2.0?
 
 - No, it is not.
 - ksqlDB is licensed under the Confluent Community License and is managed as a Confluent company product.
 
-### 2. Is there any constraints for Confluent Community License?
+## 2. Is there any constraints for Confluent Community License?
 
 ![Apache 2.0 License | Confluent Community License | Confluent Enterprise License](relicensing-blog_faq-1920x1080px-2-1024x576.png)
 
@@ -626,7 +626,7 @@ Refer to the link below for various ksqlDB FAQs.
 - https://www.confluent.io/confluent-community-license-faq/
 - https://www.confluent.io/ko-kr/blog/license-changes-confluent-platform/
 
-## Wrap up
+# Wrap up
 
 ksqlDB helps us easily process streaming data on Kafka with SQL syntax that we are already familiar with.
 
@@ -636,7 +636,7 @@ For a few stream and table creations, it is sufficient to create and use them in
 - Available on Confluent Cloud
 - https://www.confluent.io/blog/building-streaming-data-pipelines-visually
 
-## Reference
+# Reference
 
 - ksql syntax
     - https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-reference/show-streams/

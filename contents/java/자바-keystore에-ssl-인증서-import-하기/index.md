@@ -13,7 +13,7 @@ tags:
   - 자바
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 회사에서 [Zencoder API](https://support.brightcove.com/zencoder) 을 사용하게 되어 자바에서 작업을 시작하려는데, 아래와 같이 SSLHandshakeException이 발생해서 뭔가 문제인지 구글링을 하게 되었습니다. 이미 아시는 분들도 많지만, 다시 한번 정리를 해봤습니다.
 
@@ -23,7 +23,7 @@ tags:
 
 ![](image_13.png)
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 실제 작성한 코드는 많지 않고 테스트를 쉽게 하려고 간단하게 유닛 테스트로 작성했습니다. github에 올린 코드를 참조해주세요.
 
@@ -33,14 +33,14 @@ tags:
 - Source code : [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-ssl-keystore-import-test)
 - Software management tool : Maven
 
-## 3. 해결책
+# 3. 해결책
 
 이 문제를 해결하는 방법은 크게 2가지가 있습니다.
 
 - 코딩상에서 직접 인증서 유효성 체크 하지 않기 (비추)
 - 해당 인증서 자바 keystore에 저장하기 (추천 방식)
 
-### 3.1 코드 상에서 직접 인증서 유효성 체크 하지 않기
+## 3.1 코드 상에서 직접 인증서 유효성 체크 하지 않기
 
 자바 코드로 인증서 체크를 하지 않도록 HttpsConnection의 설정을 변경하는 방식입니다. 아래 코드에 대한 자세한 설명은 생략하도록 하겠습니다.
 
@@ -80,11 +80,11 @@ private void disableCertificateCheck() {
 }
 ```
 
-### 3.2 해당 인증서 자바 keystore에 저장하기 (추천 방식)
+## 3.2 해당 인증서 자바 keystore에 저장하기 (추천 방식)
 
 자바 keystore에 인증서를 등록하는 방법에는 크게 2가지가 있습니다. 명령어 창에서 하던지 아니면 Portecle GUI 프로그램을 사용해도 상관없습니다.
 
-#### 3.2.1 Portecle GUI 사용하기
+### 3.2.1 Portecle GUI 사용하기
 
 자바 keystore에 인증서를 등록하기전에 유닛 테스트를 실행하면, SSLHandshakeException이 발생합니다.
 
@@ -157,7 +157,7 @@ $ /usr/libexec/java_home -V
 
 다시 유닛 테스트를 실행하면 Exception 없이 잘 실행되는 것을 확인할 수 있습니다. 자 그면, 명령어 창에서 등록하는 방법을알아보겠습니다.
 
-#### 3.2.2 명령어창에서 자바 keystore에 인증서 임포트하기
+### 3.2.2 명령어창에서 자바 keystore에 인증서 임포트하기
 
 명령어 창에서도 인증서를 다운로드하고 등록할 수 있습니다.
 
@@ -179,7 +179,7 @@ $ sudo keytool -importcert -file ./appzencoder.certdata -alias [app.zencoder.com
 
 ![](image_6.png)
 
-## 4. 참고
+# 4. 참고
 
 - Java의 keystore에 SSL 인증서 import 하기
     - [https://www.lesstif.com/pages/viewpage.action?pageId=12451848](https://www.lesstif.com/pages/viewpage.action?pageId=12451848)

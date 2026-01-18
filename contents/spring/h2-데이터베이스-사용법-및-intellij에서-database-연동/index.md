@@ -16,7 +16,7 @@ tags:
   - 인텔리제이
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 H2는 자바로 구현된 오픈소스 데이터베이스입니다. 인 메모리와 파일 기반의 데이터베이스 설정이 가능합니다. 자바 애플리케이션에 임베디드해서 사용하거나 서버 모드로 구동할 수 있습니다. 별도의 설치과정 없이 임베디드로 바로 사용할 수 있는 장점으로 많이 사용되는 DB입니다.
 
@@ -27,7 +27,7 @@ H2는 자바로 구현된 오픈소스 데이터베이스입니다. 인 메모�
     - 파일
 - 서버 모드 - 여러 도구에서 같은 DB에 접속이 가능하다
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 작업시 사용한 개발 환경과 소스코드입니다.
 
@@ -38,9 +38,9 @@ H2는 자바로 구현된 오픈소스 데이터베이스입니다. 인 메모�
 * Software management tool : Maven
 
 
-## 3. Spring Boot에서 H2 DB 사용해보기
+# 3. Spring Boot에서 H2 DB 사용해보기
 
-### 3.1 JPA 샘플 코드 작성
+## 3.1 JPA 샘플 코드 작성
 
 스프링 부트와 H2 DB간의 연동를 위해 pom.xml 파일에 H2 라이브러리를 추가해야 합니다.
 
@@ -84,9 +84,9 @@ INSERT INTO book (`title`, `author`, `price`) VALUES ('기차 타고 부산에�
 
 API로도 호출해보기 위해서 BookController과 BookRepository 파일도 같이 생성했습니다. 두 파일은 github에 올라간 소스코드를 확인해주세요.
 
-### 3.2 H2 데이터베이스 설정
+## 3.2 H2 데이터베이스 설정
 
-#### 3.2.1 In-Memory
+### 3.2.1 In-Memory
 
 datasource 값은 다른 DB 설정할 때와 유사합니다.
 
@@ -115,7 +115,7 @@ spring:
 
 인 메모리는 메모리에만 데이터가 저장되기 때문에 애플리케이션 구동 시에만 존재합니다.
 
-#### 3.2.2 File로 설정
+### 3.2.2 File로 설정
 
 DataSource 을 파일로 설정하면 애플리케이션이 종료되어도 데이터를 계속 남아 있습니다. Connection URL 형식은 파일 형식으로 작성하면 파일로 저장됩니다.
 
@@ -130,7 +130,7 @@ spring:
     driverClassName: org.h2.Driver
 ```
 
-### 3.3 스프링 부트 구동해서 API 호출해보기
+## 3.3 스프링 부트 구동해서 API 호출해보기
 
 이제 스프링 부트를 구동해보고 각 설정에 따라 이상이 없는지 체크해보겠습니다.
 
@@ -138,11 +138,11 @@ Postman을 사용해서 http://localhost:8080/api/book/list API를 호출하면 
 
 ![](image_1.png)
 
-## 4. DB Client로 접속하기
+# 4. DB Client로 접속하기
 
 DB 관련 작업을 수월하게 하기 위해 대부분 별도의 DB client로 접속해서 작업합니다. H2 웹 콘솔과 Intellij IDE에서 접속해보겠습니다.
 
-### 4.1 H2 웹 콘솔
+## 4.1 H2 웹 콘솔
 
 H2에서 웹 콘솔을 제공합니다. 웹 콘솔을 사용하기 위해서는 pom.xml에 spring-boot-devtools을 추가해줘야 합니다.
 
@@ -173,7 +173,7 @@ JDBC URL 설정하고 연결 버튼을 클릭하면 DB에 접속하게 됩니다
 
 ![image-20191121215752742](image_3.png)
 
-### 4.2 Intellij Database 도구
+## 4.2 Intellij Database 도구
 
 다음은 Intellij Database 도구로 접속해보겠습니다. Intellij IDE를 열고 오른쪽 사이드바에서 Database를 클릭합니다. Data Source를 H2로 선택하고 아래와 같이 데이터를 입력합니다.
 
@@ -183,11 +183,11 @@ JDBC URL 설정하고 연결 버튼을 클릭하면 DB에 접속하게 됩니다
 
 ![image-20191121220213219](image_5.png)
 
-## 5. H2 DB 서버 모드로 접속하기
+# 5. H2 DB 서버 모드로 접속하기
 
 H2 DB 서버 모드로 접속하는 방법에 대해서 알아보겠습니다.
 
-### 5.1 설정 파일 추가
+## 5.1 설정 파일 추가
 
 서버 모드로 접속하기 위해서 아래 스프링 빈을 등록해줍니다.
 
@@ -208,17 +208,17 @@ initMethod와 destroyMethod 인자로 정의된 메서드는 스프링에 의해
 - tcpAllowOthers: 다른 외부에서 접속 가능하게 하는 설정이다
 - tcpPort : 포트 번호를 지정한다
 
-### 5.2 Intellij Database로 연결 재시도
+## 5.2 Intellij Database로 연결 재시도
 
 Intellij Database 도구에서 다시 접속을 시도하면 이상없이 로드 되는 것을 확인할 수 있습니다.
 
 ![image-20191121224057921](image_6.png)
 
-## 6. 정리
+# 6. 정리
 
 스프링 부트에서 H2 DB를 연동하는 방법에 알아보았습니다. 인 메모리와 파일 등으로 DB를 생성할 수 있었습니다. 단 단일 연결로는 하나만 허용되지만, 다중으로 연결하려면 서버 모드로 접속해야 하는 것도 확인하였습니다. 다음 포스팅에서는 Unit Test 실행 시 H2 DB를 활용해서 Unit Test를 실행할 방법에 대해서 알아보겠습니다.
 
-## 7. 참고
+# 7. 참고
 
 * H2 설치 및 사용법
     * [https://en.wikipedia.org/wiki/H2_(DBMS](https://en.wikipedia.org/wiki/H2_%28DBMS) )

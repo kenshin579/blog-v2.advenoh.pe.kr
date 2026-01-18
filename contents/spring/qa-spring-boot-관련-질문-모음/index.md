@@ -18,11 +18,11 @@ tags:
 미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
 
 
-## Q&A 전체 목록
+# Q&A 전체 목록
 
-### <span style="color:orange">[답변완료]</span>
+## <span style="color:orange">[답변완료]</span>
 
-### <span style="color:brown">1. application.properties : server.compression.enabled 속성의 의미는?</span>
+## <span style="color:brown">1. application.properties : server.compression.enabled 속성의 의미는?</span>
 
 스프링 부트에서 기본적으로 GZip 압축은 비활성화 되어 있습니다. 하지만, server.compression.enabled=true로 설정하면 웹 자원(ex. html, css)을 압축해서 클라이언트로 보내져서 응답 시간을 줄일 수 있는 장점이 있습니다.
 
@@ -30,7 +30,7 @@ tags:
 * [https://www.callicoder.com/configuring-spring-boot-application/](https://www.callicoder.com/configuring-spring-boot-application/)
 
 
-### <span style="color:brown">2. Quartz에서 @PersistJobDataAfterExecution 어노테이션의 의미는 뭔가? </span>
+## <span style="color:brown">2. Quartz에서 @PersistJobDataAfterExecution 어노테이션의 의미는 뭔가? </span>
 
 Job 로직에서 JobDataMap 데이터를 수정하면 실행이후에 DB에 저장이 안됩니다. 하지만, @PersistJobDataAfterExecution 어노테이션을 클래스에 추가하면 JobDataMap을 수정한 데이터를 다음 실행 때에도 반영된 데이터를 읽을 수 있습니다.
 
@@ -80,7 +80,7 @@ public class StatefulDumbJob implements Job {
 * [http://www.quartz-scheduler.org/documentation/quartz-2.1.7/examples/Example5.html](http://www.quartz-scheduler.org/documentation/quartz-2.1.7/examples/Example5.html)
 
 
-### <span style="color:brown"> 3. @SpringBootTest와 @DataJpaTest의 차이점은 뭔가?</span>
+## <span style="color:brown"> 3. @SpringBootTest와 @DataJpaTest의 차이점은 뭔가?</span>
 
 - @SpringBootTest
 
@@ -134,7 +134,7 @@ public @interface DataJpaTest {
 
 - - - -
 
-### <span style="color:orange">[미 답변 질문]</span>
+## <span style="color:orange">[미 답변 질문]</span>
 
 
 

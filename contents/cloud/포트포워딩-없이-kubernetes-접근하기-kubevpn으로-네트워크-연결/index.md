@@ -11,9 +11,9 @@ tags:
   - port forwarding
 ---
 
-## 1. 개요
+# 1. 개요
 
-#### KubeVPN 란?
+### KubeVPN 란?
 
 `KubeVPN`은 `Kubernetes` 클러스터와 로컬 환경 간의 원활한 네트워크 연결을 제공하는 도구이다. 기존의 port forwarding 방식과는 다음과 같은 차이점이 있다.
 
@@ -22,7 +22,7 @@ tags:
 | **Port Forwarding** | 특정 포트를 로컬로 전달하여 단일 서비스에 접근 가능하지만, 여러 포트나 복잡한 네트워크 설정이 필요할 경우 불편함 |
 | **KubeVPN**         | 전체 네트워크를 클러스터 내부처럼 확장하여 Pod IP 및 네이티브 DNS를 직접 사용 가능 |
 
-#### KubeVPN의 Technical Architecture
+### KubeVPN의 Technical Architecture
 
 ![KubeVPN Architecture](image-20250403231528867.png)
 
@@ -32,7 +32,7 @@ tags:
 - **VPN Client**: 로컬 머신에서 클러스터 네트워크로 접근할 수 있도록 설정
 - **Traffic Routing**: HTTP 헤더 조건 등을 기반으로 로컬 환경으로 트래픽을 리디렉션
 
-### 1.1 KubeVPN의 주요 특징
+## 1.1 KubeVPN의 주요 특징
 
 1. Direct Cluster Networking
 
@@ -50,7 +50,7 @@ tags:
 
 ------
 
-## 2. KubeVPN 사용하는 방법
+# 2. KubeVPN 사용하는 방법
 
 > `KubeVPN` 사용해보기 위해 로컬환경에서 Minikube로 k8s 클러스터를 실행한다. 
 > 참고: [맥에서 Minikube로 로컬 Kubernetes 클러스터 쉽게 구축하기](https://blog.advenoh.pe.kr/맥에서-minikube로-로컬-kubernetes-클러스터-쉽게-구축하기/)
@@ -61,7 +61,7 @@ tags:
 > kubectl apply -f <https://raw.githubusercontent.com/kubenetworks/kubevpn/master/samples/bookinfo.yaml>
 ```
 
-### 2.1 KubeVPN 설치하기
+## 2.1 KubeVPN 설치하기
 
 `Homebrew`를 사용하여 간편하게 설치할 수 있다.
 
@@ -92,7 +92,7 @@ KubeVPN: CLI
 > kv version
 ```
 
-### 2.2 KubeVPN으로 Kubernetes 클러스터 연결하기
+## 2.2 KubeVPN으로 Kubernetes 클러스터 연결하기
 
 `k8s` 클러스터에 연결하려면 다음 명령어를 실행하면 된다.
 
@@ -140,7 +140,7 @@ ID    Mode   Cluster    Kubeconfig                 Namespace   Status      Netif
 0     full   minikube   /Users/user/.kube/config   default     Connected   utun7
 ```
 
-### 2.3 네트워크 상태 테스트
+## 2.3 네트워크 상태 테스트
 
 Pod의 IP 주소를 확인하고 `ping`으로 네트워크 상태를 확인한다.
 
@@ -170,11 +170,11 @@ PING 10.244.0.3 (10.244.0.3): 56 data bytes
 
 - [Can not access Service IP or Service name, but can access Pod IP?](https://kubevpn.dev/docs/faq/5)
 
-## 3. 마무리
+# 3. 마무리
 
 여러 pod에 연결하려면 매번 port forwarding을 해줘야해지만, `KubeVPN` 을 활용하면서 클러스터에 전체 pod에 접속할 수 있어서 원활한 개발 및 디버깅이 가능해졌다
 
-## 4. 참고
+# 4. 참고
 
 - [QuickStart - KubeVPN](https://kubevpn.dev/docs/quickstart/)
 - [Using port-forward too often? KubeVPN Can help!](https://www.kubeblogs.com/kubevpn-revolutionizing-kubernetes-local-development/)

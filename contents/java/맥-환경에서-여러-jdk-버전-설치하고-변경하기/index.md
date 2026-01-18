@@ -17,7 +17,7 @@ tags:
 
 본 포스팅에서는 맥 환경을 대상으로 어떻게 여러 버전의 JDK로 쉽게 변경할 수 있는지 알아보겠습니다.
 
-## 1. 여러 JDK 버전 설치하기
+# 1. 여러 JDK 버전 설치하기
 
 일단, 먼저 여러 JDK 버전을 설치해 볼까요? brew 명령어로 3가지 JDK 버전을 설치하도록 하겠습니다.
 
@@ -29,7 +29,7 @@ $ brew cask install java java8 zulu8
 - java8 : Oracle JDK 8
 - zulu8 : Azul Zulu Java JDK
 
-## 2. 여러 버전으로 변경해보기
+# 2. 여러 버전으로 변경해보기
 
 현재 설치된 모든 JDK를 확인하려면, java_home -V 명령어로 확인할 수 있습니다. 제 맥에서는 총 4가지 JDK가 설치되어 있습니다.
 
@@ -58,7 +58,7 @@ $ code ~/.zshrc
 
 ![](image_2.png)
 
-## 3. 참고
+# 3. 참고
 
 - OS X에서 기본 자바 JDK 변경하기
     - [https://stackoverflow.com/questions/21964709/how-to-set-or-change-the-default-java-jdk-version-on-os-x](https://stackoverflow.com/questions/21964709/how-to-set-or-change-the-default-java-jdk-version-on-os-x)

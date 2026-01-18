@@ -15,7 +15,7 @@ tags:
   - 리스트
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 파이썬에서 딕셔너리 리스트에서 특정 키 값(ex. age)에 따라서 정렬하는 방법에 대해서 알아보자.
 
@@ -54,11 +54,11 @@ def test_simple_sorted(self):
 
 
 
-## 2. 딕셔너리 리스트 특정 키 값으로 정렬하기
+# 2. 딕셔너리 리스트 특정 키 값으로 정렬하기
 
 `list.sort()`와 `sorted()` 함수에 인자 값으로 `key` 함수를 지정할 수 있다. 이 `key` 함수의 반환 값이 compare 되어 정렬이 된다
 
-### 2.1 키 함수로 람다 사용
+## 2.1 키 함수로 람다 사용
 
 `key` 함수로 딕셔너리에서 age값을 반환하는 [람다함수](https://blog.advenoh.pe.kr/파이썬에서-람다-함수-익숙해지기/)를 지정하여 나이 순으로 정렬한다.
 
@@ -79,7 +79,7 @@ def test_sort_list_by_age_using_lambda(self):
 
 
 
-### 2.2 키 함수로 itemgetter 사용
+## 2.2 키 함수로 itemgetter 사용
 
 자료구조에서 키 나 속성 값을 쉽게 접근하도록 `operator`이라는 모듈에서 여러 함수를 제공해준다. `operator` 모듈에서 `itemgetter()` 메서드를 사용하여 `key` 함수를 지정할 수 있다.
 
@@ -102,7 +102,7 @@ def test_sort_list_by_age_using_itemgetter(self):
 
 
 
-### 2.3 여러 키 값으로 정렬시키기
+## 2.3 여러 키 값으로 정렬시키기
 
 여러 키 값(ex. age -> name) 기준으로도 정렬을 할 수 있다. 릭셔너리에서 나이가 같은 경우에는 이름으로 정렬을 해보자.
 
@@ -138,11 +138,11 @@ def test_sort_list_by_two_keys_using_itemgetter(self):
        self.assertLess(result[i].get('age'), result[i + 1].get('age'))
 ```
 
-## 3. 정리
+# 3. 정리
 
 sorted() 함수에서 `key` 함수를 지정할 수 있어 여러 키 값의 기준으로 정렬을 쉽게 할 수 있었다. 단일 키외에도 여러 키 값을 기준으로 정렬을 할 수 있다.
 
-## 4. 참고
+# 4. 참고
 
 - https://stackoverflow.com/questions/72899/how-do-i-sort-a-list-of-dictionaries-by-a-value-of-the-dictionary
 - https://www.geeksforgeeks.org/ways-sort-list-dictionaries-values-python-using-lambda-function/

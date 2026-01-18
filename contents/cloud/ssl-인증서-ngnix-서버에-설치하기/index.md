@@ -12,7 +12,7 @@ tags:
   - 인증서
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 웹사이트를 HTTPS로 설정하는 방법에 대해서 알아보자. HTTP -> HTTPS로 적용하려면 아래 절차가 필요하다.
 
@@ -20,7 +20,7 @@ tags:
     - [letsencrypt](https://letsencrypt.org/)에서 SSL 인증서를 무료로 받을 수 있다
 - 서버에 SSL 인증서 설치 및 웹 서버 설정하기
 
-### 1.1 개발환경
+## 1.1 개발환경
 
 - 서버 : Amazon Linux
 - 웹 서버 : Nginx 서버
@@ -28,7 +28,7 @@ tags:
 
 #2.  도구 설치 및 환경 설정
 
-### 2.1 Certbot로 인증서 설치하기
+## 2.1 Certbot로 인증서 설치하기
 
 Let's Encrypt에서는 certbot 명령어를 제공하여 Let's Encrypt 인증서를 자동으로 발급받거나 개신 할 수 있다.
 
@@ -57,7 +57,7 @@ $ sudo service nginx stop
 
 ![인증서 생성](image-2020101112345678.png)
 
-### 2.2 Ngnix 서버 설정 변경하기
+## 2.2 Ngnix 서버 설정 변경하기
 
 이제 ngnix 웹 서버에 HTTPS 설정을 추가해보자.
 
@@ -112,9 +112,9 @@ $ sudo service nginx restart
 
 
 
-### 2.3 Troubleshooting 및 기타 설정
+## 2.3 Troubleshooting 및 기타 설정
 
-#### 2.3.1 Let's Encrypt 인증서 자동으로 갱신하기
+### 2.3.1 Let's Encrypt 인증서 자동으로 갱신하기
 
 Let's Encrypt 인증서는 3개월마다 개신을 해줘야 한다. cron 설정으로 자동으로 개신할 수 있도록 설정해두자.
 
@@ -126,7 +126,7 @@ $ sudo crontab -e
 
 
 
-#### 2.3.2 Problem binding to port 80 오류 메시지
+### 2.3.2 Problem binding to port 80 오류 메시지
 
 ngnix 서버를 종료시키고 다시 certbot을 실행하면 된다.
 
@@ -175,7 +175,7 @@ Please see the logfiles in /var/log/letsencrypt for more details.
 ```
 
 
-#### 2.3.3 http -> https redirect 시키기
+### 2.3.3 http -> https redirect 시키기
 
 http 접속시 https로 redirect 하도록 ngnix 설정을 변경하자.
 
@@ -188,11 +188,11 @@ server {
 }
 ```
 
-## 3. 마무리
+# 3. 마무리
 
 letsencrypt에서 SSL 인증서를 무료로 제공하고 쉽게 설치할 수 있는 certbot도 제공한다. certbot 명령어로 거의 5분 안에 https를 설정할 수 있었다. 전체 ngnix은 [gist](https://gist.github.com/kenshin579/489a13d194e310ec741f64f508c1f987)를 참고해주세요.
 
-## 4. 참고
+# 4. 참고
 
 * SSL 인증서 설치
     * https://levelup.gitconnected.com/how-to-install-ssl-certificate-for-nginx-server-in-amazon-linux-2986f51371fb

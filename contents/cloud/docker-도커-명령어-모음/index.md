@@ -14,7 +14,7 @@ tags:
   - cli
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 도커를 다루는 데 있어서 크게 2가지 종류로 나뉠 수 있습니다.
 
@@ -24,8 +24,8 @@ tags:
 도커 관련된 여러 명령어들이 많아서 자주 사용되는 명령어 위주로 정리를 해봤습니다. 전체 도커 명령어에 대한 내용은 [도커 문서](https://docs.docker.com/engine/reference/commandline/docker/) 사이트를 참고해주세요.
 
 
-## 2. 도커 명령어
-### 2.1 도커 도움말
+# 2. 도커 명령어
+## 2.1 도커 도움말
 
 도커 도움말은 명령어 창에서 help로 확인할 수 있습니다.
 ```bash
@@ -72,11 +72,11 @@ Run 'docker volume COMMAND --help' for more information on a command.
 
 
 
-### 2.2 도커 이미지 다루기
+## 2.2 도커 이미지 다루기
 
 도커 컨테이너를 실행하기 전에 원하는 이미지를 검색하거나 새로운 이미지를 생성할 필요가 있습니다. 도커 이미지를 어떻게 다룰 수 있는지 알아보겠습니다.
 
-#### 2.2.1 도커 이미지 검색하기
+### 2.2.1 도커 이미지 검색하기
 
 Docker Hub 레지스트리에서 도커 이미지를 검색합니다.
 
@@ -116,7 +116,7 @@ alpine
 
 
 
-#### 2.2.2 이미지 다운로드하기
+### 2.2.2 이미지 다운로드하기
 
 도커 이미지를 도커 registry에서 내려받으려면 docker image pull 명령을 사용합니다.
 
@@ -141,7 +141,7 @@ Status: Downloaded newer image for redis:latest
 docker.io/library/redis:latest
 ```
 
-#### 2.2.3 이미지  빌드하기
+### 2.2.3 이미지  빌드하기
 
 docker image built 명령어로 도커 이미지를 생성하고 Dockerfile 파일에 정의된 내용에 따라서 이미지가 생성됩니다.
 
@@ -196,7 +196,7 @@ Successfully built b06d1d769f4f
 Successfully tagged helloworld:latest
 ```
 
-#### 2.2.4 이미지 목록 보기
+### 2.2.4 이미지 목록 보기
 
 docker image ls 명령어로 현재 보유하고 있는 이미지의 목록을 볼 수 있습니다. Docker Hub에서 내려받은 이미지나 이미지를 빌드한 것들이 목록으로 보여집니다.
 
@@ -209,7 +209,7 @@ example/echo         latest   4a3aa6cc6b21        4 days ago          750MB
 
 ```
 
-#### 2.2.5 이미지에 태그 붙이기
+### 2.2.5 이미지에 태그 붙이기
 
 docker image tag 명령어로 이미지에 태그를 달 수 있습니다.
 
@@ -258,7 +258,7 @@ helloworld   latest   4427b4290f55   3 seconds ago        123MB
 
 ```
 
-#### 2.2.6 이미지 공유하기
+### 2.2.6 이미지 공유하기
 
 docker image push 명령어로 도커 허브 등의 레지스트리에 등록할 수 있습니다.
 
@@ -293,9 +293,9 @@ latest: digest: sha256:7906b00f23cc5eb44dcedcc2d0fe39e2a7253c3f2373b88f661cb7aa2
 
 ![Docker Repository List](image1.png)
 
-### 2.3 도커 컨테이너 다루기
+## 2.3 도커 컨테이너 다루기
 
-#### 2.3.1 컨테이너 실행하기
+### 2.3.1 컨테이너 실행하기
 
 docker container run 명령어는 컨테이너를 생성하고 실행하는 명령어입니다.
 
@@ -331,7 +331,7 @@ OK
 | -rm    | 컨테이터가 종료시 컨테이너를 파기한다.                       |
 | --name | 컨테이너에 원하는 이름을 붙일 수 있다. 이름으로 조회하거나 삭제할 수 있다. |
 
-##### 2.3.1.1 명령 인자로 실행하기
+#### 2.3.1.1 명령 인자로 실행하기
 
 docker container run 명령어에 명령 인자를 추가해서 실행하면 Dockerfile에 정의된 CMD 인스트럭션은 무시되고 명령 인자로 넘어온 값으로 실행됩니다.
 
@@ -352,7 +352,7 @@ Linux 36e0253d1a29 4.9.184-linuxkit #1 SMP Tue Jul 2 22:58:16 UTC 2019 x86_64 GN
 
 
 
-#### 2.3.2 실행 중인 컨테이너 조회하기
+### 2.3.2 실행 중인 컨테이너 조회하기
 
 docker container ls 명령어로 현재 실행 중인 컨테이너를 확인할 수 있습니다. 20e9f060fc15 ID를 가진 컨테이너는 redis_test 이름을 가진 컨테이너로 --name 옵션으로 실행된 컨테이너입니다. --name 옵션 없이 실행되면 랜덤 값의 이름이 부여됩니다.
 
@@ -363,7 +363,7 @@ CONTAINER ID  IMAGE  COMMAND  CREATED  STATUS  PORTS  NAMES
 
 ```
 
-##### 2.3.2.1 컨테이너 목록 필터링해서 보기
+#### 2.3.2.1 컨테이너 목록 필터링해서 보기
 
 --filter 옵션으로 필터링 조건을 추가하여 컨테이너 목록을 필터링해서 조회할 수 있습니다.
 
@@ -377,7 +377,7 @@ $ docker container ls --filter "필터명=값"
 $ docker container ls --filter "name=redis"
 ```
 
-##### 2.3.2.2 종료된 컨테이너 목록 보기
+#### 2.3.2.2 종료된 컨테이너 목록 보기
 
 종료된 컨테이너는 목록에서 보여지지 않지만, -a 옵션을 추가하여 종료된 컨테이너를 확인할 수 있습니다.
 
@@ -385,7 +385,7 @@ $ docker container ls --filter "name=redis"
 $ docker container ls -a
 ```
 
-#### 2.3.3 실행중인 컨테이너 정지하기
+### 2.3.3 실행중인 컨테이너 정지하기
 
 docker container stop 명령어로 실행 중인 컨테이너를 컨테이너 ID나 컨테이너 이름으로 정지 시킬 수 있습니다.
 
@@ -393,7 +393,7 @@ docker container stop 명령어로 실행 중인 컨테이너를 컨테이너 ID
 $ docker container stop 컨테이너ID_OR_컨테이너명
 ```
 
-#### 2.3.4 정지된 컨테이너 재시작하기
+### 2.3.4 정지된 컨테이너 재시작하기
 
 정지된 컨테이너를 다시 시작하려면 docker container restart를 사용하면 됩니다.
 
@@ -401,7 +401,7 @@ $ docker container stop 컨테이너ID_OR_컨테이너명
 $ docker container restart 컨테이너ID_OR_컨테이너명
 ```
 
-#### 2.3.5 실행중인 컨테이너 삭제하기
+### 2.3.5 실행중인 컨테이너 삭제하기
 
 컨테이너를 정지시키면 정시된 시점의 상태를 계속 유지한 체 디스크에 남아 있습니다. 완전히 파기하려면 rm 명령어를 추가하여 삭제합니다.
 
@@ -415,7 +415,7 @@ $ docker container rm 컨테이너ID_OR_컨테이너명
 $ docker container run --rm -d -p 7000:6379 redis
 ```
 
-#### 2.3.6 컨테이너의 stdout(표준 출력)를 호스트 stdout으로 출력하기
+### 2.3.6 컨테이너의 stdout(표준 출력)를 호스트 stdout으로 출력하기
 
 docker container logs 명령어로 도커 컨테이너의 표준 출력을 호스트 화면으로 볼 수 있습니다.
 
@@ -435,7 +435,7 @@ $ docker container run --rm -d jenkins
 $ docker container logs -f $(docker container ls --filter "ancestor=jenkins" -q)
 ```
 
-#### 2.3.7 실행중인 컨테이너에서 명령 실행하기
+### 2.3.7 실행중인 컨테이너에서 명령 실행하기
 
 docker container exec 명령어로 현재 실행 중인 컨테이너에 명령을 수행할 수 있습니다.
 
@@ -452,7 +452,7 @@ $ jenkins@5bb352057045:/$ ls
 bin  boot  dev  docker-java-home  etc  home  lib  lib64  media  mnt  opt  proc  root  run  sbin  srv  sys  tmp  usr  var
 ```
 
-#### 2.3.8 파일 복사하기
+### 2.3.8 파일 복사하기
 
 컨테이너<-> 호스트 간에 파일을 복사하기 위한 명령어입니다.
 
@@ -471,9 +471,9 @@ hello world
 ```
 
 
-## 3. 부록(기타사항)
+# 3. 부록(기타사항)
 
-### 3.1 도커 축약 명령어
+## 3.1 도커 축약 명령어
 
 docker container run 명령어가 길기 때문에 축약 명령어도 제공합니다. 하지만, 축약 명령어보다는 full 명령어를 사용하는 걸 추천하는 분위기입니다.
 
@@ -483,9 +483,9 @@ docker container run 명령어가 길기 때문에 축약 명령어도 제공합
 | docker image pull    | docker pull  |
 | docker image build   | docker build |
 
-### 3.2 도커 운용관련 명령어
+## 3.2 도커 운용관련 명령어
 
-#### 3.2.1 컨테이너 및 이미지 파기하기
+### 3.2.1 컨테이너 및 이미지 파기하기
 
 컨테이너나 이미지를 파기할 때 사용하는 명령어입니다. docker container prune은 현재 실행 중이 아닌 모든 컨테이너를 삭제하는 명령어입니다.
 
@@ -527,7 +527,7 @@ docker system prune은 이미지, 컨테이너, 볼륨, 네트워크 등 모든 
 $ docker system prune
 ```
 
-#### 3.2.2 컨테이너 시스템 리소스 사용 현황 확인하기
+### 3.2.2 컨테이너 시스템 리소스 사용 현황 확인하기
 
 현재 실행 중인 컨테이너 시스템 리소스 사용 현황을 확인할 수 있습니다. Linux의 top 명령어처럼 실시간으로 현환을 업데이트해서 보여줍니다.
 
@@ -543,7 +543,7 @@ CONTAINER ID        NAME                CPU %               MEM USAGE / LIMIT   
 
 ```
 
-## 4. 참고
+# 4. 참고
 
 - 도커 명령어 참조
     - [https://docs.docker.com/engine/reference/commandline/docker/](https://docs.docker.com/engine/reference/commandline/docker/)

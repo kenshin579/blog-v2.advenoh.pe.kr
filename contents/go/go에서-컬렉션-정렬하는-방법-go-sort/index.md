@@ -12,7 +12,7 @@ tags:
   - 정렬
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 Go에서는 여러 컬렉션 타입에 대해서 어떻게 정렬할 수 있는지에 대해서 알아보자.
 
@@ -21,9 +21,9 @@ Go에서는 여러 컬렉션 타입에 대해서 어떻게 정렬할 수 있는�
 - Sort interface로 정렬하기
 - Map에서 특정 key/value로 정렬하기
 
-## 2.Sort 4가지 방법
+# 2.Sort 4가지 방법
 
-### 2.1 Primitive 데이터 타입 정렬하기
+## 2.1 Primitive 데이터 타입 정렬하기
 
 Primitive 데이터 타입에 대해서는 아래 함수들을 제공해주고 있다.
 
@@ -53,7 +53,7 @@ func Example_Sort_String_Primitive_Type() {
 
 
 
-### 2.2 Struct 구조체 정렬하기
+## 2.2 Struct 구조체 정렬하기
 
 사용자 정의 `Comparator` 함수를 정의해서 구조체의 속성값 기준으로 정렬할 수 있다. 아래는 `Employee`의 나이 적은 순으로 정렬한 예제이다.
 
@@ -83,7 +83,7 @@ func Example_Sort_Struct_With_Custom_Comparator() {
 
 
 
-### 2.3 정렬 인터페이스로 구조체 정렬하기
+## 2.3 정렬 인터페이스로 구조체 정렬하기
 
 정렬 인터페이스로도 구조체를 정렬할 수 있다. `sort.Sort()` 메서드는 `sort.Interface` 정렬 인터페이스를 인자로 받는다. 정렬 인터페이스는 아래 3가지 `Len(), Less(), Swap()` 메서드를 구현하면 해당 구조체를 정렬할 수 있다.
 
@@ -148,7 +148,7 @@ func Example_Sort_Any_Collection_By_Implementing_Sort_Interface() {
 
 
 
-### 2.4 Map 의 특정 key나 value 값으로 정렬하기
+## 2.4 Map 의 특정 key나 value 값으로 정렬하기
 
 마지막으로 Map 데이터에서 특정 key나 value 값으로 정렬하는 방법에 대해서 알아보자. 아래 예제에서는 map에서 key 값만 먼저 정렬시킨 후 정렬된 key 값으로 map에서 가져오면 특정 key 값으로 정렬할 수 있다.
 
@@ -183,11 +183,11 @@ func Example_Sort_Map_By_Key_or_Value() {
 
 
 
-## 3. 마무리
+# 3. 마무리
 
 다양한 방법으로 여러 데이터 타입 배열을 정렬해보았다. 여기서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-data-structure/sort)에서 확인할 수 있다.
 
-## 4. 참고
+# 4. 참고
 
 - https://yourbasic.org/golang/how-to-sort-in-go/
 - https://mingrammer.com/gobyexample/sorting-by-functions/

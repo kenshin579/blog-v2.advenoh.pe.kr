@@ -12,7 +12,7 @@ tags:
   - 아마존
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 기업에서도 그렇고 이제 아마존 서비스를 쓰지 않은 곳이 없을 정도로 회사마다 아마존의 서비스를 많이 사용하고 있습니다. 최근에 이직을 한 곳에서도 S3 (Simple Storage Service) 스토리지 서비스를 이용하고 있어 S3 API를 학습할 겸 해서정리를 해봤습니다.
 
@@ -31,7 +31,7 @@ S3는 REST/HTTP 기반으로 파일을 저장하기 위한 스토리지이며 �
     - 버킷 : 디렉토리와 비슷한 개념으로 버킷에 객체를 저장한다
         - 하위 버킷 또는 하위 폴더의 계층 구조는 없지만, 키 이름 접두사와 구분 기호를 이용하여 논리적인 계층 구조를 만들 수 있다 (ex. develop/test.xls)
 
-## 2. 개발 환경 및 S3 기본 설정
+# 2. 개발 환경 및 S3 기본 설정
 
 소스 코드는 대부분은 [Amazon SDK](https://docs.aws.amazon.com/ko_kr/sdk-for-java/v1/developer-guide/examples-s3.html) 와 [Baeldung](https://www.baeldung.com/aws-s3-java) 에 있는 예제들을 보면서 작성하였습니다.
 
@@ -51,7 +51,7 @@ pom.xml 파일에 아마존 SDK 의존성을 추가해줍니다.
 </dependency>
 ```
 
-### 2.1 S3 기본 설정
+## 2.1 S3 기본 설정
 
 AWS SDK를 사용하려면, 아래 3가지는 완료해야 코드상에서 S3에 접속하여 작업을 할 수 있습니다.
 
@@ -65,13 +65,13 @@ AWS SDK를 사용하려면, 아래 3가지는 완료해야 코드상에서 S3에
 - AWS 지역 선택하기
     - 지역마다 S3 가격이 다르기 때문에 가장 가까운 지역을 선택하는것이 좋다
 
-## 3. S3 Bucket에서 파일 다루기
+# 3. S3 Bucket에서 파일 다루기
 
-### 3.1 Client Connection
+## 3.1 Client Connection
 
 S3 서비스에 접근하기 위한 client connection을 생성해야 합니다. 위에서 생성한 KEY_ID와 SECRET_ACCESS_KEY가 필요합니다.
 
-#### 3.1.1 명시적으로 지정하는 방법
+### 3.1.1 명시적으로 지정하는 방법
 
 소스코드 안에서 KEY_ID와 SECRET_ACCESS_KEY를 인자로 전달하여 BasicAWSCredentials 객체를 생성하여 client 연결을 얻어오는 방법이 있습니다.
 
@@ -118,7 +118,7 @@ private static AmazonS3 createConnectionWithCredentials(AWSCredentials credentia
 
 KEY가 외부로 노출이 되면 누구나 아마존 서비스를 사용할 수 있으므로 잘 못 하면 다른 사람들에 의해서 요금 폭탄을 맞을 수 있습니다.
 
-#### 3.1.2 환경 설정으로 지정하는 방법
+### 3.1.2 환경 설정으로 지정하는 방법
 
 Client connection을 가져오는 두 번째 방법입니다. 환경설정 파일에 저장된 key 값을 가져오는 방식입니다.
 
@@ -146,9 +146,9 @@ $ vim ~/.aws/config
 region=ap-northeast-2
 ```
 
-### 3.2 S3 Bucket에서 파일 다루기
+## 3.2 S3 Bucket에서 파일 다루기
 
-#### 3.2.1 S3 bucket 생성하기
+### 3.2.1 S3 bucket 생성하기
 
 먼저 버킷을 생성해보겠습니다. 간단합니다. createBucket() 메서드를 사용하면 됩니다.
 
@@ -179,7 +179,7 @@ public void test_buckets_목록_프린트하기() {
 }
 ```
 
-#### 3.2.2 파일 업로드
+### 3.2.2 파일 업로드
 
 버킷에 파일을 올리려면 pubObject()를 사용합니다. 인터넷에서 이미지 다운로드해서 S3에 올리는 예제입니다.
 
@@ -200,7 +200,7 @@ private void downloadFileFromURL(String sourceUrl, String destPath) throws IOExc
 }
 ```
 
-#### 3.2.3 파일 다운로드
+### 3.2.3 파일 다운로드
 
 버킷에 올린 파일을 컴퓨터로 다운로드할 수 있습니다. getObject() 메서드로 원하는 파일을 저장합니다.
 
@@ -218,7 +218,7 @@ public void test_bucket에서_파일_다운로드하기() throws IOException {
 
 
 
-#### 3.2.4 파일 삭제
+### 3.2.4 파일 삭제
 
 버킷에서 하나의 파일을 삭제할 때는 deleteObject() 메서드를사용하고 여러 파일을 한 번에 삭제하려면 deleteObjects() 메서드를 사용합니다.
 
@@ -242,7 +242,7 @@ public void test_bucket에서_파일_삭제하기() throws IOException {
 }
 ```
 
-#### 3.2.5 버킷 삭제
+### 3.2.5 버킷 삭제
 
 버킷을 삭제하려면 버킷 안에 있는 모든 파일과 버전 관리가 되는 객체들도 다 삭제해야만 버킷을 삭제할 수 있습니다.
 
@@ -293,7 +293,7 @@ private static void deleteAllObjectsAndBucket(AmazonS3 s3client, final String bu
 }
 ```
 
-## 4. 참고
+# 4. 참고
 
 - Amazon S3
     - [https://www.baeldung.com/aws-s3-java](https://www.baeldung.com/aws-s3-java)

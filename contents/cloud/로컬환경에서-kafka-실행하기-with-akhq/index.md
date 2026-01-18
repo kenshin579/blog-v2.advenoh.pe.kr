@@ -14,18 +14,18 @@ tags:
 
 로컬환경에서 Kafka를 실행하는 방법에 대해서 알아보자. 개인 맥북이 M1이라서 M1 기준으로 실행방법에 대해서 기술합니다.
 
-## 1.실행 조건
+# 1.실행 조건
 
 `docker-compose` 명령어를 이용해서 Kafka를 실행하기 위해서 아래 조건이 만족되어야 실행 가능하다. 아래 조건은 기본이라서 본 포스팅에서 추가로 설명하지 않습니다.
 
 - Docker 실행중이어야 한다
 - `docker-compose`가 설치되어 있어야 한다
 
-## 2.Kafka 실행하기
+# 2.Kafka 실행하기
 
 사용자가 쉽게 Kafka를 실행할 수 있도록 여러 오픈소스 프로젝트에서 `docker-compose`나 `helm` 설정 파일을 제공하고 있다. 공개된 프로젝트의 파일을 이용해서 Kafka를 실행해보자
 
-## 2.1 Kafka 컨포넌트만 실행하기
+# 2.1 Kafka 컨포넌트만 실행하기
 
 [wurstmeister](https://github.com/wurstmeister/kafka-docker)에서 제공하는 `docker-compose.yml` 파일을 이용해서 도커를 실행한다.
 
@@ -44,7 +44,7 @@ Connected to localhost.
 Escape character is '^]'.
 ```
 
-### 2.2 Kafka + Akhq (UI)도 같이 실행하기
+## 2.2 Kafka + Akhq (UI)도 같이 실행하기
 
 Kafka 서버만 구동하면 topic을 생성하고 조회하려면, kafka binary를 다운로드 받아서 kafka 명령어로 실행해야 하고 여러 옵션을 잘 알고 있어야 한다. 보다 손쉽게 Kafka를 이용하고 관리할 수 있도록 여러 Kafka Manager UI를 제공하는데, 그중에 대표적으로 많이 사용하는 AKHQ도 같이 구동해보자.
 
@@ -132,7 +132,7 @@ AKHQ UI로 접속하려면, http://localhost:8080로 접속하면 된다.
 
 ![AKHQ Web](image-20220807203854874.png)
 
-## 참고
+# 참고
 
 - https://akhq.io/docs/#installation
 

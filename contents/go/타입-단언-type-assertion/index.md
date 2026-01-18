@@ -57,12 +57,12 @@ func (c Student) getPhone() string {
 }
 ```
 
-## 1.타입 단언 예제
+# 1.타입 단언 예제
 
 
-### 1.1 정상적으로 타입 단언하는 경우
+## 1.1 정상적으로 타입 단언하는 경우
 
-#### 1.1.1 실제 구조체로 타입 단언하는 경우
+### 1.1.1 실제 구조체로 타입 단언하는 경우
 
 ```go
 func Example_TypeAssertion_인터페이스_데이터_타입_Student_값을_가져온다() {
@@ -82,7 +82,7 @@ func Example_TypeAssertion_인터페이스_데이터_타입_Student_값을_가�
 
 인터페이스 `p` 변수는 `Student` 구조체 값을 보유하고 있다. `p.(Student)` 타입 단언으로 `p` 인터페이스값에서 실제 `Student` 구조체 값을 얻어와 해당 데이터 타입의 메서드를 실행했다.
 
-#### 1.1.2 다른 인터페이스로 타입 단언하는 경우
+### 1.1.2 다른 인터페이스로 타입 단언하는 경우
 
 ```go
 func Example_TypeAssertion_다른_인터페이스로_값을_가져온다() {
@@ -98,11 +98,11 @@ func Example_TypeAssertion_다른_인터페이스로_값을_가져온다() {
 
 `Person` 인터페이스에서 다른 인터페이스인 `Phone`으로 타입 단언을 하여 `Phone` 인터페이스의 메서드를 실행할 수 있었다.
 
-### 1.2 타입 단언시 panic이 발생하는 경우
+## 1.2 타입 단언시 panic이 발생하는 경우
 
 타입 단언시 발생할 수 있는 에러에 대해서 알아보자.
 
-#### 1.2.1 인터페이스가 타입 T의 동적 값을 가지고 있지 않는 경우
+### 1.2.1 인터페이스가 타입 T의 동적 값을 가지고 있지 않는 경우
 
 ```go
 //타입 T가 인터페이스를 구현하고 있지 않기 때문에 컴파일 에러가 발생한다
@@ -117,7 +117,7 @@ func Example_TypeAssertion_인터페이스가_타입_T의_동적_값을_소유�
 
 타입 단언 시 `i.(T)` 타입 `T`가 인터페이스 메서드를 구현하고 있지 않으면, 인터페이스 `i`가 타입 `T`의 동적 값을 보유할 수 없기 때문에 `impossible type assertion` 컴파일 에러가 발생한다.
 
-#### 1.2.2 인터페이스가 타입 T의 실제 값을 가지고 있지 않는 경우
+### 1.2.2 인터페이스가 타입 T의 실제 값을 가지고 있지 않는 경우
 
 타입 `T`는 구현된 메서드가 있지만, 인터페이스 `i`가 실제 값을 가지고 있지 않으면 Go에서 런타임시 panic이 발생한다.
 
@@ -142,7 +142,7 @@ func Example_TypeAssertion_인터페이스가_타입_T의_실제_값을_가지�
 
 
 
-#### 1.2.3 다른 인터페이스가 타입 T를 구현하지 않고 있는 경우
+### 1.2.3 다른 인터페이스가 타입 T를 구현하지 않고 있는 경우
 
 ```go
 type Animal interface {
@@ -163,13 +163,13 @@ func Example_TypeAssertion_다른_인터페이스가_타입_T를_구현하지_�
 
 `Student` 구조체는 `Animal` 인터페이스를 구현하지 않았기 때문에 `p.(Animal)` 타입 단언시 panic이 발생한다.
 
-## 정리
+# 정리
 
 타입 단언은 인터페이스 변수에서 실제 타입 값을 얻어와 해당 타입에 맞는 메서드를 실행할 때 사용된다.
 
 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-type-assertions)에서 확인할 수 있다.
 
-## 참고
+# 참고
 
 - Type assertions
     - https://yourbasic.org/golang/type-assertion-switch/

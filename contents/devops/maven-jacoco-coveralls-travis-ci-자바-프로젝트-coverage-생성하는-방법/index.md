@@ -16,7 +16,7 @@ tags:
 ---
 
 
-## 1. 들어가며
+# 1. 들어가며
 
 Maven + Java 프로젝트의 코드 커버리지를 확인할 수 있는 방법에 대해서 알아보자. 전체적인 작업 흐름은 JaCoCo로 자바 커버리지를 생성하고 Coveralls 사이트로 업로드하여 결과를 확인할 것이다.
 
@@ -31,9 +31,9 @@ Maven + Java 프로젝트의 코드 커버리지를 확인할 수 있는 방법�
 
 이 포스팅에서 적용한 내용은 현재 개발 중인 개인 프로젝트 [app-quotes](https://github.com/kenshin579/app-quotes) 에서 확인할 수 있다.
 
-## 2. Maven 설정
+# 2. Maven 설정
 
-### 2.1 JaCoCo dependency
+## 2.1 JaCoCo dependency
 
 프로젝트에 Querydsl 파일이 있는 경우 configuration에서 exclude 태그로 제외한다.
 
@@ -60,7 +60,7 @@ Maven + Java 프로젝트의 코드 커버리지를 확인할 수 있는 방법�
 
 
 
-### 2.2 Coveralls dependency
+## 2.2 Coveralls dependency
 
 Coveralls dependency 추가 시 Repo Token을 Coveralls 사이트에 확인하여 repoToken 태그에 넣어줘야 한다. 이 토큰 값으로 해당 프로젝트로 커버리지 결과가 업로드된다.
 
@@ -88,9 +88,9 @@ JDK 높은 버전(ex. 14)으로 실행하는 경우 javax/xml/bind/Datatype*Conv
 
 ![](image-20201212112943558.png)
 
-## 3. 실행
+# 3. 실행
 
-### 3.1 JaCoCo 보고서 생성
+## 3.1 JaCoCo 보고서 생성
 
 JaCoCo dependency를 추가 이후 아래 명령을 실행하면 target/site/jacoco 폴더에 HTML 파일이 생성된다.
 
@@ -107,7 +107,7 @@ $ mvn clean test jacoco:report -DskipTests=false -Dmaven.test.failure.ignore=tru
 
 ![](image-20201212163844309.png)
 
-### 3.2 Coveralls 에 커버리지 결과 업로드
+## 3.2 Coveralls 에 커버리지 결과 업로드
 
 JaCoCo 실행 결과를 Coveralls로 업로드하려면 coveralls:report를 추가해서 실행한다.
 
@@ -123,7 +123,7 @@ app-quotes는 67%의 커버리지 가지고 있다. 프로젝트 개발할 때 �
 
 ![](image-20201212164630635.png)
 
-### 3.3 Travis 빌드로 코드 커버리지 Coveralls로 업로드하기
+## 3.3 Travis 빌드로 코드 커버리지 Coveralls로 업로드하기
 
 app-quotes는 이미 Travis CI에 연동되어 있다. Github + Travis CI 연동에 대한 내용은 다음에 다룰 예정이다. `.travis.yml` 파일에 지금까지 실행해본 명령어를 추가하면 된다.
 
@@ -132,11 +132,11 @@ after_success:
   - CI=false ./mvnw test jacoco:report coveralls:report -DskipTests=false -Dmaven.test.failure.ignore=true
 ```
 
-## 4. 정리
+# 4. 정리
 
 이번 시간에는 Maven 프로젝트에서 JaCoCo와 Coveralls로 코드 커버리지를 확인하는 방법에 대해서 알아보았다. 다음 시간에는 여러 모듈로 구성된 한 프로젝트의 코드 커버리지를 확인하는 방법에 대해서도 알아볼 예정이다.
 
-## 5. 참고
+# 5. 참고
 
 - https://woowabros.github.io/experience/2020/02/02/jacoco-config-on-gradle-project.html
 - https://github.com/trautonen/coveralls-maven-plugin

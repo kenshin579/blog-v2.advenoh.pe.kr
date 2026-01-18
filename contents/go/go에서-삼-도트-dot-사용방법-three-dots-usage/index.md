@@ -14,7 +14,7 @@ tags:
   - 표기법
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 Go에서 `...` 삼 도트(dot) 사용법에 대해서 알아보자. Go에서는 아래 4가지 방법으로 사용된다.
 
@@ -23,9 +23,9 @@ Go에서 `...` 삼 도트(dot) 사용법에 대해서 알아보자. Go에서는 
 - 배열 리터럴에서 길이 지정하는 경우
 - Go 명령어 wildcard로 사용하는 경우
 
-## 2.삼 도트 사용법에 대해서 알아보자
+# 2.삼 도트 사용법에 대해서 알아보자
 
-### 2.1 함수의 인자에 가변 인자로 선언하는 경우
+## 2.1 함수의 인자에 가변 인자로 선언하는 경우
 
 ```go
 func sum(nums ...int) int {
@@ -56,7 +56,7 @@ func Example_가변인자_함수() {
 
 
 
-### 2.2 가변 인자를 인자로 받는 함수에 slice를 넘겨주는 경우
+## 2.2 가변 인자를 인자로 받는 함수에 slice를 넘겨주는 경우
 
 ```go
 func Example_가변인자_함수에_전달하기() {
@@ -73,7 +73,7 @@ func Example_가변인자_함수에_전달하기() {
 
 `sum` 함수는 가변인자로 선언되어 있기 때문에 `sum(1,2,3)`으로 넘겨줘야 하는데, 슬라이스로 선언된 컬렉션을 하나하나 입력하기는 매우 불편한다. 그래서 Go에서는 `slice...` 슬라이스 뒤에 3개의 도트 표기법을 사용하면 Go에서 가변인자에 unpack을 해서 전달해준다.
 
-### 2.3 배열 리터럴에서 길이 지정하는 경우
+## 2.3 배열 리터럴에서 길이 지정하는 경우
 
 ```go
 func Example_array_literal() {
@@ -89,7 +89,7 @@ func Example_array_literal() {
 
 
 
-### 2.4 Go 명령어 wildcard로 사용하는 경우
+## 2.4 Go 명령어 wildcard로 사용하는 경우
 
 ```bash
 # 패키지 목록을 지정할 때 ...표기법은 패키지 목록을 wildcard로 사용된다
@@ -98,11 +98,11 @@ $ go test ./...
 
 Go 명령에서 `...` 표기법은 패키지 목록을 wildcard로 사용하겠다는 의미를 가지고 있다. 위 명령어는 현재 폴더에서 모든 폴더에 있는 테스트 파일을 실행하라는 의미이다.
 
-## 3. 마무리
+# 3. 마무리
 
 Go에서 `...` 표기법의 여러 사용방법에 대해서 알아보았고 여기서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-three-dots)에서 확인할 수 있다. 오늘 포스팅은 여기까지...
 
-## 4. 참고
+# 4. 참고
 
 - https://yourbasic.org/golang/three-dots-ellipsis/
 - https://blog.learngoprogramming.com/golang-variadic-funcs-how-to-patterns-369408f19085

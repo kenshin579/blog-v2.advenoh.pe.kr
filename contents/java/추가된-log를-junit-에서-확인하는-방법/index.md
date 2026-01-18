@@ -14,7 +14,7 @@ tags:
 ---
 
 
-## 1. 들어가며
+# 1. 들어가며
 
 Unit Test를 작성할 때 메서드의 결과를 기본적으로 확인하여 로직을 검증합니다. void인 메서드인 경우에는 내부 메서드에서 실행하는 메서드의 실행 여부나 메서드로 넘겨진 인자 값을 가지고 확인하기도 합니다.
 
@@ -22,7 +22,7 @@ Unit Test를 작성할 때 메서드의 결과를 기본적으로 확인하여 �
 
 StackOverflow에는 없는 게 없네요. 저만 궁금한 게 아니었나 봐요.
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 소스 코드는 아래 링크를 참고해주세요.
 
@@ -36,7 +36,7 @@ StackOverflow에는 없는 게 없네요. 저만 궁금한 게 아니었나 봐�
 
 * Software management tool : Maven
 
-## 3. 로그 찍히는 지 확인하는 방법
+# 3. 로그 찍히는 지 확인하는 방법
 
 개발하는 프로젝트에서 아래와 같이 예외처리가 안 된 부분에 로그를 추가하여 원하는 정보를 출력하도록 하였습니다. catch 문구에 추가된 로그를 Unit Test에서 확인해보겠습니다.
 
@@ -93,7 +93,7 @@ someService.requestJobId() 메서드에서 로그를 찍게 되고 로그로 출
     }
 ```
 
-## 4. 참고
+# 4. 참고
 
 * Logger Assert
     * [https://stackoverflow.com/questions/1827677/how-to-do-a-junit-assert-on-a-message-in-a-logger](https://stackoverflow.com/questions/1827677/how-to-do-a-junit-assert-on-a-message-in-a-logger)

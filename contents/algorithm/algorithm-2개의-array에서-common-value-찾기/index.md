@@ -15,7 +15,7 @@ tags:
 ---
 
 
-## 1. Problem
+# 1. Problem
 
 2개의 array에서 common value값을 찾아 결과를 반환하는 문제입니다. 메서드 정의는 아래와 같이 2개의 array를 받고 결과를 Set으로 반환합니다.
 
@@ -26,7 +26,7 @@ public Set<Integer> solution(int[] A, int[] B) {
 
 
 
-### 1.1 입력 / 결과
+## 1.1 입력 / 결과
 
 간단한 입력과 결과 예제입니다. 반환 결과에서는 중복된 값은 포함되지 않습니다.
 
@@ -49,9 +49,9 @@ public void test_find_common_values()
 
 
 
-## 2. Solution
+# 2. Solution
 
-### 2.1 Approach
+## 2.1 Approach
 
 이 문제를 가장 쉽게 푸는 방법은 첫번째 Array의 각 요소가 두번째 Array에 존재 하는지 확인하고 있으면 결과에 추가하면 되는 문제입니다. 하지만, 이런 알고리즘의 복잡도는 O(n2)가 됩니다.
 
@@ -84,6 +84,6 @@ public Set<Integer> solution(int[] A, int[] B) {
 전체 소스코드는 [github](https://github.com/kenshin579/tutorials-interview-questions/blob/master/src/main/java/com/google/CommonSet.java) 를 참조해주세요.
 감사합니다.
 
-## 3. Reference
+# 3. Reference
 
 - [https://codereview.stackexchange.com/questions/189504/finding-common-elements-in-two-arrays](https://codereview.stackexchange.com/questions/189504/finding-common-elements-in-two-arrays)

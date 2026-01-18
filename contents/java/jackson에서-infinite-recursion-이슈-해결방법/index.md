@@ -10,11 +10,11 @@ tags:
   - jsonignore
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 Jackson에서 양방향 관계 (Bidirectional Relationship)로 맺어진 객체는 무한 재귀가 발생하는 문제가 있습니다. 구체적인 예를 들어 어떤 상황에서 발생하는 지 살펴보고 어떤 방법으로 해결 가능한지도 알아보겠습니다.
 
-### 1.1 무한 재귀
+## 1.1 무한 재귀
 
 Customer와 Order 두 객체는 서로 순환 참조 (Circular Reference)를 하고 있습니다. Customer 객체가 Order 객체를 가지고 있고 Order 객체가 Customer 객체를 가지고 있는 경우입니다.
 
@@ -62,7 +62,7 @@ JsonMappingException 예외 오류 메시지입니다.
 
 ![](image_1.png)
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 이 포스팅에서 작성한 코드는 아래 github를 참조해주세요.
 
@@ -72,9 +72,9 @@ JsonMappingException 예외 오류 메시지입니다.
 * Source code : [github](https://github.com/kenshin579/tutorials-java/tree/master/json-jackson)
 * Software management tool : Maven
 
-## 3. 해결책
+# 3. 해결책
 
-### 3.1 @JsonManagedReference와 @JsonBackReference 어노테이션 사용
+## 3.1 @JsonManagedReference와 @JsonBackReference 어노테이션 사용
 
 Jackson 2.0 버전 이전에 순환 참조를 해결하기 위해서 사용했던 어노테이션입니다.
 
@@ -130,7 +130,7 @@ public void infinite_recursion_해결책_JsonManagedReference_JsonBackReference(
 
 ![](image_2.png)
 
-### 3.2 @JsonIdentityInfo - 추천방식
+## 3.2 @JsonIdentityInfo - 추천방식
 
 Jackson 2.0 이후부터 새롭게 추가된 어노테이션입니다. @JsonIdentityInfo 어노테이션을 추가해서 직렬화에 포함 시킬 속성 값을 ‘property’ 속성에 지정합니다.
 
@@ -177,7 +177,7 @@ public void infinite_recursion_해결책_JsonIdentityReference() throws JsonProc
 
 ![](image_4.png)
 
-#### 3.2.1 @JsonIdentityReference 란?
+### 3.2.1 @JsonIdentityReference 란?
 
 @JsonIdentityReference 어노테이션은 객체를 직렬화할 때 전체 POJO로 처리하는 대신 단순히 객체 ID로만 노출되도록 해줍니다.
 
@@ -231,7 +231,7 @@ public void JsonIdentityReferenceAnnotation이_없는_경우() throws JsonProces
 
 ![](image_5.png)
 
-### 3.3 @JsonIgnore 어노테이션 사용
+## 3.3 @JsonIgnore 어노테이션 사용
 
 마지막으로 제일 간단하게 해결할 수 있는 방법은 직렬화 할때 순환 참조 되는 속성에 @JsonIgnore 어노테이션을 추가하여 직렬화에서 제외시키는 방법입니다.
 
@@ -275,11 +275,11 @@ Unit Test을 실행해보면 customer 정보는 Order 객체에서 제외된 것
 
 ![](image_7.png)
 
-## 4. 정리
+# 4. 정리
 
 웹 어플리케이션에서 데이터 전송시 일반적으로 JSON 포멧을 사용하고 있고 서버단에서를 JSON 처리를 위해 Jackson 라이브러리를 많이 사용하고 있습니다. 객체 간에 서로 참조하여 순환 참조가 발생하게 되면 무한 재귀로 StackOverflowError가 발생합니다. 이를 해결 하기 위해 3가지 방법을 알아보았습니다.
 
-## 5. 참고
+# 5. 참고
 
 * Jackson Infinite Recursion
     * [https://www.baeldung.com/jackson-bidirectional-relationships-and-infinite-recursion](https://www.baeldung.com/jackson-bidirectional-relationships-and-infinite-recursion)

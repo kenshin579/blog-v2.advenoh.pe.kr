@@ -17,7 +17,7 @@ tags:
   - apt
 ---
 
-## 1. 개요
+# 1. 개요
 
 라즈베리파이4에 64 OS 업그레디 하면서 다시 최신 Golang 설치하려니 기억이 나지 않아서 기록상 남겨둔다.
 
@@ -25,9 +25,9 @@ tags:
 
 ------
 
-## 2. 최신 Golang 설치하는 방법
+# 2. 최신 Golang 설치하는 방법
 
-### 2.1 라즈베리파이 OS 확인
+## 2.1 라즈베리파이 OS 확인
 
 먼저 현재 사용 중인 라즈베리파이의 OS와 아키텍처를 확인한다.
 
@@ -42,7 +42,7 @@ aarch64
 - `aarch64` → 64비트 (ARM64)
 - `armv6l` → 32비트 (구형 모델)
 
-### 2.2 설치된 architecture OS에 맞게 Golang 다운로드
+## 2.2 설치된 architecture OS에 맞게 Golang 다운로드
 
 Golang의 최신 버전을 공식 웹사이트에서 확인하고 다운로드한다.
 
@@ -69,7 +69,7 @@ time 2025-02-27T17:57:18Z
 > wget <https://go.dev/dl/go1.22.1.linux-arm64.tar.gz>
 ```
 
-### 2.3 Golang 수동 설치
+## 2.3 Golang 수동 설치
 
 기존의 Golang을 제거하고, 새 버전을 설치한다.
 
@@ -78,7 +78,7 @@ time 2025-02-27T17:57:18Z
 > mkdir -p ~/.local/share && mv go ~/.local/share
 ```
 
-### 2.4 환경 변수 설정
+## 2.4 환경 변수 설정
 
 Golang을 정상적으로 사용하려면 `PATH` 환경 변수를 설정해야 한다.
 
@@ -88,7 +88,7 @@ Golang을 정상적으로 사용하려면 `PATH` 환경 변수를 설정해야 �
 > source ~/.bashrc
 ```
 
-### 2.5 Golang 실행 확인
+## 2.5 Golang 실행 확인
 
 설치가 정상적으로 완료되었는지 확인한다.
 
@@ -99,11 +99,11 @@ go version go1.22.1 linux/arm64
 
 ------
 
-## 3. 마무리
+# 3. 마무리
 
 이제 라즈베리파이에 최신 Golang이 성공적으로 설치되었다. `apt`를 통한 기본 설치보다 최신 기능과 성능 최적화를 활용할 수 있다. 이후 Go 프로젝트를 시작하려면 `GOPATH` 설정 및 모듈 관리를 추가로 진행하면 된다. 🚀
 
-## 4. 참고
+# 4. 참고
 
 - [Installing the Latest Version of Golang on Your Raspberry Pi](https://akashrajpurohit.com/blog/installing-the-latest-version-of-golang-on-your-raspberry-pi/)
 - [Operating system images](https://www.raspberrypi.com/software/operating-systems/)

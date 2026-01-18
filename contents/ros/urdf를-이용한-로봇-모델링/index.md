@@ -17,7 +17,7 @@ tags:
   - robot
 ---
 
-## 1. URDF이란?
+# 1. URDF이란?
 
 `URDF`(Unified Robot Description Format)는 로봇의 원, 타원, 직사각형 따위의 기하학적 모델, 관절, 센서 등의 정보를 정의하는 XML 형식의 파일이다. 이 XML 파일에서 로봇의 부분을 나타내는 링크(link)와 동적인 움직임을 갖는 조인트(joint) 등 정보를 정의해서 로봇을 모델링 한다. 모델링한 정보는 RViz(ROS Visualization), Gazebo와 같은 시각화 프로그램을 사용해서 로봇 모델을 확인하고 시뮬레이션 해볼 수 있다.
 
@@ -35,7 +35,7 @@ tags:
     - `URDF`와 함께 사용되며, 로봇의 그룹, 경로 계획, 충돌 검사 등의 정보를 정의하는 XML 형식의 파일이고 [MoveIt](https://moveit.ros.org/) 에서 사용된다
     - Setup Assistant 프로그램을 통해 URDF → SRDF로 쉽게 변환 가능하다
 
-## 2. 모델링 하려는 로봇 정보  - 매니플레이터
+# 2. 모델링 하려는 로봇 정보  - 매니플레이터
 
 > 매니플레이터(manipulator)는 로봇의 한 유형으로 인간의 팔과 유사한 동작을 하는 로봇이다.
 > ![manipulator](manipulator.png)
@@ -45,7 +45,7 @@ tags:
 
 URDF 으로 모델링할 로봇은 매니플레이터이다. 매니플레이터의 기본 구조는 다음과 같이 기저, 링크, 조인트, 말단 장치로 구성되어 있다.
 
-#### 매니플레이터의 기본 구조
+### 매니플레이터의 기본 구조
 
 - 기저(base): 매니퓰레이터가 고정되어 있는 부분
     - 목적에 따라 작업 공간내 바닥이 될 수 있음
@@ -87,7 +87,7 @@ $ cd urdf
 $ vim testbot.urdf
 ```
 
-#### 3.1 전체 URDF 예시
+### 3.1 전체 URDF 예시
 
   ```bash
   <?xml version="1.0" ?>
@@ -218,16 +218,16 @@ $ vim testbot.urdf
   </robot>
   ```
 
-#### 3.2 RViz에서 렌더링된 화면
+### 3.2 RViz에서 렌더링된 화면
 ![RViz에서 렌더링된 화면](rviz1.png)
 
-## 4. URDF 작성하기
+# 4. URDF 작성하기
 
 URDF는 로봇을 설명하기 위한 XML 명세서로 XML 태그를 이용해서 로봇의 각 구성 요소를 기술한다. 이 명세서는 최대한 일반적으로 명시하도록 최대한 설계 되어 있지만, 이 명세서로는 모든 로봇을 설명할 수는 없다. 주요 제약 사항은 트리 구조만 표시할 수 있으며 병렬적으로 동작하는 로봇은 모델이 어렵다. 그리고 로봇이 조인트는 단단한 링크로 구성되어 있다고 가정하며 유연한 요소는 지원하지 않는다.
 
 > URDF XML에 대한 스펙은 ROS 문서에서 확인 할 수 있다. https://wiki.ros.org/urdf/XML
 
-### 4.1 `<robot>`
+## 4.1 `<robot>`
 `<robot>` 태그는 로봇 설명 파일의 `root` 요소로 제일 먼저 선언이 되어야 한다. 로봇에 대한 설명은 링크 요소와 링크를 서로 연결하는 조인트 요소 집합으로 구성된다.
 
 ```xml
@@ -245,7 +245,7 @@ URDF는 로봇을 설명하기 위한 XML 명세서로 XML 태그를 이용해�
 </robot>
 ```
 
-### 4.3 `<link>`
+## 4.3 `<link>`
 `<link>` 태그는 일반적으로 로봇의 각 파트 (ex. 본체, 팔, 다리, 휠 등)을 표현하는데 사용되고 각 링크는 조인트를 통해 다른 링크에 연결이 된다.
 
 매니퓰레이터의 구성 요소 그 첫 번째인 기저는 URDF에서 링크로 표현한다. 기저는 첫번째 링크와 조인트로 연결되어 있으며 이 조인트는 `fixed` 타입으로 설정되어 움직이지 않게 고정되어 있고 원점(0.0,0.0,0.0)에 위치해 있다.
@@ -311,7 +311,7 @@ URDF는 로봇을 설명하기 위한 XML 명세서로 XML 태그를 이용해�
 
   > [3D insertia tensor 값 예제](https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors)
 
-#### 4.3.1 `<material>`
+### 4.3.1 `<material>`
 
 `<material>` 태그는 링크의 색상(color)이나 텍스처(texture)를 지정하는 데 사용된다.
 
@@ -329,11 +329,11 @@ URDF는 로봇을 설명하기 위한 XML 명세서로 XML 태그를 이용해�
 </material>
 ```
 
-### 4.4 `<joint>`
+## 4.4 `<joint>`
 
 `<joint>` 태그는 로봇의 조인트를 정의하는 데 사용되고 각 조인트는 두 링크를 연결하며 어떤 방식으로 움직일 수 있는지 정의한다.
 
-#### URDF 에서 지원하는 조인트 종류
+### URDF 에서 지원하는 조인트 종류
 
 ![조인트의 종류](joint.png)
 
@@ -384,9 +384,9 @@ URDF는 로봇을 설명하기 위한 XML 명세서로 XML 태그를 이용해�
 - [Adding physical and collision properties](https://docs.ros.org/en/humble/Tutorials/Intermediate/URDF/Adding-Physical-and-Collision-Properties-to-a-URDF-Model.html)
 - https://duvallee.tistory.com/11
 
-## 5. URDF 런치 파일 생성 및 실행
+# 5. URDF 런치 파일 생성 및 실행
 
-### 5.1 런치 파일 생성
+## 5.1 런치 파일 생성
 
 `check_urdf` 나 `urdf_to_graphiz` 와 같은 명령어(참고: 8. URDF 파일 validation 체크)를 통해서 작성한 URDF 의 syntax나 렌더링 된 모습을 간단하게 확인할 수 있지만, 더 자세한 모델은 RViz에서 확인하는 게 제일 베스트이다. 이를 위하여 우선 다음 예제와 같이 `testbot_description` 패키지 폴더로 이동해 `testbot.launch.py` 파일을 생성해보자.
 

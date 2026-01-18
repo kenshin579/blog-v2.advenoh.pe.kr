@@ -19,7 +19,7 @@ db.inventory.insertMany([
 ])
 ```
 
-## 1.db.collection.find().forEach()
+# 1.db.collection.find().forEach()
 
 `find().forEach()` 는 collection의 데이터를 하나씩 `forEach`로 돌면서 다른 inventory2로 삽입하는 방식이다. 하나씩 처리하기 때문에 느리다는 단점이 있다.
 
@@ -30,11 +30,11 @@ db.inventory.find().forEach(
     })
 ```
 
-## 2.db.collection.aggregate()
+# 2.db.collection.aggregate()
 
 `aggregate`의 `$out operator`를 사용하면 조금 더 빠르게 clone이 가능하다.
 
-### Syntax
+## Syntax
 
 ```javascript
 { $out: { db: "<output-db>", coll: "<output-collection>" } }
@@ -46,7 +46,7 @@ db.inventory.aggregate([{ $match: {} }, { $out: "inventory3" }])
 
 ```
 
-## 참고
+# 참고
 
 - https://www.mongodbmanager.com/clone-mongodb-collection
 - https://www.mongodb.com/docs/manual/reference/operator/aggregation/out/

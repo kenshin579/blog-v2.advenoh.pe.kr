@@ -13,7 +13,7 @@ tags:
 
 개발 시 원격에 있는 데이터를 로컬환경에 그대로 복사해서 테스트할 필요가 종종 생긴다. [그전 포스팅](https://blog.advenoh.pe.kr/mongodb-collection-cloning하는-방법/)에서는 같은 서버에서 collection을 cloning 하는 방법에 대해서 알아보았다면, 이번에는 원격에서 로컬환경으로 cloning 하는 방법에 대해서 알아보자.
 
-## 1.mongodump
+# 1.mongodump
 
 `mongodump` 명령어는 `mongo` shell 명령어가 아니라 MongoDB 설치 시 같이 설치되는 command line 명령어이다. `mongodump`는 mongodb의 data를 export 해주는 도구이다.
 
@@ -41,7 +41,7 @@ $ ls
 inventory.bson               inventory.metadata.json      inventory3.bson              inventory3.metadata.json     inventoryclone.bson          inventoryclone.metadata.json
 ```
 
-## 2.mongoimport
+# 2.mongoimport
 
 dump 뜬 데이터를 `mongoimport`로 로컬환경에 생성하려면 `mongoimport`를 사용하면 된다.
 
@@ -55,7 +55,7 @@ $ mongoimport --uri "mongodb://localhost:27017" -d clone2 -c inventory inventory
 2022-07-24T22:56:53.381+0900    1 document(s) imported successfully. 0 document(s) failed to import.
 ```
 
-## 정리
+# 정리
 
 이미 파악한 분도 계시겠지만, mongodump, mongoimport 명령어를 사용하면 아래와 같이 여러 시스템으로 cloning이 가능해진다.
 
@@ -63,7 +63,7 @@ $ mongoimport --uri "mongodb://localhost:27017" -d clone2 -c inventory inventory
 - 원격 서버 -> 다른 원격 서버
 - 로컬환경 -> 로컬환경
 
-## 참고
+# 참고
 
 - https://www.mongodb.com/docs/database-tools/mongodump/
 

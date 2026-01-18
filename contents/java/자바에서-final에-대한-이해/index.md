@@ -9,7 +9,7 @@ tags:
   - 자바
 ---
 
-## 1. 개요
+# 1. 개요
 
 ```java
 final int MAX = 5;
@@ -29,9 +29,9 @@ final 키워드는 총 3가지에 적용할 수 있습니다. 각각에 대해�
 - final 메서드
 - final 클래스
 
-## 2. Final 변수
+# 2. Final 변수
 
-### 2.1 원시 타입
+## 2.1 원시 타입
 
 로컬 원시 변수에 final로 선언하면 한번 초기화된 변수는 변경할 수 없는 상수값이 됩니다.
 
@@ -43,7 +43,7 @@ final 키워드는 총 3가지에 적용할 수 있습니다. 각각에 대해�
 }
 ```
 
-### 2.2 객체 타입
+## 2.2 객체 타입
 
 객체 변수에 final로 선언하면 그 변수에 다른 참조 값을 지정할 수 없습니다. 원시 타입과 동일하게 한번 쓰여진 변수는 재변경 불가합니다. **단, 객체 자체가 immutable하다는 의미는 아닙니다**. 객체의 속성은 변경 가능합니다.
 
@@ -56,7 +56,7 @@ public void test_final_reference_variables() {
 }
 ```
 
-### 2.3 메서드 인자
+## 2.3 메서드 인자
 
 메서드 인자에 final 키워드를 붙이면, 메서드 안에서 변수값을 변경할 수 없습니다.
 
@@ -69,7 +69,7 @@ public class Pet {
 }
 ```
 
-### 2.4 맴버 변수
+## 2.4 맴버 변수
 
 클래스의 맴버 변수에 final로 선언하면 상수값이 되거나 write-once 필드로 한 번만 쓰이게 됩니다. final로 선언하면 초기화되는 시점은 생성자 메서드가 끝나기 전에 초기화가 됩니다. 하지만, static이냐 아니냐에 따라서도 초기화 시점이 달라집니다.
 
@@ -81,7 +81,7 @@ public class Pet {
     - 인스턴스 초기화 블록에서 (instance initialization block)
     - 생성자 메서드에서
 
-#### 2.4.1 인스턴스 초기화 블록 vs 정적 초기화 블록
+### 2.4.1 인스턴스 초기화 블록 vs 정적 초기화 블록
 
 정적 초기화 블록과 인스턴스 초기화 블록의 차이점을 간단하게 알아봅니다.
 
@@ -145,7 +145,7 @@ public class Cat extends Pet {
 
 내용이 길었네요. 다음은 메서드와 클래스에 final을 선언하면 어떤 차이가 있는지 알아봅시다.
 
-## 3. Final 메서드
+# 3. Final 메서드
 
 메서드를 final로 선언하면 상속받은 클래스에서 오버라이드가 불가능하게 됩니다. Dog 객체는 Pet의 makeSound() 메서드를 재정의할 수 없습니다. 언제 사용하면 좋을까요? 구현한 코드의 변경을 원하지 않을 때 사용합니다. side-effect가 있으면 안 되는 자바 코어 라이브러리에서 final로 선언된 부분을 많이 찾을 수 있습니다.
 
@@ -163,7 +163,7 @@ public class Dog extends Pet {
 }
 ```
 
-## 4. Final 클래스
+# 4. Final 클래스
 
 클래스에 final을 선언하면 상속 자체가 안됩니다. 그냥 클래스 그대로 사용해야 합니다. Util 형식의 클래스나 여러 상수 값을 모아둔 Constants 클래스을 final로 선언합니다.
 
@@ -179,7 +179,7 @@ public class Dog extends Pet {
 }
 ```
 
-### 4.1 상수 클래스
+## 4.1 상수 클래스
 
 상수 값을 모아준 클래스는 굳이 상속해서 쓸 이유는 없겠죠?
 
@@ -192,7 +192,7 @@ public class SubConstants extends Constants {
 }
 ```
 
-### 4.2 Util 형식의 클래스
+## 4.2 Util 형식의 클래스
 
 JDK에서 String도 final 클래스로 선언되어 있습니다. 자바의 코어 라이브러리이기 때문에 side-effect가 있으면 안 되겠죠. 다른 개발자가 상속을 해서 새로운 SubString을 만들어 라이브러리로 다른 곳에서 사용하게 되면 유지보수, 정상 실행 보장이 어려워질 수 있습니다.
 
@@ -204,7 +204,7 @@ implements java.io.Serializable, Comparable<String>, CharSequence {
 
 여기서에 작성된 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-final) 를 참고해주세요.
 
-## 5.참고
+# 5.참고
 
 - final
     - [https://en.wikipedia.org/wiki/Final\_(Java)](https://en.wikipedia.org/wiki/Final_%28Java%29)

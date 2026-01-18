@@ -17,7 +17,7 @@ tags:
 ---
 
 
-## 1. 들어가며
+# 1. 들어가며
 
 객체 `List`를 `Map` 형태로 변환할 때 아래와 같이 loop을 돌면서 `Map`에 내용을 채운다. 자바8에 도입된 스트림을 사용해서 `List` -> Map으로 어떻게 변환하는지 알아보자.
 
@@ -37,9 +37,9 @@ public void convert_students_to_map_of_nameVsAge_beforeJava8() {
 }
 ```
 
-## 2. List -> Map 변환
+# 2. List -> Map 변환
 
-### 2.1 자바8에서 스트림 사용하여 List에서 Map으로 변환하기
+## 2.1 자바8에서 스트림 사용하여 List에서 Map으로 변환하기
 
 collect()는 스트림의 요소들을 우리가 원하는 자료형으로 변환해준다. Collectors 라는 라이브러리가 기본적인 메서드들을 제공해주는데 `Map` 형태로 변환해주는 toMap()을 사용해서 List -> Map으로 변환해주면 된다.
 
@@ -103,7 +103,7 @@ public void convert_students_to_map_of_idVsStudent() {
 }
 ```
 
-### 2.2 List안에 중복 데이터가 있는 경우 - 예외 발생
+## 2.2 List안에 중복 데이터가 있는 경우 - 예외 발생
 
 List -> Map 으로 변환하는 과정에서 `Map`에 중복된 키가 있는 경우에는 `java.lang.IllegalStateException: Duplicate key` 예외가 발생한다.
 
@@ -150,13 +150,13 @@ public void 중복키가_존재하는_경우_3rd_인자에_merge함수로_해결
 }
 ```
 
-## 3. 마무리
+# 3. 마무리
 
 자바 8의 스트림을 사용해서 List -> Map 형태로 변환해주는 방식을 알아보았다. 자바 8전의 코드 스타일보다 스트림 형태로 작성 코드들이 훨씬 더 코드를 빠르게 이해할 수 있는 장점이 있는 듯하다.
 
 전체 소스는 [github](https://github.com/kenshin579/tutorials-java/blob/master/java8/src/test/java/com/advenoh/streams/ConvertListToMapTest.java)를 참고해주세요
 
-## 4. 참고
+# 4. 참고
 
 * List -> Map 변환
     * https://mkyong.com/java8/java-8-convert-list-to-map/

@@ -14,7 +14,7 @@ tags:
 series: "자바8"
 ---
 
-## 1. Optional이란
+# 1. Optional이란
 
 Optional은 null을 대신하기 위해 만들어진 새로운 코어 라이브러리 데이터 타입입니다. Optional 클래스는 null이나 null이 아닌 값을 담을 수 있는 클래스입니다. 이미 다른 언어(ex. Scala)에 존재하는 기능으로 자바에서는 JDK8에 포함 되었습니다. 기존에 null을 사용하면 어떤 문제점이 있고 Optional을 통해서 어떻게 코드가 개선되는지 알아봅시다.
 
@@ -49,9 +49,9 @@ public void testOptionalJavaStyle_checkNull() {
 }
 ```
 
-## 2. Optional 사용해보기
+# 2. Optional 사용해보기
 
-### 2.1 Optional 객체 생성하기
+## 2.1 Optional 객체 생성하기
 
 Optional 클래스에서는 3가지 정적 팩토리 메서드를 제공합니다.
 
@@ -98,7 +98,7 @@ null이 넘어 올 경우에는 empty Optional 객체를 생성합니다.
 Optional<String> optStr2 = Optional.ofNullable(null); //empty Optional 객체를 반환함
 ```
 
-### 2.3 Optional이 담고 있는 객체에 접근 및 사용방법
+## 2.3 Optional이 담고 있는 객체에 접근 및 사용방법
 
 Optional이 담고 있는 객체에 접근하는 여러 메서드의 사용방법에 대해서 알아보겠습니다.
 
@@ -182,9 +182,9 @@ public void test_3_optional_usage_orElseThrow() {
 }
 ```
 
-## 3. Stream에서 Optional 사용법
+# 3. Stream에서 Optional 사용법
 
-### 3.1 filter(Predicate) : 조건에 따라 요소들 필터링하기
+## 3.1 filter(Predicate) : 조건에 따라 요소들 필터링하기
 
 filter()는 인자로 받은 Predicate 함수의 결과가 true인 모든 요소만을 새로운 스트림으로 반환하는 Stream API입니다. 즉, 조건에 맞는 것만 필터링한다고 이해하시면 됩니다. Optional 없이 구현한 버전과 Optional을 사용한 예제입니다.
 
@@ -252,7 +252,7 @@ public void test_1_stream_usage_filter_with_optional() {
 
 참고로 Predicate<? super T>의 의미는 Predicate의 유형 매개변수가 T 또는 T의 상위유형이어야 한다는 의미이다. T에 들어갈 수 있는 lower bound가 정해집니다. 예를 들면, List<? super Integer>인 경우에는 List<Integer>, List<Number>, List<Object>가 포함됩니다. Integer 클래스는 Number와 Object를 상속받은 자식 클래스입니다. 제네릭에 대한 더 자세한 내용은 [StackOverflow](https://stackoverflow.com/questions/2827585/what-is-super-t-syntax) 를 참조해주세요.
 
-### 3.2 map() : 요소들의 값 형태 변환하기
+## 3.2 map() : 요소들의 값 형태 변환하기
 
 **map(Function<? super T,? extends R> mapper)**
 
@@ -286,7 +286,7 @@ public interface Function<T, R> {
 }
 ```
 
-### 3.3 flatMap() : 요소를 flat하고나서 map으로 값 형태를 반환하기
+## 3.3 flatMap() : 요소를 flat하고나서 map으로 값 형태를 반환하기
 
 ```java
 flatMap(Function<? super T,? extends Stream<? extends R>> mapper)
@@ -310,7 +310,7 @@ public void test_3_stream_usage_flatMap() {
 
 
 
-## 4. 자바9에 추가된 Optional 메서드
+# 4. 자바9에 추가된 Optional 메서드
 
 JDK9에서 3가지 메서드가 추가되었습니다. 각각 기존 사용을 알아봅시다.
 
@@ -322,7 +322,7 @@ JDK9에서 3가지 메서드가 추가되었습니다. 각각 기존 사용을 �
 
 
 
-### 4.1 or() : Optional이 empty인 경우에 다른 Optional을 반환
+## 4.1 or() : Optional이 empty인 경우에 다른 Optional을 반환
 
 JDK9 이전에는 Optional 객체가 empty이면 orElse()나orElseGet()을 사용해서 default 값을 반환했습니다. JDK9부 터는 or() 메서드로 Optional이 empty이면 값 대신 다른 Optional을 반환하는 메서드가 추가되었습니다. 예제를 보면 더 쉽게 이해할 수 있습니다.
 
@@ -338,7 +338,7 @@ public void test_jdk9_optional_or() {
 }
 ```
 
-### 4.2 ifPresentOrElse() : Optional에 값이 존재하면 action 수행하고 아닌 경우에는 else 부분을 수행
+## 4.2 ifPresentOrElse() : Optional에 값이 존재하면 action 수행하고 아닌 경우에는 else 부분을 수행
 
 JDK9이전에는 IfPresent 메서드만 있었다면 JDK9부터는 Optional이 empty인 경우에 Else로 추가되어 많이 편리해졌습니다.
 
@@ -356,7 +356,7 @@ public void test_jdk9_ifPresentOrElse() {
 
 
 
-## 4.3 stream() : Optional 객체를 Stream 객체로 변환하기 위해 사용
+# 4.3 stream() : Optional 객체를 Stream 객체로 변환하기 위해 사용
 
 JDK8에 추가된 Stream은 여러 API를 통해 collection을 함수형 방식으로 쉽게 조작이 가능하게 하는 기능입니다. Optional에 stream()을 추가함으로써 기존의 Stream API를 사용 할 수 있게 되었습니다. 이 예제에서는 Optional을 Stream으로 변경한이후 Stream의 함수를 사용한 예제입니다.
 
@@ -371,7 +371,7 @@ public void test_jdk9_stream() {
 
 
 
-## 5. 참고
+# 5. 참고
 
 포스팅 작성된 소스 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-optional) 에서 확인가능합니다.
 

@@ -10,7 +10,7 @@ tags:
   - 어노테이션
 ---
 
-## 1. 어노테이션이란
+# 1. 어노테이션이란
 
 스프링 프레임워크를 사용하면 어노테이션을 자주 사용하게 됩니다. 아래는 스프링 웹 MVC를 사용한 예로 GET HTTP 요청(/helloworld)이 있으면 “Hello World”를 담아서 뷰에 전달되는 코드입니다. 이런 어노테이션은 내부적으로 어떻게 코드화되어 사용되는지 알아봅시다.
 
@@ -32,9 +32,9 @@ public class HelloWorldController {
 
 본 포스팅에 작성한 예제 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/custom-annotation) 에 작성되어 있습니다.
 
-## 2. 어노테이션의 기본 사용
+# 2. 어노테이션의 기본 사용
 
-### 2.1 어노테이션 타입
+## 2.1 어노테이션 타입
 
 어노테이션은 3가지 타입이 존재합니다.
 
@@ -45,7 +45,7 @@ public class HelloWorldController {
 - 멀티 값 어노테이션 (Multi Value Annotation)
     - @NewAnnotation(id=10, name=“hello”, roles= {“admin”, “user"})
 
-#### 2.1.1 마커 어노테이션
+### 2.1.1 마커 어노테이션
 
 @Override 나 @Deprecated와 같은 어노테이션처럼 표시만 해두는 어노테이션입니다. 메서드없이 선언하면 마커 어노테이션이 됩니다.
 
@@ -62,7 +62,7 @@ public class UsingMakerAnnotation {
 }
 ```
 
-### 2.1.2 싱글 값 어노테이션
+## 2.1.2 싱글 값 어노테이션
 하나의 값만 입력받을 수 있는 어노테이션입니다.
 
 ```java
@@ -79,7 +79,7 @@ public @interface SingleValueAnnotation {
 }
 ```
 
-#### 2.1.3 멀티 값 어노테이션
+### 2.1.3 멀티 값 어노테이션
 어노테이션에 여러 값들을 지정할 수 있습니다.
 
 ```java
@@ -103,7 +103,7 @@ public @interface MultiValueAnnotation {
 
 ```
 
-### 2.2 어노테이션 배치하는 곳
+## 2.2 어노테이션 배치하는 곳
 아래 예제처럼 어노테이션은 클래스, 필드 변수, 메서드 인자, 로컬변수위에 선언할 수 있습니다.
 
 ```java
@@ -124,7 +124,7 @@ public class AnnotationPlacement {
 
 커스텀 어노테이션을 어떻게 생성하고 사용할 수 있는지 알아보기 전에 기본적으로 자바에서 제공하는 어노테이션을 한번 살펴보겠습니다.
 
-## 3. 빌드인 어노테이션
+# 3. 빌드인 어노테이션
 자바 언어에서 제공되는 어노테이션들입니다.
 
 - **자바 코드에 적용되는 어노테이션**
@@ -162,9 +162,9 @@ public class AnnotationPlacement {
 
 위 메타 어노테이션은 커스텀 어노테이션을 작성할 때 사용하는 어노테이션입니다. 각각 어떤 역할을 하는지는 다음 섹션에서 알아보도록 하겠습니다.
 
-## 4. 커스텀 어노테이션
+# 4. 커스텀 어노테이션
 
-### 4.1 메사 어노테이션
+## 4.1 메사 어노테이션
 
 ```java
 @Retention(RetentionPolicy.RUNTIME)
@@ -209,7 +209,7 @@ public class TheClass {
 - @Repeatable
     - 자바8에 추가된 어노테이션으로 반복 선언을 할 수 있게 해준다
 
-### 4.2 커스텀 어노테이션 생성
+## 4.2 커스텀 어노테이션 생성
 
 커스텀 어노테이션을 이용해 생성한 예제들입니다.
 
@@ -265,7 +265,7 @@ public class TheClass {
 }
 ```
 
-### 4.3 자바 리플렉션으로 커스텀 어노테이션 사용해보기
+## 4.3 자바 리플렉션으로 커스텀 어노테이션 사용해보기
 프로그램 실행 시 커스텀 어노테이션을 사용한 곳과 지정한 값들을 얻어오려면 자바 리플렉션을 사용해야 합니다. 자바 리플렉션을사용해서 선언한 어노테이션 값을 얻어오는 건 비슷비슷해서 예제 3번으로만 설명하도록 하겠습니다.
 
 ```java
@@ -304,7 +304,7 @@ public class MethodAnnotationExecutor {
 
 지금 개발하는 프로젝트가 있다면 한번 커스컴 어노테이션으로 적용해보는 것도 좋을 것 같습니다.
 
-## 5. 참고
+# 5. 참고
 
 - 자바 어노테이션
     - [https://ko.wikipedia.org/wiki/%EC%9E%90%EB%B0%94\_%EC%96%B4%EB%85%B8%ED%85%8C%EC%9D%B4%EC%85%98](https://ko.wikipedia.org/wiki/%EC%9E%90%EB%B0%94_%EC%96%B4%EB%85%B8%ED%85%8C%EC%9D%B4%EC%85%98)

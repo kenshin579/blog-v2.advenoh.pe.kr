@@ -16,7 +16,7 @@ tags:
   - jwkset
 ---
 
-## 1. 개요
+# 1. 개요
 
 `JWT`(JSON Web Token)는 웹 애플리케이션에서 인증 및 정보 교환을 안전하게 수행하기 위해 사용된다. `JWT`는 자체적으로 정보를 담고 있으며, 일반적으로 사용자 식별 및 권한 정보를 포함한다. `JWT`는 보통 사용자 인증, 사용자 정보에 사용되고 웹 애플리케이션에서 안전한 인증을 위해 사용할 수 있는 도구이다.
 
@@ -29,9 +29,9 @@ tags:
 
 `JWKS`는 `JSON` 형식으로 공개 키를 제공하는 표준 규격으로, 클라이언트는 이를 통해 `JWT`의 서명을 검증할 수 있다. 이 글에서는 `JWKS`의 개념, 구조, 구현 방법, 그리고 실전 사용 사례에 대해 살펴본다.
 
-## 2. `JWKS`에 대해서 알아보자
+# 2. `JWKS`에 대해서 알아보자
 
-### 2.1 `JWK` vs `JWKS`
+## 2.1 `JWK` vs `JWKS`
 
 - `JWK`  (JSON Web Key)
   - JSON 형식으로 표현된 단일 키(비대칭 키 쌍의 공개 키 또는 대칭 키)이다
@@ -41,7 +41,7 @@ tags:
   - JWKS는 JWK를 여러 개 포함한 키의 집합이다
   - 보통 HTTPS를 통해 노출되는 엔드포인트에서 제공되며, 클라이언트는 이를 통해 JWT를 검증한다.
 
-### 2.2 `JWKS` 구조
+## 2.2 `JWKS` 구조
 
 > 예제. JWKS 응답 구조
 
@@ -87,7 +87,7 @@ tags:
   - EC key type인 경우에는 `crv`(curve type), `x`, `y`(coordinates)
   - `OPTIONAL`
 
-### 2.3 JWKS Endpoint
+## 2.3 JWKS Endpoint
 
 `JWKS`는 보통 `HTTPS`를 통해 제공되며 클라이언트는 이를 활용하여 `JWT`를 검증한다. 일반적으로 `URL` 형식은 다음과 같다.
 
@@ -97,7 +97,7 @@ tags:
 > https://<server_domain>/.well-known/jwks.json
 > ```
 
-#### 2.3.1 RSA 공개 키, 개인 키 생성하는 방법
+### 2.3.1 RSA 공개 키, 개인 키 생성하는 방법
 
 여기서는 비대칭 암호화로 RSA를 사용한다. 공개 키와 개인 키를 생성하기 위해 `openssl` 명령어를 사용한다.
 
@@ -117,7 +117,7 @@ tags:
 - **파일명**: `public.key`
 - 개인 키로부터 공개 키를 추출하여 파일에 저장한다
 
-#### 2.3.2 JWKS 생성하기
+### 2.3.2 JWKS 생성하기
 
 JWKS 생성은 [JWKSet (MicahParks)](https://github.com/MicahParks/jwkset) 라이브러리를 사용하면 쉽게 구현이 가능하다. 실제로 API endpoint로 구현은 하지 안호 간단한 예제로 unit test 형식으로 작성했다.
 
@@ -169,7 +169,7 @@ func (suite *jwksTestSuite) generateJWKS() (jwkset.JWKSMarshal, error) {
 
 `JWKS` 생성한 데이터를 보면 위와 같이 나온다.
 
-#### 2.3.3 [jwset.com](http://jwset.com) 소개
+### 2.3.3 [jwset.com](http://jwset.com) 소개
 
 `JWKSet` 라이브러리를 개발한 개발자가 추가로 만든 사이트이기도 하다. 웹 상에서 `JWKS`를 직접 생성하고 테스트해볼 수 있는 사이트이다.
 
@@ -178,9 +178,9 @@ func (suite *jwksTestSuite) generateJWKS() (jwkset.JWKSMarshal, error) {
 
 ![jwset.com - Inspector](image-20250217220322390.png)
 
-## 3. FAQ
+# 3. FAQ
 
-#### 3.1 공개 키와 개인 키는 각각 언제 어떻게 사용되나?
+### 3.1 공개 키와 개인 키는 각각 언제 어떻게 사용되나?
 
 - 서명(Signature)
   - 서명을 생성하려면 개인 키를 사용한다
@@ -190,11 +190,11 @@ func (suite *jwksTestSuite) generateJWKS() (jwkset.JWKSMarshal, error) {
   - 데이터를 보낼 때는 공개 키로 암호화한다
   - 데이터를 복호화할 때는 개인 키를 사용한다
 
-## 4. 마무리
+# 4. 마무리
 
 `JWS`와 `JWKS`는 `JWT`를 활용한 인증 시스템에서 필수적인 구성 요소이다. 특히 `JWKS`를 통해 키 관리와 서명 검증을 효율적으로 처리할 수 있다. 본 글이 `JWS`와 `JWKS`의 이해와 구현에 도움이 되길 바란다.
 
-## 5. 참고
+# 5. 참고
 - [Understanding JWKS: JSON Web Key Set Explained](https://stytch.com/blog/understanding-jwks/)
 
 

@@ -13,7 +13,7 @@ tags:
   - 체이닝
 ---
 
-## 1. 메서드 체이닝이란
+# 1. 메서드 체이닝이란
 
 메서드 체이닝이란 여러 메서드 호출을 연결해 하나의 실행문으로 표현하는 문법 형태를 말합니다. (위키피디아 참고 #4.1)
 
@@ -63,9 +63,9 @@ public class Pet {
 }
 ```
 
-## 2. 추상 클래스와 상속 관계 있는 클래스에서의 메서드 체이닝 적용하기
+# 2. 추상 클래스와 상속 관계 있는 클래스에서의 메서드 체이닝 적용하기
 
-### 2.1 One Depth : 추상 클래스 <--> 자식 클래스
+## 2.1 One Depth : 추상 클래스 <--> 자식 클래스
 
 한 클래스에서 메서드 체이닝을 적용하기는 쉽습니다. 하지만, 상속 관계가 있는 클래스에서는 this의 반환 값이 부모 클래스이거나 자식 클래스이기 때문에 메서드 체이닝을 할 때 캐스팅(cast)을 해줘야 하는 번거로움이 생깁니다.
 
@@ -137,7 +137,7 @@ public class Cat extends Pet<Cat> {
 }
 ```
 
-### 2.2 Two Depth : 추상 클래스 <—> 추상 클래스 <—> 자식 클래스
+## 2.2 Two Depth : 추상 클래스 <—> 추상 클래스 <—> 자식 클래스
 
 추상 클래스의 깊이(depth)가 2이상인 경우에도 1 depth인 클래스에 정의된 제네릭 부분과 크게 다르지 않습니다. Pet과 BombayCat 클래스는 1 depth인 경우와 유사하고 Cat 클래스의 경우에는 Cat 타입에 허용될 수 있는 제네릭을 정의하면 됩니다.
 
@@ -156,7 +156,7 @@ public abstract class Cat<T extends Cat<T>> extends Pet<T> {
 }
 ```
 
-### 2.3 Two Depth : 추상 클래스 <—> 추상 클래스 <—> 자식 클래스 refactoring
+## 2.3 Two Depth : 추상 클래스 <—> 추상 클래스 <—> 자식 클래스 refactoring
 
 새로운 Cat 클래스를 추가할때마다 getThis()의 구현체를 매번 추가해야 하는 번거로움이 생깁니다. getThis() 구현은 this를 반환하는 것밖에 없으니까, 인터페이스 함수로 빼서 default로 정의하고 구현체를 담아보면 코드가 더 깔끔해집니다.
 
@@ -174,11 +174,11 @@ public interface IPet<T> {
 }
 ```
 
-## 3. 소스 예제
+# 3. 소스 예제
 
 전체 소스 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-method-chain) 에서 찾을 수 있습니다.
 
-## 4. 참고
+# 4. 참고
 
 - [https://en.wikipedia.org/wiki/Method_chaining](https://en.wikipedia.org/wiki/Method_chaining)
 - [https://stackoverflow.com/questions/1069528/method-chaining-inheritance-don-t-play-well-together](https://stackoverflow.com/questions/1069528/method-chaining-inheritance-don-t-play-well-together)

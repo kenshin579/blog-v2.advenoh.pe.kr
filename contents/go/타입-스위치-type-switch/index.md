@@ -55,7 +55,7 @@ func Example_TypeSwitch() {
 
 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-type-switch)에서 확인할 수 있다.
 
-## 참고
+# 참고
 
 * https://yourbasic.org/golang/type-assertion-switch/
 * https://riptutorial.com/go/example/14736/type-switch

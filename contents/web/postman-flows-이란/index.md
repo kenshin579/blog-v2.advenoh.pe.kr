@@ -14,13 +14,13 @@ tags:
   - 자동화
 ---
 
-## 1.Postman Flows이란?
+# 1.Postman Flows이란?
 
 Postman Flows는 여러 타입의 빌딩 블록을 서로 연결하여 작업 흐름을 정의하고 자동화하는 데 사용되는 도구이다. Flows는 코드 한 줄도 작성하지 않고 작업 흐름을 정의할 수 있는 UI를 제공해 주고 있어서 개발자 외에도 누구나? 쉽게 Flows를 사용할 수 있다. 다음은 Postman Flows 의 주요 특징 및 기능에 대해서 알아보자.
 
 ![Postman Flows](postman-flows-overview.gif)
 
-#### 참고
+### 참고
 
 - [Learning Center: Postman Flows](https://learning.postman.com/docs/postman-flows/gs/flows-overview/)
 - [Flow Snippets](https://www.postman.com/postman/workspace/flows-snippets/overview)
@@ -31,7 +31,7 @@ Postman Flows는 여러 타입의 빌딩 블록을 서로 연결하여 작업 �
 > Postman에서는 다양한 형태의 문서를 제공해 주고 있어 쉽게 Postman Flows를 학습할 수 있다.
 >
 
-#### 1.1 Postman Flows 특징 및 기능
+### 1.1 Postman Flows 특징 및 기능
 
 - 기본적으로 Postman에서 제공하는 여러 Collection, Environment 등의 값을 Flows 내에서 바로 사용할 수 있다
 - 여러 타입의 Flow Blocks을 제공한다
@@ -42,7 +42,7 @@ Postman Flows는 여러 타입의 빌딩 블록을 서로 연결하여 작업 �
 - Flow를 배포하여 클라우드에서 실행할 수 있어 다른 애플리케이션과도 연동할 수 있다
 
 
-#### 1.1.1 Flow Blocks
+### 1.1.1 Flow Blocks
 
 
 Flow에서는 아래와 같은 여러 block 타입을 제공한다.
@@ -78,12 +78,12 @@ Flow에서는 아래와 같은 여러 block 타입을 제공한다.
     - `Output`
         - JSON, charts, table, image, videos 타입과 같은 형태로 정보를 출력할 수 있다
 
-##### 참고
+#### 참고
 
 - [Postman Flows blocks](https://learning.postman.com/docs/postman-flows/reference/blocks-list/)
 - [Flow Snippets](https://www.postman.com/postman/workspace/flows-snippets/overview)
 
-#### 1.1.2 Flows Query Language (FQL)
+### 1.1.2 Flows Query Language (FQL)
 
 `Flows Query Language` (`FQL`)을 사용하여 JSON 데이터를 파싱하고 JSON 데이터를 변환하여 원하는 필드나 구조를 가져올 수 언어이다.
 
@@ -98,14 +98,14 @@ Flow에서는 아래와 같은 여러 block 타입을 제공한다.
 
 ![](image2-1-1000x468.png)
 
-##### 참고
+#### 참고
 
 - [Introduction to Flows Query Language](https://learning.postman.com/docs/postman-flows/flows-query-language/introduction-to-fql/)
 - [FQL function reference](https://learning.postman.com/docs/postman-flows/flows-query-language/function-reference/)
 - [Advanced FQL expressions in Postman Flows](https://blog.postman.com/advanced-fql-expressions-in-postman-flows/)
 
 
-#### 1.1.2 Organize a Flow
+### 1.1.2 Organize a Flow
 
 Flow에서 block이 많아지면 복잡해져서 아래와 같은 기능을 통해서 작성된 Flow를 조금 더 쉽게 이해할 수 있도록 도와주는 듯하다.
 
@@ -116,7 +116,7 @@ Flow에서 block이 많아지면 복잡해져서 아래와 같은 기능을 통�
 - Grouping
     - 여러 block을 grouping 해주는 기능이다
 
-#### 1.1.3 Webhook 기능
+### 1.1.3 Webhook 기능
 
 Flow를 클라우드에 배포해서 Webhook으로 트리거하여 Flow를 실행시킬 수 있다. 아래와 같이 Flow를 Webhook으로 생성하면 API 주소가 나오고 API를 호출하면 Flow가 트리거할 수 있다.
 
@@ -126,21 +126,21 @@ Flow를 클라우드에 배포해서 Webhook으로 트리거하여 Flow를 실�
 
 - [Publish a Flow to the Postman cloud](https://learning.postman.com/docs/postman-flows/concepts/automatic-runs/)
 
-## 2.Postman Flows 사용해보기
+# 2.Postman Flows 사용해보기
 
-### Examples
+## Examples
 
 - [Concatenating Strings](https://www.postman.com/postman/workspace/flows-snippets/flow/63db5fecac73d5464a5f18ce)
 - [Condition (If...then.else)](https://www.postman.com/postman/workspace/flows-snippets/flow/62c67c1ea47e56004fa14ce5)
 - [https://www.postman.com/postman/workspace/flows-snippets/flow/641784c895e5e70033f029ad](https://www.postman.com/postman/workspace/flows-snippets/flow/641784c895e5e70033f029ad)
 
-## 3.FAQ
+# 3.FAQ
 
-#### 3.1 Postman에서 변수는 어디에 어떻게 저장할 수 있나?
+### 3.1 Postman에서 변수는 어디에 어떻게 저장할 수 있나?
 
 Postman에서 변수는 여러 곳, Global, Collection, Environment 등에서 변수를 저장하여 사용할 수 있다. 변수 참조시 Postman에서 아래 스코프 기준으로 참조할 변수를 찾는다.
 
-##### 3.1.1 Postman Variables Scope
+#### 3.1.1 Postman Variables Scope
 
 - Global
     - Global 변수는 전역 변수로 어디서나 사용 가능한다
@@ -162,7 +162,7 @@ Postman에서 변수는 여러 곳, Global, Collection, Environment 등에서 �
 
 참고: [Store and reuse values using variables](https://learning.postman.com/docs/sending-requests/variables/)
 
-#### 3.2 Initial와 Current 값의 차이점은?
+### 3.2 Initial와 Current 값의 차이점은?
 
 - Initial value
     - Initial 값은 Collection, Environment, Global에서 설정된 값이다. 이 값은 Postman의 서버와 동기화되면, 해당 요소를 공유할 때 팀과 공유가 된다
@@ -174,7 +174,7 @@ Postman에서 변수는 여러 곳, Global, Collection, Environment 등에서 �
 ![](image-20231015171834284.png)
 
 
-#### 3.3 Flow를 주기적으로 실행 할 수는 없나?
+### 3.3 Flow를 주기적으로 실행 할 수는 없나?
 
 `Postman Flows` 자체에서는 제공하지 않지만, Postman 에서 제공하는 Monitor 기능을 통해서 주기적으로 실행할 수 있다.
 
@@ -184,28 +184,28 @@ Postman에서 변수는 여러 곳, Global, Collection, Environment 등에서 �
 
 참고: [Scheduling the Flow with a monitor](https://learning.postman.com/docs/postman-flows/tutorials/make-your-own-automatically-scheduled-tasks/)
 
-#### 3.4 작성한 Flow를 다른 Flow에 사용할 수 없나?
+### 3.4 작성한 Flow를 다른 Flow에 사용할 수 없나?
 
 Postman Flow UI 상에서는 flow 간에 연결해서 사용할 수는 없습니다. 단, 특정 Flow를 Cloud에 배포해서 다른 Flow에서 API로 호출해서 다른 Flow를 호출할 수 있습니다.
 
-#### 3.5 Postman Flows는 언제 release 되었나?
+### 3.5 Postman Flows는 언제 release 되었나?
 
 - 정확한 날짜는 확인이 안되고 Eary Access는 2022년 말쯤에 릴리스된 것으로 판단됨
     - https://blog.postman.com/announcing-postman-flows-early-access/
 
-#### 3.6 FQL는 표준화 언어인가?
+### 3.6 FQL는 표준화 언어인가?
 
 - `FQL`는 표준화된 쿼리 언어는 아니고 Postman 에서만 사용하는 자체 개발된 쿼리 언어이다
 
-## 4.마무리
+# 4.마무리
 
-#### 장점
+### 장점
 
 - Postman에서 기본적으로 사용하는 API Collection, Environment 등을 Flows에서 바로 사용할 수 있음
 - Git 기반의 Fork를 사용해서 다른 사람이 작성한 여러 Flow, Collecttion을 Fork해서 테스트해볼 수 있어서 좋았음
 - 간단한 로직인 경우에는 비개발자가 flow를 사용해서 작성해서 자동화나 통합 테스트도 가능해짐
 
-#### 아쉬운 점
+### 아쉬운 점
 
 - UI 상으로 Flow 간의 연결해서 사용할 수가 없음
     - 가능한 해결책은 Flow을 Cloud 배포해서 API로 호출해서 trigger하는 방법이 있음
