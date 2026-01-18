@@ -16,16 +16,6 @@ tags:
   - 메시징 프로토콜
 ---
 
-> **시리즈 안내**: 이 글은 **MQTT v5 완벽 가이드** 시리즈의 1편이다.
->
-> 1. **MQTT v5 입문 - 개념과 아키텍처** (현재 글)
-> 2. [Topic 설계와 메시지 모델](/database/mqtt-v5-guide-2-topic-message)
-> 3. [QoS, Session, 재연결 전략](/database/mqtt-v5-guide-3-qos-session-reconnect)
-> 4. [고급 기능과 보안](/database/mqtt-v5-guide-4-advanced-security)
-> 5. [Go + Paho 실전 구현과 운영](/database/mqtt-v5-guide-5-go-implementation)
-
----
-
 # 0장. 스터디 목표와 전제
 
 이 스터디는 MQTT를 처음 접하는 개발자가 실무에서 바로 활용할 수 있도록 구성되었다. 단순히 "메시지를 보내고 받는 방법"을 넘어서, 시스템 설계와 운영 관점에서 MQTT를 이해하는 것을 목표로 한다. 특히 네트워크 불안정성을 전제로 한 재연결 전략까지 다루므로, 학습 후에는 프로덕션 환경에서도 안정적으로 동작하는 MQTT 기반 시스템을 구축할 수 있다.

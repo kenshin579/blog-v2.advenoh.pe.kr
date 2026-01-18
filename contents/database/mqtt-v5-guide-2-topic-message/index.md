@@ -15,16 +15,6 @@ tags:
   - 메시지 설계
 ---
 
-> **시리즈 안내**: 이 글은 **MQTT v5 완벽 가이드** 시리즈의 2편이다.
->
-> 1. [MQTT v5 입문 - 개념과 아키텍처](/database/mqtt-v5-guide-1-introduction)
-> 2. **Topic 설계와 메시지 모델** (현재 글)
-> 3. [QoS, Session, 재연결 전략](/database/mqtt-v5-guide-3-qos-session-reconnect)
-> 4. [고급 기능과 보안](/database/mqtt-v5-guide-4-advanced-security)
-> 5. [Go + Paho 실전 구현과 운영](/database/mqtt-v5-guide-5-go-implementation)
-
----
-
 # 3장. Topic 설계
 
 Topic 설계는 MQTT 시스템의 **가장 중요한 설계 결정**이다. 한 번 정해진 Topic 구조는 나중에 변경하기 매우 어렵다. 이미 운영 중인 시스템에서 Topic을 변경하려면 모든 Publisher와 Subscriber를 동시에 수정해야 하기 때문이다. 따라서 처음부터 확장성과 유지보수성을 고려한 설계가 필수이다.

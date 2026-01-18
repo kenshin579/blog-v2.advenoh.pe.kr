@@ -17,16 +17,6 @@ tags:
   - Idempotent
 ---
 
-> **시리즈 안내**: 이 글은 **MQTT v5 완벽 가이드** 시리즈의 3편이다.
->
-> 1. [MQTT v5 입문 - 개념과 아키텍처](/database/mqtt-v5-guide-1-introduction)
-> 2. [Topic 설계와 메시지 모델](/database/mqtt-v5-guide-2-topic-message)
-> 3. **QoS, Session, 재연결 전략** (현재 글)
-> 4. [고급 기능과 보안](/database/mqtt-v5-guide-4-advanced-security)
-> 5. [Go + Paho 실전 구현과 운영](/database/mqtt-v5-guide-5-go-implementation)
-
----
-
 # 5장. QoS 완전 정복
 
 QoS(Quality of Service)는 메시지 **전달 보장 수준**이다. MQTT에서 가장 중요한 개념 중 하나로, 네트워크 상황과 메시지의 중요도에 따라 적절한 QoS를 선택해야 한다. QoS 선택은 시스템의 신뢰성과 성능 사이의 트레이드오프이다. 높은 QoS는 더 많은 네트워크 오버헤드와 지연을 발생시키지만, 메시지 전달을 더 강력하게 보장한다.

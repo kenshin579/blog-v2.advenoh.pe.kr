@@ -17,16 +17,6 @@ tags:
   - Grafana
 ---
 
-> **시리즈 안내**: 이 글은 **MQTT v5 완벽 가이드** 시리즈의 5편 (마지막)이다.
->
-> 1. [MQTT v5 입문 - 개념과 아키텍처](/database/mqtt-v5-guide-1-introduction)
-> 2. [Topic 설계와 메시지 모델](/database/mqtt-v5-guide-2-topic-message)
-> 3. [QoS, Session, 재연결 전략](/database/mqtt-v5-guide-3-qos-session-reconnect)
-> 4. [고급 기능과 보안](/database/mqtt-v5-guide-4-advanced-security)
-> 5. **Go + Paho 실전 구현과 운영** (현재 글)
-
----
-
 # 10장. Go + Paho (v5) 사용법
 
 이 장에서는 Go 언어로 MQTT v5 클라이언트를 구현하는 방법을 다룹니다. Eclipse Paho 프로젝트에서 제공하는 `paho.golang` 패키지를 사용하며, 특히 자동 재연결을 지원하는 `autopaho` 패키지의 사용법을 중심으로 설명한다. 앞서 배운 개념들을 실제 코드로 구현하는 방법을 익히면 바로 프로덕션에 적용할 수 있다.

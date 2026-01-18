@@ -17,16 +17,6 @@ tags:
   - 인증
 ---
 
-> **시리즈 안내**: 이 글은 **MQTT v5 완벽 가이드** 시리즈의 4편이다.
->
-> 1. [MQTT v5 입문 - 개념과 아키텍처](/database/mqtt-v5-guide-1-introduction)
-> 2. [Topic 설계와 메시지 모델](/database/mqtt-v5-guide-2-topic-message)
-> 3. [QoS, Session, 재연결 전략](/database/mqtt-v5-guide-3-qos-session-reconnect)
-> 4. **고급 기능과 보안** (현재 글)
-> 5. [Go + Paho 실전 구현과 운영](/database/mqtt-v5-guide-5-go-implementation)
-
----
-
 # 8장. MQTT v5 고급 기능
 
 MQTT v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, HTTP 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룹니다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
