@@ -12,8 +12,8 @@ tags:
   - db
 ---
 
-개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료입니다.
-미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
+개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료이다.
+미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사한다.
 
 # Q&A 전체 목록
 
@@ -24,14 +24,14 @@ tags:
 
 ![](image_12.png)
 
-엔티티를 DB에 적용하기 전후로 Custom 콜백을 요청할 수 있는 어노테이션입니다.
+엔티티를 DB에 적용하기 전후로 Custom 콜백을 요청할 수 있는 어노테이션이다.
 
 참고
 * [http://clearpal7.blogspot.com/2017/03/entitylisteners.html](http://clearpal7.blogspot.com/2017/03/entitylisteners.html)
 
 ## <span style="color:brown">2. @PostLoad</span>
 
-@PostLoad 어노테이션은 엔티티를 로딩한 후에 호출 할 메서드를 설정하는 어노테이션입니다.
+@PostLoad 어노테이션은 엔티티를 로딩한 후에 호출 할 메서드를 설정하는 어노테이션이다.
 
 참고
 * [https://docs.jboss.org/hibernate/orm/4.0/hem/en-US/html/listeners.html](https://docs.jboss.org/hibernate/orm/4.0/hem/en-US/html/listeners.html)
@@ -39,7 +39,7 @@ tags:
 
 ## <span style="color:brown">3. 자동으로 schema 생성하려면 설정을 어떻게 바꿔야 하나?</span>
 
-persistence.xml 파일에서 hibernate 설정에 hiberate.hbm2ddl.auto 속성을 아래와 같이 추가하면 됩니다.
+persistence.xml 파일에서 hibernate 설정에 hiberate.hbm2ddl.auto 속성을 아래와 같이 추가하면 된다.
 * value
     * create : 매번 실행할 때마다 table을 삭제하고 다시 생성한다
     * update : 테이블 없는 경우에는 테이블을 생성한다
@@ -48,19 +48,19 @@ persistence.xml 파일에서 hibernate 설정에 hiberate.hbm2ddl.auto 속성을
 
 ## <span style="color:brown">4. JPA에서 객체를 수정하면 기본으로 모든 필드 값을 포함해서 UPDATE SQL 문구가 생성되는데, 수정한 속성만 업데이트하려면 어떻게 설정을 해야 하나?</span>
 
-저장할 필드가 너무 많은 경우에는 수정된 데이터만 포함해서 UPDATE SQL 문구를 생성하려면 @DynamicUpdate 어노테이션을 클래스에 선언하면 됩니다.
+저장할 필드가 너무 많은 경우에는 수정된 데이터만 포함해서 UPDATE SQL 문구를 생성하려면 @DynamicUpdate 어노테이션을 클래스에 선언하면 된다.
 
-추가로 @DynamicInsert는 필드 값이 존재하는 필드(null이 아닌)만 포함해서 INSERT SQL 구문을 생성 할 때 사용됩니다.
+추가로 @DynamicInsert는 필드 값이 존재하는 필드(null이 아닌)만 포함해서 INSERT SQL 구문을 생성 할 때 사용된다.
 
 ## <span style="color:brown">5. @Transactional</span>
 
 ![](image_6.png)
 
-클래스나 메서드에 어노테이션을 선언하면 외부에서 클래스의 메서드를 호출 할때 트랜잭션을 시작하고 메서드 실행이 끝나면 트랜잭션을 커밋해주는 어노테이션입니다.
+클래스나 메서드에 어노테이션을 선언하면 외부에서 클래스의 메서드를 호출 할때 트랜잭션을 시작하고 메서드 실행이 끝나면 트랜잭션을 커밋해주는 어노테이션이다.
 
-@Transactional은 Unchecked Exception(ex. RuntimeException 하위 예외)인 겨우에만 rollback을 하고 Checked Exception 예외에도 롤백을 적용하려면 @Transactional(rollbackFor = Exception.class) 처럼 rollback을 직접 지정해줘야 합니다.
+@Transactional은 Unchecked Exception(ex. RuntimeException 하위 예외)인 겨우에만 rollback을 하고 Checked Exception 예외에도 롤백을 적용하려면 @Transactional(rollbackFor = Exception.class) 처럼 rollback을 직접 지정해줘야 한다.
 
-@Transactional 어노테이션은 보통 비지니스 로직이 있는 서비스 계층에서 사용합니다. 이 어노테이션을 유닛테스트 작성시 사용하면 각각의 테스트를 실행 할 때마다 트랜잭션을 시작하고 테스트가 끝나면 트랜잭션을 강제로 롤백합니다.
+@Transactional 어노테이션은 보통 비지니스 로직이 있는 서비스 계층에서 사용한다. 이 어노테이션을 유닛테스트 작성시 사용하면 각각의 테스트를 실행 할 때마다 트랜잭션을 시작하고 테스트가 끝나면 트랜잭션을 강제로 롤백한다.
 
 참고
 * Checked Exception vs Unchecked(Runtime) Exception
@@ -68,9 +68,9 @@ persistence.xml 파일에서 hibernate 설정에 hiberate.hbm2ddl.auto 속성을
 
 ## <span style="color:brown">6. @Convert란</span>
 
-JPA에서 convertor를 사용해서 엔티티의 데이터를 변환해서 DB에 저장하고 저장한 데이터를 조회할 때도 convertor를 통해서 변환해서 값을 가져올 수 있습니다.
+JPA에서 convertor를 사용해서 엔티티의 데이터를 변환해서 DB에 저장하고 저장한 데이터를 조회할 때도 convertor를 통해서 변환해서 값을 가져올 수 있다.
 
-아래 예를 보면 MediaInfoLive 엔티티의 movieRatioTp 필드에 @Convert 어노테이션을 적용해서 DB에 저장되기 직전에 LiveMovieRatioConvertor 클래스가 동작하도록 선언하였습니다. 필드뿐만이 아니라 클래스나 글로벌하게도 적용 가능합니다.
+아래 예를 보면 MediaInfoLive 엔티티의 movieRatioTp 필드에 @Convert 어노테이션을 적용해서 DB에 저장되기 직전에 LiveMovieRatioConvertor 클래스가 동작하도록 선언하였다. 필드뿐만이 아니라 클래스나 글로벌하게도 적용 가능한다.
 
 ![](image_4.png)
 
@@ -81,7 +81,7 @@ JPA에서 convertor를 사용해서 엔티티의 데이터를 변환해서 DB에
 
 ## <span style="color:brown">7. findOne이 호출이 안될 때가 있는 것 같은데 왜 그런가?</span>
 
-스프링부트 1.5.x에서 2.0.x로 넘어가면서 JPA의 `findOne()` 호출은 `findById()`나 `getOne()` 메서드를 사용해서 호출해야 합니다.
+스프링부트 1.5.x에서 2.0.x로 넘어가면서 JPA의 `findOne()` 호출은 `findById()`나 `getOne()` 메서드를 사용해서 호출해야 한다.
 
 참고
 

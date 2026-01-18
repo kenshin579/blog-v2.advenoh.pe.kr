@@ -21,7 +21,7 @@ series: "Spring JPA"
 
 # 1. 들어가며
 
-이번 포스팅에서는 일대일 (1:1) 매핑에 대해서 알아보겠습니다.
+이번 포스팅에서는 일대일 (1:1) 매핑에 대해서 알아보자.
 
 
 # 2. 개발 환경
@@ -41,11 +41,11 @@ series: "Spring JPA"
 
 # 3. 일대일 (1:1) 연관관계
 
-일대일 관계에서는 반대도 일대일 관계가 됩니다. 다대일 관계에서는 다(N)쪽이 항상 외래 키를 가지고 있지만, 일대일 관계에서는 주 테이블이나 대상 테이블에 외래 키를 둘 수 있어서 개발 시 어느 쪽에 둘지를 선택해야 합니다.
+일대일 관계에서는 반대도 일대일 관계가 된다. 다대일 관계에서는 다(N)쪽이 항상 외래 키를 가지고 있지만, 일대일 관계에서는 주 테이블이나 대상 테이블에 외래 키를 둘 수 있어서 개발 시 어느 쪽에 둘지를 선택해야 한다.
 
 ## 3.1 주 테이블에 외래 키가 있는 경우
 
-주 테이블에 외래 키가 있으면 주 객체에도 객체 참조를 두는 구조로 매핑을 하게 됩니다.
+주 테이블에 외래 키가 있으면 주 객체에도 객체 참조를 두는 구조로 매핑을 하게 된다.
 
 - 주 테이블 : `User`
     - 외래 키(phone_id)가 있는 경우
@@ -55,7 +55,7 @@ series: "Spring JPA"
 
 ### 3.1.1 일대일 단방향
 
-일대일 단방향으로 설정해보겠습니다. 주 객체인 `User` 엔티티에 @OneToOne 선언 이후 대상 테이블인 `CellularPhone` 객체를 선언합니다. `User` 객체를 통해서 사용자의 핸드폰 정보를 조회할 수 있는 구조입니다.
+일대일 단방향으로 설정해보자. 주 객체인 `User` 엔티티에 @OneToOne 선언 이후 대상 테이블인 `CellularPhone` 객체를 선언한다. `User` 객체를 통해서 사용자의 핸드폰 정보를 조회할 수 있는 구조이다.
 
 <img src="image_2.png" style="zoom:50%;" />
 
@@ -94,7 +94,7 @@ public class CellularPhone extends DateAudit {
 }
 ```
 
-`User`와 `CellularPhone` 객체를 저장하고 조회해보겠습니다.
+`User`와 `CellularPhone` 객체를 저장하고 조회해보자.
 
 ```java
 @Test
@@ -126,11 +126,11 @@ public void save_user_phone() {
 
 ### 3.1.2 일대일 양반향
 
-이제 양반향으로 설정해볼까요? `CellularPhone` 객체에도 `User` 객체를 가지도록 합니다.
+이제 양반향으로 설정해볼까요? `CellularPhone` 객체에도 `User` 객체를 가지도록 한다.
 
 <img src="image_4.png" style="zoom:50%;" />
 
-`CellularPhone` 엔티티에 추가로 @OneToOne 어노테이션을 선언합니다. 그리고 양방향이므로 `mappedBy` 속성으로 연관 관계의 주인을 지정해줍니다. `user` 테이블에 외래 키를 가지고 있음으로 `User`의 `cellularPhone`을 연관관계 주인으로 설정합니다.
+`CellularPhone` 엔티티에 추가로 @OneToOne 어노테이션을 선언한다. 그리고 양방향이므로 `mappedBy` 속성으로 연관 관계의 주인을 지정해줍니다. `user` 테이블에 외래 키를 가지고 있음으로 `User`의 `cellularPhone`을 연관관계 주인으로 설정한다.
 
 ```java
 @Table(name = "cellular_phone")
@@ -146,7 +146,7 @@ public class CellularPhone extends DateAudit {
 }
 ```
 
-Unit Test로 엔티티 저장후 조회해보겠습니다.
+Unit Test로 엔티티 저장후 조회해보자.
 
 ```java
 @Test
@@ -180,13 +180,13 @@ public void save_user_phone() {
 
 > **주의사항**
 >
-> 일대일 관계에서 지연 로딩으로 설정을 해도 즉시 로딩이 되는 경우가 있습니다. 예를 들면,
+> 일대일 관계에서 지연 로딩으로 설정을 해도 즉시 로딩이 되는 경우가 있다. 예를 들면,
 >
 > - `User.cellularPhone` : 지연 로딩이 된다
 > - `CellularPhone.user` : 지연 로딩이 안된다
     >   - 프록시의 한계로 인해서 외래 키를 직접 관리하지 않는 일대일 관계에서는 지연 로딩으로 설정을 해도 즉시 로딩이 된다
 >
-> 참고로 @OneToOne 어노테이션의 기본 fetch 타입은 즉시 로딩(EAGER)입니다.
+> 참고로 @OneToOne 어노테이션의 기본 fetch 타입은 즉시 로딩(EAGER)이다.
 >
 > ```java
 > @Test
@@ -207,7 +207,7 @@ public void save_user_phone() {
 
 ## 3.2 대상 테이블에 외래 키가 있는 경우
 
-외래 키가 주 테이블이 아니라 대상 테이블에 존재하는 경우에는 어떻게 달라지는 알아보겠습니다.
+외래 키가 주 테이블이 아니라 대상 테이블에 존재하는 경우에는 어떻게 달라지는 알아보자.
 
 - 주 테이블 : `User`
 - 대상 테이블 : `CellularPhone`
@@ -217,7 +217,7 @@ public void save_user_phone() {
 
 ### 3.2.1 일대일 단방향
 
-외래 키는 `cellular_phone` 테이블에 있고 아래와 같은 일대일 연관관계는 JPA에서 지원하지 않아 매핑할 수 없습니다.
+외래 키는 `cellular_phone` 테이블에 있고 아래와 같은 일대일 연관관계는 JPA에서 지원하지 않아 매핑할 수 없다.
 
 <img src="image_2.png" style="zoom:50%;" />
 
@@ -227,7 +227,7 @@ public void save_user_phone() {
 
 
 
-대상 테이블인 `celluar_phone`에 외래 키를 두고 싶으면 아래와 같이 설정하면 됩니다. `CellularPhone` 엔티티에 @OneToOne 어노테이션으로 설정하고 `User` 엔티티에서는 @OneToOne 어노테이션과 `mappedBy` 속성으로 외래 키를 소유하고 있는 `CellularPhone`의 `user`를 연관관계 주인으로 지정합니다.
+대상 테이블인 `celluar_phone`에 외래 키를 두고 싶으면 아래와 같이 설정하면 된다. `CellularPhone` 엔티티에 @OneToOne 어노테이션으로 설정하고 `User` 엔티티에서는 @OneToOne 어노테이션과 `mappedBy` 속성으로 외래 키를 소유하고 있는 `CellularPhone`의 `user`를 연관관계 주인으로 지정한다.
 
 ```java
 @Table(name = "cellular_phone")

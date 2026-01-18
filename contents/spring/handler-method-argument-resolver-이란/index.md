@@ -209,7 +209,7 @@ private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parame
 
 `HandlerMethodArgumentResolver`는 컨트롤러 메서드에서 인자 값에 대한 처리를 위해 사용된다. 이미 스프링에서 공통기능으로 많이 제공하고 있지만, 사용자용 메서드도 쉽게 작성하여 중복 로직을 많이 줄일 수 있어 용의하게 사용된다.
 
-관련 소스는 [github](https://github.com/kenshin579/tutorials-java/tree/master/springboot-handler-method-argument-resolver)에 올려두어서 참고하시면 됩니다.
+관련 소스는 [github](https://github.com/kenshin579/tutorials-java/tree/master/springboot-handler-method-argument-resolver)에 올려두어서 참고하시면 된다.
 
 # 5. 참고
 

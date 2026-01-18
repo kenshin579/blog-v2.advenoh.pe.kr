@@ -14,9 +14,9 @@ tags:
 
 # 1. 가비지 컬랙션이란?
 
-C/C++ 언어와 달리 자바는 개발자가 명시적으로 객체를 해제할 필요가 없습니다. 자바 언어의 큰 장점이기도 합니다. 사용하지 않는 객체는 메모리에서 삭제하는 작업을 Gargabe Collection(GC)라고 부르며 JVM에서 GC를 수행합니다. 기본적으로 JVM의 메모리는 총 5가지 영역(ex. 클래스, 스택, 힙, 네이티브 메서드, PC)으로 나뉘는데, GC는 힙 메모리만 다룹니다.
+C/C++ 언어와 달리 자바는 개발자가 명시적으로 객체를 해제할 필요가 없다. 자바 언어의 큰 장점이기도 한다. 사용하지 않는 객체는 메모리에서 삭제하는 작업을 Gargabe Collection(GC)라고 부르며 JVM에서 GC를 수행한다. 기본적으로 JVM의 메모리는 총 5가지 영역(ex. 클래스, 스택, 힙, 네이티브 메서드, PC)으로 나뉘는데, GC는 힙 메모리만 다룹니다.
 
-코드상에서 어떨 때 객체가 가비지 대상이 될까요? 간단하게 생각해보면 프로그램이 실행되면서 코드상에서 참조되지 않는 객체들이 대상이 될 것입니다. 일반적으로 아래 같은 경우에 가비지대상이 됩니다.
+코드상에서 어떨 때 객체가 가비지 대상이 될까요? 간단하게 생각해보면 프로그램이 실행되면서 코드상에서 참조되지 않는 객체들이 대상이 될 것이다. 일반적으로 아래 같은 경우에 가비지대상이 된다.
 
 - 객체가 null인 경우 (ex. String str = null)
 - 블럭 안에서 생성된 객체는 블럭 실행 종료후 대상이 된다
@@ -47,24 +47,24 @@ Heap 영역은 크게 2가지 영역으로 나뉩니다. Permanent Generation �
 
 [https://www.journaldev.com/2856/java-jvm-memory-model-memory-management-in-java](https://www.journaldev.com/2856/java-jvm-memory-model-memory-management-in-java)
 
-일반적으로 객체를 생성하면, Young 영역에 먼저 위치하게 되고 오랫동안 사용되는 객체는 GC 과정을 통해서 Old 영역으로 이동하게 됩니다.
+일반적으로 객체를 생성하면, Young 영역에 먼저 위치하게 되고 오랫동안 사용되는 객체는 GC 과정을 통해서 Old 영역으로 이동하게 된다.
 
 ![](image_1.png)
 
 [https://www.oracle.com/technetwork/java/javase/memorymanagement-whitepaper-150215.pdf](https://www.oracle.com/technetwork/java/javase/memorymanagement-whitepaper-150215.pdf)
 
-Heap 영역을 왜 두 가지 영역으로 나뉘서 관리하게 되었을까요? 여러 연구를 진행한 결과 애플리케이션에서 객체가 생성되고 살아지는 패턴은 크게 2가지 특징을 가지게 된다고 합니다.
+Heap 영역을 왜 두 가지 영역으로 나뉘서 관리하게 되었을까요? 여러 연구를 진행한 결과 애플리케이션에서 객체가 생성되고 살아지는 패턴은 크게 2가지 특징을 가지게 된다고 한다.
 
 - 대부분의 생성된 객체는 금방 사용하지 않는다
 - 객체들은 대개 (아주) 오랜 시간 동안 남아 있지 않는 것들이다 (객체 짧게 사용됨)
 
-아래 그래프에서 보이는 것처럼 객체의 라이프는 짧게 사용되다가 오랫동안 남은 것들은 계속 쌓이게 되는 것을 볼 수 있습니다. 이런 특징으로 두 영역으로 나뉘어서 관리하고 GC 알고리즘도 이 기반으로 설계되었습니다.
+아래 그래프에서 보이는 것처럼 객체의 라이프는 짧게 사용되다가 오랫동안 남은 것들은 계속 쌓이게 되는 것을 볼 수 있다. 이런 특징으로 두 영역으로 나뉘어서 관리하고 GC 알고리즘도 이 기반으로 설계되었다.
 
 ![](image_10.png)
 
 # 2. Garbage Collection 타입
 
-각 영역에 따라서 실행되는 GC는 다릅니다. Minor나 Major GC가 실패하게 되면 Full GC가 발생할 수도 있습니다.
+각 영역에 따라서 실행되는 GC는 다릅니다. Minor나 Major GC가 실패하게 되면 Full GC가 발생할 수도 있다.
 
 - Minor GC
     - 대상 : Young 영역
@@ -78,7 +78,7 @@ Heap 영역을 왜 두 가지 영역으로 나뉘서 관리하게 되었을까�
 
 # 3. Garbage Collection 알고리즘
 
-GC 알고리즘은 오랫동안 개선됐고 아래와 같이 여러 종류로 발전해 왔습니다. 최근 자바에서 기본적으로 사용되는 GC 알고리즘은 G1 GC를 사용합니다. 각각의 알고리즘이 어떻게 동작하는지 알아보겠습니다.
+GC 알고리즘은 오랫동안 개선됐고 아래와 같이 여러 종류로 발전해 왔다. 최근 자바에서 기본적으로 사용되는 GC 알고리즘은 G1 GC를 사용한다. 각각의 알고리즘이 어떻게 동작하는지 알아보자.
 
 - Serial
 - Parallel
@@ -89,11 +89,11 @@ GC 알고리즘은 오랫동안 개선됐고 아래와 같이 여러 종류로 �
     - JDK7u4부터 도입
     - JDK9부터 기본 GC로 변경됨
 
-GC에서 자주 사용되는 용어로 stop-the-world가 있습니다. GC를 실행하면 JVM이 애플리케이션 실행을 멈추게 되는데, 이를 stop-the-world라고 합니다. GC가 일어나면 GC를 실행하는 쓰레드를 제외한 나머지 쓰레드는 모두 멈추게 됩니다. 이런 멈추는 시간에 의해 애플리케이션 성능에 많은 영향을 주게 됩니다. 여러 GC 알고리즘에서 이 부분을 개선하려고 큰 노력을 해왔습니다.
+GC에서 자주 사용되는 용어로 stop-the-world가 있다. GC를 실행하면 JVM이 애플리케이션 실행을 멈추게 되는데, 이를 stop-the-world라고 한다. GC가 일어나면 GC를 실행하는 쓰레드를 제외한 나머지 쓰레드는 모두 멈추게 된다. 이런 멈추는 시간에 의해 애플리케이션 성능에 많은 영향을 주게 된다. 여러 GC 알고리즘에서 이 부분을 개선하려고 큰 노력을 해왔다.
 
 ## 3.1 Serial (-XX:+UseSerialGC)
 
-Serial collector는 single 쓰레드로 동작하며 Young와 Old를 serial 하게 GC을 합니다. Young과 Old 영역에서 객체가 어떻게 관리되는지는 조금 더 구체적으로 알아보겠습니다.
+Serial collector는 single 쓰레드로 동작하며 Young와 Old를 serial 하게 GC을 한다. Young과 Old 영역에서 객체가 어떻게 관리되는지는 조금 더 구체적으로 알아보자.
 
 - Young 영역 (single thread)
     - mark and copy
@@ -116,7 +116,7 @@ Serial collector는 single 쓰레드로 동작하며 Young와 Old를 serial 하�
 
 ## 3.2 Parallel (-XX:+UseParallelGC)
 
-Parallel collector는 serial collector의 동작과 유사합니다. 다른 점은 GC 속도를 높이기 위해 Young 영역을 multiple 쓰레드로 GC를 수행합니다. 이로 인해 stop-the-world하는 시간이 줄려 애플리이케이션 성능을 개선하였습니다.
+Parallel collector는 serial collector의 동작과 유사한다. 다른 점은 GC 속도를 높이기 위해 Young 영역을 multiple 쓰레드로 GC를 수행한다. 이로 인해 stop-the-world하는 시간이 줄려 애플리이케이션 성능을 개선하였다.
 
 - Young 영역 (multi thread)
     - mark and copy
@@ -127,7 +127,7 @@ Parallel collector는 serial collector의 동작과 유사합니다. 다른 점�
 
 ## 3.3 Parallel Compacting Collector (- XX:+UseParallelOldGC)
 
-Parallel compacting collector는 JDK5u6부터 제공되었으면 JDK7u4부터는 XX:+UseParallelGC 사용 시에도 -XX:+UseParallelOldGC로 설정됩니다. Young과 Old 영역이 병렬로 처리됩니다. 쓰레드 개수는 -XX:ParallelGCThreads=n 옵션으로 조정 가능합니다.
+Parallel compacting collector는 JDK5u6부터 제공되었으면 JDK7u4부터는 XX:+UseParallelGC 사용 시에도 -XX:+UseParallelOldGC로 설정된다. Young과 Old 영역이 병렬로 처리된다. 쓰레드 개수는 -XX:ParallelGCThreads=n 옵션으로 조정 가능한다.
 
 - Young 영역 (multi thread)
     - mark and copy
@@ -139,7 +139,7 @@ Parallel compacting collector는 JDK5u6부터 제공되었으면 JDK7u4부터는
 
 ## 3.4 Concurrent Mark Sweep(CMS) (-XX:+UseConcMarkSweepGC)
 
-CMS collector는 heap 메모리 영역의 크기가 크고 2개 이상의 프로세서를 사용하는 서버에 적합합니다. XX:+CMSIncrementalMode 옵션은 Young 영역의 GC를 더 잘게 쪼개어 서버의 대기 시간을 줄일 수 있지만, 예기치 못한 성능 저하가 발생할 수 있습니다. CMS는 Old 영역에 대한 compact 작업을 하지 않기 때문에 memory fragmentation이 발생할 수 있습니다. CMS collector의 경우에는 추후 릴리스에서 제거되는 거로 결정이 되었습니다. ( [JEP 291](http://openjdk.java.net/jeps/291) )
+CMS collector는 heap 메모리 영역의 크기가 크고 2개 이상의 프로세서를 사용하는 서버에 적합한다. XX:+CMSIncrementalMode 옵션은 Young 영역의 GC를 더 잘게 쪼개어 서버의 대기 시간을 줄일 수 있지만, 예기치 못한 성능 저하가 발생할 수 있다. CMS는 Old 영역에 대한 compact 작업을 하지 않기 때문에 memory fragmentation이 발생할 수 있다. CMS collector의 경우에는 추후 릴리스에서 제거되는 거로 결정이 되었다. ( [JEP 291](http://openjdk.java.net/jeps/291) )
 
 - Young 영역 (multi thread)
 
@@ -156,7 +156,7 @@ CMS collector는 heap 메모리 영역의 크기가 크고 2개 이상의 프로
 
 ## 3.5 G1 (-XX:+UseG1GC : JDK9부터 기본으로 설정됨)
 
-G1 (Garbage First) collector는 메모리가 큰 multi core 머신을 타켓으로 설계되었습니다. G1 GC는 JDK7u4부터 도입 되었고 안정화 기간 거쳐 현재 JDK9에서는 기본 GC로 채택 되었습니다. G1에서는 아래 그림과 같이 heap 메모리 영역을 작은 단위의 region으로 나눠서 관리합니다. 기본 region 개수 수치는 2K(2048)개 공간으로 나눕니다. 예를 들면 Heap Size가 8GB로 지정하면, 각 region의 크기는 4MB (ex. 8192MB/2048 = 4096)가 됩니다.
+G1 (Garbage First) collector는 메모리가 큰 multi core 머신을 타켓으로 설계되었다. G1 GC는 JDK7u4부터 도입 되었고 안정화 기간 거쳐 현재 JDK9에서는 기본 GC로 채택 되었다. G1에서는 아래 그림과 같이 heap 메모리 영역을 작은 단위의 region으로 나눠서 관리한다. 기본 region 개수 수치는 2K(2048)개 공간으로 나눕니다. 예를 들면 Heap Size가 8GB로 지정하면, 각 region의 크기는 4MB (ex. 8192MB/2048 = 4096)가 된다.
 
 ![](image_15.png)
 

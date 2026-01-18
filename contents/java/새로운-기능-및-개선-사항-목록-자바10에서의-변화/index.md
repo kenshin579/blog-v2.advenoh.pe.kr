@@ -37,7 +37,7 @@ tags:
 * [https://dzone.com/articles/whats-new-in-java-10](https://dzone.com/articles/whats-new-in-java-10)
 
 # JEP 286: Local Variable Type Inference
-타임 추론이란 자바 컴파일러가 각 메서드 호출과 정의된 메서드 선언문을 보고 인자의 타입을 추론하는 기능을 말합니다. 타임 추론(type inference)은 자바5부터 지속적으로 개선해 왔었습니다.
+타임 추론이란 자바 컴파일러가 각 메서드 호출과 정의된 메서드 선언문을 보고 인자의 타입을 추론하는 기능을 말한다. 타임 추론(type inference)은 자바5부터 지속적으로 개선해 왔었다.
 
 * Java 5 : 제네릭 메서드와 타입 인지 타입추론
 * Java 7 : 다이아몬드 연산자(<>)
@@ -63,8 +63,8 @@ Predicate<String> nameValidation = (String x) -> x.length() > 0;
 ```
 
 ### **Java 10 : 지역변수 타입 추론**
-자바에서도 var를 도입하여 암시적 타이핑을 지원하게 되었습니다. var는 keyword(ex.abstract)가 아니라 reserved type name이라서 변수, 함수 이름으로도 사용할 수 있습니다.
-추가로 var의 도입으로 dynamic type을 지원하는 것은 아닙니다. compiler가 알아서 타입을 추론해서 compile 해주는 것입니다.
+자바에서도 var를 도입하여 암시적 타이핑을 지원하게 되었다. var는 keyword(ex.abstract)가 아니라 reserved type name이라서 변수, 함수 이름으로도 사용할 수 있다.
+추가로 var의 도입으로 dynamic type을 지원하는 것은 아닙니다. compiler가 알아서 타입을 추론해서 compile 해주는 것이다.
 
 **이전 자바**
 ```java
@@ -95,7 +95,7 @@ var userChannels = new HashMap<User, List<String>>();
 		}
 ```
 
-제약사항으로 타입 추론이 안되는 경우도 있습니다.
+제약사항으로 타입 추론이 안되는 경우도 있다.
 
 * nulll로 assign하는 경우
 
@@ -129,7 +129,7 @@ var userChannels = new HashMap<User, List<String>>();
 	  var p = (String str) -> str.length() > 1;
 	  ```
 
-var를 사용할때는 주의가 필요합니다. var를 사용하면 어떤 타입인지를 알수 없게 되어 가속성이 떨어지게 됩니다.
+var를 사용할때는 주의가 필요한다. var를 사용하면 어떤 타입인지를 알수 없게 되어 가속성이 떨어지게 된다.
 
 ```java
 //ORIGINAL
@@ -142,7 +142,7 @@ var customer = dbconn.executeQuery(query);
 var custList = dbconn.executeQuery(query);
 ```
 
-변수이름에 타입을 추가하여 이름을 사용하여 가독성을 높여주는게 좋습니다.
+변수이름에 타입을 추가하여 이름을 사용하여 가독성을 높여주는게 좋다.
 더 자세한 사항은 java.net에서 제공한 가이드라인( [Style Guidlines for Local Variable Type Inference in Java](http://openjdk.java.net/projects/amber/LVTIstyle.html) )을 참조해주세요.
 
 # 참고

@@ -16,7 +16,7 @@ tags:
 
 # 1. 들어가며
 
-JUnit Rules은 테스트 케이스를 실행하기 전후에 추가 코드를 실행할 수 있도록 도와줍니다. @Before와 @After로 선언된 메서드에서도 실행 전후처리로 코드를 넣을 수 있지만, JUnitRules로 작성하면 재사용하거나 더 확장 가능한 기능으로 개발할 수 있는 장점이 있습니다. JUnit에서 기본적으로 제공하는 Rules은 다음과 같습니다.
+JUnit Rules은 테스트 케이스를 실행하기 전후에 추가 코드를 실행할 수 있도록 도와줍니다. @Before와 @After로 선언된 메서드에서도 실행 전후처리로 코드를 넣을 수 있지만, JUnitRules로 작성하면 재사용하거나 더 확장 가능한 기능으로 개발할 수 있는 장점이 있다. JUnit에서 기본적으로 제공하는 Rules은 다음과 같다.
 
 | Rules             | 설명                                                         |
 | ----------------- | ------------------------------------------------------------ |
@@ -30,7 +30,7 @@ JUnit Rules은 테스트 케이스를 실행하기 전후에 추가 코드를 �
 | ClassRule         | 테스트 클래스 슈트 전체에 적용할 수 있는 Rule이다            |
 | Timeout           | 테스트 클래스 전체 테스트에 timeout을 설정한다               |
 
-기본으로 제공하는 Rule 외에 직접 나만의 Rule은 어떻게 생성하는지도 같이 알아보겠습니다.
+기본으로 제공하는 Rule 외에 직접 나만의 Rule은 어떻게 생성하는지도 같이 알아보자.
 
 # 2. 개발 환경
 
@@ -40,11 +40,11 @@ JUnit Rules은 테스트 케이스를 실행하기 전후에 추가 코드를 �
 - Source code : [github](https://github.com/kenshin579/tutorials-java/tree/master/junit-rule)
 - Software management tool : Maven
 
-포스팅을 위해 여러 예제를 작성하였지만, 다양한 사용법을 더 보고 싶으면, JUnit4소스코드에 포함된 테스트 케이스들을 보면 더 다양하게 사용되는 예제를 확인할 수 있습니다.
+포스팅을 위해 여러 예제를 작성하였지만, 다양한 사용법을 더 보고 싶으면, JUnit4소스코드에 포함된 테스트 케이스들을 보면 더 다양하게 사용되는 예제를 확인할 수 있다.
 
 ![](image_7.png)
 
-메이븐 의존성으로 pom.xml 파일에 JUnit을 추가합니다.
+메이븐 의존성으로 pom.xml 파일에 JUnit을 추가한다.
 
 ```xml
 <dependency>
@@ -59,11 +59,11 @@ JUnit Rules은 테스트 케이스를 실행하기 전후에 추가 코드를 �
 
 ## 3.1 기본으로 제공하는 Rules
 
-JUnit Rules에서 대표적으로 많이 사용되는 예제들을 보겠습니다.
+JUnit Rules에서 대표적으로 많이 사용되는 예제들을 보자.
 
 ### 3.1.1 TemporaryFolder
 
-TemporayFolder Rule은 테스트 실행 시 파일이나 폴더를 자동으로 생성하고 테스트 종료 시에도 자동으로 삭제해주는 Rule입니다. 임의 파일을 생성하게 되면 맥에서는 아래와 같은 폴더에 생성됩니다.
+TemporayFolder Rule은 테스트 실행 시 파일이나 폴더를 자동으로 생성하고 테스트 종료 시에도 자동으로 삭제해주는 Rule이다. 임의 파일을 생성하게 되면 맥에서는 아래와 같은 폴더에 생성된다.
 
 ```bash
 /var/folders/f3/z3w0kdln2sn_7z0_qq6rn4dxrgwgh2/T/junit88560316993858696/test.txt
@@ -91,7 +91,7 @@ public class TemporaryRuleTest {
 
 ### 3.1.2 ExpectedException
 
-ExpectedException Rule은 @Test(expected = RunTimeException.class) 대신 사용할 수 있고 예외 타입과 예외 메시지도 직접 확인이 가능하게 해주는 Rule입니다.
+ExpectedException Rule은 @Test(expected = RunTimeException.class) 대신 사용할 수 있고 예외 타입과 예외 메시지도 직접 확인이 가능하게 해주는 Rule이다.
 
 ```java
 public class ExpectedExceptionRuleTest {
@@ -115,7 +115,7 @@ public class ExpectedExceptionRuleTest {
 
 ### 3.1.3 Timeout
 
-Timeout Rule은 모든 테스트에 대해 같은 timeout 설정을 할 수 있게 하는 Rule입니다.
+Timeout Rule은 모든 테스트에 대해 같은 timeout 설정을 할 수 있게 하는 Rule이다.
 
 ```java
 public class TimeoutRuleTest {
@@ -147,9 +147,9 @@ Timeout 설정을 2초로 해서 2초이상 실행되면 TimeOutException을 발
 
 ### 3.1.4 ErrorCollector
 
-ErrorCollector Rule은 assertion이 실패하더라도 테스트를 계속 실행하여 전체 오류를 수집하는 기능입니다. 테스트 실행 시 발생하는 장애(ex. 네트워크)가 있더라도 테스트를 계속 진행하고 싶을 때 이 Rule을 사용하면 좋습니다.
+ErrorCollector Rule은 assertion이 실패하더라도 테스트를 계속 실행하여 전체 오류를 수집하는 기능이다. 테스트 실행 시 발생하는 장애(ex. 네트워크)가 있더라도 테스트를 계속 진행하고 싶을 때 이 Rule을 사용하면 좋다.
 
-ErrorCollector 사용시 아래 2가지 메서드를 사용하면 됩니다.
+ErrorCollector 사용시 아래 2가지 메서드를 사용하면 된다.
 
 - addError() : 예외가 발생했을 때 해당 예외와 메시지를 같이 출력하도록 오류를 추가해준다
 - checkThat() : 기대 값과 실제 값이 같은지 체크하고 값이 다르더라도 테스트는 계속 진행한다
@@ -180,13 +180,13 @@ public class ErrorCollectorRuleTest {
 
 **테스트 결과**
 
-기대 값과 실제 값이 다르면 addError()로 추가된 메시지를 출력만 하고 일단 테스트를 계속 실행합니다. 테스트 실행이후에 각 실패에 대한 결과를 출력합니다.
+기대 값과 실제 값이 다르면 addError()로 추가된 메시지를 출력만 하고 일단 테스트를 계속 실행한다. 테스트 실행이후에 각 실패에 대한 결과를 출력한다.
 
 ![](image_6.png)
 
 ### 3.1.5 Verifier
 
-Verifier Rule은 테스트 실행할 때마다 실행되며 사용자 정의 검증 로직을 추가로 넣어 특정 조건을 만족하는지 검증하는 데 사용됩니다.
+Verifier Rule은 테스트 실행할 때마다 실행되며 사용자 정의 검증 로직을 추가로 넣어 특정 조건을 만족하는지 검증하는 데 사용된다.
 
 ```java
 public class VerifierRuleTest {
@@ -226,7 +226,7 @@ public class VerifierRuleTest {
 
 **테스트 결과**
 
-모든 테스트 실행 시 추가로 사람의 나이가 25 이상 인지를 검증합니다. 두 번째 테스트 personTest2에서 나이가 30이라서 실패로 떨어졌습니다.
+모든 테스트 실행 시 추가로 사람의 나이가 25 이상 인지를 검증한다. 두 번째 테스트 personTest2에서 나이가 30이라서 실패로 떨어졌다.
 
 ![](image_1.png)
 
@@ -240,22 +240,22 @@ public class TestNameRuleTest {
    public TestName name = new TestName();
 
    @Test
-   public void 테스트1_이름입니다() {
-      assertEquals("테스트1_이름입니다", name.getMethodName());
+   public void 테스트1_이름이다() {
+      assertEquals("테스트1_이름이다", name.getMethodName());
    }
 
    @Test
-   public void 테스트2_이름입니다() {
-      assertEquals("테스트2_이름입니다", name.getMethodName());
+   public void 테스트2_이름이다() {
+      assertEquals("테스트2_이름이다", name.getMethodName());
    }
 }
 ```
 
 ## 3.1.7 RuleChain
 
-RuleChain Rule은 테스트 실행 시 여러 Rule을 순차적으로 실행하도록 도와주는 Rule입니다.
+RuleChain Rule은 테스트 실행 시 여러 Rule을 순차적으로 실행하도록 도와주는 Rule이다.
 
-예제에서는 사용자 정의로 생성한 LoggingRule을 체인형식으로 적용하였습니다. LoggingRule은 각 테스트 전후로 시작… 끝…. 로그 메시지를 출력하는 Rule로 이해하시면 되고 더 자세한 내용은 #3.2에서 다루도록 하겠습니다.
+예제에서는 사용자 정의로 생성한 LoggingRule을 체인형식으로 적용하였다. LoggingRule은 각 테스트 전후로 시작… 끝…. 로그 메시지를 출력하는 Rule로 이해하시면 되고 더 자세한 내용은 #3.2에서 다루도록 하자.
 
 ```java
 public class RuleChainTest {
@@ -277,7 +277,7 @@ public class RuleChainTest {
 
 ### 3.1.8 ExternalResource
 
-ExternalResource Rule은 테스트 전에 외부 리소스(ex. 파일, 네트워크 소켓, 서버, 데이터베이스 연결 등)에 접근할 수 있도록 자원에 연결해주고 테스트 종료 후에도 연결을 자동으로 끊어주는 Rule입니다.
+ExternalResource Rule은 테스트 전에 외부 리소스(ex. 파일, 네트워크 소켓, 서버, 데이터베이스 연결 등)에 접근할 수 있도록 자원에 연결해주고 테스트 종료 후에도 연결을 자동으로 끊어주는 Rule이다.
 
 ```java
 @Slf4j
@@ -315,7 +315,7 @@ public class Server {
 
 **테스트 결과**
 
-테스트 실행 전후로 서버에 연결하고 종료 후에는 연결을 끊고 있습니다.
+테스트 실행 전후로 서버에 연결하고 종료 후에는 연결을 끊고 있다.
 
 ![](image_5.png)
 
@@ -353,7 +353,7 @@ public class TestFirstServer {
 
 **테스트 결과**
 
-여러 테스트 클래스가 시작하기 전에 서버 연결을 먼저하고 모든 테스트가 끝나고 나서 서버 연결을 끊는 것을 확인할 수 있습니다.
+여러 테스트 클래스가 시작하기 전에 서버 연결을 먼저하고 모든 테스트가 끝나고 나서 서버 연결을 끊는 것을 확인할 수 있다.
 
 ![](image_8.png)
 
@@ -415,17 +415,17 @@ public class TestWatcherRuleTest {
 }
 ```
 
-@FixMethodOrder는 테스트 실행 순서를 결정해주는 어노테이션으로 이 예제에서는 NAME_ASCENDING으로설정되어 메서드 이름의 순서대로 실행됩니다. TestWatcher에 정의된 starting(), finished(), succeeded(), failed() 메서드을 오버라이트하면 메서드 이름에 맞게 테스트 시작, 끝, 성공, 실패에 따라서 메서드들이 호출됩니다. 이 예제에서는 매번 실행할 때마다 watchedLog 스트링값에 로그형식으로 저장하여 화면에 출력합니다.
+@FixMethodOrder는 테스트 실행 순서를 결정해주는 어노테이션으로 이 예제에서는 NAME_ASCENDING으로설정되어 메서드 이름의 순서대로 실행된다. TestWatcher에 정의된 starting(), finished(), succeeded(), failed() 메서드을 오버라이트하면 메서드 이름에 맞게 테스트 시작, 끝, 성공, 실패에 따라서 메서드들이 호출된다. 이 예제에서는 매번 실행할 때마다 watchedLog 스트링값에 로그형식으로 저장하여 화면에 출력한다.
 
 **테스트 결과**
 
-메서드 이름의 순서대로 테스트가 실행되며 하나씩 실행할 때마다 로그가 쌓이고 있습니다.
+메서드 이름의 순서대로 테스트가 실행되며 하나씩 실행할 때마다 로그가 쌓이고 있다.
 
 ![](image_3.png)
 
 ## 3.2 Custom Rules
 
-지금까지 JUnit에서 기본으로 제공하는 Rules을 알아보았습니다. 직접 Rule을 어떻게 생성하는지는 지금까지 소개해 드렸던 코드를 보면 더 이해가 쉽습니다. 예로. TemporaryFolder Rule을 살펴보도록 하겠습니다.
+지금까지 JUnit에서 기본으로 제공하는 Rules을 알아보았다. 직접 Rule을 어떻게 생성하는지는 지금까지 소개해 드렸던 코드를 보면 더 이해가 쉽다. 예로. TemporaryFolder Rule을 살펴보도록 하자.
 
 ```java
 public class TemporaryFolder extends ExternalResource {
@@ -452,7 +452,7 @@ public class TemporaryFolder extends ExternalResource {
 }
 ```
 
-TemporaryFolder 클래스는 ExternalResource 클래스를 상속받아 before()와 after() 메서드를 구현하였습니다. 테스트 실행 전에 before() 메서드가 실행되며 create() 메서드를 호출합니다.
+TemporaryFolder 클래스는 ExternalResource 클래스를 상속받아 before()와 after() 메서드를 구현하였다. 테스트 실행 전에 before() 메서드가 실행되며 create() 메서드를 호출한다.
 
 ```java
 public void create() throws IOException {
@@ -467,7 +467,7 @@ private File createTemporaryFolderIn(File parentFolder) throws IOException {
 }
 ```
 
-createTemporaryFolderIn() 메서드에서 알 수 있듯이 임의의 폴더를 만들어 File 클래스를 반환합니다. 테스트 이후에는 after() 메서드가 실행되며 create()에서 생성한 폴더를 삭제합니다.
+createTemporaryFolderIn() 메서드에서 알 수 있듯이 임의의 폴더를 만들어 File 클래스를 반환한다. 테스트 이후에는 after() 메서드가 실행되며 create()에서 생성한 폴더를 삭제한다.
 
 ```java
 public abstract class ExternalResource implements TestRule {
@@ -497,9 +497,9 @@ public abstract class ExternalResource implements TestRule {
 
 ```
 
-ExternalResource 클래스는 앞 써 봤던 before()와 after() 메서드를 가지고 기본적인 전후처리 알고리즘을 담고 있습니다. apply() 메서드가 호출되며 전후처리 로직이 실행되는 구조입니다. 실제로 apply() 메서드가 언제 호출되는지는 JUnit4소스 코드로 확인해보시면 좋을 듯합니다.
+ExternalResource 클래스는 앞 써 봤던 before()와 after() 메서드를 가지고 기본적인 전후처리 알고리즘을 담고 있다. apply() 메서드가 호출되며 전후처리 로직이 실행되는 구조이다. 실제로 apply() 메서드가 언제 호출되는지는 JUnit4소스 코드로 확인해보시면 좋을 듯한다.
 
-TemporaryFolder 클래스와 거의 유사한 코드이기는 하지만, 테스트 실행 전후로 ‘시작, 끝’을 출력하는 Rule을 만들어보겠습니다.
+TemporaryFolder 클래스와 거의 유사한 코드이기는 하지만, 테스트 실행 전후로 ‘시작, 끝’을 출력하는 Rule을 만들어보자.
 
 ```java
 public class LoggingRule implements TestRule {
@@ -524,7 +524,7 @@ public class LoggingRule implements TestRule {
 }
 ```
 
-base.evaluate()은 테스트가 실행되는 시점이고 전후로 생성자로 넘겨준 name과 같이 로그를 출력하는 코드를 추가하였습니다.
+base.evaluate()은 테스트가 실행되는 시점이고 전후로 생성자로 넘겨준 name과 같이 로그를 출력하는 코드를 추가하였다.
 
 ```java
 public class CustomRuleTest {
@@ -545,7 +545,7 @@ public class CustomRuleTest {
 
 # 4. 결론
 
-JUnit에 Rule이라는 여러 기능을 있는지는 이번 스터디 기회를 통해서 알게 되었습니다. 프로젝트를 하면서 테스트 코드를 많이 작성하는 편인데, JUnit Rule을 통해서 더 유용하게 적용할 수 있는 부분들이 있을 듯합니다. 이만 오늘 포스팅을 마무리하겠습니다.
+JUnit에 Rule이라는 여러 기능을 있는지는 이번 스터디 기회를 통해서 알게 되었다. 프로젝트를 하면서 테스트 코드를 많이 작성하는 편인데, JUnit Rule을 통해서 더 유용하게 적용할 수 있는 부분들이 있을 듯한다. 이만 오늘 포스팅을 마무리하자.
 
 # 5. 참고
 

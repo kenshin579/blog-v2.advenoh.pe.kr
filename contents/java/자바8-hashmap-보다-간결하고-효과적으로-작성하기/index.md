@@ -18,7 +18,7 @@ tags:
   - putIfAbsent
 ---
 
-자바8부터 `HashMap`에 여러 메서드들이 추가되었고 이런 메서드를 사용해서 `HashMap`을 조금 더 간결하면서 효율적으로 사용하는 방법에 대해서 알아보겠습니다.
+자바8부터 `HashMap`에 여러 메서드들이 추가되었고 이런 메서드를 사용해서 `HashMap`을 조금 더 간결하면서 효율적으로 사용하는 방법에 대해서 알아보자.
 
 - `putIfAbsent()`
 - `computeIfAbsent()`
@@ -31,11 +31,11 @@ tags:
 
 # 1. putIfAbsent() vs. computeIfAbsent()
 
-2가지 메서드의 공통점은 key의 존재 여부에 따라서 새로운 key와 value 값을 추가하는 메서드입니다.
+2가지 메서드의 공통점은 key의 존재 여부에 따라서 새로운 key와 value 값을 추가하는 메서드이다.
 
 ### putIfAbsent
 
-putIfAbsent는 2개의 인자를 받습니다.
+putIfAbsent는 2개의 인자를 받는다.
 
 ```java
 default V putIfAbsent(K key, V value) 
@@ -66,7 +66,7 @@ public void putIfAbsent() {
 
 ### computeIfAbsent
 
-`computeIfAbsent` 2개의 인자를 받습니다.
+`computeIfAbsent` 2개의 인자를 받는다.
 
 ```java
 default V computeIfAbsent(K key, Function<? super K, ? extends V> mappingFunction)
@@ -104,11 +104,11 @@ public void computeIfAbsent() {
 
 # 2. compute() vs. computeIfPresent() vs merge()
 
-3개의 메서드들은 모두 Map의 value 값을 업데이트할 때 사용됩니다.
+3개의 메서드들은 모두 Map의 value 값을 업데이트할 때 사용된다.
 
 ### compute
 
-`compute는` key와 `remappingFunction을` 인자로 받고 key가 존재해야, value값을 인자로 넘겨준 `remappingFunction` 람다 함수의 결과로 업데이트가 됩니다. key 값이 존재하지 않는 경우에는 `NullPointerException이` 발생합니다.
+`compute는` key와 `remappingFunction을` 인자로 받고 key가 존재해야, value값을 인자로 넘겨준 `remappingFunction` 람다 함수의 결과로 업데이트가 된다. key 값이 존재하지 않는 경우에는 `NullPointerException이` 발생한다.
 
 ```java
 default V compute(K key,
@@ -209,7 +209,7 @@ public void merge() {
 
 # 3. getOrDefault()
 
-`getOrDefault` 가 반환하는 값은 아래와 같습니다.
+`getOrDefault` 가 반환하는 값은 아래와 같다.
 
 ```java
 default V getOrDefault(Object key, V defaultValue)

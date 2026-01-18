@@ -67,9 +67,9 @@ commit: 210b148df93a80eb872ecbeb7e35281b3c582c61
 > minikube start
 😄  Darwin 15.3.2 (arm64) 의 minikube v1.34.0
     ▪ KUBECONFIG=/Users/user/.kube/config
-🎉  minikube 1.35.0 이 사용가능합니다! 다음 경로에서 다운받으세요: https://github.com/kubernetes/minikube/releases/tag/v1.35.0
+🎉  minikube 1.35.0 이 사용가능한다! 다음 경로에서 다운받으세요: https://github.com/kubernetes/minikube/releases/tag/v1.35.0
 💡  해당 알림을 비활성화하려면 다음 명령어를 실행하세요. 'minikube config set WantUpdateNotification false'
-✨  자동적으로 docker 드라이버가 선택되었습니다. 다른 드라이버 목록: parallels, ssh
+✨  자동적으로 docker 드라이버가 선택되었다. 다른 드라이버 목록: parallels, ssh
 📌  Using Docker Desktop driver with root privileges
 👍  Starting "minikube" primary control-plane node in "minikube" cluster
 🚜  Pulling base image v0.0.45 ...
@@ -82,7 +82,7 @@ commit: 210b148df93a80eb872ecbeb7e35281b3c582c61
 🔎  Kubernetes 구성 요소를 확인...
     ▪ Using image gcr.io/k8s-minikube/storage-provisioner:v5
 🌟  애드온 활성화 : storage-provisioner, default-storageclass
-🏄  끝났습니다! kubectl이 "minikube" 클러스터와 "default" 네임스페이스를 기본적으로 사용하도록 구성되었습니다.
+🏄  끝났다! kubectl이 "minikube" 클러스터와 "default" 네임스페이스를 기본적으로 사용하도록 구성되었다.
 ```
 
 > 개인적으로는 `minikube`가 명령어가 길어서 shell `alias` 설정해서 사용하고 있다.
@@ -178,7 +178,7 @@ echoserver-6c45798fdc-b8kcr   1/1     Running   0          36s   10.244.0.3   mi
 😿  service echoserver/echoserver has no node port
 ❗  Services [echoserver/echoserver] have type "ClusterIP" not meant to be exposed, however for local development minikube allows you to access this !
 http://127.0.0.1:59333
-❗  darwin 에서 Docker 드라이버를 사용하고 있기 때문에, 터미널을 열어야 실행할 수 있습니다
+❗  darwin 에서 Docker 드라이버를 사용하고 있기 때문에, 터미널을 열어야 실행할 수 있다
 
 ```
 
@@ -212,9 +212,9 @@ Forwarding from [::1]:8080 -> 80
 
 	minikube addons enable metrics-server
 
-🤔  Dashboard 의 상태를 확인 중입니다 ...
+🤔  Dashboard 의 상태를 확인 중이다 ...
 🚀  프록시를 시작하는 중 ...
-🤔  Proxy 의 상태를 확인 중입니다 ...
+🤔  Proxy 의 상태를 확인 중이다 ...
 🎉  Opening http://127.0.0.1:57579/api/v1/namespaces/kubernetes-dashboard/services/http:kubernetes-dashboard:/proxy/ in your default browser...
 
 ```
@@ -235,7 +235,7 @@ Minikube `stop`으로 `minikube`를 중지시킬 수 있다.
 > minikube stop
 ✋  "minikube" 노드를 중지하는 중 ...
 🛑  "minikube"를 SSH로 전원을 끕니다 ...
-🛑  1개의 노드가 중지되었습니다.
+🛑  1개의 노드가 중지되었다.
 ```
 
 ### Minikube 삭제
@@ -247,7 +247,7 @@ Minikube `stop`으로 `minikube`를 중지시킬 수 있다.
 🔥  docker 의 "minikube" 를 삭제하는 중 ...
 🔥  Deleting container "minikube" ...
 🔥  /Users/user/.minikube/machines/minikube 제거 중 ...
-💀  "minikube" 클러스터 관련 정보가 모두 삭제되었습니다
+💀  "minikube" 클러스터 관련 정보가 모두 삭제되었다
 
 ```
 

@@ -166,7 +166,7 @@ Postman에서 변수는 여러 곳, Global, Collection, Environment 등에서 �
 
 - Initial value
     - Initial 값은 Collection, Environment, Global에서 설정된 값이다. 이 값은 Postman의 서버와 동기화되면, 해당 요소를 공유할 때 팀과 공유가 된다
-    - 초기 값은 팀원들과 공동 작업할 때 유용할 수 있습니다.
+    - 초기 값은 팀원들과 공동 작업할 때 유용할 수 있다.
 - Current value
     - Request 을 보낼 때 현재 값이 사용된다. 이 값은 로컬 값이며 Postman 서버에 동기화되지 않는다
     - 현재 값을 변경하면 원래 공유 컬렉션, 환경 또는 전역에 유지되지 않는다
@@ -186,7 +186,7 @@ Postman에서 변수는 여러 곳, Global, Collection, Environment 등에서 �
 
 ### 3.4 작성한 Flow를 다른 Flow에 사용할 수 없나?
 
-Postman Flow UI 상에서는 flow 간에 연결해서 사용할 수는 없습니다. 단, 특정 Flow를 Cloud에 배포해서 다른 Flow에서 API로 호출해서 다른 Flow를 호출할 수 있습니다.
+Postman Flow UI 상에서는 flow 간에 연결해서 사용할 수는 없다. 단, 특정 Flow를 Cloud에 배포해서 다른 Flow에서 API로 호출해서 다른 Flow를 호출할 수 있다.
 
 ### 3.5 Postman Flows는 언제 release 되었나?
 

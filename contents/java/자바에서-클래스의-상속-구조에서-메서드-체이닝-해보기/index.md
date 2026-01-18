@@ -15,7 +15,7 @@ tags:
 
 # 1. 메서드 체이닝이란
 
-메서드 체이닝이란 여러 메서드 호출을 연결해 하나의 실행문으로 표현하는 문법 형태를 말합니다. (위키피디아 참고 #4.1)
+메서드 체이닝이란 여러 메서드 호출을 연결해 하나의 실행문으로 표현하는 문법 형태를 말한다. (위키피디아 참고 #4.1)
 
 ```java
 //일반 메서드 호출
@@ -40,7 +40,7 @@ public void testMethodChaining() {
 ```
 
 
-메서드 체이닝의 매직은 간단합니다. 체이닝으로 연결하고 싶은 메서드의 반환 값으로 this를 반환하면 됩니다.
+메서드 체이닝의 매직은 간단한다. 체이닝으로 연결하고 싶은 메서드의 반환 값으로 this를 반환하면 된다.
 
 ```java
 package simple.methodChain;
@@ -67,7 +67,7 @@ public class Pet {
 
 ## 2.1 One Depth : 추상 클래스 <--> 자식 클래스
 
-한 클래스에서 메서드 체이닝을 적용하기는 쉽습니다. 하지만, 상속 관계가 있는 클래스에서는 this의 반환 값이 부모 클래스이거나 자식 클래스이기 때문에 메서드 체이닝을 할 때 캐스팅(cast)을 해줘야 하는 번거로움이 생깁니다.
+한 클래스에서 메서드 체이닝을 적용하기는 쉽다. 하지만, 상속 관계가 있는 클래스에서는 this의 반환 값이 부모 클래스이거나 자식 클래스이기 때문에 메서드 체이닝을 할 때 캐스팅(cast)을 해줘야 하는 번거로움이 생깁니다.
 
 ![](38B73F17-81AE-4A8D-B5D7-B8A3F656D592.png)
 
@@ -102,7 +102,7 @@ c1.setName("BobbyCat") //parent
         .setAwesomeLevel(10); //child
 ```
 
-위 아이디어를 실행하기 위해 제네릭과 getThis() 함수를 추가하여 해결해보죠. 부모 클래스에 getThis()를 추상화 함수로 정의하고 체이닝 함수를 원하는 메서드마다 호출하여 제네릭 타입 T를 반환하도록 합니다. 그리고 자식 클래스에서는 실제 getThis()를 구현하여 자기 자신을 반환하도록 하면 우리가 원하는 의도대로 동작할 것입니다. 실제 코드를 보고 확인해보죠. 참고로, T extends Pet의 의미는 Pet 유형(하위 클래스 포함)이면 T자리에 들어갈 수 있다는 의미입니다.
+위 아이디어를 실행하기 위해 제네릭과 getThis() 함수를 추가하여 해결해보죠. 부모 클래스에 getThis()를 추상화 함수로 정의하고 체이닝 함수를 원하는 메서드마다 호출하여 제네릭 타입 T를 반환하도록 한다. 그리고 자식 클래스에서는 실제 getThis()를 구현하여 자기 자신을 반환하도록 하면 우리가 원하는 의도대로 동작할 것이다. 실제 코드를 보고 확인해보죠. 참고로, T extends Pet의 의미는 Pet 유형(하위 클래스 포함)이면 T자리에 들어갈 수 있다는 의미이다.
 
 ```java
 public abstract class Pet<T extends Pet<T>> {
@@ -139,7 +139,7 @@ public class Cat extends Pet<Cat> {
 
 ## 2.2 Two Depth : 추상 클래스 <—> 추상 클래스 <—> 자식 클래스
 
-추상 클래스의 깊이(depth)가 2이상인 경우에도 1 depth인 클래스에 정의된 제네릭 부분과 크게 다르지 않습니다. Pet과 BombayCat 클래스는 1 depth인 경우와 유사하고 Cat 클래스의 경우에는 Cat 타입에 허용될 수 있는 제네릭을 정의하면 됩니다.
+추상 클래스의 깊이(depth)가 2이상인 경우에도 1 depth인 클래스에 정의된 제네릭 부분과 크게 다르지 않는다. Pet과 BombayCat 클래스는 1 depth인 경우와 유사하고 Cat 클래스의 경우에는 Cat 타입에 허용될 수 있는 제네릭을 정의하면 된다.
 
 ![](8B6EF924-B152-4371-9F5A-8C584AF6300E.png)
 
@@ -176,7 +176,7 @@ public interface IPet<T> {
 
 # 3. 소스 예제
 
-전체 소스 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-method-chain) 에서 찾을 수 있습니다.
+전체 소스 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-method-chain) 에서 찾을 수 있다.
 
 # 4. 참고
 

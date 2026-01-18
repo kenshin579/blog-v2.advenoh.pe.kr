@@ -87,7 +87,7 @@ tags:
 > make redis-create
 ```
 
-> 코드가 unit test로 작성이 되어 있어서 testcontainers로 redis 실행할 수 있는데, 귀찮아서 refactoring은 하지 않았습니다 ^^
+> 코드가 unit test로 작성이 되어 있어서 testcontainers로 redis 실행할 수 있는데, 귀찮아서 refactoring은 하지 않았다 ^^
 
 ### 2.3.1 asynmon UI를 실행하기
 
@@ -278,7 +278,7 @@ func Test_Periodic_Tasks(t *testing.T) {
 
 분산 환경을 고려하지 않는다면 Golang library에서도 쓸만한 스케줄러가 있지만, Production 환경에서는 분산 스케줄러를 고려를 해야 해서 그런 경우에는 asynq 사용을 추천해 본다.
 
-> 포스팅에서 작성한 코드는 [여기서](https://github.com/kenshin579/tutorials-go/tree/master/asynq) 확인할 수 있습니다.
+> 포스팅에서 작성한 코드는 [여기서](https://github.com/kenshin579/tutorials-go/tree/master/asynq) 확인할 수 있다.
 
 # 4. 참고
 

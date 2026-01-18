@@ -18,7 +18,7 @@ tags:
 
 # 1. 들어가며
 
-존재하지 않는 API를 접속하게 되면 아래와 같은 Whitelabel Error Page를 자주 접하게 됩니다. 별도 설정을 하지 않았다면 스프링부트에서는 기본적으로 Whitelabel Error Page를 보여줍니다.
+존재하지 않는 API를 접속하게 되면 아래와 같은 Whitelabel Error Page를 자주 접하게 된다. 별도 설정을 하지 않았다면 스프링부트에서는 기본적으로 Whitelabel Error Page를 보여줍니다.
 
 <img src="image-20200905170917741.png" style="zoom: 67%;" />
 
@@ -26,7 +26,7 @@ tags:
 
 ## 1.1 BasicErrorController - 기본 오류처리 컨트롤러
 
-스프링부트에서 BasicErrorController가 이런 기본적인 오류처리를 담당합니다. `application.properties`에서 `server.error.path`를 설정하지 않았다면 `/error`가 기본 오류처리 PATH 주소로 지정됩니다.
+스프링부트에서 BasicErrorController가 이런 기본적인 오류처리를 담당한다. `application.properties`에서 `server.error.path`를 설정하지 않았다면 `/error`가 기본 오류처리 PATH 주소로 지정된다.
 
 ```java
 @Controller
@@ -59,7 +59,7 @@ Response code: 404; Time: 212ms; Content length: 286 bytes
 
 ```
 
-Request 해더에 Accept 속성 값이 `text/html`인 경우에는 아래 코드가 실행되면서 오류 페이지를 뷰로 반환해주고 있습니다.
+Request 해더에 Accept 속성 값이 `text/html`인 경우에는 아래 코드가 실행되면서 오류 페이지를 뷰로 반환해주고 있다.
 
 ```java
 @RequestMapping(produces = MediaType.TEXT_HTML_VALUE)
@@ -109,7 +109,7 @@ public ResponseEntity<Map<String, Object>> error(HttpServletRequest request) {
 }
 ```
 
-> 응답 값은 `getErrorAttributes()` 메서드에서 채워주고 있습니다.
+> 응답 값은 `getErrorAttributes()` 메서드에서 채워주고 있다.
 
 ```java
 public class DefaultErrorAttributes implements ErrorAttributes, HandlerExceptionResolver, Ordered {
@@ -130,7 +130,7 @@ public class DefaultErrorAttributes implements ErrorAttributes, HandlerException
 
 # 2.1 Error 관련 Properties
 
-서버 오류 관련 설정은 아래와 같습니다.
+서버 오류 관련 설정은 아래와 같다.
 
 | 키 값               | 기본 값  | 설명     |
 | -------------------------- | -------- | -------- |
@@ -145,7 +145,7 @@ public class DefaultErrorAttributes implements ErrorAttributes, HandlerException
 
 ## 2.2 특정 응답코드에 대한 Custom Error 페이지 만들기
 
-Custom Error 페이지 만들어서 사용하는 건 간단합니다. 아래 폴더중에 한 곳에 `error/{응답코드}.<확장명>` 형식으로 파일을 생성하면, 스프링 부트에서 Http 상태 값에 다라서 해당 파일을 로딩해줍니다.
+Custom Error 페이지 만들어서 사용하는 건 간단한다. 아래 폴더중에 한 곳에 `error/{응답코드}.<확장명>` 형식으로 파일을 생성하면, 스프링 부트에서 Http 상태 값에 다라서 해당 파일을 로딩해줍니다.
 
 - 폴더
     - `/templates/error`
@@ -156,7 +156,7 @@ Custom Error 페이지 만들어서 사용하는 건 간단합니다. 아래 폴
     - `404.<확장명>`
         - Http 상태 코드가 404인 경우에 이 파일이 로딩이 된다
 
-본 포스팅에서는 Mustache를 View Template Engine으로 사용하였고 `templates/error` 폴더에 404와 5xx에 해당하는 파일을 생성했습니다.
+본 포스팅에서는 Mustache를 View Template Engine으로 사용하였고 `templates/error` 폴더에 404와 5xx에 해당하는 파일을 생성했다.
 
 ```shell
 % tree .
@@ -170,7 +170,7 @@ Custom Error 페이지 만들어서 사용하는 건 간단합니다. 아래 폴
     └── index.mustache
 ```
 
-`404.mustache` 파일을 작성합니다.
+`404.mustache` 파일을 작성한다.
 
 ```html
 <!DOCTYPE html>
@@ -190,13 +190,13 @@ Custom Error 페이지 만들어서 사용하는 건 간단합니다. 아래 폴
 </html>
 ```
 
-브라우져에서 존재하지 않는 path로 접속을 하면 404 응답 오류가 발생하여 위 view 파일이 응답으로 처리됩니다.
+브라우져에서 존재하지 않는 path로 접속을 하면 404 응답 오류가 발생하여 위 view 파일이 응답으로 처리된다.
 
 ![](image-20200907230948266.png)
 
 ## 2.3 별도 ErrorController 를 생성하기
 
-위와 같이 특정 응답 코드에 대해서 뷰 파일을 생성하는 방식은 특정 로직을 수행할 수 없는 단점이 있습니다. 이런 경우에 Custom Error Controller를 생성하여 `/error` PATH에 대한 호출은 이 컨트롤러에서 처리하도록 할 수 있습니다.
+위와 같이 특정 응답 코드에 대해서 뷰 파일을 생성하는 방식은 특정 로직을 수행할 수 없는 단점이 있다. 이런 경우에 Custom Error Controller를 생성하여 `/error` PATH에 대한 호출은 이 컨트롤러에서 처리하도록 할 수 있다.
 
 ```java
 @Slf4j
@@ -227,11 +227,11 @@ public class CustomErrorController implements ErrorController {
 
 ```
 
-`handleError()`에서는 `errors/404-custom` 뷰를 반환합니다. 404 오류가 발생하면, 별도 뷰를 보여줍니다.
+`handleError()`에서는 `errors/404-custom` 뷰를 반환한다. 404 오류가 발생하면, 별도 뷰를 보여줍니다.
 
 # 4. 마치며
 
-Whitelabel Error Page가 어떻게 로딩이 되는지 스프링부트의 내부 코드를 간단하게 살펴보았고 어떻게 오류 처리를 다르게 변경할 수 있는지도 알아보았습니다.
+Whitelabel Error Page가 어떻게 로딩이 되는지 스프링부트의 내부 코드를 간단하게 살펴보았고 어떻게 오류 처리를 다르게 변경할 수 있는지도 알아보았다.
 
 전체 소스 코드는 [github](https://github.com/kenshin579/tutorials-java/tree/master/springboot-whitelabel-error-page)를 참고해주세요.
 

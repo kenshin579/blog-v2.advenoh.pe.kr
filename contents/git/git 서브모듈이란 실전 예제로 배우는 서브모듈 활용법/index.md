@@ -157,7 +157,7 @@ Submodule path 'submodule': checked out 'd5f4a065378f733945944cca2815116c1cece8e
 
 이 가이드를 참고하여 `Git` 서브모듈을 효과적으로 활용해보세요!
 
-> 참고로 예제로 작성한 건 아래 github에서 확인할 수 있습니다
+> 참고로 예제로 작성한 건 아래 github에서 확인할 수 있다
 > - [main-repo](https://github.com/kenshin579/main-repo)
 > - [submodule-repo](https://www.notion.so/Git-1ca46a2166e380068207d9c29824569a?pvs=21)
 

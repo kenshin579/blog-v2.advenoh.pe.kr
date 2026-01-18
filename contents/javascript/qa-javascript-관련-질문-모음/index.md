@@ -11,8 +11,8 @@ tags:
   - es6
 ---
 
-개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료입니다.
-미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
+개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료이다.
+미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사한다.
 
 # Q&A 전체 목록
 
@@ -20,8 +20,8 @@ tags:
 
 ## <span style="color:brown">1. `This is a ${msg}` 이건 뭔가?
 
-ES6체 추가된 새로운 문자열 표기법으로 템플릿 리터럴(Template Literal)이라고 합니다.
-템플릿 리터럴은 \ 문자 사용없이 문자열에서 줄바꿈도 허용하고 간단하게 \${…} 문자열 인터폴레이션 표현식을 통해서 변수의 값 바로 치환되어 쉽게 사용할 수 있습니다.
+ES6체 추가된 새로운 문자열 표기법으로 템플릿 리터럴(Template Literal)이라고 한다.
+템플릿 리터럴은 \ 문자 사용없이 문자열에서 줄바꿈도 허용하고 간단하게 \${…} 문자열 인터폴레이션 표현식을 통해서 변수의 값 바로 치환되어 쉽게 사용할 수 있다.
 
 ![](/media/javascript/QA-JavaScript-관련-질문-모음/image_3.png)
 
@@ -32,7 +32,7 @@ ES6체 추가된 새로운 문자열 표기법으로 템플릿 리터럴(Templat
 
 ## <span style="color:brown">2. var와 const, let의 차이점은?
 
-const와 let의 키워드는 ES6에 도입된 키워드입니다.
+const와 let의 키워드는 ES6에 도입된 키워드이다.
 
 - var \* scope가 함수 단위로 동작한다
   ![](/media/javascript/QA-JavaScript-관련-질문-모음/image_5.png)
@@ -52,7 +52,7 @@ const와 let의 키워드는 ES6에 도입된 키워드입니다.
 
 ## <span style="color:brown">3. 람다식으로 표현된 () => ({})의 의미는 뭔가?
 
-ES6에서 람다식 문법이 추가되었습니다. () => ({}) 표현식은 function() { return { } }와 동일합니다.
+ES6에서 람다식 문법이 추가되었다. () => ({}) 표현식은 function() { return { } }와 동일한다.
 
 ![](/media/javascript/QA-JavaScript-관련-질문-모음/image_7.png)
 
@@ -64,7 +64,7 @@ ES6에서 람다식 문법이 추가되었습니다. () => ({}) 표현식은 fun
 
 ![](/media/javascript/QA-JavaScript-관련-질문-모음/7387AE5C-6B59-4AD8-8546-AA42E65E9734.png)
 
-ES6에 추가된 문법으로 Spread나 Rest Parameter로 사용할 수 있습니다.
+ES6에 추가된 문법으로 Spread나 Rest Parameter로 사용할 수 있다.
 
 - Spread operator
     - iterable가능한 배열, 객체, 스트링에 대해서 단일 요소들로 확장해준다

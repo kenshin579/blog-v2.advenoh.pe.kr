@@ -12,8 +12,8 @@ tags:
   - 자바
 ---
 
-개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료입니다.
-미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
+개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료이다.
+미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사한다.
 
 # Q&A 전체 목록
 
@@ -21,7 +21,7 @@ tags:
 ## <span style="color:orange">[답변완료]</span>
 
 ## <span style="color:brown">1. maven으로 특정 클래스의 메서드 unit test 실행은 어떻게 하나?</span>
--DTest= 옵션에 **패키지 이름.파일명#메서드이름** 형식으로 지정하면 원하는 메서드를 실행시킬 수 있습니다. 메이븐에서 -D 옵션은 system property를 지정하는 옵션입니다.
+-DTest= 옵션에 **패키지 이름.파일명#메서드이름** 형식으로 지정하면 원하는 메서드를 실행시킬 수 있다. 메이븐에서 -D 옵션은 system property를 지정하는 옵션이다.
 
 ```bash
 $ mvn -h #See 메이븐 옵션
@@ -35,7 +35,7 @@ $ mvn clean test -Dtest=com.tmoncorp.media.common.util.FileUtilTest#getFileNameB
 ```java
 $ mvn clean package
 ```
-maven 컴파일시 webxml attribute is required...이라는 오류가 발생하는 경우에 대한 해결책은 다음과 같습니다.
+maven 컴파일시 webxml attribute is required...이라는 오류가 발생하는 경우에 대한 해결책은 다음과 같다.
 
 ![](image2.png)
 

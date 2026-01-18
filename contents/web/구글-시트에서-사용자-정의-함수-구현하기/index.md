@@ -23,7 +23,7 @@ tags:
   - 편집기
 ---
 
-투자 스터디를 하면서 [주식 투자 매매일지](https://docs.google.com/spreadsheets/d/112wngK0qecpPl6R-Q-aytDQ-5PH36XC1d_wuT15H6HI/edit?usp=sharing)를 구글 시트로 작성하고 있는데 Google Apps Script를 유용하게 사용하게 되어 간단하게 정리합니다.
+투자 스터디를 하면서 [주식 투자 매매일지](https://docs.google.com/spreadsheets/d/112wngK0qecpPl6R-Q-aytDQ-5PH36XC1d_wuT15H6HI/edit?usp=sharing)를 구글 시트로 작성하고 있는데 Google Apps Script를 유용하게 사용하게 되어 간단하게 정리한다.
 
 # Google Finance 함수란?
 

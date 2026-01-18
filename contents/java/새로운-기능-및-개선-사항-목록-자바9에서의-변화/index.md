@@ -62,4 +62,4 @@ tags:
 
 - [https://docs.oracle.com/javase/9/whatsnew/toc.htm#JSNEW-GUID-C23AFD78-C777-460B-8ACE-58BE5EA681F6](https://docs.oracle.com/javase/9/whatsnew/toc.htm#JSNEW-GUID-C23AFD78-C777-460B-8ACE-58BE5EA681F6)
 
-자바9에서의 큰 변화중에 하나는 모듈 시스템의 도입입니다. 이 부분도 큰 변화이고 스터디할 부분이 많아서 정리되는 대로 포스팅할 계획입니다.
+자바9에서의 큰 변화중에 하나는 모듈 시스템의 도입이다. 이 부분도 큰 변화이고 스터디할 부분이 많아서 정리되는 대로 포스팅할 계획이다.

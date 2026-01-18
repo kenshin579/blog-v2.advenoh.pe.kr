@@ -14,8 +14,8 @@ tags:
   - legacy
 ---
 
-개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료입니다.
-미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
+개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료이다.
+미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사한다.
 
 # Q&A 전체 목록
 
@@ -35,7 +35,7 @@ tags:
 
 ## <span style="color:brown">2. IN (…)안에 list을 넘겨서 처리하는 방법은?</span>
 
-IN에 들어갈 (…) 값을 <foreach> 태그로 값을 생성할 수 있습니다.
+IN에 들어갈 (…) 값을 <foreach> 태그로 값을 생성할 수 있다.
 
 ![](image_2.png)
 
@@ -47,7 +47,7 @@ IN에 들어갈 (…) 값을 <foreach> 태그로 값을 생성할 수 있습니�
 
 ## <span style="color:brown">3. association columnPrefix 중첩으로 사용할 때 매핑아 인되는 이슈?</span>
 
-association을 중첩으로 columnPrefix로 매핑하는 경우에는 prefix가 중첩으로 append 되기 때문에 v_r_file_nm 형식으로 작성을 해야 합니다.
+association을 중첩으로 columnPrefix로 매핑하는 경우에는 prefix가 중첩으로 append 되기 때문에 v_r_file_nm 형식으로 작성을 해야 한다.
 
 **Mybatis Mapper 파일**
 

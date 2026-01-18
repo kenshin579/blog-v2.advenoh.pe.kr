@@ -157,7 +157,7 @@ Context ':8080' updated
 $ argocd app create guestbook --port-forward-namespace argocd --repo https://github.com/kenshin579/analyzing-argocd-example-apps --path guestbook --dest-server https://kubernetes.default.svc --dest-namespace argotest
 ```
 
-> Argo 테스트하기 위해 Git 저장소에 파일을 수정하고 push하기 위해서 Argo 문서에서 제공하는 argocd-example-apps repository를 fork 하였습니다.
+> Argo 테스트하기 위해 Git 저장소에 파일을 수정하고 push하기 위해서 Argo 문서에서 제공하는 argocd-example-apps repository를 fork 하였다.
 >
 > https://github.com/kenshin579/analyzing-argocd-example-apps
 >
@@ -368,7 +368,7 @@ App과 config는 용도와 생명 주기가 다르기 때문에 Git 저장소를
 
 # Note
 
-> 본 내용은 저희 Platform Engineering 팀내 CNCF 스터디를 위해 준비한 자료입니다. 저희가 하는 로봇 플랫폼 개발에 관심이 있는 분들은 아래 링크를 참고해주시고 도전적이고 열정적으로 같이 일하실 분은 많이 지원해주세요.
+> 본 내용은 저희 Platform Engineering 팀내 CNCF 스터디를 위해 준비한 자료이다. 저희가 하는 로봇 플랫폼 개발에 관심이 있는 분들은 아래 링크를 참고해주시고 도전적이고 열정적으로 같이 일하실 분은 많이 지원해주세요.
 >
 > - 네이버는 왜 제2사옥 1784를 지었을 까요?  https://www.youtube.com/watch?v=WG7JHLfClEo
 > - 네이버 랩스 - https://www.naverlabs.com/

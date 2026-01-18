@@ -37,5 +37,5 @@ tags:
 - [https://www.oracle.com/technetwork/java/javase/8-whats-new-2157071.html](https://www.oracle.com/technetwork/java/javase/8-whats-new-2157071.html)
 - [http://openjdk.java.net/projects/jdk8/features](http://openjdk.java.net/projects/jdk8/features)
 
-자바8에서는 정말로 많은 기능과 개선사항이 있었습니다. 자바8에서의 가장 큰 변화는 자바 언어에 있지 않을 까 싶습니다. 
-자바8부터 함수형 패러다임을 지원하게 되어 개발자라면 필수적으로 스터디해야 하는 부분입니다. 시간되는대로 다시 정리를 해보려고 합니다.
+자바8에서는 정말로 많은 기능과 개선사항이 있었다. 자바8에서의 가장 큰 변화는 자바 언어에 있지 않을 까 싶다. 
+자바8부터 함수형 패러다임을 지원하게 되어 개발자라면 필수적으로 스터디해야 하는 부분이다. 시간되는대로 다시 정리를 해보려고 한다.

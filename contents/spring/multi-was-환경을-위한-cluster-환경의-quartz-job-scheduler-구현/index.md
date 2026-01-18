@@ -22,11 +22,11 @@ series: "Spring Quartz"
 
 # 1. 들어가며
 
-Quartz에서는 메모리 기반의 스케줄러뿐만이 아니라 DB 기반의 스케줄러도 지원합니다. DB 기반의 스케줄러의 경우에는 스케줄러 정보를 메모리가 아닌 DB에 저장하기 때문에 다중 서버 간의 스케줄링이 가능합니다. Quartz는 master-slave 형태로 서로 간의 통신을 하지 않고 단순히 DB 업데이트 정보를 기반으로 각각의 스케줄 인스턴스가 자기가 실행해야 하는 Job을 실행합니다.
+Quartz에서는 메모리 기반의 스케줄러뿐만이 아니라 DB 기반의 스케줄러도 지원한다. DB 기반의 스케줄러의 경우에는 스케줄러 정보를 메모리가 아닌 DB에 저장하기 때문에 다중 서버 간의 스케줄링이 가능한다. Quartz는 master-slave 형태로 서로 간의 통신을 하지 않고 단순히 DB 업데이트 정보를 기반으로 각각의 스케줄 인스턴스가 자기가 실행해야 하는 Job을 실행한다.
 
 ![](quartz.jpg)
 
-Cluster 환경에서 스케줄링이 가능하기 때문에 Non-Cluster 환경에 비해 여러 가지 장점이 기본적으로 제공됩니다.
+Cluster 환경에서 스케줄링이 가능하기 때문에 Non-Cluster 환경에 비해 여러 가지 장점이 기본적으로 제공된다.
 
 - 고가용성 (High Availability)
     - 한 서버가 셧다운 되더라도 다른 서버에 의해 Job이 실행되어 다운 타임이 없다
@@ -51,7 +51,7 @@ Cluster 환경에서 스케줄링이 가능하기 때문에 Non-Cluster 환경�
 
 ## 3.1 Quartz를 위한 DB 스키마 생성
 
-DB 스키마는 Quartz의 [소스코드](https://github.com/quartz-scheduler/quartz/releases) 에 포함되어 있어서 원하는 DB 스키마를 소스코드에서 찾습니다. 저는 MySql를 사용하겠습니다.
+DB 스키마는 Quartz의 [소스코드](https://github.com/quartz-scheduler/quartz/releases) 에 포함되어 있어서 원하는 DB 스키마를 소스코드에서 찾는다. 저는 MySql를 사용하자.
 
 ![](image_26.png)
 
@@ -77,7 +77,7 @@ ENGINE=InnoDB;
 …(생략)...
 ```
 
-DB에 quartz용 database를 생성하고 schema script를 실행합니다.
+DB에 quartz용 database를 생성하고 schema script를 실행한다.
 
 ```sql
 mysql> CREATE DATABASE spring_boot_quartz_cluster
@@ -87,7 +87,7 @@ mysql> CREATE DATABASE spring_boot_quartz_cluster
 
 ## 3.2 Maven 라이브러리 추가
 
-Quartz Cluster 구성을 위해 스프링 부트에서 필요한 라이브러리를 추가합니다.
+Quartz Cluster 구성을 위해 스프링 부트에서 필요한 라이브러리를 추가한다.
 
 ```xml
 <dependency>
@@ -109,9 +109,9 @@ Quartz Cluster 구성을 위해 스프링 부트에서 필요한 라이브러리
 
 ### 3.3.1 DataSource 및 Quartz 속성값 설정하기
 
-Spring Boot에서 dataSource 설정은 간단합니다. @EnableAutoConfiguration 어노테이션(@SpringBootApplication 어노테이션에 의해 포함됨)에 의해서 application.properties 내의 spring.datasource.\* 속성은 정의하면 자동으로 인식이 됩니다.
+Spring Boot에서 dataSource 설정은 간단한다. @EnableAutoConfiguration 어노테이션(@SpringBootApplication 어노테이션에 의해 포함됨)에 의해서 application.properties 내의 spring.datasource.\* 속성은 정의하면 자동으로 인식이 된다.
 
-하지만, JavaConfig로 별도의 DataSource를 구현하여 Bean을 등록했다면 spring.datasource.\* 속성은 적용되지 않습니다.
+하지만, JavaConfig로 별도의 DataSource를 구현하여 Bean을 등록했다면 spring.datasource.\* 속성은 적용되지 않는다.
 
 ```
 ## Spring DATASOURCE (DataSourceAutoConfiguration & DataSourceProperties)
@@ -122,7 +122,7 @@ spring.datasource.username=mybatis
 spring.datasource.password=mybatis$
 ```
 
-Quartz 속성에 대한 자세한 내용은 [Quartz 공식 페이지](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/configuration/#configuration-reference) 를 참고해주세요. 개인적으로 이해 안 되었던 부분은 간단하게 추가 설명을 달았습니다.
+Quartz 속성에 대한 자세한 내용은 [Quartz 공식 페이지](http://www.quartz-scheduler.org/documentation/quartz-2.3.0/configuration/#configuration-reference) 를 참고해주세요. 개인적으로 이해 안 되었던 부분은 간단하게 추가 설명을 달았다.
 
 ```
 #Quartz
@@ -145,7 +145,7 @@ spring.quartz.scheduler-name=QuartzScheduler
 
 ### 3.3.2 Quartz에 dataSource 설정하기
 
-SchedulerFactoryBean에 dataSource를 지정하면 됩니다.
+SchedulerFactoryBean에 dataSource를 지정하면 된다.
 
 ```java
 @Autowired
@@ -161,9 +161,9 @@ public SchedulerFactoryBean schedulerFactoryBean(ApplicationContext applicationC
 }
 ```
 
-간단하죠? [Spring Boot + Quartz을 이용한 Job Scheduler 구현 (In-memory)](https://blog.advenoh.pe.kr/spring-boot-quartz%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-job-scheduler-%EA%B5%AC%ED%98%84-In-memory/) 와 비교하면 어떻게 다르게 구성 되었는지 한 눈에 쉽게 파악할 수 있습니다. 파일이나 폴더를 비교하는 프로그램 중에 개인적으로 저는 [Meld](http://meldmerge.org/) 라는 오픈소스를 잘 사용합니다.
+간단하죠? [Spring Boot + Quartz을 이용한 Job Scheduler 구현 (In-memory)](https://blog.advenoh.pe.kr/spring-boot-quartz%EC%9D%84-%EC%9D%B4%EC%9A%A9%ED%95%9C-job-scheduler-%EA%B5%AC%ED%98%84-In-memory/) 와 비교하면 어떻게 다르게 구성 되었는지 한 눈에 쉽게 파악할 수 있다. 파일이나 폴더를 비교하는 프로그램 중에 개인적으로 저는 [Meld](http://meldmerge.org/) 라는 오픈소스를 잘 사용한다.
 
-한번 설치해서 비교해보세요. 블로그보다 코드만 보고도 쉽게 파악할 수 있습니다.
+한번 설치해서 비교해보세요. 블로그보다 코드만 보고도 쉽게 파악할 수 있다.
 
 ```bash
 $ brew cask install meld
@@ -181,7 +181,7 @@ $ meld springboot-quartz-cluster/ springboot-quartz-in-memory
 $ cp -r springboot-quartz-cluster/ springboot-quartz-cluster2
 ```
 
-복사하고 나서 서버 포트를 다른 번호로 변경합니다.
+복사하고 나서 서버 포트를 다른 번호로 변경한다.
 
 ```bash
 $ cd springboot-quartz-cluster2
@@ -191,7 +191,7 @@ server.port=7070
 $ mvn spring-boot:run
 ```
 
-서버를 각각 실행하고 나서 QRTZ\_SCHEDULER_STATE 테이블에서 2개의 인스턴스가 등록되었는지 확인합니다.
+서버를 각각 실행하고 나서 QRTZ\_SCHEDULER_STATE 테이블에서 2개의 인스턴스가 등록되었는지 확인한다.
 
 ```sql
 mysql> SELECT * FROM QRTZ_SCHEDULER_STATE;
@@ -199,15 +199,15 @@ mysql> SELECT * FROM QRTZ_SCHEDULER_STATE;
 
 ![](image_42.png)
 
-Postman에서 임의로 job을 추가합니다.
+Postman에서 임의로 job을 추가한다.
 
 ![](image_45.png)
 
-GET /scheduler/jobs API로 조회해보면 잘 등록된 것을 확인할 수 있습니다.
+GET /scheduler/jobs API로 조회해보면 잘 등록된 것을 확인할 수 있다.
 
 ![](image_6.png)
 
-각 WAS에서 job이 실행되는 것도 터미널에서 볼 수 있습니다. WAS1 (quartz-cluster)를 셧다운 시켜보면 WAS2 (quartz-cluster2)가 job을 픽업해서 이상 없이 실행하는 것을 확인할 수 있습니다.
+각 WAS에서 job이 실행되는 것도 터미널에서 볼 수 있다. WAS1 (quartz-cluster)를 셧다운 시켜보면 WAS2 (quartz-cluster2)가 job을 픽업해서 이상 없이 실행하는 것을 확인할 수 있다.
 
 ![](B7C01E92-4F84-4145-911A-DF381722A831.png)
 
@@ -255,15 +255,15 @@ org.quartz.jobStore.acquireTriggersWithinLock=true
 
 ## 3.5 Job History 기능
 
-Quartz에서는 현재 실행되는 Job에 대해서만 관리하고 Job History에 대한 내용은 기록하지 않습니다. 나중에 어드민 UI 메인 페이지에 추가로 넣으면 좋을 것 같아서 이번에 작업을 같이했습니다. 이 내용은 어드민 UI 포스팅에서 다루도록 할게요.
+Quartz에서는 현재 실행되는 Job에 대해서만 관리하고 Job History에 대한 내용은 기록하지 않는다. 나중에 어드민 UI 메인 페이지에 추가로 넣으면 좋을 것 같아서 이번에 작업을 같이했다. 이 내용은 어드민 UI 포스팅에서 다루도록 할게요.
 
 # 4. 정리
 
-Quartz Cluster 구성은 DB에 대한 dataSource 속성과 Cluster 관련 설정만 해주면 어렵지 않게 구성할 수 있습니다.
+Quartz Cluster 구성은 DB에 대한 dataSource 속성과 Cluster 관련 설정만 해주면 어렵지 않게 구성할 수 있다.
 
-Quartz는 Cluster 환경으로 DB를 사용하고 DB에 접근할 때마다 lock을 걸고 정보를 업데이트합니다. Quartz 서버나 Short Jobs의 수가 많은 경우에는 lock이 더 많이 발생할 수 있어서 실행하려는 Job이 misfire 될 가능성이 커집니다. 이런 경우에는 Redis와 같은 다른 저장소를 사용하면 좋지 않을까 생각합니다.
+Quartz는 Cluster 환경으로 DB를 사용하고 DB에 접근할 때마다 lock을 걸고 정보를 업데이트한다. Quartz 서버나 Short Jobs의 수가 많은 경우에는 lock이 더 많이 발생할 수 있어서 실행하려는 Job이 misfire 될 가능성이 커집니다. 이런 경우에는 Redis와 같은 다른 저장소를 사용하면 좋지 않을까 생각한다.
 
-Quartz에서는 기본적으로 2가지 저장소만 (Memory, DB) 제공하지만, Github에 Redis나 MongoDB와 같은 저장소에 저장할 수 있도록 구현체들이 있습니다. DB 실행 시 문제가 된다면 다른 저장소로 저장해보는 것도 좋을 듯해요.
+Quartz에서는 기본적으로 2가지 저장소만 (Memory, DB) 제공하지만, Github에 Redis나 MongoDB와 같은 저장소에 저장할 수 있도록 구현체들이 있다. DB 실행 시 문제가 된다면 다른 저장소로 저장해보는 것도 좋을 듯해요.
 
 # 5. 참고
 
