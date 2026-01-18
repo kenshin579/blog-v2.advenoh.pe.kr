@@ -18,7 +18,7 @@ series: "Spring JPA"
 ---
 
 
-## 1. 들어가며
+# 1. 들어가며
 
 JPA 연관관계 매핑에 대한 내용은 [JPA 연관관계 매핑 정리](https://blog.advenoh.pe.kr/jpa-연관관계-매핑-정리/) 포스팅을 참고해주세요. 이번 포스팅에서는 JPA에서 가장 자주 사용하는 다대일(N:1)과 그 반대 방향인 일대다(1:N) 연관관계에 대해서 알아보겠습니다.
 
@@ -30,7 +30,7 @@ JPA 연관관계 매핑에 대한 내용은 [JPA 연관관계 매핑 정리](htt
 
 <img src="image1.png" style="zoom:50%;" />
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 작성한 샘플 코드는 아래 깃허브 링크를 참고해주세요.
 
@@ -42,11 +42,11 @@ JPA 연관관계 매핑에 대한 내용은 [JPA 연관관계 매핑 정리](htt
     * [양방향](https://github.com/kenshin579/tutorials-java/tree/master/springboot-jpa-many-to-one-bidirectional)
 * Software management tool : Maven
 
-## 3. 다대일 (N:1) 연관관계
+# 3. 다대일 (N:1) 연관관계
 
-### 3.1 다대일 연관관계
+## 3.1 다대일 연관관계
 
-#### 3.1.1 다대일 단방향
+### 3.1.1 다대일 단방향
 
 Post와 Comment 코드를 보면서 알아보겠습니다.
 
@@ -105,7 +105,7 @@ Comment 엔티티에만 Post 필드가 있어서 @ManyToOne 어노테이션으�
 
 JoinColumn과 ManyToOne 옵션 설정에 대한 설명은 다음과 같습니다.
 
-##### 3.1.1.1 @JoinColumn의 속성
+#### 3.1.1.1 @JoinColumn의 속성
 
 @JoinColumn 어노테이션은 외래 키를 매핑할 때 사용하는 어노테이션이고 기본 속성은 다음과 같습니다.
 
@@ -115,7 +115,7 @@ JoinColumn과 ManyToOne 옵션 설정에 대한 설명은 다음과 같습니다
 | referenceColumnName                                          | 외래 키가 참조하는 대상 테이블의 컬럼명을 의미한다<br />기본 값 : 테이블의 기본 키 컬럼명(ex. post_id) |
 | unique<br />nullable<br />insertable<br />updatable<br />columnDefinition<br />table | @Column의 속성과 같다                                        |
 
-##### 3.1.1.2 @ManyToOne의 속성
+#### 3.1.1.2 @ManyToOne의 속성
 
 @ManyToOne 어노테이션은 다대일 연관관계로 매핑할 때 사용되고 속성에 따라서 쿼리 구문 생성이 조금씩 다르게 생성됩니다. 조회하는 경우에는 쿼리가 어떻게 생성이 되는지 로그로 확인할 필요가 있습니다.
 
@@ -126,7 +126,7 @@ JoinColumn과 ManyToOne 옵션 설정에 대한 설명은 다음과 같습니다
 | cascade      | 영속성 전이 설정을 할 수 있다. 설정 값은 아래 cascadeType을 참고해주세요. |
 | targetEntity | 연관된 언테티의 타입 정보를 설정하는데 거의 사용하지 않는다. |
 
-##### 3.1.1.3 CascadeType의 값
+#### 3.1.1.3 CascadeType의 값
 
 > Post(부모) -> Comment(자식)
 
@@ -204,7 +204,7 @@ public class CommentRepositoryTest {
 }
 ```
 
-#### 3.1.2 다대일 양방향
+### 3.1.2 다대일 양방향
 
 다대일 양방향은 Post와 Comment 엔터티에 서로를 참조하는 필드가 존재합니다.
 
@@ -252,7 +252,7 @@ public class Post extends DateAudit {
 ```
 Post -> Comment는 일대다인 관계로 @OneToMany 어노테이션을 사용했고 List<Comment> comments 컬렉션으로 선언하였습니다.
 
-##### 3.1.2.1 연관관계 주인
+#### 3.1.2.1 연관관계 주인
 
 테이블은 외래 키 하나만 존재하는 반면에 객체를 양방향으로 설정하면 외래 키를 관리하는 곳이 2곳이 생깁니다. 한쪽에서만 관리하도록 하기 위해서 연관관계 주인을 설정할 필요가 있습니다.
 
@@ -268,7 +268,7 @@ Post -> Comment는 일대다인 관계로 @OneToMany 어노테이션을 사용�
         - post.getComments().add(new Comment())
     - DB에 반영이 안된다
 
-##### 3.1.2.2 연관관계 편의 메서드
+#### 3.1.2.2 연관관계 편의 메서드
 
 ```java
 comment.setPost(post); //(1) 코멘트 -> 포스트
@@ -321,9 +321,9 @@ public class Post extends DateAudit {
 
 
 
-### 3.2 주의사항
+## 3.2 주의사항
 
-#### 3.2.1 무한 루프에 빠지는 경우
+### 3.2.1 무한 루프에 빠지는 경우
 
 영방향 매핑때에는 무한 루프에 빠질 수 있어서 주의가 필요합니다. 예를 들어 Comment.toString()에서 getPost()를 호출하게 되면 무한 루프에 빠질 수 있습니다.
 
@@ -332,9 +332,9 @@ public class Post extends DateAudit {
 - toString() 사용시
     - Lombok 라이브러리 사용시에도 발생할 수 있어 toString(exclude={##, ##})으로 제외시킨다
 
-## 4. FAQ
+# 4. FAQ
 
-### 4.1 언제 양반향, 단방향을 사용해야 하나?
+## 4.1 언제 양반향, 단방향을 사용해야 하나?
 
 비지니스 로직에 따라서 무엇을 사용할 지 결정하면 됩니다.
 
@@ -350,14 +350,14 @@ public class Post extends DateAudit {
 
 어느 것을 사용할지 확실하지 않을 때는 우선 단방향으로 매핑을 사용하고 반대 반향으로 객체 그래프 탐색이 필요한 경우에는 양방향으로 변경해서 사용하면 됩니다.
 
-### 4.2 fetch = FetchType.LAZY로 설정하면 언제 데이터를 로딩해서 가져오게 되는가?
+## 4.2 fetch = FetchType.LAZY로 설정하면 언제 데이터를 로딩해서 가져오게 되는가?
 
 - 즉시 로딩
     - 연관관계 맺어진 엔티티를 무조건 즉시 조회한다. JOIN을 사용해서 한번에 조회한다.
 - 지연 로딩
     - 연관관계 맺어진 엔티티를 프록시를 통해서 나중에 조회한다. 실제 연관 엔티티를 사용할 때 프록시를 초기화 하면서 데이터베이스에서 조회한다.
 
-##### 4.2.1 즉시 로딩
+#### 4.2.1 즉시 로딩
 
 @ManyToOne 어노테이션은 fetch 옵션 FetchType.EAGER 기본값으로 설정되어 Comment 엔티티 조회 시 무조건 Post 객체를 가져옵니다.
 
@@ -404,7 +404,7 @@ select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as create_d2_
 
 
 
-#### 4.2.2 지연 로딩
+### 4.2.2 지연 로딩
 
 fetch 옵션에 FetchType.LAZY로 설정하면 Comment 엔터티 조회시 바로 DB에서 Post 엔티티를 조회하지 않습니다.
 
@@ -448,9 +448,9 @@ public void save_post_comment_확인_lazy_loading_test() throws JsonProcessingEx
 
 > (2)를 호출하면 select 구문은 실행되지 않지만, author를 잘 가져오는 것을 확인할 수 있습니다. 조회 대상이 영속 컨텍스트에 이미 존재 하기 때문에 프록시로 DB를 호출하여 반환하지 않고 객체를 바로 반환해주고 있습니다.
 
-### 4.3 @ManyToOne 옵션 중에 optional 속성이 true, false인 경우에 쿼리 구문이 어떻게 다르게 생성이 되나?
+## 4.3 @ManyToOne 옵션 중에 optional 속성이 true, false인 경우에 쿼리 구문이 어떻게 다르게 생성이 되나?
 
-#### 4.3.1 @ManyToOne (optional=true)인 경우 - 선택적인 관계
+### 4.3.1 @ManyToOne (optional=true)인 경우 - 선택적인 관계
 
 기본값이 optional=true이기 때문에 Post 객체는 null이 될 수 있습니다. @JoinColumn의 nullable=true(기본값) 속성인 경우에도 null로 저장될 수 있다는 의미이기도 합니다.
 
@@ -476,7 +476,7 @@ Hibernate: select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as
 
 
 
-#### 4.3.2 @ManyToOne(optional=false) 인 경우 - 필수적인 관계
+### 4.3.2 @ManyToOne(optional=false) 인 경우 - 필수적인 관계
 
 optional=true로 지정하면 Post 객체는 null이 될 수 없기 때문에 필수적으로 포함되어야 합니다. @JoinColumn(nullable=false) 어노테이션 사용하는 경우에도 같습니다.
 
@@ -497,11 +497,11 @@ select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as create_d2_
 
 엔티티의 속성 구성후 쿼리 구문을 로그로 확인하면서 원하는 쿼리인 지 확인하는 습관이 필요합니다.
 
-## 5. 정리
+# 5. 정리
 
 JPA 연관관계에서 가장 기본이 되는 다대일 관계에 대해서 알아보았습니다. 이외에도 일대일 그리고 다대다 관계도 익숙해질 수 있도록 시리즈 포스팅에서 알아보겠습니다.
 
-## 6. 참고
+# 6. 참고
 
 - JPA - one-to-many mapping
     - [https://www.callicoder.com/hibernate-spring-boot-jpa-one-to-many-mapping-example/](https://www.callicoder.com/hibernate-spring-boot-jpa-one-to-many-mapping-example/)

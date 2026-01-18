@@ -14,7 +14,7 @@ tags:
 ---
 
 
-## 1. 들어가며
+# 1. 들어가며
 
 이번 포스팅에서는 스프링에서 파일 업로드를 어떻게 구현할 수 있는지에 대해서 알아보도록 하겠습니다. 스프링에서는 단일 파일 업로드뿐만이 아니라 아래와 같은 여러 방법으로 파일 업로드 기능을 제공합니다.
 
@@ -32,7 +32,7 @@ tags:
     - 구현체 : CommonsMultipartResolver
     - Servlet 3 환경에만 국한된 것은 아니지만, Servlet 3.x 컨테이너에서도 똑같이 작동한다 \* pom.xml에 라이브러리를 추가해야 한다
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 - OS : Mac OS
 - IDE: Intellij
@@ -42,7 +42,7 @@ tags:
 - Source code : [github](https://github.com/kenshin579/tutorials-java/tree/master/spring-mvc-xml-fileupload)
 - Software management tool : Maven
 
-## 3. 파일 업로드을 위한 설정
+# 3. 파일 업로드을 위한 설정
 
 파일 업로드를 위해 스프링에서 필요한 기본 설정에 대해서 알아봅시다. 언급했던 것처럼 스프링에서는 2가지 방법으로 파일 업로드를 설정할 수 있습니다. 본 포스팅에서는 첫 번째 StandardServletMultipartResolver 리졸뷰 위주로 설명을 하도록 하겠습니다. 두 번째인 CommonsMultipartResolver 리졸뷰를 사용해도 됩니다. 스프링 설정하는 경험이 있으면 어느 것을 사용하던 큰 어려움이 없을 것으로 생각됩니다. 필요한 내용은 참고 링크들을 참조해주시면 될 것 같아요.
 
@@ -51,9 +51,9 @@ tags:
 - Apache Commons FileUpload API
     - CommonsMultipartResolver
 
-### 3.1 스프링 및 파일 업로드 제한 설정
+## 3.1 스프링 및 파일 업로드 제한 설정
 
-#### 3.1.1 StandardServletMultipartResolver 사용시 설정
+### 3.1.1 StandardServletMultipartResolver 사용시 설정
 
 Bean XML 정의 파일 설정
 **1. StandardServletMultipartResolver 빈을 스프링에 등록**
@@ -150,7 +150,7 @@ public class FileUploadServlet extends HttpServlet {
 }
 ```
 
-#### 3.1.2 CommonsMultipartResolver 사용시 설정
+### 3.1.2 CommonsMultipartResolver 사용시 설정
 
 StandardServletMultipartResolver와 다르게 CommonsMultipartResolver 리졸뷰 사용 시 추가로 pom.xml 파일에 commons-fileupload 라이브러리를 추가해야 합니다.
 
@@ -202,11 +202,11 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 }
 ```
 
-## 4. 파일 업로드 예제들
+# 4. 파일 업로드 예제들
 
 지금까지는 스프링 관련 설정을 다루었습니다. 이제 뷰와 컨트롤러 단에서 어떻게 파일을 업로드할 수 있는지 알아보겠습니다. 파일을 업로드하는 방법에는 여러 가지가 있습니다. 예제를 통해서 서로 다른 점도 확인하겠습니다.
 
-### 4.1 단일 파일 업로드
+## 4.1 단일 파일 업로드
 
 단일 파일을 업로드하는 예제입니다. 뷰는 HTML의 input 태그 file 속성으로 작성하여 form 방식으로 파일 업로드를 할 수 있습니다. form 태그의 enctype 속성은 multipart/form-data로 세팅하여 브라우져가 파일 업로드 방식으로 동작하도록 설정합니다.
 
@@ -265,7 +265,7 @@ Request parameter로 넘겨주는 파일 이름이 mediaFile로 넘겨줘서 @Re
 > 번외 Tips
 > Rest API 구현을 할 때 데이터 형식을 JSON으로 많이 사용해서 클라이언트와 서버 간에 주고받습니다. JSON 타입으로 주고받을때 기본적으로 encoding을 해서 보냅니다. 보내는 데이터가 적은 양이면 문제가 되지 않지만, 대용량의 JSON인 경우에는 성능에 큰 영향을 주게 됩니다. 이런 경우에 JSON 데이터를 stream으로 보내고 컨트롤러에서 MultipartFile로 받으면 스트림형식으로그냥 받기 때문에 성능이 많이 좋아집니다. 프로젝트 진행 시고려해볼 만한 부분입니다.
 
-### 4.2 다중 파일 업로드
+## 4.2 다중 파일 업로드
 
 여러 파일을 업로드하는 방식은 단일 파일 업로드 예제와 매우 유사합니다. 차이점은 뷰에서 multiple 속성을 추가하여야사용자가 여러 파일을 선택할 수 있도록 해야 합니다.
 
@@ -315,7 +315,7 @@ Model model) throws IOException {
 }
 ```
 
-### 4.3 파일 업로드 + 추가 정보 by @RequestParam
+## 4.3 파일 업로드 + 추가 정보 by @RequestParam
 
 이번 예제는 파일과 다른 입력 정보를 같이 보내는 예제입니다. 추가 입력을 받을 수 있도록 form을 수정합니다.
 
@@ -363,7 +363,7 @@ public String singleFileUploadWith(@RequestParam("mediaFile") MultipartFile **fi
 }
 ```
 
-### 4.4 파일 업로드 + 추가 정보 by @ModelAttribute
+## 4.4 파일 업로드 + 추가 정보 by @ModelAttribute
 
 4.3 예제에서는 입력 데이터를 개별 변수에 저장하는 방식이었습니다. 하지만, 입력하는 데이터가 많을 때는 메서드인자가 많이 늘어나는 단점이 있습니다. @ModelAttribute어노테이션을 이용하면 입력한 데이터를 클래스로 한 번에 매핑 할 수 있습니다.
 
@@ -403,7 +403,7 @@ public String singleFileUploadWith( **@ModelAttribute MediaVO mediaVO**, Model m
 
 지금까지 스프링을 이용해서 파일 업로드를 알아보았습니다. 다음 시간에는 스프링 컨트롤러 예외처리에 대해서 알아보겠습니다.
 
-## 5. 참고
+# 5. 참고
 
 - File Upload with Spring
     - [https://www.baeldung.com/spring-file-upload](https://www.baeldung.com/spring-file-upload)

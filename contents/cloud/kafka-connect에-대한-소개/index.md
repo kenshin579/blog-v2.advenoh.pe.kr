@@ -21,7 +21,7 @@ tags:
 series: "Apache Kafka"
 ---
 
-## 1. Kafka Connect 소개
+# 1. Kafka Connect 소개
 
 Kafka Connect를 사용하려고 고려하고 있다면 Kafka에 대해서는 이미 잘 알고 찾아봤을 거라고 생각해서 Kafka는 간단하게 언급만 하고 바로 Kafka Connect에 대해서 소개한다.
 
@@ -34,7 +34,7 @@ Kafka는 메시지 브로커 프로젝트 중에 하나이고 다른 프로젝�
 
 Kafka Connect는 Kafka 생태계에서 어떤 역할을 하고 있는지 알아보자.
 
-### 1.1 Kafka Connect
+## 1.1 Kafka Connect
 
 Kafka Connect는 Kafka를 사용하여 다른 시스템과 데이터를 주고 받기 위한 오픈소스 프레임워크이다. Kafka Connect에는 기존 시스템에 연결하여 Kafka와 데이터를 주고 받는 데 도움이 되는 다양한 내장 Connector(ex. mongo)를 제공해주고 있다. Kafka Connect의 특징과 장점은 다음과 같다.
 
@@ -56,11 +56,11 @@ Kafka Connect는 Kafka를 사용하여 다른 시스템과 데이터를 주고 �
 
 
 
-### 1.2 Kafka Connect Usecase
+## 1.2 Kafka Connect Usecase
 
 다른 시스템에서 Kafka로 Kafka에서 다른 시스템으로 데이터를 스트리밍할 방법은 여러 가지가 있겠지만, 직접 개발하기보다는 Kafka Connect로 쉽게 해결될 수 있는지 첫 번째로 고려해보면 좋을 것이다. 몇 가지 사례를 통해서 어떻게 다양하게 사용될 수 있는지 알아보자.
 
-#### 1.2.1 멀티 타겟 시스템에 스트리밍하기개
+### 1.2.1 멀티 타겟 시스템에 스트리밍하기개
 
 ![Streaming Data Pipelines](streaming-data-pipelines-kafka-connect.png)
 
@@ -68,7 +68,7 @@ Kafka Connect를 사용하면 이미 여러 타겟 시스템 대상으로 connec
 
 - kafka -> (kafka connect) -> multiple targets (s3, hdfs)
 
-#### 1.2.2 다양한 외부 시스템에서 다른 곳으로 데이터 전달이 필요한 경우
+### 1.2.2 다양한 외부 시스템에서 다른 곳으로 데이터 전달이 필요한 경우
 
 한 컨포넌트에서 다른 컨포넌트로 전달할 수 있는 방법은 여러 가지가 있다.
 
@@ -85,7 +85,7 @@ Kafka Connect를 사용하면 이미 여러 타겟 시스템 대상으로 connec
 
 
 
-#### 1.2.3 새로운 어플리케이션으로 마이그레이션 작업
+### 1.2.3 새로운 어플리케이션으로 마이그레이션 작업
 
 ![Evolve Processing From Old systems to New](evolve-processing-from-old-systems-to-new-kafka-connect.png)
 
@@ -93,7 +93,7 @@ Kafka Connect를 사용하면 이미 여러 타겟 시스템 대상으로 connec
 
 새로운 애플리케이션 개발할 때 기존의 애플리케이션에는 영향을 주지 않기 위해 Kafka Connect를 사용하면 더 쉽게 마이그레이션이 가능할 수 있다. Mysql이나 MongoDB는 Change Data Capture (CDC) 기능을 지원하고 있어서 해당 sink connector를 사용하면 스키마 변경, INSERT, UPDATE, DELETE 모두에 대한 변경은 포착해서 Kafka로 데이터를 스트리밍할 수 있다. 이렇게 되면 기존 애플리케이션에는 전혀 수정하지 않고 새로운 애플리케이션을 개발할 수 있다.
 
-## 2.내부 구성요소 및 동작 원리
+# 2.내부 구성요소 및 동작 원리
 
 Kafka Connect는 크게 5가지 요소로 되어 있다.
 
@@ -121,7 +121,7 @@ Kafka Connect는 크게 5가지 요소로 되어 있다.
 - Transform
     - Connector를 통해 흘러가는 각 메시지에 대해 변환하는 역할을 한다
 
-### 2.1 Kafka가 데이터를 스트리밍하는 과정
+## 2.1 Kafka가 데이터를 스트리밍하는 과정
 
 다음 Sink Conector는 Kafka에서 외부 시스템으로 데이터를 스트리밍할 때의 흐름을 보여준다. Source Connector는 반대로 외부 시스템에서 Kafka로 스트리밍하는 차이가 있지만, 기본 데이터를 스트리밍하는 과정이 비슷하다.
 
@@ -147,7 +147,7 @@ Kafka Connect는 크게 5가지 요소로 되어 있다.
 
 
 
-### 2.1 Task Rebalancing
+## 2.1 Task Rebalancing
 
 Task rebalancing은 새로운 worker가 추가되거나 worker가 강제 종료된 경우에 worker 간의 작업을 다시 나누기 위해 task 재조정이 발생한다. Task rebalancing이 일어나는 경우는 다음과 같다.
 
@@ -165,7 +165,7 @@ Worker 2가 프로세스가 죽게 되어 실행하던 T2, T3 작업을 남아 �
 
 
 
-### 2.2 Workers
+## 2.2 Workers
 
 Worker는 connector와 task를 실행하는 프로세스이고 2가지 모드로 실행시킬 수 있다.
 
@@ -182,7 +182,7 @@ Worker는 connector와 task를 실행하는 프로세스이고 2가지 모드로
 
 
 
-### 2.3 Converters
+## 2.3 Converters
 
 Kafka에서 write, read 할 때 특정 데이터 형식을 지원하기 위해서 여러 converter를 제공한다. Task는 converter를 사용해서 bytes 데이터 형식을 connect 내부 데이터 형식으로 변경해서 사용한다.
 
@@ -199,7 +199,7 @@ Kafka에서 write, read 할 때 특정 데이터 형식을 지원하기 위해�
 - ByteArrayConverter
     - `org.apache.kafka.connect.converters.ByteArrayConverter`: 변환 없은 옵션을 제공
 
-### 2.4 Transforms
+## 2.4 Transforms
 
 Transform은 Kafka <-> 외부 시스템에서 데이터를 가져오고 넣는 과정에서 기존 데이터를 변환해주는 기능이다. Connector 등록 시 어떻게 변환할지 같이 설정하여 사용한다. Transform은 단순 변환 작업으로 하나의 record를 입력받아 수정된 record를 결과값으로 반환한다. 여러 transform이 있으면 파이프라인으로 실행한다.
 
@@ -211,13 +211,13 @@ Transform은 Kafka <-> 외부 시스템에서 데이터를 가져오고 넣는 �
 
 기본적으로 Transform은 단일 메시지를 처리하고 단순 변환에 사용된다. 조금 더 복잡한 변환이나 다중 메시지처리는 [ksqlDB](https://docs.confluent.io/platform/current/ksqldb/index.html#ksql-home)나 [Kafka Streams](https://docs.confluent.io/platform/current/streams/index.html#kafka-streams)을 사용하는 걸 추천한다.
 
-## 3. 정리
+# 3. 정리
 
 Kafka Connect를 사용하면 애플리케이션에서 반복적으로 개발해야 하는 부분들을 많이 제거할 수 있고 이로 인해서 자연스럽게 비지니스 로직에 집중할 수 있는 장점이 생긴다. Event Driven Architecture를 기반으로 개발하고 있다면, Kafka Connect를 도입하는 걸 추천한다.
 
 본 포스팅에서는 간단하게 구성요소가 어떻게 되고 데이터 스트리밍 처리에 대해서 알아보았다. 다음 포스팅에서는 로컬환경에서 Kafka Conector를 등록하고 Kafka <-> 외부 시스템으로 데이터를 가져오고 넣는 예제를 다루도록 한다.
 
-## 4. 참고
+# 4. 참고
 
 - https://en.wikipedia.org/wiki/Apache_Kafka
 - https://www.confluent.io/ko-kr/blog/kafka-connect-deep-dive-error-handling-dead-letter-queues/

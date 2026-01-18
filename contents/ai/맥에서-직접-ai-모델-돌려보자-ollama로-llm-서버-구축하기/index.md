@@ -11,17 +11,17 @@ tags:
   - llama
 ---
 
-## 1. 개요
+# 1. 개요
 
 최근 AI 관련 서비스를 많이 사용하면서 비용 부담이 커지는 경우가 많다. 이에 따라 로컬 환경에서 직접 `LLM`을 구축하여 활용하는 방법을 소개하고자 한다. 이번 글에서는 macOS에서 `LLM`을 설치하고 활용하는 방법을 다룬다.
 
-## 2. `LLM` 설치
+# 2. `LLM` 설치
 
-### 2.1 `Ollama` 설치 및 확인
+## 2.1 `Ollama` 설치 및 확인
 
 우선 `Ollama`를 설치한다. `Ollama`는 로컬에서 손쉽게 `LLM`을 실행할 수 있도록 도와주는 도구이다.
 
-#### **설치 방법**
+### **설치 방법**
 
 웹 사이트에 가서 원하는 OS에 맞게 다운로드해서 설치를 진행하면 된다.
 
@@ -43,7 +43,7 @@ ollama version is 0.6.2
 Warning: client version is 0.4.7
 ```
 
-#### Ollama 구동해보기
+### Ollama 구동해보기
 
 설치가 완료되면 이제 모델을 다운로드하여 실행할 수 있다.
 
@@ -69,13 +69,13 @@ success
 How can I help you today?
 ```
 
-## 3. `LLM` 사용해보기
+# 3. `LLM` 사용해보기
 
-### 3.1 Open WebUI
+## 3.1 Open WebUI
 
 CLI 환경에서만 사용하면 불편할 수 있으므로 Open WebUI를 활용할 수도 있다. Open WebUI는 `Ollama`를 쉽게 사용할 수 있는 웹 기반 UI이다.
 
-#### **설치 방법**
+### **설치 방법**
 
 여러 방법이 있지만, 간단하게 도커로 실행해본다.
 
@@ -92,7 +92,7 @@ ChatGPT 웹 인터페이스와 비슷하고 잘 동작하는 걸 볼 수 있다.
 
 ![Open WebUI - Prompt](image-20250323142000013.png)
 
-### 3.2 API로 호출
+## 3.2 API로 호출
 
 Ollama는 API를 제공하므로, curl을 사용하여 직접 호출할 수도 있다.
 
@@ -102,7 +102,7 @@ Ollama는 API를 제공하므로, curl을 사용하여 직접 호출할 수도 �
      -d '{"model": "llama3.2", "prompt": "Hello, what is AI?"}'
 ```
 
-### 3.3 Python으로 호출해보기
+## 3.3 Python으로 호출해보기
 
 Python 에서는 langchain library를 제공하고 있어서 이걸 이용해서 `LLM`을 사용할 수 있다.
 
@@ -130,7 +130,7 @@ class Test(TestCase):
 
 
 
-## 4. Ollama 명령어 모음
+# 4. Ollama 명령어 모음
 
 `ollama` 명령어는 다양한 명령어를 제공하고 자주 사용하는 명령어는 다음과 같다.
 
@@ -163,11 +163,11 @@ class Test(TestCase):
   > ollama run mistral
   ```
 
-## 5. 마무리
+# 5. 마무리
 
 이제 macOS 환경에서 `LLM`을 구축하고 활용하는 방법을 배웠다. `Ollama`와 Open WebUI를 활용하면 로컬에서 효율적으로 AI 모델을 운영할 수 있으므로 직접 활용해보는 것을 추천한다.
 
-## 6. 참고
+# 6. 참고
 
 - [LLM을 local에서 돌려보자](https://devocean.sk.com/blog/techBoardDetail.do?ID=165686&boardType=techBlog)
 - [Ollama 를 활용해서 개인형 LLM 서버 구성하기](https://devocean.sk.com/blog/techBoardDetail.do?ID=165685&boardType=techBlog)

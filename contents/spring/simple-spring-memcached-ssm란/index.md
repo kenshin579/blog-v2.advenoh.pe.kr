@@ -16,11 +16,11 @@ tags:
   - 스프링
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 In-memory DB로 Memcached를 사용하면 자바에서는 [simple-spring-memcached](https://github.com/ragnor/simple-spring-memcached) (SSM) 라이브러리를 자주 사용됩니다. SSM 어노테이션으로 메서드에 선언하면 쉽게 관련 데이터가 캐시에서 관리됩니다. 스프링에서도 버전 3.1부터는 캐시 서비스 추상화 기능이 지원되어 비즈니스 로직 변경 없이 쉽게 다양한 캐시 구현체(ex. Ehcache, Redis)로 교체가 가능하게 되었습니다. 스프링에서 제공하는 캐시 기능은 다른 포스팅에서 더 자세히 다루도록 하겠습니다.
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 - OS : Mac OS
 - IDE: Intellij
@@ -28,11 +28,11 @@ In-memory DB로 Memcached를 사용하면 자바에서는 [simple-spring-memcach
 - Source code : [github](https://github.com/kenshin579/tutorials-spring-examples/tree/master/simple-spring-memcached)
 - Software management tool : Maven
 
-## 3. Simple Spring Memcached(SSM) 설정 및 사용법
+# 3. Simple Spring Memcached(SSM) 설정 및 사용법
 
 SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해야 합니다.
 
-### 3.1 Maven dependency 추가
+## 3.1 Maven dependency 추가
 
 라이브러리는 maven을 사용하였습니다. Simple-spring-memcached와 Memcache provider 중에 하나를 선택해서 pom.xml에 추가해줍니다. spymemcached와 xmemcached의 차이는 아래와 같습니다. 이 포스팅에서는 xmemcached로 위주로 설명합니다.
 
@@ -47,7 +47,7 @@ SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해�
 </dependency>
 ```
 
-#### **xmemcached**
+### **xmemcached**
 
 ```xml
 <dependency>
@@ -57,7 +57,7 @@ SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해�
 </dependency>
 ```
 
-#### **spymemcached**
+### **spymemcached**
 
 ```xml
 <dependency>
@@ -69,7 +69,7 @@ SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해�
 
 
 
-### 3.2 스프링 설정 파일
+## 3.2 스프링 설정 파일
 
 스프링 빈 설정에 Memcached 관련 설정이 포함됩니다. Memcached의 서버 정보와 캐시 설정은 ConsistentHashing 방식으로 지정되어 있습니다.
 
@@ -107,7 +107,7 @@ SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해�
 
 simplesm-context.xml은 [SSM github](https://github.com/ragnor/simple-spring-memcached) 소스에 포함된 설정파일이고 SSM 사용 시 필요하므로 복사해서 사용하시면 됩니다.
 
-### 3.3 SSM Cache 대표 어노테이션
+## 3.3 SSM Cache 대표 어노테이션
 
 아래는 대표적으로 많이 사용하는 어노테이션입이다. 이외에 사용해야 하는 어노테이션은 해당 [라이브러리의 Wiki](https://github.com/ragnor/simple-spring-memcached/wiki/Getting-Started) 를 참고해주세요.
 
@@ -159,7 +159,7 @@ SingleCache와 MultiCache인 경우 반드시 메서드 인자 중에 @Parameter
     - expiration : key값이 만료되는 시간 (초 단위)이다
     - assignedKey : 캐시 저장시 사용되는 키 값이다
 
-#### 3.3.1 Read Cache
+### 3.3.1 Read Cache
 
 **@ReadThroughAssignCache 예제**
 
@@ -282,7 +282,7 @@ public void testReadThroughMultiCache() {
 
 ![](image_28.png)
 
-#### 3.3.2 Update Cache
+### 3.3.2 Update Cache
 
 Update로 시작하는 어노테이션은 캐시에 저장된 값을 강제적으로 덮어쓰는 어노테이션입니다. Update에 대한 여러 어노테이션에 대해서 알아봅시다.
 
@@ -413,7 +413,7 @@ public void testUpdateMultiCache() {
 
 ![](image_26.png)
 
-#### 3.3.3 Invalidate Cache
+### 3.3.3 Invalidate Cache
 
 Invalidate로 시작하는 어노테이션은 캐시에 해당 키가 존재하면 캐시에서 삭제합니다.
 
@@ -546,9 +546,9 @@ public void testInvalidateMultiCache() {
 
 ![](image_9.png)
 
-### 3.4 Memcached 유용한 명령어 모음
+## 3.4 Memcached 유용한 명령어 모음
 
-#### 3.4.1 watch
+### 3.4.1 watch
 
 Memcached는 watch 명령어을 제공해서 캐시에 저장되거나 값을 얻어올 때 실시간으로 이벤트를 확인할 수 있습니다.
 
@@ -563,7 +563,7 @@ watch fetchers mutations evictions
 
 ![](image_22.png)
 
-#### 3.4.2 stats cachedump
+### 3.4.2 stats cachedump
 
 이 명령어는 Memcached 팀에서 지원하지 않는 기능으로 추후 버전에서 삭제될 수 있지만, 현재 1.5.12 버전에서는 존재합니다.
 
@@ -581,30 +581,30 @@ watch fetchers mutations evictions
 - item_size : key를 포함한 byte 크기
 - expiration_timestamp : expiration timestamp 초 (0 —> 무한)
 
-### 3.5 SSM 사용시 주의사항
+## 3.5 SSM 사용시 주의사항
 
-#### 3.5.1 Expiration 지정시 30일 이내로 하자
+### 3.5.1 Expiration 지정시 30일 이내로 하자
 
 expiration이 30일을 넘으면 무한 값으로 계산됩니다.
 
-#### 3.5.2 toString()을 override 하자
+### 3.5.2 toString()을 override 하자
 
 캐시 key로 지정된 인자가 primitive 타입이 아닌 오브젝트타입인 경우에는 toString() 메서드를 이용해서 key를 생성합니다. toString()을 override 하지 않으면 Object.toString()을 사용하며 기본 구현은 아래와 같이 클래스 이름과 hashcode()를 사용해서 값을 반환합니다. hashCode는 메모리 주소를 의존하기 때문에 메모리 주소가 변경되면 캐시가 적용이 안 되는 경우가 발생할 수 있어 toString()을 어버라이드 하거나 @CacheKeyMethod을사용을 권장합니다.
 
 return getClass().getName() + "@" + Integer.toHexString(hashCode())
 
-#### 3.5.3 오브젝트가 캐싱되는 경우 반드시 Serializable로 직렬화 시킬 수 있어야 한다
+### 3.5.3 오브젝트가 캐싱되는 경우 반드시 Serializable로 직렬화 시킬 수 있어야 한다
 
 캐시에 저장되는 값이 오브젝트인 경우에는 해당 오브젝트는 직렬화가 가능해야 하면 serialVersionUID도 생성하는 것을 잊지 말자.
 
 > Tips
 > Serializable로 구현한 오브젝트에 serialVersionUID 없는 경우에는 JVM에서 자동으로 생성합니다. 클래스 변경에 따라서 serialVersionUID가 자동으로 바뀌면 역직렬화시 문제가 발생할 수 있기 때문에 직업 명시하는 게 좋습니다. IntellijIDE에서도 자동으로 생성해주는 plugin(GeneateSerialVersionUID)이 존재합니다.
 
-#### 3.5.4 Cache key 길이는 250자로 제한된다
+### 3.5.4 Cache key 길이는 250자로 제한된다
 
 key의 최대 길이는 250자이면 넘을 경우 IllegalArgumentException 이 발생합니다.
 
-## 4. 참고
+# 4. 참고
 
 - 책
     - ![스프링 4 입문](image_12.png)

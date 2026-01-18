@@ -12,19 +12,19 @@ tags:
   - 카운트
 ---
 
-## 1. Problem
+# 1. Problem
 
 정수값에서 1인 비트를 카운트하는 문제입니다.
 
-### 1.1 입력 / 결과
+## 1.1 입력 / 결과
 
 - 7 : 111 —> 3
 - 23 : 10111 —> 4
 - 13 : 1101 —> 3
 
-## 2. Solution
+# 2. Solution
 
-### 2.1 Approach 1
+## 2.1 Approach 1
 
 컴퓨터 공학과 수업 중에 assembly를 다루는 과목은 꼭 필수로 들었던 기억이 납니다. 매우 오래전 얘기긴 하지만, assembly로 과제를 하면서 자연스럽게 비트 연산을 익혔던 것 같습니다.
 다시 문제를 풀려고 하니, 솔직히 기억은 나지 않네요. 그래도 AND, OR만 알아도 쉽게 풀 수 있는 문제들이 많이 있습니다.
@@ -45,7 +45,7 @@ public static int countBits1(int n) {
 이 알고리즘은 정수 값이 0이 될때까지 반복하기 때문에 복잡도는 O(n)이 됩니다. 이것보다 더 빠른 방법은 없을 까요?
 브라이언 커니핸 교수님이 고안한 알고리즘은 O(log n)으로 비트를 카운트 할 수 있습니다.
 
-### 2.2 Approach 2 - Brian Kernighan’s Algorithm
+## 2.2 Approach 2 - Brian Kernighan’s Algorithm
 
 ![Brian Kernighan](image_1.jpeg)
 
@@ -88,7 +88,7 @@ COUNT = 4
 
 이 방법 외에도 다양한 알고리즘은 더 많이 존재 합니다 (참고: [Bit Twiddling Hacks](https://graphics.stanford.edu/~seander/bithacks.html) ). 누군가 정말로 열심히 연구하고 공부한 것 같아요.
 
-## 3. Reference
+# 3. Reference
 
 - [https://www.geeksforgeeks.org/count-set-bits-in-an-integer/](https://www.geeksforgeeks.org/count-set-bits-in-an-integer/)
 - [https://www.quora.com/How-do-you-count-the-number-of-1-bits-in-a-number-using-only-bitwise-operations](https://www.quora.com/How-do-you-count-the-number-of-1-bits-in-a-number-using-only-bitwise-operations)

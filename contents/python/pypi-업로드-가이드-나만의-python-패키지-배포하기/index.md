@@ -19,7 +19,7 @@ tags:
   - korea-investment-stock
 ---
 
-## 1. 개요
+# 1. 개요
 
 Python 패키지를 개발한 후 `PyPi`(Python Package Index)에 업로드하면, `pip install` 명령어만으로 누구나 쉽게 패키지를 설치할 수 있다.
 
@@ -31,9 +31,9 @@ Python 패키지를 개발한 후 `PyPi`(Python Package Index)에 업로드하�
 
 이 글에서는 `fork` 해서 사용하고 있는 `korea-investment-stock` 모듈을 패키징하고 `PyPi`에 업로드하는 과정을 정리해서 설명한다.
 
-## 2. Python 모듈 패키지화
+# 2. Python 모듈 패키지화
 
-### 프로젝트 구조 설명
+## 프로젝트 구조 설명
 
 ```bash
 > tree -L 1
@@ -48,7 +48,7 @@ korea_investment_stock/
 └── LICENSE
 ```
 
-### `pyproject.toml` 파일 작성 (권장)
+## `pyproject.toml` 파일 작성 (권장)
 
 `pyproject.toml`은 Python 패키지 설정을 정의하는 표준 파일이다. 과거 버전에서는 `setup.py` 파일로 작성을 했지만, 지금은 `toml` 포멧으로 정의를 한다.
 
@@ -81,7 +81,7 @@ dependencies = [
 "Bug Tracker" = "<https://github.com/kenshin579/korea-investment-stock/issues>"
 ```
 
-### 패키지 빌드
+## 패키지 빌드
 
 패키지를 빌드하려면 `build` 모듈을 사용한다.
 
@@ -96,9 +96,9 @@ total 80
 
 빌드가 완료되면 `dist/` 폴더에 `.whl`과 `.tar.gz` 파일이 생성된다.
 
-## 3. Python 모듈 설치하기
+# 3. Python 모듈 설치하기
 
-### 3.1 로컬에서 패키지 설치 테스트
+## 3.1 로컬에서 패키지 설치 테스트
 
 사용하려면 모듈에서 pip install로 설치한다.
 
@@ -113,9 +113,9 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
 
 ![](image-20250316154958750.png)
 
-### 3.2 패키지를 PyPi에 업로드하기
+## 3.2 패키지를 PyPi에 업로드하기
 
-#### 1) 사전 작업
+### 1) 사전 작업
 
 - **PyPi 계정 생성**: https://pypi.org/account/register/
 
@@ -136,7 +136,7 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
  
 ```
 
-#### 2) `twine`을 이용한 업로드
+### 2) `twine`을 이용한 업로드
 
 ```bash
 > pip install twine
@@ -147,7 +147,7 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
 
 ![PyPi.org](image-20250316155025346.png)
 
-### 업로드 후 패키지 테스트
+## 업로드 후 패키지 테스트
 
 ```bash
 > pip install korea-investment-stock
@@ -157,9 +157,9 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
 0.1.10
 ```
 
-## 4. 배포 및 유지보수
+# 4. 배포 및 유지보수
 
-### 패키지 버전 관리 (`bumpversion`)
+## 패키지 버전 관리 (`bumpversion`)
 
 > `bumpversion`은 Python 패키지의 버전을 자동으로 업데이트하는 도구이다.
 >
@@ -178,12 +178,12 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
 
 ![Gitkraken - File changes](image-20250316155043303.png)
 
-## 5. 마무리
+# 5. 마무리
 
 우리가 개발한 Python 모듈을 `PyPi`에 업로드하는 과정에 대해서 알아보았다. 명령어로 업로드를 했지만, GitHub Actions를 이용하면 `git tag`를 푸시할 때 자동으로 `PyPi`에 업로드할 수 있다.
 
 - [github actions 으로 pypi 패키지 배포 자동화하기](https://velog.io/@bailando/github-actions-으로-pypi-패키지-배포-자동화하기)
 
-## 6. 참고
+# 6. 참고
 
 - [pypi 등록하기](https://wikidocs.net/78954)

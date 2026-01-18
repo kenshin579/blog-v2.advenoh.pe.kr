@@ -14,9 +14,9 @@ tags:
   - 리졸버
 ---
 
-## 1.HandlerMethodArgumentResolver란?
+# 1.HandlerMethodArgumentResolver란?
 
-### 1.1 들어가면
+## 1.1 들어가면
 
 `HandlerMethodArgumentResolver`에 대해서 알아보자. 아래와 같이 컨트롤러 메서드에 여러 인자 값(ex. `@PathVariable`)을 추가하여 자주 작업을 한다. 이런 인자는 `HandlerMethodArgumentHandler`에 의해서 처리가 된다.
 
@@ -43,9 +43,9 @@ public ResponseEntity<?> getStudentList(
 `HandlerMethodArgumentHandler`을 사용하게 되면 중복 코드를 줄이고 공통 기능으로 빼서 사용할 수 있는 장점이 있다. 이제 Custom `HandlerMethodArgumentResolver`를 직접 구현해보도록 하자.
 
 
-## 2. Custom Argument Resolver 만들기
+# 2. Custom Argument Resolver 만들기
 
-### 2.1 Argument Resolver 컨트롤러에 사용예제
+## 2.1 Argument Resolver 컨트롤러에 사용예제
 
 컨트롤러 메서드에서 `@ClientIp` 어노테이션이 추가된 인자를 넘겨주면 Client Ip 주소를 얻어 올 수 있는 Resolver를 만들어보자.
 
@@ -60,7 +60,7 @@ public class IpController {
 
 ```
 
-### 2.2 Argument Resolver 생성하기
+## 2.2 Argument Resolver 생성하기
 
 Argument Resolver 인터페이스에는 2가지 메서드가 존재하고 `supportsParameter()`가 참인 경우에 `resolveArgument()` 메서드를 실행한다.
 
@@ -110,7 +110,7 @@ public class ClientIpArgumentResolver implements HandlerMethodArgumentResolver {
 - `supportsParameter()` 메서드에서는 인자 값에 ClientIp 어노테이션이 포함되어 있는 지 확인한다
 - `resolveArgument()` 메서드에서는 실제 client Ip 주소를 request에서 얻어 오는 로직이 있다
 
-### 2.3 Argument Resolver 등록하기
+## 2.3 Argument Resolver 등록하기
 
 이제 앞에서 생성한 Resolver를 `addArgumentResolvers()` 메서드에서 추가해주면 된다.
 
@@ -127,7 +127,7 @@ public class WebConfig implements WebMvcConfigurer {
 }
 ```
 
-### 2.4 Controller 실행하기
+## 2.4 Controller 실행하기
 
 Unit Test로 확인해보자. 컨트롤러에서 Client Ip 주소를 잘 반환해주고 있다.
 
@@ -141,7 +141,7 @@ void getIpAddress() throws Exception {
 }
 ```
 
-## 3. Argument Resolver 동작 방식
+# 3. Argument Resolver 동작 방식
 
 Custom Argument Resolver를 구현해보았다. 이제 스프링안에 내부적으로 어떻게 Argument Resolver가 호출되는지 알아보자. Argument Resolver 동작 구조를 쉽게 보여주는 이미지([Carrey's 기술 블로그](https://jaehun2841.github.io/2018/08/10/2018-08-10-spring-argument-resolver/#spring-argument-resolver)에서 참고)이다.
 
@@ -157,7 +157,7 @@ Request 처리시 Argument Resolver가 실행되는 순서는 크게 보면 아�
         1. `DispatcherServlet.doDispatch()` -> `RequestMappingHandlerAdapter.handleInternal()` -> `invokeHandlerMethod()`
 4. 컨트롤러 메서드 실행
 
-#### 1.2.1 스프링 기본 + Custom Argument Resolver은 어디서 등록이 되나?
+### 1.2.1 스프링 기본 + Custom Argument Resolver은 어디서 등록이 되나?
 
 `RequestMappingHandlerAdapter` 객체가 초기화(ex. 스프링 시작시) 될 때 `afterPropertiesSet()`에서 `getDefaultArgumentResolvers()` 메서드를 호출하여 기본 스프링과 Custom resolver를 등록한다.
 
@@ -178,7 +178,7 @@ private List<HandlerMethodArgumentResolver> getDefaultArgumentResolvers() {
 }
 ```
 
-#### 1.2.2 supportsParameter는 어디에서 호출되나?
+### 1.2.2 supportsParameter는 어디에서 호출되나?
 
 `HandlerMethodArgumentResolverComposite.getArgumentResolver()` 메서드에서 `supportsPameter()` 실행해서 true를 반환하면 해당 Argument Resolver를 반환한다.
 
@@ -205,13 +205,13 @@ private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parame
 
 ![](image-20200912154932896.png)
 
-## 4. 마무리
+# 4. 마무리
 
 `HandlerMethodArgumentResolver`는 컨트롤러 메서드에서 인자 값에 대한 처리를 위해 사용된다. 이미 스프링에서 공통기능으로 많이 제공하고 있지만, 사용자용 메서드도 쉽게 작성하여 중복 로직을 많이 줄일 수 있어 용의하게 사용된다.
 
 관련 소스는 [github](https://github.com/kenshin579/tutorials-java/tree/master/springboot-handler-method-argument-resolver)에 올려두어서 참고하시면 됩니다.
 
-## 5. 참고
+# 5. 참고
 
 - https://webcoding-start.tistory.com/59
 - https://velog.io/@riechu3228/HandlerMethodArgumentResolver

@@ -16,7 +16,7 @@ tags:
 series: "Spring Quartz"
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 Quartz Job Scheduler에 대한 내용은 여러 시리즈 형식으로 작성을 하였습니다. Quartz에 대한 간단한 설명을 시작으로 스프링 부트 기반에서의 Quartz Job Scheduler 구현 그리고 이중화 환경에서 많이 사용하는 Quartz Cluster 구성도 아래 튜토리얼에서 같이 보도록 하겠습니다.
 
@@ -25,11 +25,11 @@ Quartz Job Scheduler에 대한 내용은 여러 시리즈 형식으로 작성을
 * 3부 : [Multi WAS 환경을 위한 Cluster 환경의 Quartz Job Scheduler 구현](https://blog.advenoh.pe.kr/multi-was-환경을-위한-cluster-환경의-quartz-job-scheduler-구현/)
 * 4부 : [Quartz에서 실행중인 Job을 Interrupt하여 Job Scheduler를 정상종료 시키는 방법](https://blog.advenoh.pe.kr/quartz에서-실행중인-job을-interrupt하여-job-scheduler를-정상종료-시키는-방법/)
 
-### 1.1 Quartz란?
+## 1.1 Quartz란?
 
 Quartz는 [Terracotta](http://www.quartz-scheduler.org/) 라는 회사에 의해 개발된 Job Scheduling 라이브러리입니다. 완전히 자바로 개발되어 어느 자바 프로그램에서도 쉽게 통합해서 개발할 수 있습니다. Quartz는 수십에서 수천 개의 작업도 실행 가능하며 간단한 interval 형식이나 Cron 표현식으로 복잡한 스케줄링도 지원합니다. 예를 들면 매주 금요일 새벽 1시 30분에 매주 실행하는 작업이나 매월 마지막 날에 실행하는 작업도 지정할 수 있습니다.
 
-### 1.2 장단점
+## 1.2 장단점
 
 스프링을 개발하면서 Quartz를 Job Scheduler로 자주 사용하는 이유도 있지만, 단점도 존재합니다.
 
@@ -48,11 +48,11 @@ Quartz는 [Terracotta](http://www.quartz-scheduler.org/) 라는 회사에 의해
 * 스케줄링 실행에 대한 History는 보관하지 않는다
 * Fixed Delay 타입을 보장하지 않으므로 추가 작업이 필요하다
 
-## 2. Quartz 아키텍처와 구성요소
+# 2. Quartz 아키텍처와 구성요소
 
 Quartz Scheduler에 익숙해지기 위해서 자주 사용하는 용어들을 알아보겠습니다.
 
-### 2.1 용어 정리
+## 2.1 용어 정리
 
 * **Job**
     * Quartz API에서 단 하나의 메서드를 가진 execute(JobExecutionContext context) Job 인터페이스를 제공한다. Quartz를 사용하는 개발자는 수행해야 하는 실제 작업을 이 메서드에서 구현하면 된다.
@@ -121,7 +121,7 @@ Quartz Scheduler에 익숙해지기 위해서 자주 사용하는 용어들을 �
                 * [RedisJobStore](https://github.com/RedisLabs/redis-quartz)
                 * [MongoDBJobStore](https://github.com/michaelklishin/quartz-mongodb)
 
-## 3. Quartz 구성요소
+# 3. Quartz 구성요소
 
 [Java Articles](https://www.javarticles.com/2016/03/quartz-scheduler-model.html) 블로그에서 가져온 다이어그램입니다. Quartz의 전체 구조와 흐름을 잘 보여주는 그림입니다. Quartz의 세밀한 설정을 이해하는데 공식 문서도 도움이 되지만, 실제 [소스코드](https://github.com/quartz-scheduler) 를 보면 Quartz의 동작과 전체 아키텍처 구조를 이해하는데 많은 도움이 됩니다.
 
@@ -208,12 +208,12 @@ Quartz 스케줄러가 언제 시작되고 등록된 Job들이 어떤 작업들�
 
 ![](image_19.png)
 
-## 4. 정리
+# 4. 정리
 
 Quartz에 대한 기본 개념과 용어 그리고 Quartz 스케줄러가 스프링에서 언제 어떻게 실행되고 추가된 Quartz Job도 어떻게 시작되는지 Quartz의 코드를 보면서 같이 알아봤습니다.
 다음 튜터리얼에서는 실제 RAMJobStore을 사용해서 스케줄링하도록 구현해보겠습니다.
 
-## 5. 참고
+# 5. 참고
 
 * Quartz 공식 사이트
     * [http://www.quartz-scheduler.org](http://www.quartz-scheduler.org/)

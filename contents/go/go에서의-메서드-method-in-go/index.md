@@ -23,11 +23,11 @@ func (receiver_name Type) methodName(parameter_list) (return_type) {
 
 ```
 
-## 1. Go 메서드 예제
+# 1. Go 메서드 예제
 
-### 1.1 리시버 인자 (Receiver Parameter)가 있는 메서드
+## 1.1 리시버 인자 (Receiver Parameter)가 있는 메서드
 
-#### 1.1.1 밸류 리시버 (Value Receiver)
+### 1.1.1 밸류 리시버 (Value Receiver)
 
 ```go
 type Car struct {
@@ -57,7 +57,7 @@ func Example_Method_Value_Receiver() {
 
 Go에서 메서드는 객체지향 프로그래밍 언어에서 지원하는 메서드처럼 dot(.)으로 메서드를 호출한다. `hyundaiCar.Color()` 메서드를 호출해 자동차 색깔을 출력하였다.
 
-#### 1.1.2 포인터 리시버 (Pointer Receiver)
+### 1.1.2 포인터 리시버 (Pointer Receiver)
 
 위 예제에서는 리시버 인자를 밸류 인자로 선언하였기 때문에 메서드 실행 후에는 데이터 타입 값에 반영이 안된다. 메서드 실행이후 변경된 값을 유지하려면 포인터 리시버를 사용해야 한다.
 
@@ -84,7 +84,7 @@ func Example_Method_Pointer_Receiver() {
 
 `hyundaiCar.SpeedUp(10)` 메서드 실행 이후에도 증가된 값으로 출력되는 것을 확인할 수 있다.
 
-#### 1.1.3 메서드에 대한 컨벤션
+### 1.1.3 메서드에 대한 컨벤션
 
 메서드 정의 시 Go에서는 아래와 같은 컨벤션을 일반적으로 따른다.
 
@@ -96,7 +96,7 @@ func Example_Method_Pointer_Receiver() {
 
 > 밸류와 포인터를 섞어서 사용하는 곳도 있어서 팀내에 협의한 켄벤션으로 통일해서 사용하면 될 것 같다.
 
-#### 1.1.4 비구조체(Non-struct)가 있는 메서드
+### 1.1.4 비구조체(Non-struct)가 있는 메서드
 
 지금까지 구조체 타입에 대해서만 메서드를 정의했다. 비구조체 타입에 대한 메서드를 정의하는 것도 가능하지만, 주의가 필요하다. 리시버 타입의 정의와 메서드의 정의는 동일한 패키지 내에 있어야 한다.
 
@@ -127,7 +127,7 @@ func Example_Method_Non_Struct_Type() {
 
 비구조체를 리시버 인자로 받으려면 `float64`를 별도 타입으로 선언하면 메서드로 선언이 가능해진다.
 
-### 1.2 메서드와 포인터 역참조 (Pointer indirection/dereference)
+## 1.2 메서드와 포인터 역참조 (Pointer indirection/dereference)
 
 포인터를 다루는 데 있어서 함수와 메서드간의 차이점이 존재한다. 어떤 차이점이 있는지 예제를 통해서 알아보자.
 
@@ -229,11 +229,11 @@ func Example_Indirection_Method_Value_Receiver() {
 
 리시버 인자의 경우,  (&r).perimeter() 호출 시 Go는 리시버 인자는 밸류 인자로 선언되어 (*r).perimeter()로 자동으로 해석해서 실행해준다.
 
-## 정리
+# 정리
 
 Go에서는 함수와 메서드가 존재를 한다. 메서드는 함수에 리시버 인자를 추가한 버전으로 생각하면 이해하기 쉽다. 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-methods)에서 확인할 수 있다.
 
-## 참고
+# 참고
 
 - https://tour.golang.org/methods/4
 - http://golang.site/go/article/17-Go-%EB%A9%94%EC%84%9C%EB%93%9C

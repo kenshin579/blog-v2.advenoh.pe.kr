@@ -11,7 +11,7 @@ tags:
   - 괄호
 ---
 
-## 1. Problem
+# 1. Problem
 괄호 기호가 OPEN, CLOSE 매칭이 제대로 되도록 확인하는 코드 문제입니다.
 
 ```java
@@ -27,9 +27,9 @@ public boolean solution(String str) {
 - )( —> false
 - ((()))()() —> true
 
-## 2. Solution
+# 2. Solution
 
-### 2.1 Approach 1
+## 2.1 Approach 1
 
 이 문제를 쉽게 해결하는 방법은 **스택 자료구조**를 이용하는 것입니다.
 기본 아이디어는 다음과 같습니다.
@@ -66,6 +66,6 @@ public boolean solution(String str) {
 
 소스코드는 [github](https://github.com/kenshin579/tutorials-interview-questions/blob/master/src/main/java/com/google/ValidParenthesis.java) 에서도 확인할 수 있습니다.
 
-## 3. Reference
+# 3. Reference
 
 - [https://hongku.tistory.com/251](https://hongku.tistory.com/251)

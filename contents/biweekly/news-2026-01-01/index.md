@@ -14,12 +14,12 @@ series: "Frank's IT News 2026 상반기"
 
 ---
 
-## ☁️ Cloud & Infra
+# ☁️ Cloud & Infra
 
 - [Win32/Linux를 함께 구축하자: loss32 프로젝트](https://news.hada.io/topic?id=25471) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [Google Opal](https://news.hada.io/topic?id=25476) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 
-## 🤖 AI / ML
+# 🤖 AI / ML
 
 - [파파고 vs 구글, AI가 보기엔 누가 더 번역을 잘할까?](https://yozm.wishket.com/magazine/detail/3524) - 요즘IT » 피드
 - [“나도 AI로 돈 벌 수 있을까?” 부업 시작을 위한 큐레이션](https://yozm.wishket.com/magazine/detail/3522) - 요즘IT » 피드
@@ -29,7 +29,7 @@ series: "Frank's IT News 2026 상반기"
 - [안티그래비티로 글로벌 유저 테스트 봇 만들어봤습니다](https://yozm.wishket.com/magazine/detail/3527) - 요즘IT » 피드
 - [비개발자, 클로드 코드로 외주 개발 시작하기](https://yozm.wishket.com/magazine/detail/3525) - 요즘IT » 피드
 
-## 💻 Development
+# 💻 Development
 
 - [2026년 프론트엔드 트렌드 총정리: 언어·인프라·AI](https://yozm.wishket.com/magazine/detail/3519) - 요즘IT » 피드
 - [인상적인 프로젝트 만들려면 FastAPI 꼭 써보세요](https://yozm.wishket.com/magazine/detail/3528) - 요즘IT » 피드
@@ -42,7 +42,7 @@ series: "Frank's IT News 2026 상반기"
 - [초경량 클래식 형태소 분석기 개발기](https://tech.kakao.com/posts/805) - tech.kakao.com
 - [이메일 인증은 어떻게 구현하는 걸까?](https://yozm.wishket.com/magazine/detail/3515) - 요즘IT » 피드
 
-## 📌 Misc
+# 📌 Misc
 
 - [설문조사 대충 할 거면 안 하는 것이 낫습니다](https://yozm.wishket.com/magazine/detail/3533) - 요즘IT » 피드
 - [우리는 왜 ‘깊이’ 생각하기 어려워졌을까?](https://yozm.wishket.com/magazine/detail/3529) - 요즘IT » 피드

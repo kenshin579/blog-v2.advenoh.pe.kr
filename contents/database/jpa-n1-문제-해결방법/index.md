@@ -18,11 +18,11 @@ tags:
 series: "Spring JPA"
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 JPA로 작업하다 보면 N+1 문제에 맞닥뜨리게 되는데요. N+1은 언제 발생할 수 있는 이슈이고 이를 해결하기 위해서 어떤 방법들이 있는지 알아보겠습니다.
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 포스팅에서 언급한 코드는 github에 올라가 있습니다.
 
@@ -40,9 +40,9 @@ JPA에서 N+1 발생 시 성능에 큰 영향을 줄 수 있기 때문에 JPA로
 
 ![](image_1.png)
 
-### 3.1 N+1 문제 발생 케이스
+## 3.1 N+1 문제 발생 케이스
 
-#### 3.1.1 즉시 로딩 (fetchType.EAGER) 변경후 findAll()로 조회하는 경우
+### 3.1.1 즉시 로딩 (fetchType.EAGER) 변경후 findAll()로 조회하는 경우
 
 `Post`와 `Comment` 엔티티 간에 다대일 양방향 연관 관계입니다. @OneToMany 언노테이션의 fetch의 기본값은 지연 로딩이지만, 즉시 로딩으로 변경하면 N+1 문제가 발생할 수 있습니다.
 
@@ -142,7 +142,7 @@ Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id
 
 이미 짐작하셨겠지만, loop으로 조회하면 즉시 로딩하는 것과 같은 결과가 발생합니다.
 
-#### 3.1.2 지연 로딩(LAZY) 변경 + Loop으로 조회하는 경우
+### 3.1.2 지연 로딩(LAZY) 변경 + Loop으로 조회하는 경우
 
 @OneToMany에서 fetch를 지연 로딩으로 변경한 이후에 loop으로 조회해보겠습니다.
 
@@ -187,7 +187,7 @@ Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id
 Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id as comment_1_0_0_, commentlis0_.comment_id as comment_1_0_1_, commentlis0_.create_dt as create_d2_0_1_, commentlis0_.updated_dt as updated_3_0_1_, commentlis0_.author as author4_0_1_, commentlis0_.content as content5_0_1_, commentlis0_.post_id as post_id6_0_1_ from comment commentlis0_ where commentlis0_.post_id=?
 ```
 
-#### 3.1.3 N+1이 발생하는 원인
+### 3.1.3 N+1이 발생하는 원인
 
 `JpaRepository`에 정의한 인터페이스 메서드를 실행하면 JPA는 메서드 이름을 분석해서 JPQL를 생성하여 실행하게 됩니다.  JPQL은 SQL을 추상화한 객체지향 쿼리 언어로서 특정 SQL에 종속되지 않고 엔티티 객체와 필드 이름을 가지고 쿼리를 합니다.
 
@@ -222,11 +222,11 @@ Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id
 
 
 
-### 3.2 해결 방안
+## 3.2 해결 방안
 
 N+1을 어떻게 해결할 수 있는지에 대해서 알아보겠습니다.
 
-#### 3.2.1 JPQL 페치 조인 사용 - 추천
+### 3.2.1 JPQL 페치 조인 사용 - 추천
 
 JPQL에 fetch join 키워드를 사용해서 join 대상을 함께 조회할 수 있습니다. `Post` 조회 시 `p.commentList`도 같이 join 해서 조회해옵니다.
 
@@ -261,7 +261,7 @@ public void test_N1_문제_해결방법_fetch_join_사용() {
 Hibernate: select post0_.post_id as post_id1_1_0_, commentlis1_.comment_id as comment_1_0_1_, post0_.create_dt as create_d2_1_0_, post0_.updated_dt as updated_3_1_0_, post0_.author as author4_1_0_, post0_.content as content5_1_0_, post0_.like_count as like_cou6_1_0_, post0_.title as title7_1_0_, commentlis1_.create_dt as create_d2_0_1_, commentlis1_.updated_dt as updated_3_0_1_, commentlis1_.author as author4_0_1_, commentlis1_.content as content5_0_1_, commentlis1_.post_id as post_id6_0_1_, commentlis1_.post_id as post_id6_0_0__, commentlis1_.comment_id as comment_1_0_0__ from post post0_ left outer join comment commentlis1_ on post0_.post_id=commentlis1_.post_id
 ```
 
-#### 3.2.2 Batch Size 지정 + 즉시 로딩
+### 3.2.2 Batch Size 지정 + 즉시 로딩
 
 JPQL 페치 조인 대신 Batch 크기를 지정하는 방법도 있습니다. @BatchSize 어노테이션에 size를 지정하고 fetch 타입은 즉시로 설정합니다.
 
@@ -297,8 +297,8 @@ Hibernate: select commentlis0_.post_id as post_id6_0_1_, commentlis0_.comment_id
 
 Batch 사이즈 지정으로 해결하는 방법은 글로벌 패치 전략을 즉시 로딩으로 변경해야 하고 또한 배치 사이즈만큼만 조회할 수 있어서 N+1 문제를 완벽하게 해결하지 않아 권장하는 해결방법은 아닙니다.
 
-## 4. FAQ
-## 4.1 JPA의 글로벌 페치 전략 기본 값은 어떻게 되나요?
+# 4. FAQ
+# 4.1 JPA의 글로벌 페치 전략 기본 값은 어떻게 되나요?
 
 - 즉시 로딩 (EAGER)
     - @OneToOne
@@ -307,7 +307,7 @@ Batch 사이즈 지정으로 해결하는 방법은 글로벌 패치 전략을 �
     - @OneToMany
     - @ManyToMany
 
-### 4.2 페치 조인 사용시 주의사항은 없나?
+## 4.2 페치 조인 사용시 주의사항은 없나?
 
 페치 조인은 연관된 엔티티를 한번에 조회할 수 있어서 조회 횟수를 줄여 성능 최적화시 많이 사용됩니다. 하지만, 페치 조인은 다음과 같은 한계점이 존재합니다.
 
@@ -322,7 +322,7 @@ Batch 사이즈 지정으로 해결하는 방법은 글로벌 패치 전략을 �
     - 컬렉션(일대다)는  페이징 API를 사용할 수 없다
         - 단일 값 연관 필드(일대일, 다대일)에서는 페치 조인을 사용할 수 있다.
 
-## 5. 참고
+# 5. 참고
 
 - JPA N+1
     - https://cheese10yun.github.io/jpa-nplus-1

@@ -16,7 +16,7 @@ tags:
   - 오류
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 존재하지 않는 API를 접속하게 되면 아래와 같은 Whitelabel Error Page를 자주 접하게 됩니다. 별도 설정을 하지 않았다면 스프링부트에서는 기본적으로 Whitelabel Error Page를 보여줍니다.
 
@@ -24,7 +24,7 @@ tags:
 
 오류 처리 관련해서 어떤 처리가 기본적으로 되어 있는지 어떻게 변경을 할 수 있는지 알아보죠.
 
-### 1.1 BasicErrorController - 기본 오류처리 컨트롤러
+## 1.1 BasicErrorController - 기본 오류처리 컨트롤러
 
 스프링부트에서 BasicErrorController가 이런 기본적인 오류처리를 담당합니다. `application.properties`에서 `server.error.path`를 설정하지 않았다면 `/error`가 기본 오류처리 PATH 주소로 지정됩니다.
 
@@ -35,7 +35,7 @@ public class BasicErrorController extends AbstractErrorController {
 ...
 ```
 
-#### 1.1.1 Whitelabel error page
+### 1.1.1 Whitelabel error page
 
 브라우져에서 접속하면 Whitelabel Error Page 보여줍니다.
 
@@ -73,7 +73,7 @@ public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse re
 }
 ```
 
-#### 1.1.2 Json 응답
+### 1.1.2 Json 응답
 
 Accept 값이 `application/json`인 경우에는 응답 값을 JSON 형태로도 내려줍니다.
 
@@ -126,9 +126,9 @@ public class DefaultErrorAttributes implements ErrorAttributes, HandlerException
 }
 ```
 
-## 2. Custom Error 페이지에 대한 처리
+# 2. Custom Error 페이지에 대한 처리
 
-## 2.1 Error 관련 Properties
+# 2.1 Error 관련 Properties
 
 서버 오류 관련 설정은 아래와 같습니다.
 
@@ -143,7 +143,7 @@ public class DefaultErrorAttributes implements ErrorAttributes, HandlerException
 
 
 
-### 2.2 특정 응답코드에 대한 Custom Error 페이지 만들기
+## 2.2 특정 응답코드에 대한 Custom Error 페이지 만들기
 
 Custom Error 페이지 만들어서 사용하는 건 간단합니다. 아래 폴더중에 한 곳에 `error/{응답코드}.<확장명>` 형식으로 파일을 생성하면, 스프링 부트에서 Http 상태 값에 다라서 해당 파일을 로딩해줍니다.
 
@@ -194,7 +194,7 @@ Custom Error 페이지 만들어서 사용하는 건 간단합니다. 아래 폴
 
 ![](image-20200907230948266.png)
 
-### 2.3 별도 ErrorController 를 생성하기
+## 2.3 별도 ErrorController 를 생성하기
 
 위와 같이 특정 응답 코드에 대해서 뷰 파일을 생성하는 방식은 특정 로직을 수행할 수 없는 단점이 있습니다. 이런 경우에 Custom Error Controller를 생성하여 `/error` PATH에 대한 호출은 이 컨트롤러에서 처리하도록 할 수 있습니다.
 
@@ -229,13 +229,13 @@ public class CustomErrorController implements ErrorController {
 
 `handleError()`에서는 `errors/404-custom` 뷰를 반환합니다. 404 오류가 발생하면, 별도 뷰를 보여줍니다.
 
-## 4. 마치며
+# 4. 마치며
 
 Whitelabel Error Page가 어떻게 로딩이 되는지 스프링부트의 내부 코드를 간단하게 살펴보았고 어떻게 오류 처리를 다르게 변경할 수 있는지도 알아보았습니다.
 
 전체 소스 코드는 [github](https://github.com/kenshin579/tutorials-java/tree/master/springboot-whitelabel-error-page)를 참고해주세요.
 
-## 5. 참고
+# 5. 참고
 
 * 스프링 부트 오류 처리
     * https://www.baeldung.com/spring-boot-custom-error-page

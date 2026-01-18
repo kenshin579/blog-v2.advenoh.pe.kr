@@ -16,7 +16,7 @@ tags:
   - 로깅
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 Go 표준 패키지 중에 log에서 로깅에 필요한 기본 메서드를 제공한다. 표준 출력 stdout, stderr외에 파일로 로그를 저장하는 방법, 그리고 로그 포맷 변경해서 출력하는 방법 등에 대해서 알아보자.
 
@@ -26,9 +26,9 @@ Go 표준 패키지 중에 log에서 로깅에 필요한 기본 메서드를 제
 import "log"
 ```
 
-## 2. Log 패키지 사용방법
+# 2. Log 패키지 사용방법
 
-### 2.1 기본 Logger
+## 2.1 기본 Logger
 
 log 패키지에서는 여러 Logger 지원을 위해 Logger 타입을 제공한다.
 
@@ -45,7 +45,7 @@ type Logger struct {
 var std = New(os.Stderr, "", LstdFlags) //<-- 이미 생성해 두고 있다. 
 ```
 
-#### 2.1.1 기본 Logger로 화면에 로그찍기
+### 2.1.1 기본 Logger로 화면에 로그찍기
 
 `log.New()` 함수로 새로운 Logger를 생성할 수 있다. 하지만, 아래와 같이 별도 logger 생성 없이도 바로 사용이 가능하다. log 패키지에서 std 표준 Logger를 미리 생성해두기 때문이다.
 
@@ -90,7 +90,7 @@ const (
 )
 ```
 
-#### 2.1.2 파일로 쓰기
+### 2.1.2 파일로 쓰기
 
 파일로 로그를 쓰기 위해서는 먼저 저장될 파일을 `os.OpenFile()`로 생성하고 파일 포인터를 `log.SetOutput()` 함수로 지정하면 `log.Println()` 사용시 파일로 쓰여지게 된다.
 
@@ -109,7 +109,7 @@ func Test_Basic_Logger_File(t *testing.T) {
 }
 ```
 
-#### 2.1.3 화면과 파일에 동시에 로그 찍기
+### 2.1.3 화면과 파일에 동시에 로그 찍기
 
 동시에 로그를 파일과 화면에 출력하도록 설정할 수도 있다. `io.MultiWriter()` 함수로 파일 포인터와 os.Stdout를 지정하여 복수 Writer를 생성하고 `log.SetOutput()`로 지정하면 복수 target으로 로그를 쓰게 된다.
 
@@ -135,7 +135,7 @@ func printMsgLog(msg string) {
 
 
 
-### 2.2 Custom Logger
+## 2.2 Custom Logger
 
 `log.New()` 함수로 Custom Logger를 생성해서 로그를 출력해보자.
 
@@ -153,7 +153,7 @@ func New(out io.Writer, prefix string, flag int) *Logger {
     - 프로그래명, 카테고리등을 표시할 수 있다
 - 3rd : 로그 포멧 설정 옵션
 
-#### 2.2.1 Custom Logger 생성하기
+### 2.2.1 Custom Logger 생성하기
 
 아래 예제는 표준출력으로 로그를 보내는 logger를 만들어 로깅을 하는 코드이다. "INFO: "라는 prefix와 날짜/시간을 출력하는 Logger를 생성해서 출력한다.
 
@@ -166,7 +166,7 @@ func Test_Custom_Logger(t *testing.T) {
 }
 ```
 
-#### 2.2.2 로그 파일로 쓰기
+### 2.2.2 로그 파일로 쓰기
 
 2.1.2에서와 같이 파일 Logger를 생성해서 로그를 파일로 쓰는 예제이다. `log.New()`의 첫번째 인자에 파일 포인터를 넘겨 파일로 출력한다.
 
@@ -192,7 +192,7 @@ func printMsgLogger(msg string) {
 
 
 
-#### 2.2.3 여러 Logger 생성하는 예제
+### 2.2.3 여러 Logger 생성하는 예제
 
 다음 예제는 여러 Logger 타입을 생성해서 출력하는 예제이다.
 
@@ -227,13 +227,13 @@ func Test(t *testing.T) {
 ```
 
 
-## 4. 마무리
+# 4. 마무리
 
 이번 포스팅에서는 Go에서 기본으로 포함된 log 패키지를 사용해서 로깅하는 방법에 대해서 알아보았다. Go 표준 패키지 log 외에도 다른 log framework(ex. logrus)도 종종 사용한다. logrus에 대한 내용은 다음 포스팅에서 알아보자.
 
 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-logging)에서 확인할 수 있다.
 
-## 5. 참고
+# 5. 참고
 
 - http://golang.site/go/article/114-Logging
 - https://www.ardanlabs.com/blog/2013/11/using-log-package-in-go.html

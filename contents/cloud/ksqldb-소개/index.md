@@ -13,11 +13,11 @@ tags:
 series: "Apache Kafka"
 ---
 
-## What
+# What
 
 ksqlDB (formerly Kafka SQL, KSQL)는 Kafka를 위한 스트리밍 SQL 엔진이다. SQL 인터페이스를 제공하고 있어 익숙한 SQL 구문으로 개발자들이 쉽게 Kafka에서 스트리밍 처리를 할 수 있게 도와준다. ksqlDB에서 제공하는 기능은 다음과 같다.
 
-### 1.1 Feature
+## 1.1 Feature
 
 - 친숙하고 가벼운 SQL 구문을 통해 관계형 데이터베이스에 유사하게 접근하는 방식과 비슷하게 실시간 스트리밍 처리를 가능
 - ksqlDB는 fault-tolerant, scale이 가능하도록 설계
@@ -35,7 +35,7 @@ ksqlDB (formerly Kafka SQL, KSQL)는 Kafka를 위한 스트리밍 SQL 엔진이�
 - https://docs.ksqldb.io/en/latest/how-to-guides/use-lambda-functions/
 
 
-### 1.2 ksqlDB Architecture
+## 1.2 ksqlDB Architecture
 
 ![Diagram showing architecture of ksqlDB](image-20221026125901.png)
 
@@ -79,15 +79,15 @@ ksqlDB (formerly Kafka SQL, KSQL)는 Kafka를 위한 스트리밍 SQL 엔진이�
 - https://cwiki.apache.org/confluence/display/KAFKA/Kafka+Streams+Internal+Data+Management
 - https://stackoverflow.com/questions/58621917/ksql-query-and-tables-storage
 
-## Why
+# Why
 
 ksqlDB를 왜 사용하면 좋은지 알아보아요.
 
-### 1.Kafka 스트림 처리에 대한 3가지 방법
+## 1.Kafka 스트림 처리에 대한 3가지 방법
 
 ![Kafka 스트림 처리에 대한 3가지 방법](image-20221024172234886.png)
 
-### 2. ksqlDB vs Kafka Streams
+## 2. ksqlDB vs Kafka Streams
 
 ![The Confluent Platform stack, with ksqlDB built on Kafka Streams](ksqldb-kafka-streams-core-kafka-stack.png)
 
@@ -109,11 +109,11 @@ ksqlDB를 왜 사용하면 좋은지 알아보아요.
 - https://www.slideshare.net/ConfluentInc/ksqldb-253336471
 
 
-## Who
+# Who
 
 ksqlDB는 Confluent 회사에 의해서 2017년부터 개발되었다.
 
-### History
+## History
 
 **Kafka**
 
@@ -144,7 +144,7 @@ ksqlDB는 Confluent 회사에 의해서 2017년부터 개발되었다.
 - https://www.linkedin.com/pulse/kafkas-origin-story-linkedin-tanvir-ahmed/
 
 
-## Where
+# Where
 
 다음과 같이 여러 회사에서 공식적으로 ksqlDB를 사용하고 있다. 국내에서는 LINE에서 ksqlDB를 이용해서 AB Test Report 시스템을 개선했다고 한다.
 
@@ -171,9 +171,9 @@ ksqlDB는 Confluent 회사에 의해서 2017년부터 개발되었다.
 - https://ksqldb.io/
 - https://www.confluent.io/ko-kr/product/ksqldb/
 
-## How
+# How
 
-### 1. Installation on local-machine
+## 1. Installation on local-machine
 
 로컬환경에서 쉽게 여러 Kafka 구성요소를 구동하기 위해 `docker-compose`로 실행한다. 먼저 `docker-compose.yml` 파일을 다운로드한다.
 
@@ -215,13 +215,13 @@ Having trouble? Type 'help' (case-insensitive) for a rundown of how things work!
 ksql>
 ```
 
-### 2. KSQL Usage
+## 2. KSQL Usage
 
 예제를 통해서 조금 더 ksqlDB에 대해서 알아보자.
 
-### 2.1 Collections : Stream vs Table
+## 2.1 Collections : Stream vs Table
 
-#### 2.1.1 Stream
+### 2.1.1 Stream
 
 - 영속적으로 무제한의 스트리밍 되는 이벤트 컬렉션이다
     - Partition으로 데이터가 관리
@@ -252,7 +252,7 @@ WHERE profileId = 'c2309eec'
 
 
 
-#### 2.1.2 Table (Materialized view)
+### 2.1.2 Table (Materialized view)
 
 - Table 데이터는 현재 최신 상태를 가지고 mutable한 이벤트 컬렉션이다
 - Row은 변경 가능하며 Primary Key가 있어야 한다
@@ -296,11 +296,11 @@ SELECT ROUND(GEO_DISTANCE(la, lo, 37.4133, -122.1162), -1) AS distanceInMiles,
 
 
 
-### 2.2 Query
+## 2.2 Query
 
 
 
-#### 2.2.1 Push Query (Continous Query)
+### 2.2.1 Push Query (Continous Query)
 
 - Push query는 실시간 변경 되는 결과를 구독할 수 있다
 - EMIT 절은 쿼리를 영속적으로 계속 실행시킨다
@@ -337,7 +337,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:9092 --topic locations
 
 
 
-#### 2.2.2 Pull Query (Classic Query)
+### 2.2.2 Pull Query (Classic Query)
 
 - Pull Query는 테이블의 현재 상태를 가져온다
 
@@ -355,15 +355,15 @@ ksql> SELECT * from ridersNearMountainView WHERE distanceInMiles <= 10;
 
 
 
-### 2. Control Center
+## 2. Control Center
 
 지금까지 CLI에서만 ksqlDB를 사용해 보았는데요. Control Center에서도 ksqlDB를 사용해보겠습니다. [http://localhost:9021](http://localhost:9021) 에 접속한다.
 
-### 2.1 Datagen Source Connector
+## 2.1 Datagen Source Connector
 
 Datagen Source Connector는 개발 및 테스트를 위해 Mock 데이터를 생성해주는 connector이다. 설정한 값에 따라서 주기적으로 데이터를 생성해주어 연속적으로 데이터를 계속 받는 시뮬레이션이 가능하다.
 
-#### 2.1.1 Generate Mock Data
+### 2.1.1 Generate Mock Data
 
 `pageviews`와 `users`를 mock으로 생성한다.
 
@@ -412,7 +412,7 @@ Datagen Source Connector는 개발 및 테스트를 위해 Mock 데이터를 생
 
 
 
-### 2.2 Joins Collections
+## 2.2 Joins Collections
 
 ksqlDB의 Join와 기존 관계형 데이터베이스의 Join는 둘 이상의 데이터를 합친다는 점에서 비슷하다. Join 구문 사용해서 실시간으로 발생하는 streams 이벤트를 병합할 수 있다.
 
@@ -446,9 +446,9 @@ ksql> CREATE STREAM pageviews_region_like_89
 
 
 
-### 2.4 Windows
+## 2.4 Windows
 
-#### 2.4.1 Time
+### 2.4.1 Time
 
 ![Diagram showing records in a ksqlDB stream](ksql-stream-records.png)
 
@@ -456,7 +456,7 @@ ksql> CREATE STREAM pageviews_region_like_89
 - Timestamp는 producer 어플리케이션이나 Kafka broker에 의해서 설정된다
 - Timestamp는 aggregation, join와 같은 시간 의존적인 작업에서 사용된다
 
-#### 2.4.2 Window
+### 2.4.2 Window
 
 ![Diagram showing the relationship between records and time in a ksqlDB stream](ksql-window.png)
 
@@ -466,7 +466,7 @@ ksql> CREATE STREAM pageviews_region_like_89
 - 특정 기간을 Duration으로 나타내고, Duration은 `WINDOWSTART` / `WINDOWEND`로 표현할 수 있다
 - `WINDOWSTART` / `WINDOWEND`는 Window 쿼리를 생성하면 SELECT 절에 선언해서 사용할 수 있다
 
-#### 2.4.1 Window Types
+### 2.4.1 Window Types
 
 KSQL에서 Time Windows을 정의하는 3가지 방법이 있다.
 
@@ -513,7 +513,7 @@ ksql> SELECT * FROM pageviews_per_region_89 EMIT CHANGES;
 
 - https://ojt90902.tistory.com/1117?category=1007571
 
-### 3. REST API
+## 3. REST API
 
 ```bash
 $ curl --location --request POST 'http://localhost:8088/ksql' \
@@ -557,7 +557,7 @@ ksqlDB 서버는 REST API를 제공하고 있고 API 전체 문서는 아래 링
 - https://rmoff.net/2019/01/17/ksql-rest-api-cheatsheet/
 - https://docs.ksqldb.io/en/latest/developer-guide/api/
 
-### 4. Connector Management
+## 4. Connector Management
 
 > [Kafka Connector](https://blog.advenoh.pe.kr/kafka-connect에-대한-소개/)는 여기를 참고해주세요
 
@@ -591,7 +591,7 @@ ksql> CREATE SINK CONNECTOR `mongodb-test-sink-connector` WITH (
 
 
 
-### 5. KSQL Library
+## 5. KSQL Library
 
 - golang
     - https://github.com/VinGarcia/ksql
@@ -600,7 +600,7 @@ ksql> CREATE SINK CONNECTOR `mongodb-test-sink-connector` WITH (
     - https://www.baeldung.com/ksqldb
     - https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-clients/java-client/
 
-## When
+# When
 
 ksqlDB는 Kafka 기반으로 데이터를 처리하기 때문에 실시간으로 데이터를 변환, 통합 및 분석이 즉시 필요한 곳에 사용한다. 아래와 같이 다양한 분야에서 사용될 수 있다.
 
@@ -620,18 +620,18 @@ ksqlDB는 Kafka 기반으로 데이터를 처리하기 때문에 실시간으로
 - https://github.com/confluentinc/ksql/tree/0.1.x/docs#ksql-documentation
 - https://www.confluent.io/blog/stream-processing-vs-batch-processing/
 
-## FAQ
+# FAQ
 
 ksqlDB 다양한 FAQ는 아래를 참고해주세요.
 
 - https://docs.ksqldb.io/en/latest/faq/
 
-### 1. ksqlDB의 License는 Apache License 2.0인가?
+## 1. ksqlDB의 License는 Apache License 2.0인가?
 
 - Apache License는 아니다
 - ksqlDB는 Confluent Community License가 부여되었고 Confluent 회사 제품으로 관리되고 있다
 
-### 2. Confluent Community License는 어떤 제약이 있나?
+## 2. Confluent Community License는 어떤 제약이 있나?
 
 ![Apache 2.0 License | Confluent Community License | Confluent Enterprise License](relicensing-blog_faq-1920x1080px-2-1024x576.png)
 
@@ -641,7 +641,7 @@ ksqlDB 다양한 FAQ는 아래를 참고해주세요.
 - https://www.confluent.io/confluent-community-license-faq/
 - https://www.confluent.io/ko-kr/blog/license-changes-confluent-platform/
 
-## Wrap up
+# Wrap up
 
 ksqlDB는 이미 우리에게 익숙한 SQL 구문으로 Kafka에서 스트리밍 처리를 쉽게 할 수 있도록 도와준다.
 
@@ -652,7 +652,7 @@ ksqlDB는 이미 우리에게 익숙한 SQL 구문으로 Kafka에서 스트리�
 
 - https://www.confluent.io/blog/building-streaming-data-pipelines-visually
 
-## Reference
+# Reference
 
 - ksql syntax
     - https://docs.ksqldb.io/en/latest/developer-guide/ksqldb-reference/show-streams/

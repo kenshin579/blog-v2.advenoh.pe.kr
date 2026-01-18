@@ -27,7 +27,7 @@ M1 맥북 + `golang` + `memongo` 조합으로 개발하고 있다면 아래와 �
 
 해결책은 2가지가 있고 개인적으로 매번 옵션을 기억해서 하기보다는 그냥 기본 설정은 두고 다운로드한 MongoDB binary를 사용하도록 하는 게 조금 더 편한듯해서 2번 방식으로 실행하는 것을 추천한다.
 
-## 1.Memongo 옵션 설정
+# 1.Memongo 옵션 설정
 
 `arm64` 아키텍처일때 다운로드해야 하는 URL을 넣는 방법으로 M1에서 실행시킬 수 있다.
 
@@ -50,7 +50,7 @@ opts := &memongo.Options{
 
 
 
-## 2.Custom MongoDB binary 사용
+# 2.Custom MongoDB binary 사용
 
 MongoDB binary를 다운로드하고 환경변수, `MEMONGO_MONGOD_BIN`, `PATH` 값을 설정해주면 다운로드하지 않고 이미 설치된 binary를 사용하도록 할 수 있다. 혹시 실행 시 문제가 발생하는 경우에는 아주 가끔 `pkill`로 `mongod`를 kill 해줘야 하는 경우도 있다.
 
@@ -99,7 +99,7 @@ PASS
 
 
 
-## 참고
+# 참고
 
 - https://www.mongodb.com/docs/v4.2/tutorial/install-mongodb-on-os-x/
 - https://github.com/nodkz/mongodb-memory-server/issues/422

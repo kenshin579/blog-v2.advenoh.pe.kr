@@ -23,7 +23,7 @@ db.inventory.insertMany([
 ])
 ```
 
-## 1.item의 key 이름을 변경
+# 1.item의 key 이름을 변경
 
 inventory list의 item의 key 이름은 `$rename` operator를 사용한다. 아래 예제에서는 `item` -> `item_id`로 이름을 변경한다.
 
@@ -32,7 +32,7 @@ db.inventory.updateMany({}, {$rename: {"item": "item_id"}}, false, true)
 ```
 
 
-## 2. 매칭이 item의 특정 값을 업데이트
+# 2. 매칭이 item의 특정 값을 업데이트
 
 SQL에서 where와 같이 `$eq` operator로 특정 값이 매칭되는 item을 선택해서 값을 `$se`t operator로 변경한다.
 
@@ -45,7 +45,7 @@ db.inventory.updateMany(
 )
 ```
 
-## 참고
+# 참고
 
 - https://blog.kevinchisholm.com/javascript/mongodb/getting-started-with-mongo-shell-scripting-basic-crud-operations/
 

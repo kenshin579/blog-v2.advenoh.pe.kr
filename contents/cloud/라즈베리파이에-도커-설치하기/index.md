@@ -14,15 +14,15 @@ tags:
 
 라즈베리파이에 도커 설치하는 방법에 대해서 알아보겠습니다.
 
-### 사전 조건
+## 사전 조건
 
 - 라즈베리파이에 Raspbian OS 설치
     - 참고 : [모니터없이 Raspberry Pi 4 OS 설치](https://blog.advenoh.pe.kr/raspberry-pi4-os-설치/)
 - SSH 연결 활성화
 
-## 라즈베리파이에 도커 설치하기
+# 라즈베리파이에 도커 설치하기
 
-### 스크립트로 도커 설치
+## 스크립트로 도커 설치
 
 도커에서 제공하는 설치 스크립트를 다운로드해서 바로 실행시킨다.
 
@@ -38,7 +38,7 @@ Warning: apt-key output should not be parsed (stdout is not a terminal)
 
 
 
-### 도커 그룹에 non-root 사용자 추가하기
+## 도커 그룹에 non-root 사용자 추가하기
 
 기본적으로 도커 컨테이너를 실행시키려면 root 권한이 필요하다. sudo로 실행할 수 있지만, root 권한이 없는 사용자도 실행하고 싶은 경우 docker 그룹에 사용자를 추가하면 된다. 로그아웃하고 다시 로그인해야 실행이 가능하다.
 
@@ -54,7 +54,7 @@ $ docker verion
 
 
 
-### Hello World 컨테이너 실행해서 테스트해보기
+## Hello World 컨테이너 실행해서 테스트해보기
 
 도커 설치가 잘 되었는지 테스트하는 가장 좋은 방법은 마지막으로 Hello World 컨테이너를 실행하는 것이다. 아래 명령어로 컨테이너를 실행시킨다.
 
@@ -62,7 +62,7 @@ $ docker verion
 $ docker run hello-world
 ```
 
-## 참고
+# 참고
 
 - https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo
 - https://www.boolsee.pe.kr/installation-and-running-of-docker-in-raspberry-pi-buster/

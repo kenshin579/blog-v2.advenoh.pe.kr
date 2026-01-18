@@ -18,9 +18,9 @@ tags:
 
 Git local, remote 브랜치를 한번에 삭제하는 방법에 대해서 알아보자.
 
-## 1. 다중 Local 브랜치 삭제하기
+# 1. 다중 Local 브랜치 삭제하기
 
-### 1.1 삭제하려는 브랜치 목록보기
+## 1.1 삭제하려는 브랜치 목록보기
 
 `grep` 명령어로 삭제하려는 브랜치 목록을 확인한다.
 
@@ -31,7 +31,7 @@ $ git branch | grep "MEDIA-1"
   feature/MEDIA-1068
 ```
 
-### 1.2 검색 패턴으로 한번에 브랜치를 삭제하기
+## 1.2 검색 패턴으로 한번에 브랜치를 삭제하기
 
 `grep`으로 찾은 브랜치를 `xargs` 명령에 pipeline으로 넘겨줘서 삭제한다.
 
@@ -44,9 +44,9 @@ Deleted branch deploy/MEDIA-1210 (was d8918276b).
 Deleted branch feature/MEDIA-1068 (was e5c3e4d6b).
 ```
 
-## 2. 다중 Remote 브랜치 삭제하기
+# 2. 다중 Remote 브랜치 삭제하기
 
-### 2.1 Remote 브랜치 목록 확인하기
+## 2.1 Remote 브랜치 목록 확인하기
 
 Remote 브랜치도 같은 원리로 삭제할 수 있다. git의 `-r` (`--remotes`) 옵션으로 Remote 브랜치의 목록을 확인할 수 있다.
 
@@ -57,7 +57,7 @@ greenkeeper/monorepo.gatsby-20190322142727
 greenkeeper/monorepo.gatsby-20190322145441
 ```
 
-### 2.2 Remote 브랜치 다중 삭제하기
+## 2.2 Remote 브랜치 다중 삭제하기
 
 검색 패턴으로 찾은 브랜치를 xargs로 하나씩 삭제한다.
 
@@ -73,7 +73,7 @@ To https://github.com/kenshin579/advenoh.pe.kr.git
  - [deleted]         greenkeeper/monorepo.gatsby-20190322145441
 ```
 
-## 3. 참고
+# 3. 참고
 
 * git branch
     * https://medium.com/@rajsek/deleting-multiple-branches-in-git-e07be9f5073c

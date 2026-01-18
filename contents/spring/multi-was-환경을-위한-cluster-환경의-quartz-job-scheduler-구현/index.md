@@ -20,7 +20,7 @@ tags:
 series: "Spring Quartz"
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 Quartz에서는 메모리 기반의 스케줄러뿐만이 아니라 DB 기반의 스케줄러도 지원합니다. DB 기반의 스케줄러의 경우에는 스케줄러 정보를 메모리가 아닌 DB에 저장하기 때문에 다중 서버 간의 스케줄링이 가능합니다. Quartz는 master-slave 형태로 서로 간의 통신을 하지 않고 단순히 DB 업데이트 정보를 기반으로 각각의 스케줄 인스턴스가 자기가 실행해야 하는 Job을 실행합니다.
 
@@ -37,7 +37,7 @@ Cluster 환경에서 스케줄링이 가능하기 때문에 Non-Cluster 환경�
     - Cluster 구성으로 여러 Job이 여러 서버에 분산되어 실행된다
     - 로드 밸런싱 알고리즘에는 Hashing, Round-robin 등등이 존재하지만, Quartz에서는 최소한의 구현으로 random 알고리즘만을 제공한다
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 포스팅에서 작성한 코드는 아래 github 링크를 참조해주세요.
 
@@ -47,9 +47,9 @@ Cluster 환경에서 스케줄링이 가능하기 때문에 Non-Cluster 환경�
 - Source code : [github](https://github.com/kenshin579/tutorials-java/tree/master/springboot-quartz-cluster)
 - Software management tool : Maven
 
-## 3. 스프링 부트 기반의 Quartz Cluster 스케줄러 구축
+# 3. 스프링 부트 기반의 Quartz Cluster 스케줄러 구축
 
-### 3.1 Quartz를 위한 DB 스키마 생성
+## 3.1 Quartz를 위한 DB 스키마 생성
 
 DB 스키마는 Quartz의 [소스코드](https://github.com/quartz-scheduler/quartz/releases) 에 포함되어 있어서 원하는 DB 스키마를 소스코드에서 찾습니다. 저는 MySql를 사용하겠습니다.
 
@@ -85,7 +85,7 @@ mysql> CREATE DATABASE spring_boot_quartz_cluster
 
 ![](image_44.png)
 
-### 3.2 Maven 라이브러리 추가
+## 3.2 Maven 라이브러리 추가
 
 Quartz Cluster 구성을 위해 스프링 부트에서 필요한 라이브러리를 추가합니다.
 
@@ -105,9 +105,9 @@ Quartz Cluster 구성을 위해 스프링 부트에서 필요한 라이브러리
 </dependency>
 ```
 
-### 3.3 Quartz 관련 설정
+## 3.3 Quartz 관련 설정
 
-#### 3.3.1 DataSource 및 Quartz 속성값 설정하기
+### 3.3.1 DataSource 및 Quartz 속성값 설정하기
 
 Spring Boot에서 dataSource 설정은 간단합니다. @EnableAutoConfiguration 어노테이션(@SpringBootApplication 어노테이션에 의해 포함됨)에 의해서 application.properties 내의 spring.datasource.\* 속성은 정의하면 자동으로 인식이 됩니다.
 
@@ -143,7 +143,7 @@ spring.quartz.scheduler-name=QuartzScheduler
     - Job이 실행되어야 하는데 서버가 셧다운 되었거나 쓰레드가 부족한 경우에 제시간에 실행이 안될 수 있는데 이 경우를 misfire (불발) 되었다고 한다
     - Trigger가 misfire된 것으로 간주되는 시간으로 1분이 지나면 misFire 되었다고 판단한다
 
-#### 3.3.2 Quartz에 dataSource 설정하기
+### 3.3.2 Quartz에 dataSource 설정하기
 
 SchedulerFactoryBean에 dataSource를 지정하면 됩니다.
 
@@ -173,7 +173,7 @@ $ meld springboot-quartz-cluster/ springboot-quartz-in-memory
 
 ![](image_9.png)
 
-#### 3.3.3 이중화 서버 구동
+### 3.3.3 이중화 서버 구동
 
 서버를 이중화로 구동했을 때도 이상이 없이 스케줄러가 잘 돌아가는지 확인해볼까요? 먼저 프로젝트를 복사할게요.
 
@@ -211,7 +211,7 @@ GET /scheduler/jobs API로 조회해보면 잘 등록된 것을 확인할 수 �
 
 ![](B7C01E92-4F84-4145-911A-DF381722A831.png)
 
-### 3.4 Quartz Cluster 설정시 주의사항
+## 3.4 Quartz Cluster 설정시 주의사항
 
 - 서버 타임 동기화
     - Quartz는 내부적인 로직안에서 타임으로 판단하는 부분이 많아서 서버 타임 동기화는 필수이다
@@ -253,11 +253,11 @@ org.quartz.jobStore.clusterCheckinInterval=15000
 org.quartz.jobStore.acquireTriggersWithinLock=true
 ```
 
-### 3.5 Job History 기능
+## 3.5 Job History 기능
 
 Quartz에서는 현재 실행되는 Job에 대해서만 관리하고 Job History에 대한 내용은 기록하지 않습니다. 나중에 어드민 UI 메인 페이지에 추가로 넣으면 좋을 것 같아서 이번에 작업을 같이했습니다. 이 내용은 어드민 UI 포스팅에서 다루도록 할게요.
 
-## 4. 정리
+# 4. 정리
 
 Quartz Cluster 구성은 DB에 대한 dataSource 속성과 Cluster 관련 설정만 해주면 어렵지 않게 구성할 수 있습니다.
 
@@ -265,7 +265,7 @@ Quartz는 Cluster 환경으로 DB를 사용하고 DB에 접근할 때마다 lock
 
 Quartz에서는 기본적으로 2가지 저장소만 (Memory, DB) 제공하지만, Github에 Redis나 MongoDB와 같은 저장소에 저장할 수 있도록 구현체들이 있습니다. DB 실행 시 문제가 된다면 다른 저장소로 저장해보는 것도 좋을 듯해요.
 
-## 5. 참고
+# 5. 참고
 
 - Quartz Cluster
     - [https://jeroenbellen.com/configuring-a-quartz-scheduler-in-a-clustered-spring-boot-application/](https://jeroenbellen.com/configuring-a-quartz-scheduler-in-a-clustered-spring-boot-application/)

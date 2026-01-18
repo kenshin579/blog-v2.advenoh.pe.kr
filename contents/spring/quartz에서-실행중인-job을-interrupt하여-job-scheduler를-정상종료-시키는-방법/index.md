@@ -18,11 +18,11 @@ tags:
 series: "Spring Quartz"
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 본 포스팅은 Quartz 튜터리얼에서 4번째 시리즈로 Quartz 서버를 셧다운 시킬 때 gradefully하게 처리하는 방법에 대해서 다룹니다. 셧다운 이벤트가 발생하면 실행 중인 Quartz Job에 내부 interrupt() 함수가 호출이 되고 interrupt로 노티를 받으면 개발자가 알아서 close 로직을 짜면 됩니다. 실행 쓰레드를 kill 할 수도 있고 (비추천) 실행 중인 Job을 기다리고 다음 스케줄에서 제외시킬 수도 있습니다.
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 * OS : Mac OS
 * IDE: Intellij
@@ -34,7 +34,7 @@ series: "Spring Quartz"
 
 실행 중인 Job을 gracefully하게 셧다운 하려면 2가지만 설정해주면 됩니다.
 
-## 3.1 Quartz 설정에 SchedulerFactoryBean에 대한 ShutdownHook 등록하기
+# 3.1 Quartz 설정에 SchedulerFactoryBean에 대한 ShutdownHook 등록하기
 
 Quartz에서 사용하는 SchedulerFactoryBean은 SmartLifeCycle 인터페이스를 구현하고 있습니다.
 
@@ -143,11 +143,11 @@ public class CronJob2 extends QuartzJobBean implements InterruptableJob {
 }
 ```
 
-## 4. 정리
+# 4. 정리
 
 실행 중인 Job을 Gracefully 하게 셧다운 시키는 방법에 대해서 알아보았습니다. 다음 포스팅은 Quartz 튜터리얼 시리지로의 마지막으로 Quartz 어드민 UI 구현에 대해서 알아보겠습니다.
 
-## 5. 참고
+# 5. 참고
 
 * Servlet 시작시
     * [https://karismamun.tistory.com/46](https://karismamun.tistory.com/46)

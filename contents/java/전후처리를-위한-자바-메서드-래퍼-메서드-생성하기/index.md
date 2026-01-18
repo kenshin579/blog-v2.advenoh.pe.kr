@@ -14,13 +14,13 @@ tags:
   - 전후처리
 ---
 
-## 1.개요
+# 1.개요
 
 코딩을 하다 보면 어떤 작업을 하기 전에 전후 처리가 필요할 때가 종종 생깁니다. 전처리(pre-processing)에서는 실제 작업을 수행하기 전에 필요한 세팅을 하고 후처리(post-processing)에서는 cleanup 정도의 작업을 하게 됩니다. 이런 전후 처리를 여러 번 할 때에는 별도의 메서드로 구현해두면 좋습니다. 몇 개의 예제를 보면서 알아보죠.
 
-## 2.예제
+# 2.예제
 
-### 2.1 파일에 텍스트 String 값 쓰기
+## 2.1 파일에 텍스트 String 값 쓰기
 
 파일에 쓰려면 기본적으로 파일 스트림을 열고 텍스트를 쓰고 나서 파일 스트림을 닫아야 합니다. 파일 스트림을 여닫는 부분을 전후처리로 만들어봅시다.
 
@@ -58,7 +58,7 @@ private static void writeLineToFile(final String fileName, String line, FileWrit
 }
 ```
 
-### 2.2 Unit test에서 static final로 선언된 상수값을 변경하여 테스트하기
+## 2.2 Unit test에서 static final로 선언된 상수값을 변경하여 테스트하기
 
 기존에 선언한 static final 상수 값을 변경하면서 unit test를 작성하려면 reflection을 사용해서 상수 값을 변경해줘야 합니다. static final 값을 한번 변경하면 변경된 값으로 계속 유지되기 때문에 다른 unit test의 결과가 fail로 떨어질 수 있습니다. 그래서 테스트 이후에는 기존 값으로 원복시켜줘야 합니다. 실제 작성된 코드를 보죠.
 
@@ -170,7 +170,7 @@ private static void executeAndPrePostProcessWithRunnable(int newSize, Runnable r
     - PrePostTest
     - FinalFieldChangeTest
 
-## 3. 참고
+# 3. 참고
 
 - 전후처리
     - [https://www.javacodegeeks.com/2013/05/a-simple-application-of-lambda-expressions-in-java-8.html](https://www.javacodegeeks.com/2013/05/a-simple-application-of-lambda-expressions-in-java-8.html)

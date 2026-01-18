@@ -17,13 +17,13 @@ tags:
   - 최소값
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 자바8의 스트림 API를 사용해서 List나 배열에서 max, min 값을 찾는 방법에 대해서 알아보자.
 
 # 2. 스트림을 사용하여 max 값 찾기
 
-### 2.1 숫자 List에서 Max 값 찾기
+## 2.1 숫자 List에서 Max 값 찾기
 
 
 ```java
@@ -67,7 +67,7 @@ public void 숫자_list_max_값_찾기2() {
     - Comparator를 인자 값으로 받는다.
     - Comparator 쉽게 생성하기 위해 `Comparator.comparing()` 메서드를 이용했다
 
-### 2.2 숫자 배열에서 Max 값 찾기
+## 2.2 숫자 배열에서 Max 값 찾기
 
 ```java
 @Test
@@ -90,7 +90,7 @@ public void 숫자_array_max_값_찾기() {
 
 
 
-### 2.3 객체 List에서 특정 필드의 최대 값을 가진 객체 찾기
+## 2.3 객체 List에서 특정 필드의 최대 값을 가진 객체 찾기
 
 이번 예제에서는 객체에서 특정 필드의 최댓값을 찾는 방법에 대해서 알아보자. 학생 중이 나이가 가장 많은 학생을 찾는 예제이다.
 
@@ -121,7 +121,7 @@ public void 객체_list에서_나이가_max_값_찾기() {
 
 
 
-### 2.4 String 배열에서 String 길이가 가장 큰 값을 찾기
+## 2.4 String 배열에서 String 길이가 가장 큰 값을 찾기
 
 
 
@@ -137,13 +137,13 @@ public void array_str에서_가장_긴_string의_길이_찾기() {
 - `mapToInt()`
     - IntStream으로 변환할 때 string의 길이로 변환하여 max 값을 찾는다
 
-## 3.정리
+# 3.정리
 
 이 포스팅에서는 자바*8* 스트림 API의 `max(), min()` 메서드를 사용하여 List나 Array에서 최댓값을 찾는 방법을 살펴보았다.
 
 예제는 [Github](https://github.com/kenshin579/tutorials-java/blob/master/java8/src/test/java/com/advenoh/streams/MinMaxValueFromListTest.java) 소스를 참고해주세요.
 
-## 4.참고
+# 4.참고
 
 - https://stackoverflow.com/questions/52443550/how-to-find-max-length-in-list-of-string-using-streams-in-java
 - https://www.baeldung.com/java-collection-min-max

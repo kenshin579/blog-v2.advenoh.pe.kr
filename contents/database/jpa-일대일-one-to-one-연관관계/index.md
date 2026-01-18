@@ -19,12 +19,12 @@ tags:
 series: "Spring JPA"
 ---
 
-## 1. 들어가며
+# 1. 들어가며
 
 이번 포스팅에서는 일대일 (1:1) 매핑에 대해서 알아보겠습니다.
 
 
-## 2. 개발 환경
+# 2. 개발 환경
 
 포스팅에서 작성한 코드는 깃허브에 올라가 있어요.
 
@@ -39,11 +39,11 @@ series: "Spring JPA"
         * [양반향](https://github.com/kenshin579/tutorials-java/tree/master/springboot-jpa-one-to-one-bidirectional-target)
 * Software management tool : Maven
 
-## 3. 일대일 (1:1) 연관관계
+# 3. 일대일 (1:1) 연관관계
 
 일대일 관계에서는 반대도 일대일 관계가 됩니다. 다대일 관계에서는 다(N)쪽이 항상 외래 키를 가지고 있지만, 일대일 관계에서는 주 테이블이나 대상 테이블에 외래 키를 둘 수 있어서 개발 시 어느 쪽에 둘지를 선택해야 합니다.
 
-### 3.1 주 테이블에 외래 키가 있는 경우
+## 3.1 주 테이블에 외래 키가 있는 경우
 
 주 테이블에 외래 키가 있으면 주 객체에도 객체 참조를 두는 구조로 매핑을 하게 됩니다.
 
@@ -53,7 +53,7 @@ series: "Spring JPA"
 
 <img src="image_1.png" style="zoom:50%;" />
 
-#### 3.1.1 일대일 단방향
+### 3.1.1 일대일 단방향
 
 일대일 단방향으로 설정해보겠습니다. 주 객체인 `User` 엔티티에 @OneToOne 선언 이후 대상 테이블인 `CellularPhone` 객체를 선언합니다. `User` 객체를 통해서 사용자의 핸드폰 정보를 조회할 수 있는 구조입니다.
 
@@ -124,7 +124,7 @@ public void save_user_phone() {
 
 
 
-#### 3.1.2 일대일 양반향
+### 3.1.2 일대일 양반향
 
 이제 양반향으로 설정해볼까요? `CellularPhone` 객체에도 `User` 객체를 가지도록 합니다.
 
@@ -205,7 +205,7 @@ public void save_user_phone() {
 
 
 
-### 3.2 대상 테이블에 외래 키가 있는 경우
+## 3.2 대상 테이블에 외래 키가 있는 경우
 
 외래 키가 주 테이블이 아니라 대상 테이블에 존재하는 경우에는 어떻게 달라지는 알아보겠습니다.
 
@@ -215,13 +215,13 @@ public void save_user_phone() {
 
 <img src="image_5.png" style="zoom:50%;" />
 
-#### 3.2.1 일대일 단방향
+### 3.2.1 일대일 단방향
 
 외래 키는 `cellular_phone` 테이블에 있고 아래와 같은 일대일 연관관계는 JPA에서 지원하지 않아 매핑할 수 없습니다.
 
 <img src="image_2.png" style="zoom:50%;" />
 
-#### 3.2.2 일대일 양반향
+### 3.2.2 일대일 양반향
 
 <img src="image_4.png" style="zoom:50%;" />
 
@@ -263,7 +263,7 @@ public class User extends DateAudit {
 }
 ```
 
-## 4. 참고
+# 4. 참고
 
 * 일대일
     * [https://kwonnam.pe.kr/wiki/java/jpa/one-to-one](https://kwonnam.pe.kr/wiki/java/jpa/one-to-one)

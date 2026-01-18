@@ -21,7 +21,7 @@ Kafka 사용시 [Ahkq](https://github.com/tchiotludo/akhq) UI를 대부분 사�
 
 로컬환경에서 Kafka를 실행하는 방법은 그전 [포스팅](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/)을 참고해주세요.
 
-## 1.Download Kafka
+# 1.Download Kafka
 
 최신 Kafka binary 파일은 아래 링크에서 다운로드한다.
 
@@ -33,7 +33,7 @@ $ wget https://downloads.apache.org/kafka/3.2.1/kafka_2.13-3.2.1.tgz
 $ tar -jxvf kafka_2.13-3.2.1.tgz
 ```
 
-## 2.Kafka CLI
+# 2.Kafka CLI
 
 Kafka 기본 포트번호는 9092로 시작하지만, [로컬환경에서 Kafka 실행하기](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/)에서 설정한 포트번호로 실행한다.
 
@@ -53,9 +53,9 @@ $ source ~/.zshrc
 
 
 
-### 2.1 Topics
+## 2.1 Topics
 
-#### 2.1.2 Topic 목록 출력
+### 2.1.2 Topic 목록 출력
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --list
@@ -68,7 +68,7 @@ frank
 test
 ```
 
-#### 2.1.1 Topic 생성
+### 2.1.1 Topic 생성
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --replication-factor 1 --partitions 1 --topic my_topic --create
@@ -77,7 +77,7 @@ Created topic my_topic.
 
 
 
-#### 2.1.3 Topic 정보 보기
+### 2.1.3 Topic 정보 보기
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --describe
@@ -85,7 +85,7 @@ Topic: my_topic	TopicId: Zlpf9YfsSRO07grMU3MZlA	PartitionCount: 1	ReplicationFac
 	Topic: my_topic	Partition: 0	Leader: 0	Replicas: 0	Isr: 0
 ```
 
-#### 2.1.4 Topic 삭제하기
+### 2.1.4 Topic 삭제하기
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --delete
@@ -93,7 +93,7 @@ $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --delete
 
 
 
-### 2.2  Producer
+## 2.2  Producer
 
 ```bash
 $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
@@ -107,7 +107,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
 
 producer console 창에서 나가려면 `Ctrl+C`를 입력하여 종료시킨다.
 
-#### 2.2.1 `kafka-console-producer.sh`에서 키와 같이 메시지를 생성하는 방법은?
+### 2.2.1 `kafka-console-producer.sh`에서 키와 같이 메시지를 생성하는 방법은?
 
 기본적으로 Kafka topic에 메시지를 보내면 `null` 키가 있는 메시지가 생성된다. 키와 함께 메시지를 보내려면, `parse.key`와 `key.separator` 속성 값을 사용해야 한다. 예제에서는 `:`를 separator로 사용했다.
 
@@ -118,7 +118,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic 
 
 
 
-### 2.3 Consumer
+## 2.3 Consumer
 
 `kafka-console-consumer.sh` 명령어 사용시 알아야 하는 내용들이다.
 
@@ -144,7 +144,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic
 
 
 
-#### 2.3.2 key, value 값을 출력하려면?
+### 2.3.2 key, value 값을 출력하려면?
 
 ```bash
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic --formatter kafka.tools.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --from-beginning
@@ -158,7 +158,7 @@ CreateTime:1660481924547	null	asdf
 
 
 
-### 2.4 Consumer Group
+## 2.4 Consumer Group
 
 Consumer group 기능에 대해서 알아보기 위해서 topic은 최소 2개 이상의 partition 값으로 생성한다. Consumer group 시 알아야 하는 사항은 다음과 같다.
 
@@ -191,7 +191,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
 > 22
 ```
 
-### 2.5. Consumer Group Management
+## 2.5. Consumer Group Management
 
 여기서는 Kafka consumer group을 어떻게 재설정 할 수 있는지 다룬다.
 
@@ -212,7 +212,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
 - `--by-duration`
     - duration으로 offset을 reset한다
 
-#### 2.5.1 `to-earliest` 옵션으로 offset 재설정하기
+### 2.5.1 `to-earliest` 옵션으로 offset 재설정하기
 
 먼저 활성화된 consumer가 없는지 확인한다.
 
@@ -246,7 +246,7 @@ asdf
 value
 ```
 
-#### 2.5.2 `--shift-by` 옵션으로 offset 재설정하기
+### 2.5.2 `--shift-by` 옵션으로 offset 재설정하기
 
 Offset을 2만큼 이동하는 방법도 있다.
 
@@ -271,9 +271,9 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic 
 value
 ```
 
-## 3.FAQ
+# 3.FAQ
 
-### 3.1 Topic의 Partition 수를 늘리는 방법
+## 3.1 Topic의 Partition 수를 늘리는 방법
 
 현재 partition 수를 확인한다
 
@@ -300,7 +300,7 @@ Topic: my_topic	TopicId: ufrRaY-tTyqcHjFAY-q0ew	PartitionCount: 3	ReplicationFac
 
 
 
-### 3.2 Kafka에서 Consumer Group을 삭제하는 방법
+## 3.2 Kafka에서 Consumer Group을 삭제하는 방법
 
 Consumer group을 삭제하여 완전히 처음부터 데이터를 읽어 올 수 있다.
 
@@ -309,7 +309,7 @@ $ kafka-consumer-groups.sh --bootstrap-server localhost:29092 --delete --group m
 Deletion of requested consumer groups ('my-first-application') was successful.
 ```
 
-### 3.3 Consumer Group에서 모든 Consumer를 조회하는 방법
+## 3.3 Consumer Group에서 모든 Consumer를 조회하는 방법
 
 Consumer group에서 모든 consumer를 조회하면, consumer가 네트워크 상으로 어디에 위치해 있고 얼마나 topic을 consume을 하고 있는지 쉽게 알 수 있다.
 
@@ -321,7 +321,7 @@ my-first-application my_topic        1          8               8               
 my-first-application my_topic        2          9               9               0               sarama-473590a9-11eb-40c2-afa7-70c5ec448edf /172.18.0.1     saram
 ```
 
-### 3.4 특정 offset과 partition에서 메시지를 조회하는 방법
+## 3.4 특정 offset과 partition에서 메시지를 조회하는 방법
 
 https://developer.confluent.io/tutorials/kafka-console-consumer-read-specific-offsets-partitions/confluent.html
 
@@ -329,7 +329,7 @@ https://developer.confluent.io/tutorials/kafka-console-consumer-read-specific-of
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic report --partition 5 --offset 373601
 ```
 
-### 3.5 메시지의 Timestamp도 출력하는 방법
+## 3.5 메시지의 Timestamp도 출력하는 방법
 
 ```bash
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic report --property print.timestamp=true
@@ -339,7 +339,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic report --
 
 - https://github.com/confluentinc/schema-registry/issues/947
 
-## 4. 참고
+# 4. 참고
 
 - https://www.conduktor.io/kafka/kafka-cli-tutorial
 - https://kafka.apache.org/documentation/#basic_ops

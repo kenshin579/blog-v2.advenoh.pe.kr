@@ -15,15 +15,15 @@ series: "ArgoCD"
 
 Argo Projects 그전 발표내용은 [여기](https://blog.advenoh.pe.kr/argo-projects/)를 참고해주세요.
 
-## Argo CD?
+# Argo CD?
 
-### What?
+## What?
 
 Argo CD는 GitOps 기반의 CD 도구이고 다음과 같은 여러 기능을 제공하고 있다
 
 ![Argo CD UI](argo-cd-ui.png)
 
-### Feature
+## Feature
 
 - 타겟 환경(Git 저장소에 지정된 대로)에 application 자동 배포 지원
 - 쿠버네티스 manifest 파일을 생성해주는 여러 템플릿 포맷을 지원
@@ -37,7 +37,7 @@ Argo CD는 GitOps 기반의 CD 도구이고 다음과 같은 여러 기능을 �
 - 웹훅 통합 지원 (GitHub, BitBucket, GitLab)
 - 복잡한 응용 프로그램 Rollout을 지원하기 위한 Presync, Sync, Postsync hook도 지원
 
-### Architecture
+## Architecture
 
 ![Argo CD Architecture](image-20220305010552026.png)
 
@@ -65,11 +65,11 @@ Argo CD는 **3가지 컨포넌트**로 이루어져 있다. Argo CD가 하는 �
 - https://argo-cd.readthedocs.io/en/stable/operator-manual/architecture/
 - https://landscape.cncf.io/card-mode?project=incubating&selected=argo
 
-## When?
+# When?
 
 - CD (Continuous Delivery) 도구로서 쿠버네티스 환경에 application을 자동 배포하는데 적합한 도구이다
 
-## Why?
+# Why?
 
 기존 Jenkins와 Argo CD를 비교해보면서 쿠버네티스 환경에서는 어떤 도구가 더 적합한지 각자 판단해보세요.
 
@@ -84,7 +84,7 @@ Argo CD는 **3가지 컨포넌트**로 이루어져 있다. Argo CD가 하는 �
     - 배포이후에 잘 배포가 되었는 지도 확인이 가능하다
     - Pull deployment
 
-## How?
+# How?
 
 Argo CD를 설치하고 사용하려면 아래와 같은 절차로 진행하면 된다. 본 예제는 Argo CD [공식 문서](https://argo-cd.readthedocs.io/en/stable/)를 참고하여 작성하였다.
 
@@ -96,7 +96,7 @@ Argo CD를 설치하고 사용하려면 아래와 같은 절차로 진행하면 
 
 - Docker 이미지를 버전업 시켜 Argo로 동기화 해보기
 
-### 1.로컬환경에서 Argo CD 설치하기
+# 1.로컬환경에서 Argo CD 설치하기
 
 로컬환경에서 `argo`를 설치하기 위해 `minikube`을 실행한다. 명령어가 없는 경우에는 `brew install minikube`로 설치하세요.
 
@@ -111,7 +111,7 @@ $ kubectl create namespace argocd
 $ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-#### 1.1 Argo CD Web 접속하기
+## 1.1 Argo CD Web 접속하기
 
 쿠버네티스 서비스를 노출하지 않고 port forwarding하여 Web 서버에 접속해보자.
 
@@ -130,13 +130,13 @@ HDzPVO0HOyGIDJD7
 
 
 
-### 2.Argo CD Application을 생성하기
+# 2.Argo CD Application을 생성하기
 
-#### 2.1 Argo CLI으로 생성하기
+## 2.1 Argo CLI으로 생성하기
 
 Argo CLI로 application을 생성하려면 Argo CD CLI 설치가 필요하다.
 
-##### 2.1.1 Argo CD CLI 설치하기
+### 2.1.1 Argo CD CLI 설치하기
 
 CLI로 Argo를 생성하거나 조회 삭제도 할 수 있다.
 
@@ -174,7 +174,7 @@ $ argocd app create guestbook --port-forward-namespace argocd --repo https://git
 
 
 
-##### 2.1.1 Argo Application 확인
+### 2.1.1 Argo Application 확인
 
 ```bash
 $ argocd app get guestbook
@@ -197,7 +197,7 @@ GROUP  KIND        NAMESPACE  NAME          STATUS     HEALTH   HOOK  MESSAGE
 apps   Deployment  argotest   guestbook-ui  OutOfSync  Missing
 ```
 
-##### 2.1.2 Sync Application
+### 2.1.2 Sync Application
 
 OutOfSync인 경우 명령어로도 동기화를 할 수 있다
 
@@ -226,11 +226,11 @@ Application 배포시 원하는 namespace를 자동으로 생성해주는 옵션
 
 ![Argo CD Web](image-20220306153543079.png)
 
-#### 2.2 Web UI에서 생성하기
+## 2.2 Web UI에서 생성하기
 
 Applications > New App 버튼 클릭해서 생성할 수 있다.
 
-#### 2.3 kubenetes manifest 파일로 생성하기
+## 2.3 kubenetes manifest 파일로 생성하기
 
 ```bash
 $ cat applcation.yaml
@@ -257,11 +257,11 @@ $ kubectl -n argotest application.yaml
 
 
 
-### 3.Docker 이미지를 버전 업시켜 Argo로 동기화 해보기
+# 3.Docker 이미지를 버전 업시켜 Argo로 동기화 해보기
 
 Application 개발이후 새로운 도커 이미지를 생성했다면, Argo CD로 배포를 해보자.
 
-#### 3.1 Kubernetes config 설정 파일 수정
+## 3.1 Kubernetes config 설정 파일 수정
 
 Git 저장소에서 쿠버네티스 설정 파일를 수정한다. 도커 이미지의 버전을 올려서 푸쉬를 하고 Argo CD에서 확인해보자.
 
@@ -293,13 +293,13 @@ spec:
 
 
 
-#### 3.2 Argo CD Web UI에서 동기화하기
+## 3.2 Argo CD Web UI에서 동기화하기
 
 Argo CD는 Git 저장소를 실시간으로 모니터링하지 않고 주기적으로 확인하기 때문에 UI 상에서는 바로  OutOfSync를 표시해주지 않는다. 바로 확인해고 싶은 경우 Refresh 버튼을 클릭하면 된다. Sync 버튼을 클릭하면 동기화 시킬 수 있다.
 
 ![Argo CD Web - OutOfSync](image-20220306155528310.png)
 
-## FAQ
+# FAQ
 
 1. **GitOps 기반의 다른 CD 도구는 뭐가 있나?**
 
@@ -319,7 +319,7 @@ App과 config는 용도와 생명 주기가 다르기 때문에 Git 저장소를
 - https://kangwoo.kr/tag/argocd/
 - https://argo-cd.readthedocs.io/en/stable/user-guide/best_practices/
 
-### Reference
+# Reference
 
 - https://argo-cd.readthedocs.io/en/stable/
 - https://ithub.tistory.com/345
@@ -327,7 +327,7 @@ App과 config는 용도와 생명 주기가 다르기 때문에 Git 저장소를
 
 
 
-### Terms
+# Terms
 
 - CI (Continous Integration)
 - 개발자를 위한 자동화 프로세스인 지속적인 통합을 의미한다
@@ -352,7 +352,7 @@ App과 config는 용도와 생명 주기가 다르기 때문에 Git 저장소를
 
 ![GitOps Flow](gitops_flow.png)
 
-#### 참고
+# 참고
 
 - CR/CRD
     - https://blog.naver.com/PostView.naver?blogId=alice_k106&logNo=221579974362&redirect=Dlog&widgetTypeCall=true&directAccess=false
@@ -366,7 +366,7 @@ App과 config는 용도와 생명 주기가 다르기 때문에 Git 저장소를
     - https://gruuuuu.github.io/cloud/argocd-gitops/
     - https://kangwoo.kr/tag/argocd/
 
-### Note
+# Note
 
 > 본 내용은 저희 Platform Engineering 팀내 CNCF 스터디를 위해 준비한 자료입니다. 저희가 하는 로봇 플랫폼 개발에 관심이 있는 분들은 아래 링크를 참고해주시고 도전적이고 열정적으로 같이 일하실 분은 많이 지원해주세요.
 >

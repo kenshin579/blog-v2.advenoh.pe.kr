@@ -29,11 +29,11 @@ tags:
 
 작성된 코드는 [java8-hashmap](https://github.com/kenshin579/tutorials-java/tree/master/java8-hashmap)을 참고해주세요.
 
-## 1. putIfAbsent() vs. computeIfAbsent()
+# 1. putIfAbsent() vs. computeIfAbsent()
 
 2가지 메서드의 공통점은 key의 존재 여부에 따라서 새로운 key와 value 값을 추가하는 메서드입니다.
 
-#### putIfAbsent
+### putIfAbsent
 
 putIfAbsent는 2개의 인자를 받습니다.
 
@@ -64,7 +64,7 @@ public void putIfAbsent() {
 }
 ```
 
-#### computeIfAbsent
+### computeIfAbsent
 
 `computeIfAbsent` 2개의 인자를 받습니다.
 
@@ -102,11 +102,11 @@ public void computeIfAbsent() {
 ```
 
 
-## 2. compute() vs. computeIfPresent() vs merge()
+# 2. compute() vs. computeIfPresent() vs merge()
 
 3개의 메서드들은 모두 Map의 value 값을 업데이트할 때 사용됩니다.
 
-#### compute
+### compute
 
 `compute는` key와 `remappingFunction을` 인자로 받고 key가 존재해야, value값을 인자로 넘겨준 `remappingFunction` 람다 함수의 결과로 업데이트가 됩니다. key 값이 존재하지 않는 경우에는 `NullPointerException이` 발생합니다.
 
@@ -129,7 +129,7 @@ public void compute() {
 }
 ```
 
-#### computeIfPresent
+### computeIfPresent
 
 ```java
 default V compute(K key,
@@ -159,7 +159,7 @@ public void computeIfPresent() {
 }
 ```
 
-#### merge
+### merge
 
 
 ```java
@@ -207,7 +207,7 @@ public void merge() {
 }
 ```
 
-## 3. getOrDefault()
+# 3. getOrDefault()
 
 `getOrDefault` 가 반환하는 값은 아래와 같습니다.
 
@@ -245,7 +245,7 @@ public void getOrDefault() {
 }
 ```
 
-## 참고
+# 참고
 
 * http://tech.javacafe.io/2018/12/03/HashMap/
 * https://www.baeldung.com/java-hashmap
