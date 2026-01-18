@@ -641,15 +641,404 @@ func handleSysMessage(msg *paho.Publish) {
 
 ---
 
-# 4. 스터디 마무리
+# 4. 실전 프로젝트: 디바이스 대시보드
+
+지금까지 배운 MQTT v5 개념을 종합 적용한 실전 프로젝트를 살펴본다. 이 프로젝트는 Go 백엔드와 React 프론트엔드로 구성된 실시간 디바이스 모니터링 대시보드이다. Topic 설계, QoS 선택, 자동 재연결 등 실무에서 필요한 패턴들이 모두 포함되어 있다.
+
+## 4.1 프로젝트 개요
+
+### 4.1.1 아키텍처
+
+```
+┌─────────────────┐     WebSocket(9001)     ┌─────────────────┐
+│    Frontend     │◄──────────────────────►│                 │
+│  (React + TS)   │                         │    Mosquitto    │
+└─────────────────┘                         │   MQTT Broker   │
+                                            │                 │
+┌─────────────────┐     TCP(1883)           │                 │
+│    Backend      │◄──────────────────────►│                 │
+│  (Go + autopaho)│                         └─────────────────┘
+└─────────────────┘
+```
+
+- **Frontend**: React + TypeScript + mqtt.js (WebSocket 연결)
+- **Backend**: Go + autopaho (TCP 연결)
+- **Broker**: Eclipse Mosquitto v2 (TCP + WebSocket 리스너)
+
+### 4.1.2 주요 기능
+
+- 실시간 디바이스 상태 모니터링 (온도, 상태)
+- Start/Stop 명령 전송
+- 연결 상태 표시
+- 메시지 로그 히스토리
+- 자동 재연결
+
+## 4.2 토픽 설계
+
+이 프로젝트에서는 단순하지만 실무 패턴을 따르는 토픽 구조를 사용한다.
+
+| 토픽 | Publisher | Subscriber | QoS | 용도 |
+|------|-----------|------------|-----|------|
+| `device/1/state` | Backend | Frontend | 0 | 상태 발행 (2초 주기) |
+| `device/1/command` | Frontend | Backend | 1 | 명령 전송 (start/stop) |
+
+**QoS 선택 이유:**
+- **상태 (QoS 0)**: 주기적으로 발행되므로 한 번 유실되어도 곧 새 데이터가 옴
+- **명령 (QoS 1)**: 사용자 액션이므로 반드시 전달되어야 함
+
+**메시지 형식:**
+
+```json
+// State (Backend → Frontend)
+{
+  "deviceId": "1",
+  "status": "running",
+  "temperature": 37.5,
+  "timestamp": 1705580400
+}
+
+// Command (Frontend → Backend)
+{
+  "action": "start"  // or "stop"
+}
+```
+
+## 4.3 Backend 구현 (Go + autopaho)
+
+### 4.3.1 MQTT 클라이언트 래퍼
+
+autopaho를 감싸는 클라이언트 구조체이다. `OnConnectionUp`에서 구독을 설정하여 재연결 시에도 자동으로 구독이 복원된다.
+
+```go
+// internal/mqtt/client.go
+package mqtt
+
+type Client struct {
+    conn *autopaho.ConnectionManager
+}
+
+func NewClient(ctx context.Context, brokerURL string, clientID string,
+    onMessage func(topic string, payload []byte)) (*Client, error) {
+
+    u, _ := url.Parse(brokerURL)
+
+    cfg := autopaho.ClientConfig{
+        ServerUrls:                    []*url.URL{u},
+        KeepAlive:                     30,
+        CleanStartOnInitialConnection: false,
+        SessionExpiryInterval:         60,
+
+        // 연결 성공 시 구독 설정 (재연결 시에도 호출됨)
+        OnConnectionUp: func(cm *autopaho.ConnectionManager, connAck *paho.Connack) {
+            cm.Subscribe(ctx, &paho.Subscribe{
+                Subscriptions: []paho.SubscribeOptions{
+                    {Topic: "device/1/command", QoS: 1},
+                },
+            })
+        },
+
+        ClientConfig: paho.ClientConfig{
+            ClientID: clientID,
+            OnPublishReceived: []func(paho.PublishReceived) (bool, error){
+                func(pr paho.PublishReceived) (bool, error) {
+                    onMessage(pr.Packet.Topic, pr.Packet.Payload)
+                    return true, nil
+                },
+            },
+        },
+    }
+
+    conn, _ := autopaho.NewConnection(ctx, cfg)
+    conn.AwaitConnection(ctx)
+
+    return &Client{conn: conn}, nil
+}
+
+func (c *Client) Publish(ctx context.Context, topic string, payload []byte,
+    qos byte, retain bool) error {
+    _, err := c.conn.Publish(ctx, &paho.Publish{
+        Topic:   topic,
+        QoS:     qos,
+        Retain:  retain,
+        Payload: payload,
+    })
+    return err
+}
+```
+
+**핵심 포인트:**
+- `CleanStartOnInitialConnection: false` - 세션 유지
+- `SessionExpiryInterval: 60` - 60초간 세션 보존
+- `OnConnectionUp`에서 구독 - 재연결 시 자동 재구독
+
+### 4.3.2 디바이스 시뮬레이터
+
+가상 디바이스 상태를 관리하는 시뮬레이터이다.
+
+```go
+// internal/device/simulator.go
+package device
+
+type State struct {
+    DeviceID    string  `json:"deviceId"`
+    Status      string  `json:"status"`
+    Temperature float64 `json:"temperature"`
+    Timestamp   int64   `json:"timestamp"`
+}
+
+type Simulator struct {
+    mu     sync.RWMutex
+    status string
+}
+
+func NewSimulator() *Simulator {
+    return &Simulator{status: "idle"}
+}
+
+func (s *Simulator) GetState() State {
+    s.mu.RLock()
+    defer s.mu.RUnlock()
+
+    return State{
+        DeviceID:    "1",
+        Status:      s.status,
+        Temperature: 35.0 + rand.Float64()*5.0,
+        Timestamp:   time.Now().Unix(),
+    }
+}
+
+func (s *Simulator) HandleCommand(action string) {
+    s.mu.Lock()
+    defer s.mu.Unlock()
+
+    switch action {
+    case "start":
+        s.status = "running"
+    case "stop":
+        s.status = "idle"
+    }
+}
+```
+
+### 4.3.3 메인 로직
+
+2초마다 상태를 발행하고, 명령을 수신하여 처리한다.
+
+```go
+// cmd/main.go
+func main() {
+    ctx, stop := signal.NotifyContext(context.Background(),
+        os.Interrupt, syscall.SIGTERM)
+    defer stop()
+
+    sim := device.NewSimulator()
+
+    // 명령 수신 핸들러
+    onMessage := func(topic string, payload []byte) {
+        var cmd struct { Action string `json:"action"` }
+        json.Unmarshal(payload, &cmd)
+        sim.HandleCommand(cmd.Action)
+    }
+
+    client, _ := mqtt.NewClient(ctx, "mqtt://localhost:1883",
+        "go-backend-device-1", onMessage)
+
+    // 2초마다 상태 발행
+    ticker := time.NewTicker(2 * time.Second)
+    for {
+        select {
+        case <-ctx.Done():
+            client.Disconnect(context.Background())
+            return
+        case <-ticker.C:
+            if sim.IsRunning() {
+                state := sim.GetState()
+                payload, _ := json.Marshal(state)
+                client.Publish(ctx, "device/1/state", payload, 0, true)
+            }
+        }
+    }
+}
+```
+
+## 4.4 Frontend 구현 (React + mqtt.js)
+
+### 4.4.1 MQTT 커스텀 훅
+
+브라우저에서 WebSocket을 통해 MQTT에 연결하는 훅이다.
+
+```typescript
+// hooks/useMqtt.ts
+import mqtt from 'mqtt';
+
+interface DeviceState {
+  deviceId: string;
+  status: 'idle' | 'running';
+  temperature: number;
+  timestamp: number;
+}
+
+export function useMqtt(brokerUrl: string) {
+  const [client, setClient] = useState<MqttClient | null>(null);
+  const [connected, setConnected] = useState(false);
+  const [deviceState, setDeviceState] = useState<DeviceState | null>(null);
+
+  useEffect(() => {
+    // MQTT v5 + WebSocket + 자동 재연결
+    const mqttClient = mqtt.connect(brokerUrl, {
+      protocolVersion: 5,
+      reconnectPeriod: 1000,
+    });
+
+    mqttClient.on('connect', () => {
+      setConnected(true);
+      mqttClient.subscribe('device/1/state');
+    });
+
+    mqttClient.on('close', () => setConnected(false));
+
+    mqttClient.on('message', (topic, payload) => {
+      if (topic === 'device/1/state') {
+        const state = JSON.parse(payload.toString());
+        setDeviceState(state);
+      }
+    });
+
+    setClient(mqttClient);
+    return () => { mqttClient.end(); };
+  }, [brokerUrl]);
+
+  const sendCommand = useCallback((action: 'start' | 'stop') => {
+    if (client && connected) {
+      client.publish('device/1/command',
+        JSON.stringify({ action }), { qos: 1 });
+    }
+  }, [client, connected]);
+
+  return { connected, deviceState, sendCommand };
+}
+```
+
+**핵심 포인트:**
+- `protocolVersion: 5` - MQTT v5 사용
+- `reconnectPeriod: 1000` - 1초마다 재연결 시도
+- QoS 1로 명령 발행 - 확실한 전달 보장
+
+### 4.4.2 대시보드 컴포넌트
+
+```tsx
+// components/DeviceStatus.tsx
+export function DeviceStatus() {
+  const { connected, deviceState, sendCommand } = useMqtt('ws://localhost:9001');
+
+  return (
+    <div>
+      <h1>Device Dashboard</h1>
+
+      <div>
+        Connection: {connected ? '🟢 Connected' : '🔴 Disconnected'}
+      </div>
+
+      {deviceState && (
+        <table>
+          <tr>
+            <td>Status</td>
+            <td>{deviceState.status}</td>
+          </tr>
+          <tr>
+            <td>Temperature</td>
+            <td>{deviceState.temperature.toFixed(1)}°C</td>
+          </tr>
+        </table>
+      )}
+
+      <button onClick={() => sendCommand('start')} disabled={!connected}>
+        Start
+      </button>
+      <button onClick={() => sendCommand('stop')} disabled={!connected}>
+        Stop
+      </button>
+    </div>
+  );
+}
+```
+
+## 4.5 Broker 설정 (Mosquitto)
+
+TCP(1883)와 WebSocket(9001) 두 개의 리스너를 설정한다.
+
+```conf
+# mosquitto/config/mosquitto.conf
+listener 1883
+listener 9001
+protocol websockets
+
+allow_anonymous true
+```
+
+**Docker Compose:**
+
+```yaml
+# docker-compose.yml
+version: '3'
+services:
+  mosquitto:
+    image: eclipse-mosquitto:2
+    ports:
+      - "1883:1883"
+      - "9001:9001"
+    volumes:
+      - ./mosquitto/config:/mosquitto/config
+```
+
+## 4.6 실행 및 테스트
+
+### 4.6.1 실행 순서
+
+```bash
+# 1. Broker 실행
+docker-compose up -d
+
+# 2. Backend 실행
+cd backend && go run cmd/main.go
+
+# 3. Frontend 실행
+cd frontend && npm run dev
+```
+
+### 4.6.2 동작 확인
+
+1. http://localhost:3000 접속
+2. "Connected" 상태 확인
+3. "Start" 버튼 클릭 → 상태가 "running"으로 변경, 온도 데이터 수신 시작
+4. "Stop" 버튼 클릭 → 상태가 "idle"로 변경
+
+### 4.6.3 수동 테스트
+
+```bash
+# 상태 구독
+mosquitto_sub -h localhost -p 1883 -t "device/1/state" -v
+
+# 명령 발행
+mosquitto_pub -h localhost -p 1883 -t "device/1/command" -m '{"action":"start"}'
+```
+
+## 4.7 프로젝트 소스
+
+전체 소스 코드는 GitHub에서 확인할 수 있다:
+- https://github.com/kenshin579/tutorials-go/tree/main/message-queue/go-mqtt-dashboard
+
+---
+
+# 5. 스터디 마무리
 
 이 스터디를 통해 MQTT v5의 핵심 개념부터 실무 적용까지 전체적인 그림을 그릴 수 있게 되었기를 바랍니다. 마지막으로 배운 내용을 정리하고, 실무에 적용하기 전에 확인해야 할 체크리스트를 제공한다.
 
-## 4.1 핵심 요약
+## 5.1 핵심 요약
 
 지금까지 배운 내용 중 가장 중요한 포인트들을 정리한다. 이 내용들은 MQTT 기반 시스템을 설계하고 구현할 때 항상 염두에 두어야 한다.
 
-### 4.1.1 MQTT v5의 본질
+### 5.1.1 MQTT v5의 본질
 
 1. **Pub/Sub 패턴**
    - Publisher와 Subscriber가 서로 몰라도 됨
@@ -666,7 +1055,7 @@ func handleSysMessage(msg *paho.Publish) {
    - User Properties로 확장성
    - Shared Subscription으로 로드 분산
 
-### 4.1.2 신뢰성은 애플리케이션 책임
+### 5.1.2 신뢰성은 애플리케이션 책임
 
 MQTT가 보장하는 것:
 - QoS에 따른 전달 보장
@@ -684,9 +1073,9 @@ MQTT가 보장하지 않는 것:
 
 ---
 
-# 5. 부록: 실습 환경 설정
+# 6. 부록: 실습 환경 설정
 
-## 5.1 Mosquitto Broker 설치 (Docker)
+## 6.1 Mosquitto Broker 설치 (Docker)
 
 ```bash
 # Mosquitto 실행
@@ -702,14 +1091,14 @@ docker run -d --name mosquitto \
   eclipse-mosquitto
 ```
 
-## 5.2 기본 설정 파일 (mosquitto.conf)
+## 6.2 기본 설정 파일 (mosquitto.conf)
 
 ```
 listener 1883
 allow_anonymous true
 ```
 
-## 5.3 테스트 명령어
+## 6.3 테스트 명령어
 
 ```bash
 # 구독 (터미널 1)
@@ -719,7 +1108,7 @@ mosquitto_sub -h localhost -t "test/#" -v
 mosquitto_pub -h localhost -t "test/hello" -m "Hello MQTT!"
 ```
 
-## 5.4 Go 의존성
+## 6.4 Go 의존성
 
 ```bash
 go get github.com/eclipse/paho.golang@latest
@@ -727,7 +1116,7 @@ go get github.com/eclipse/paho.golang@latest
 
 ---
 
-# 6. 참고
+# 7. 참고
 
 - [MQTT v5 스펙](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
 - [Eclipse Paho Go Client](https://github.com/eclipse/paho.golang)
