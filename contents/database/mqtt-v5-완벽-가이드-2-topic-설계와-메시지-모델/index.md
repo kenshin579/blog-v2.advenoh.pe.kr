@@ -386,7 +386,7 @@ router.RegisterHandler("home/+/temperature", func(msg *paho.Publish) {
 
 ---
 
-> **다음 편 안내**: [MQTT v5 완벽 가이드 (3): QoS, Session, 재연결 전략](/database/mqtt-v5-guide-3-qos-session-reconnect)에서는 QoS 동작 원리, 세션 관리, 그리고 실무에서 가장 중요한 재연결 전략을 다룹니다.
+> **다음 편 안내**: [MQTT v5 완벽 가이드 (3): QoS, Session, 재연결 전략](/database/mqtt-v5-완벽-가이드-3-qos-session-재연결-전략)에서는 QoS 동작 원리, 세션 관리, 그리고 실무에서 가장 중요한 재연결 전략을 다룹니다.
 
 ---
 

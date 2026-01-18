@@ -307,7 +307,7 @@ Broker는 "똑똑한 우체국"과 같다:
 
 ---
 
-> **다음 편 안내**: [MQTT v5 완벽 가이드 (2): Topic 설계와 메시지 모델](/database/mqtt-v5-guide-2-topic-message)에서는 Topic 설계 Best Practice와 MQTT v5 메시지 모델(User Properties, Message Expiry 등)을 다룹니다.
+> **다음 편 안내**: [MQTT v5 완벽 가이드 (2): Topic 설계와 메시지 모델](/database/mqtt-v5-완벽-가이드-2-topic-설계와-메시지-모델)에서는 Topic 설계 Best Practice와 MQTT v5 메시지 모델(User Properties, Message Expiry 등)을 다룹니다.
 
 ---
 

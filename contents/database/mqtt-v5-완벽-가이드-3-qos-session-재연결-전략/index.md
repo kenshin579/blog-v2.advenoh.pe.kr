@@ -623,7 +623,7 @@ for _, msg := range messages {
 
 ---
 
-> **다음 편 안내**: [MQTT v5 완벽 가이드 (4): 고급 기능과 보안](/database/mqtt-v5-guide-4-advanced-security)에서는 Shared Subscription, Request/Response 패턴, Reason Code, 그리고 TLS 보안 설정을 다룹니다.
+> **다음 편 안내**: [MQTT v5 완벽 가이드 (4): 고급 기능과 보안](/database/mqtt-v5-완벽-가이드-4-고급-기능과-보안)에서는 Shared Subscription, Request/Response 패턴, Reason Code, 그리고 TLS 보안 설정을 다룹니다.
 
 ---
 
