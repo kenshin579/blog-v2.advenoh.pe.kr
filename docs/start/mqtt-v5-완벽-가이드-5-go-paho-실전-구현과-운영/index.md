@@ -647,7 +647,23 @@ func handleSysMessage(msg *paho.Publish) {
 
 ## 4.1 프로젝트 개요
 
-### 4.1.1 아키텍처
+### 4.1.1 프로젝트 목적
+
+이 프로젝트는 MQTT v5의 핵심 개념들을 실제 동작하는 코드로 확인하기 위해 만들어졌다. 단순히 "Hello World" 수준이 아니라, 실무에서 마주치는 패턴들을 최소한의 코드로 구현했다.
+
+**학습 목표:**
+- Go에서 autopaho를 사용한 MQTT 클라이언트 구현
+- 브라우저에서 WebSocket을 통한 MQTT 연결 (mqtt.js)
+- 양방향 통신 패턴 (상태 모니터링 + 명령 전송)
+- QoS 선택 기준의 실제 적용
+- 자동 재연결과 세션 관리
+
+**왜 Go + React 조합인가:**
+- **Go**: IoT 백엔드에서 많이 사용되는 언어. autopaho가 자동 재연결을 잘 지원함
+- **React**: 대시보드 UI 구현에 적합. mqtt.js가 브라우저 환경을 잘 지원함
+- **Mosquitto**: 가볍고 설정이 간단한 오픈소스 Broker
+
+### 4.1.2 아키텍처
 
 ```
 ┌─────────────────┐     WebSocket(9001)     ┌─────────────────┐
@@ -665,7 +681,12 @@ func handleSysMessage(msg *paho.Publish) {
 - **Backend**: Go + autopaho (TCP 연결)
 - **Broker**: Eclipse Mosquitto v2 (TCP + WebSocket 리스너)
 
-### 4.1.2 주요 기능
+**왜 두 가지 프로토콜을 사용하는가:**
+- **Backend (TCP)**: 서버 환경에서는 TCP가 더 효율적이고 안정적이다. 방화벽 이슈도 적다.
+- **Frontend (WebSocket)**: 브라우저는 TCP 소켓을 직접 열 수 없다. WebSocket이 유일한 선택지이다.
+- Mosquitto는 두 프로토콜을 동시에 지원하므로 하나의 Broker로 양쪽 클라이언트를 모두 처리할 수 있다.
+
+### 4.1.3 주요 기능
 
 - 실시간 디바이스 상태 모니터링 (온도, 상태)
 - Start/Stop 명령 전송
@@ -673,20 +694,53 @@ func handleSysMessage(msg *paho.Publish) {
 - 메시지 로그 히스토리
 - 자동 재연결
 
+### 4.1.4 데이터 흐름
+
+```
+1. Backend 시작 → Broker에 TCP 연결 → device/1/command 구독
+2. Frontend 시작 → Broker에 WebSocket 연결 → device/1/state 구독
+3. 사용자가 "Start" 클릭 → Frontend가 device/1/command에 발행
+4. Broker가 Backend에 명령 전달 → Backend가 상태를 "running"으로 변경
+5. Backend가 2초마다 device/1/state에 상태 발행
+6. Broker가 Frontend에 상태 전달 → UI 업데이트
+```
+
+이 흐름에서 Frontend와 Backend는 서로의 존재를 모른다. 오직 Topic을 통해서만 통신한다. 이것이 Pub/Sub 패턴의 핵심이다.
+
 ## 4.2 토픽 설계
 
-이 프로젝트에서는 단순하지만 실무 패턴을 따르는 토픽 구조를 사용한다.
+이 프로젝트에서는 단순하지만 실무 패턴을 따르는 토픽 구조를 사용한다. 2편에서 배운 토픽 설계 원칙을 적용했다.
+
+### 4.2.1 토픽 구조
 
 | 토픽 | Publisher | Subscriber | QoS | 용도 |
 |------|-----------|------------|-----|------|
 | `device/1/state` | Backend | Frontend | 0 | 상태 발행 (2초 주기) |
 | `device/1/command` | Frontend | Backend | 1 | 명령 전송 (start/stop) |
 
-**QoS 선택 이유:**
-- **상태 (QoS 0)**: 주기적으로 발행되므로 한 번 유실되어도 곧 새 데이터가 옴
-- **명령 (QoS 1)**: 사용자 액션이므로 반드시 전달되어야 함
+**토픽 네이밍 분석:**
+- `device`: 최상위 카테고리 (디바이스 관련)
+- `1`: 디바이스 ID (확장 시 `device/2`, `device/3` 등 추가 가능)
+- `state` / `command`: 메시지 유형 (상태 vs 명령)
 
-**메시지 형식:**
+이 구조는 확장에 유리하다. 디바이스가 100개로 늘어나도 `device/+/state`로 모든 상태를 구독할 수 있다.
+
+### 4.2.2 QoS 선택 이유
+
+**상태 (QoS 0)를 선택한 이유:**
+- 2초마다 새 데이터가 발행되므로 한 번 유실되어도 금방 복구됨
+- 네트워크 오버헤드 최소화 (ACK 없음)
+- 실시간성이 중요한 센서 데이터에 적합
+- 3편에서 배운 "주기적 데이터는 QoS 0" 원칙 적용
+
+**명령 (QoS 1)을 선택한 이유:**
+- 사용자가 버튼을 클릭한 액션이므로 반드시 전달되어야 함
+- 명령 유실 시 사용자가 다시 클릭해야 하는 불편함 발생
+- QoS 2까지는 필요 없음 (중복 명령이 와도 결과는 동일 - idempotent)
+
+### 4.2.3 메시지 형식
+
+JSON을 사용한다. 바이너리 대비 오버헤드가 있지만, 디버깅이 쉽고 스키마 변경에 유연하다.
 
 ```json
 // State (Backend → Frontend)
@@ -696,18 +750,30 @@ func handleSysMessage(msg *paho.Publish) {
   "temperature": 37.5,
   "timestamp": 1705580400
 }
+```
 
+- `deviceId`: 어떤 디바이스의 상태인지 식별
+- `status`: 현재 상태 ("idle" 또는 "running")
+- `temperature`: 센서 값 (35~40도 사이 랜덤)
+- `timestamp`: Unix timestamp (클라이언트에서 지연 시간 계산 가능)
+
+```json
 // Command (Frontend → Backend)
 {
   "action": "start"  // or "stop"
 }
 ```
 
+- `action`: 수행할 명령 ("start" 또는 "stop")
+- 단순한 구조지만, 필요 시 `{ "action": "setTemperature", "value": 25 }` 형태로 확장 가능
+
 ## 4.3 Backend 구현 (Go + autopaho)
+
+Backend는 두 가지 역할을 한다: (1) 디바이스 상태를 주기적으로 발행, (2) 명령을 수신하여 처리. 1장에서 배운 autopaho 패턴을 실제로 적용한다.
 
 ### 4.3.1 MQTT 클라이언트 래퍼
 
-autopaho를 감싸는 클라이언트 구조체이다. `OnConnectionUp`에서 구독을 설정하여 재연결 시에도 자동으로 구독이 복원된다.
+autopaho를 감싸는 클라이언트 구조체이다. 직접 autopaho를 사용해도 되지만, 래퍼를 만들면 테스트와 유지보수가 쉬워진다.
 
 ```go
 // internal/mqtt/client.go
@@ -766,14 +832,41 @@ func (c *Client) Publish(ctx context.Context, topic string, payload []byte,
 }
 ```
 
-**핵심 포인트:**
-- `CleanStartOnInitialConnection: false` - 세션 유지
-- `SessionExpiryInterval: 60` - 60초간 세션 보존
-- `OnConnectionUp`에서 구독 - 재연결 시 자동 재구독
+**핵심 설정 상세 설명:**
+
+| 설정 | 값 | 의미 |
+|------|-----|------|
+| `ServerUrls` | `mqtt://localhost:1883` | Broker 주소. `mqtt://`는 TCP, `ws://`는 WebSocket |
+| `KeepAlive` | 30 | 30초마다 PING 전송. Broker가 클라이언트 생존 확인 |
+| `CleanStartOnInitialConnection` | false | 기존 세션 유지. true면 매번 새 세션 시작 |
+| `SessionExpiryInterval` | 60 | 연결 끊겨도 60초간 세션 보존. 재연결 시 미수신 메시지 받을 수 있음 |
+
+**OnConnectionUp의 중요성:**
+
+```go
+OnConnectionUp: func(cm *autopaho.ConnectionManager, connAck *paho.Connack) {
+    cm.Subscribe(ctx, &paho.Subscribe{...})
+}
+```
+
+이 콜백은 **최초 연결뿐 아니라 재연결 시에도 호출**된다. 따라서 여기서 구독을 설정하면 네트워크가 끊겼다가 복구되어도 자동으로 구독이 복원된다. 3편에서 배운 "재연결 시 재구독" 패턴의 실제 구현이다.
+
+**OnPublishReceived 패턴:**
+
+```go
+OnPublishReceived: []func(paho.PublishReceived) (bool, error){
+    func(pr paho.PublishReceived) (bool, error) {
+        onMessage(pr.Packet.Topic, pr.Packet.Payload)
+        return true, nil  // true = 메시지 처리 완료
+    },
+},
+```
+
+메시지 핸들러를 슬라이스로 받는 이유는 여러 핸들러를 체인으로 연결할 수 있기 때문이다. 첫 번째 핸들러가 `false`를 반환하면 다음 핸들러로 넘어간다.
 
 ### 4.3.2 디바이스 시뮬레이터
 
-가상 디바이스 상태를 관리하는 시뮬레이터이다.
+실제 하드웨어 대신 가상 디바이스 상태를 관리하는 시뮬레이터이다. 실제 프로젝트에서는 이 부분이 센서 읽기, 액추에이터 제어 등으로 대체된다.
 
 ```go
 // internal/device/simulator.go
@@ -820,9 +913,17 @@ func (s *Simulator) HandleCommand(action string) {
 }
 ```
 
+**동시성 처리 (sync.RWMutex):**
+
+시뮬레이터는 두 고루틴에서 동시에 접근된다:
+1. 메인 루프: `GetState()` 호출하여 상태 읽기
+2. 메시지 핸들러: `HandleCommand()` 호출하여 상태 변경
+
+`sync.RWMutex`를 사용하여 읽기는 동시에 허용하고(`RLock`), 쓰기는 배타적으로 처리한다(`Lock`). 이는 Go에서 공유 상태를 다룰 때의 표준 패턴이다.
+
 ### 4.3.3 메인 로직
 
-2초마다 상태를 발행하고, 명령을 수신하여 처리한다.
+메인 함수는 전체 흐름을 조율한다. 2초마다 상태를 발행하고, 명령을 수신하여 처리한다.
 
 ```go
 // cmd/main.go
@@ -861,11 +962,28 @@ func main() {
 }
 ```
 
+**코드 흐름 분석:**
+
+1. **시그널 처리**: `signal.NotifyContext`로 Ctrl+C (SIGINT) 또는 SIGTERM 수신 시 graceful shutdown
+2. **의존성 주입**: `onMessage` 함수를 클라이언트에 전달하여 메시지 처리 로직 분리
+3. **Ticker 패턴**: `time.NewTicker`로 정확한 2초 간격 보장 (sleep과 달리 drift 없음)
+4. **조건부 발행**: `sim.IsRunning()` 체크로 idle 상태에서는 불필요한 메시지 발행 방지
+
+**Retain 플래그 (true):**
+
+```go
+client.Publish(ctx, "device/1/state", payload, 0, true)  // retain=true
+```
+
+마지막 상태를 Broker에 저장한다. 새로운 Subscriber가 연결되면 즉시 최신 상태를 받을 수 있다. Dashboard를 새로고침해도 바로 현재 상태가 표시되는 이유다.
+
 ## 4.4 Frontend 구현 (React + mqtt.js)
+
+Frontend는 브라우저에서 실행되므로 WebSocket을 통해 MQTT에 연결한다. React의 훅 패턴을 사용하여 MQTT 연결 상태와 메시지를 관리한다.
 
 ### 4.4.1 MQTT 커스텀 훅
 
-브라우저에서 WebSocket을 통해 MQTT에 연결하는 훅이다.
+MQTT 연결 로직을 재사용 가능한 커스텀 훅으로 분리했다. 이 패턴은 여러 컴포넌트에서 MQTT를 사용할 때 유용하다.
 
 ```typescript
 // hooks/useMqtt.ts
@@ -919,10 +1037,49 @@ export function useMqtt(brokerUrl: string) {
 }
 ```
 
-**핵심 포인트:**
-- `protocolVersion: 5` - MQTT v5 사용
-- `reconnectPeriod: 1000` - 1초마다 재연결 시도
-- QoS 1로 명령 발행 - 확실한 전달 보장
+**핵심 설정 상세 설명:**
+
+| 설정 | 값 | 의미 |
+|------|-----|------|
+| `protocolVersion` | 5 | MQTT v5 사용. 생략하면 v3.1.1 |
+| `reconnectPeriod` | 1000 | 연결 끊기면 1초 후 재연결 시도 |
+
+**mqtt.js의 자동 재연결:**
+
+mqtt.js는 autopaho처럼 자동 재연결을 내장하고 있다. `reconnectPeriod`를 설정하면 네트워크가 끊겨도 자동으로 복구를 시도한다. 단, 재연결 후 구독은 자동으로 복원되지 않으므로 `connect` 이벤트에서 다시 구독해야 한다.
+
+```typescript
+mqttClient.on('connect', () => {
+  setConnected(true);
+  mqttClient.subscribe('device/1/state');  // 재연결 시에도 호출됨
+});
+```
+
+**useEffect와 cleanup:**
+
+```typescript
+useEffect(() => {
+  const mqttClient = mqtt.connect(brokerUrl, {...});
+  // ... 이벤트 핸들러 등록
+  setClient(mqttClient);
+
+  return () => { mqttClient.end(); };  // cleanup
+}, [brokerUrl]);
+```
+
+컴포넌트가 언마운트되거나 `brokerUrl`이 변경되면 cleanup 함수가 호출되어 기존 연결을 정리한다. 이렇게 하지 않으면 연결이 누적되어 메모리 누수가 발생한다.
+
+**useCallback으로 sendCommand 최적화:**
+
+```typescript
+const sendCommand = useCallback((action: 'start' | 'stop') => {
+  if (client && connected) {
+    client.publish('device/1/command', JSON.stringify({ action }), { qos: 1 });
+  }
+}, [client, connected]);
+```
+
+`useCallback`을 사용하여 `client`나 `connected`가 변경될 때만 함수를 재생성한다. 이 함수를 props로 전달할 때 불필요한 리렌더링을 방지한다.
 
 ### 4.4.2 대시보드 컴포넌트
 
@@ -963,9 +1120,15 @@ export function DeviceStatus() {
 }
 ```
 
+**UI/UX 고려사항:**
+
+- **연결 상태 표시**: 사용자가 현재 상태를 즉시 파악할 수 있도록 이모지 사용
+- **버튼 비활성화**: 연결이 끊긴 상태에서 버튼 클릭 방지 (`disabled={!connected}`)
+- **조건부 렌더링**: `deviceState`가 없으면 테이블을 표시하지 않음
+
 ## 4.5 Broker 설정 (Mosquitto)
 
-TCP(1883)와 WebSocket(9001) 두 개의 리스너를 설정한다.
+Mosquitto는 TCP와 WebSocket 두 가지 프로토콜을 동시에 지원한다. 각각 다른 포트에서 리스닝하도록 설정한다.
 
 ```conf
 # mosquitto/config/mosquitto.conf
@@ -974,6 +1137,34 @@ listener 9001
 protocol websockets
 
 allow_anonymous true
+```
+
+**설정 상세 설명:**
+
+| 설정 | 의미 |
+|------|------|
+| `listener 1883` | TCP 리스너. Backend가 연결 |
+| `listener 9001` | 두 번째 리스너 (기본값은 TCP) |
+| `protocol websockets` | 바로 위 리스너를 WebSocket으로 변경 |
+| `allow_anonymous true` | 인증 없이 연결 허용 (개발용) |
+
+**주의:** `protocol websockets`는 바로 위의 `listener`에만 적용된다. 순서가 중요하다.
+
+**프로덕션 환경에서는:**
+
+```conf
+listener 1883
+listener 9001
+protocol websockets
+
+# 인증 활성화
+allow_anonymous false
+password_file /mosquitto/config/passwd
+
+# TLS 설정
+listener 8883
+certfile /mosquitto/certs/server.crt
+keyfile /mosquitto/certs/server.key
 ```
 
 **Docker Compose:**
@@ -1006,6 +1197,11 @@ cd backend && go run cmd/main.go
 cd frontend && npm run dev
 ```
 
+**실행 순서가 중요한 이유:**
+- Broker가 먼저 실행되어야 Backend와 Frontend가 연결할 수 있다
+- Backend는 Frontend 없이도 동작한다 (상태만 발행)
+- Frontend는 Backend 없이도 연결은 되지만 데이터를 받지 못한다
+
 ### 4.6.2 동작 확인
 
 1. http://localhost:3000 접속
@@ -1013,20 +1209,71 @@ cd frontend && npm run dev
 3. "Start" 버튼 클릭 → 상태가 "running"으로 변경, 온도 데이터 수신 시작
 4. "Stop" 버튼 클릭 → 상태가 "idle"로 변경
 
+**재연결 테스트:**
+1. Backend 실행 중 Ctrl+C로 종료
+2. Frontend에서 상태 업데이트 중단 확인
+3. Backend 다시 실행
+4. 자동으로 상태 업데이트 재개 확인
+
 ### 4.6.3 수동 테스트
 
+mosquitto 클라이언트를 사용하여 각 컴포넌트를 독립적으로 테스트할 수 있다.
+
 ```bash
-# 상태 구독
+# 상태 구독 (Backend가 발행하는 메시지 확인)
 mosquitto_sub -h localhost -p 1883 -t "device/1/state" -v
 
-# 명령 발행
+# 명령 발행 (Frontend 대신 직접 명령 전송)
 mosquitto_pub -h localhost -p 1883 -t "device/1/command" -m '{"action":"start"}'
 ```
 
-## 4.7 프로젝트 소스
+**디버깅 팁:**
+- `mosquitto_sub -t '#' -v`: 모든 토픽의 메시지 확인
+- `mosquitto_sub -t '$SYS/#' -v`: Broker 상태 메트릭 확인
+
+### 4.6.4 트러블슈팅
+
+**증상: Frontend가 연결되지 않음**
+```
+WebSocket connection to 'ws://localhost:9001/' failed
+```
+- 원인: Mosquitto WebSocket 리스너가 실행되지 않음
+- 해결: `mosquitto.conf`에 `listener 9001`과 `protocol websockets` 확인
+
+**증상: Backend가 연결되지 않음**
+```
+[MQTT] Connection error: dial tcp 127.0.0.1:1883: connect: connection refused
+```
+- 원인: Mosquitto가 실행되지 않음
+- 해결: `docker-compose up -d` 실행
+
+**증상: 메시지가 전달되지 않음**
+- 원인 1: 토픽 이름 오타 (`device/1/state` vs `device/1/status`)
+- 원인 2: QoS 설정 문제
+- 해결: `mosquitto_sub -t '#' -v`로 실제 발행되는 메시지 확인
+
+## 4.7 학습 포인트 정리
+
+이 프로젝트를 통해 배울 수 있는 핵심 포인트:
+
+| 개념 | 적용 위치 | 설명 |
+|------|----------|------|
+| **Pub/Sub 패턴** | 전체 아키텍처 | Frontend와 Backend가 서로 모르고 Topic으로만 통신 |
+| **QoS 선택** | 토픽 설계 | 주기적 데이터(QoS 0) vs 명령(QoS 1) |
+| **자동 재연결** | autopaho, mqtt.js | 네트워크 끊김 후 자동 복구 |
+| **세션 관리** | autopaho 설정 | `CleanStart`, `SessionExpiry` 설정 |
+| **Retain 메시지** | Backend Publish | 새 Subscriber가 즉시 최신 상태 수신 |
+| **WebSocket** | Frontend | 브라우저에서 MQTT 사용 |
+
+## 4.8 프로젝트 소스
 
 전체 소스 코드는 GitHub에서 확인할 수 있다:
 - https://github.com/kenshin579/tutorials-go/tree/main/message-queue/go-mqtt-dashboard
+
+**프로젝트 실행에 필요한 것:**
+- Docker & Docker Compose
+- Go 1.21+
+- Node.js 18+
 
 ---
 
