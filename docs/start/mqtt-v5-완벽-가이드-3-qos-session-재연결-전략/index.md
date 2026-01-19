@@ -3,7 +3,6 @@ title: "MQTT v5 완벽 가이드 (3): QoS, Session, 재연결 전략"
 description: "MQTT의 핵심인 QoS 동작 원리, Session 관리, 그리고 실무에서 가장 중요한 재연결 전략을 상세히 다룹니다."
 date: 2026-01-18
 update: 2026-01-18
-series: "MQTT v5 완벽 가이드"
 tags:
   - MQTT
   - MQTT v5
@@ -15,6 +14,7 @@ tags:
   - 재연결
   - Backoff
   - Idempotent
+series: "MQTT v5 완벽 가이드"
 ---
 
 # 1. QoS 완전 정복

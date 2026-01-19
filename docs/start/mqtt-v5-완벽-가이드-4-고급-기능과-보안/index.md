@@ -3,7 +3,6 @@ title: "MQTT v5 완벽 가이드 (4): 고급 기능과 보안"
 description: "MQTT v5의 Shared Subscription, Request/Response 패턴, Reason Code 활용법과 TLS, ACL 등 보안 설정을 다룹니다."
 date: 2026-01-18
 update: 2026-01-18
-series: "MQTT v5 완벽 가이드"
 tags:
   - MQTT
   - MQTT v5
@@ -15,6 +14,7 @@ tags:
   - WebSocket
   - 보안
   - 인증
+series: "MQTT v5 완벽 가이드"
 ---
 
 # 1. MQTT v5 고급 기능
