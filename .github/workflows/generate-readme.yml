@@ -33,8 +33,6 @@ jobs:
           -e CONTENT_DIR=contents \
           -e BLOG_URL=https://blog.advenoh.pe.kr \
           -e PROJECT_TITLE="Frank's IT Blog" \
-          -e HITCOUNT_PATH=kenshin579/advenohpekr \
-          -e NETLIFY_BADGE_ID=31900f77-681f-4ace-8b3b-906936f57a60 \
           kenshin579/readme-generator:latest
     - name: Create commits
       run: |
