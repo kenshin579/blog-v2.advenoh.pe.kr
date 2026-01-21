@@ -7,6 +7,7 @@ import { formatDate } from '@/lib/utils';
 import { DEFAULT_ARTICLE_IMAGE } from '@/lib/constants';
 import { TableOfContents } from '@/components/article/table-of-contents';
 import { SeriesNavigation } from '@/components/article/series-navigation';
+import { MermaidRenderer } from '@/components/article/mermaid-renderer';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 
@@ -148,11 +149,10 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
             </aside>
           )}
 
-          {/* Article Content */}
-          <article
-            className="prose prose-neutral dark:prose-invert max-w-none mb-12"
-            dangerouslySetInnerHTML={{ __html: article.html }}
-          />
+          {/* Article Content - Mermaid 다이어그램 지원 */}
+          <article className="mb-12">
+            <MermaidRenderer html={article.html} />
+          </article>
         </div>
 
         {/* TOC Sidebar - 큰 화면에서만 표시 */}
