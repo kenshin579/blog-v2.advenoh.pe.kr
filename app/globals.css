@@ -470,3 +470,17 @@ pre[class*="language-"] {
 .prose aside::-webkit-scrollbar-thumb:hover {
   background: hsl(var(--muted-foreground) / 0.5);
 }
+
+/* Mermaid 다이어그램 스타일 */
+.mermaid-diagram {
+  @apply my-6 flex justify-center overflow-x-auto;
+}
+
+.mermaid-diagram svg {
+  @apply max-w-full h-auto;
+}
+
+/* Mermaid 에러 발생 시 원본 코드 블록 스타일 */
+.prose pre.mermaid-error {
+  @apply border-l-4 border-destructive;
+}
