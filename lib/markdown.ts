@@ -83,6 +83,21 @@ function extractFirstImage(content: string): string | undefined {
 }
 
 /**
+ * HTML 엔티티 디코딩
+ */
+function decodeHtmlEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&#x26;/g, '&')
+    .replace(/&#38;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&apos;/g, "'");
+}
+
+/**
  * Table of Contents 추출
  */
 export function extractTOC(html: string): TOCItem[] {
@@ -93,7 +108,7 @@ export function extractTOC(html: string): TOCItem[] {
   while ((match = headingRegex.exec(html)) !== null) {
     toc.push({
       id: match[2],
-      text: match[3],
+      text: decodeHtmlEntities(match[3]),
       level: parseInt(match[1]),
     });
   }
