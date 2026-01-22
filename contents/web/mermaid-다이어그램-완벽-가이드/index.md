@@ -37,6 +37,19 @@ Mermaid는 마크다운과 유사한 텍스트 기반 문법으로 다이어그�
 
 ### 기본 문법
 
+**코드:**
+
+```text
+flowchart TD
+    A[시작] --> B{조건 확인}
+    B -->|Yes| C[작업 수행]
+    B -->|No| D[다른 작업]
+    C --> E[종료]
+    D --> E
+```
+
+**렌더링 결과:**
+
 ```mermaid
 flowchart TD
     A[시작] --> B{조건 확인}
@@ -54,6 +67,21 @@ flowchart TD
 - `RL`: 오른쪽에서 왼쪽으로 (Right to Left)
 
 ### 노드 모양
+
+**코드:**
+
+```text
+flowchart LR
+    A[사각형] --> B(둥근 사각형)
+    B --> C([스타디움])
+    C --> D[[서브루틴]]
+    D --> E[(데이터베이스)]
+    E --> F((원형))
+    F --> G{다이아몬드}
+    G --> H{{육각형}}
+```
+
+**렌더링 결과:**
 
 ```mermaid
 flowchart LR
@@ -74,6 +102,25 @@ flowchart LR
 
 ### API 호출 예시
 
+**코드:**
+
+```text
+sequenceDiagram
+    participant Client
+    participant API Gateway
+    participant Auth Service
+    participant Database
+
+    Client->>API Gateway: POST /login
+    API Gateway->>Auth Service: 인증 요청
+    Auth Service->>Database: 사용자 조회
+    Database-->>Auth Service: 사용자 정보
+    Auth Service-->>API Gateway: JWT 토큰
+    API Gateway-->>Client: 200 OK + Token
+```
+
+**렌더링 결과:**
+
 ```mermaid
 sequenceDiagram
     participant Client
@@ -91,6 +138,19 @@ sequenceDiagram
 
 ### 메시지 유형
 
+**코드:**
+
+```text
+sequenceDiagram
+    A->>B: 동기 메시지 (실선 화살표)
+    B-->>A: 응답 (점선 화살표)
+    A-)B: 비동기 메시지
+    B--)A: 비동기 응답
+    A-xB: 실패/거부
+```
+
+**렌더링 결과:**
+
 ```mermaid
 sequenceDiagram
     A->>B: 동기 메시지 (실선 화살표)
@@ -101,6 +161,22 @@ sequenceDiagram
 ```
 
 ### 활성화 및 노트
+
+**코드:**
+
+```text
+sequenceDiagram
+    participant User
+    participant Server
+
+    User->>+Server: 요청
+    Note right of Server: 처리 중...
+    Server-->>-User: 응답
+
+    Note over User,Server: 통신 완료
+```
+
+**렌더링 결과:**
 
 ```mermaid
 sequenceDiagram
@@ -121,6 +197,35 @@ sequenceDiagram
 클래스 다이어그램은 객체 지향 설계에서 클래스 간의 관계를 표현한다.
 
 ### 기본 클래스 구조
+
+**코드:**
+
+```text
+classDiagram
+    class Animal {
+        +String name
+        +int age
+        +makeSound() void
+        +move() void
+    }
+
+    class Dog {
+        +String breed
+        +bark() void
+        +fetch() void
+    }
+
+    class Cat {
+        +String color
+        +meow() void
+        +scratch() void
+    }
+
+    Animal <|-- Dog : 상속
+    Animal <|-- Cat : 상속
+```
+
+**렌더링 결과:**
 
 ```mermaid
 classDiagram
@@ -149,6 +254,20 @@ classDiagram
 
 ### 관계 표현
 
+**코드:**
+
+```text
+classDiagram
+    classA --|> classB : 상속
+    classC --* classD : 컴포지션
+    classE --o classF : 집합
+    classG --> classH : 연관
+    classI ..> classJ : 의존
+    classK ..|> classL : 구현
+```
+
+**렌더링 결과:**
+
 ```mermaid
 classDiagram
     classA --|> classB : 상속
@@ -167,6 +286,23 @@ classDiagram
 
 ### 주문 상태 예시
 
+**코드:**
+
+```text
+stateDiagram-v2
+    [*] --> 주문접수
+    주문접수 --> 결제대기 : 주문 확인
+    결제대기 --> 결제완료 : 결제 성공
+    결제대기 --> 주문취소 : 결제 실패
+    결제완료 --> 배송준비
+    배송준비 --> 배송중 : 출고
+    배송중 --> 배송완료 : 도착
+    배송완료 --> [*]
+    주문취소 --> [*]
+```
+
+**렌더링 결과:**
+
 ```mermaid
 stateDiagram-v2
     [*] --> 주문접수
@@ -181,6 +317,25 @@ stateDiagram-v2
 ```
 
 ### 복합 상태
+
+**코드:**
+
+```text
+stateDiagram-v2
+    [*] --> Active
+
+    state Active {
+        [*] --> Idle
+        Idle --> Processing : start
+        Processing --> Idle : done
+    }
+
+    Active --> Inactive : suspend
+    Inactive --> Active : resume
+    Inactive --> [*] : terminate
+```
+
+**렌더링 결과:**
 
 ```mermaid
 stateDiagram-v2
@@ -202,6 +357,44 @@ stateDiagram-v2
 ## 5. Entity Relationship Diagram (ERD)
 
 ERD는 데이터베이스 설계에서 엔티티 간의 관계를 표현한다.
+
+**코드:**
+
+```text
+erDiagram
+    USER ||--o{ ORDER : places
+    USER {
+        int id PK
+        string name
+        string email UK
+        datetime created_at
+    }
+
+    ORDER ||--|{ ORDER_ITEM : contains
+    ORDER {
+        int id PK
+        int user_id FK
+        datetime order_date
+        string status
+    }
+
+    ORDER_ITEM }|--|| PRODUCT : references
+    ORDER_ITEM {
+        int id PK
+        int order_id FK
+        int product_id FK
+        int quantity
+    }
+
+    PRODUCT {
+        int id PK
+        string name
+        decimal price
+        int stock
+    }
+```
+
+**렌더링 결과:**
 
 ```mermaid
 erDiagram
@@ -243,6 +436,28 @@ erDiagram
 
 Git의 브랜치와 커밋 히스토리를 시각화한다.
 
+**코드:**
+
+```text
+gitGraph
+    commit id: "초기 커밋"
+    branch develop
+    checkout develop
+    commit id: "기능 A 개발"
+    branch feature/login
+    checkout feature/login
+    commit id: "로그인 UI"
+    commit id: "로그인 로직"
+    checkout develop
+    merge feature/login
+    checkout main
+    merge develop tag: "v1.0.0"
+    checkout develop
+    commit id: "기능 B 개발"
+```
+
+**렌더링 결과:**
+
 ```mermaid
 gitGraph
     commit id: "초기 커밋"
@@ -266,6 +481,31 @@ gitGraph
 ## 7. Gantt Chart (간트 차트)
 
 프로젝트 일정을 시각화하는 간트 차트이다.
+
+**코드:**
+
+```text
+gantt
+    title 프로젝트 일정
+    dateFormat YYYY-MM-DD
+
+    section 기획
+    요구사항 분석     :a1, 2026-01-01, 7d
+    설계 문서 작성    :a2, after a1, 5d
+
+    section 개발
+    백엔드 개발      :b1, after a2, 14d
+    프론트엔드 개발   :b2, after a2, 14d
+
+    section 테스트
+    통합 테스트      :c1, after b1, 7d
+    버그 수정        :c2, after c1, 5d
+
+    section 배포
+    운영 배포        :d1, after c2, 2d
+```
+
+**렌더링 결과:**
 
 ```mermaid
 gantt
@@ -291,6 +531,20 @@ gantt
 ---
 
 ## 8. Pie Chart (파이 차트)
+
+**코드:**
+
+```text
+pie showData
+    title 기술 스택 사용 비율
+    "JavaScript" : 35
+    "TypeScript" : 30
+    "Python" : 20
+    "Go" : 10
+    "기타" : 5
+```
+
+**렌더링 결과:**
 
 ```mermaid
 pie showData
