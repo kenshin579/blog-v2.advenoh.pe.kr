@@ -1,6 +1,9 @@
+[![HitCount](http://hits.dwyl.io/kenshin579/advenohpekr.svg)](http://hits.dwyl.io/kenshin579/advenohpekr)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/31900f77-681f-4ace-8b3b-906936f57a60/deploy-status)](https://app.netlify.com/sites/advenoh/deploys)
+
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-01-11
+Updated 2026-01-22
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -179,6 +182,7 @@ Updated 2026-01-11
 * [자주 접하는 게 되는 Http Status Code](https://blog.advenoh.pe.kr/자주-접하는-게-되는-http-status-code/)
 
 ## Web
+* [Mermaid 다이어그램 완벽 가이드 - 마크다운으로 그리는 다이어그램](https://blog.advenoh.pe.kr/mermaid-다이어그램-완벽-가이드/)
 * [Postman Flows이란](https://blog.advenoh.pe.kr/postman-flows-이란/)
 * [구글 시트에서 사용자 정의 함수 구현하기](https://blog.advenoh.pe.kr/구글-시트에서-사용자-정의-함수-구현하기/)
 * [하나의 구글 계정으로 여러 이메일 주소 사용하기](https://blog.advenoh.pe.kr/하나의-구글-계정으로-여러-이메일-주소-사용하기/)
