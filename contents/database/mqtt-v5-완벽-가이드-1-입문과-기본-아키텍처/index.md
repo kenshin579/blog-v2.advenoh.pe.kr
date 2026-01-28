@@ -1,8 +1,8 @@
 ---
 title: "MQTT v5 완벽 가이드 (1): 개념과 아키텍처 이해하기"
 description: "MQTT v5의 기본 개념, Broker 중심 아키텍처, HTTP와의 차이점을 알아봅니다. MQTT를 처음 접하는 개발자를 위한 입문 가이드이다."
-date: 2026-01-18
-update: 2026-01-18
+date: 2026-02-04
+update: 2026-02-04
 tags:
   - MQTT
   - MQTT v5
