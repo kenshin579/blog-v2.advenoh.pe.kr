@@ -1,8 +1,8 @@
 ---
 title: "MQTT v5 완벽 가이드 (3): QoS, Session, 재연결 전략"
-description: "MQTT의 핵심인 QoS 동작 원리, Session 관리, 그리고 실무에서 가장 중요한 재연결 전략을 상세히 다룹니다."
-date: 2026-01-18
-update: 2026-01-18
+description: "MQTT의 핵심인 QoS 동작 원리, Session 관리, 그리고 실무에서 가장 중요한 재연결 전략을 상세히 다룬다."
+date: 2026-02-18
+update: 2026-02-18
 tags:
   - MQTT
   - MQTT v5
@@ -14,14 +14,17 @@ tags:
   - 재연결
   - Backoff
   - Idempotent
+  - 메시지 전달 보장
+  - 세션 관리
+  - 네트워크 복원
 series: "MQTT v5 완벽 가이드"
 ---
 
 # 1. QoS 완전 정복
 
-QoS(Quality of Service)는 메시지 **전달 보장 수준**이다. MQTT에서 가장 중요한 개념 중 하나로, 네트워크 상황과 메시지의 중요도에 따라 적절한 QoS를 선택해야 한다. QoS 선택은 시스템의 신뢰성과 성능 사이의 트레이드오프이다. 높은 QoS는 더 많은 네트워크 오버헤드와 지연을 발생시키지만, 메시지 전달을 더 강력하게 보장한다.
+QoS(Quality of Service)는 메시지의 **전달 보장 수준**을 의미한다. MQTT에서 가장 중요한 개념 중 하나로, 네트워크 상태와 메시지의 중요도에 따라 적절한 QoS를 선택해야 한다. QoS 선택은 시스템의 **신뢰성과 성능 간 트레이드오프**를 수반한다. QoS 수준이 높을수록 메시지 전달은 더 확실해지지만, 그만큼 네트워크 오버헤드와 지연이 증가한다.
 
-이 장에서는 각 QoS 레벨의 동작 원리를 상세히 설명하고, 실무에서 어떤 상황에 어떤 QoS를 선택해야 하는지 알아봅니다. 특히 QoS 1에서 발생할 수 있는 중복 메시지 처리 방법도 다룹니다.
+이 장에서는 각 QoS 레벨의 동작 원리를 살펴보고, 실무에서 어떤 상황에 어떤 QoS를 선택하는 것이 적절한지 알아본다. 또한 QoS 1에서 발생할 수 있는 **중복 메시지 처리 방법**에 대해서도 함께 다룬다.
 
 ## 1.1 QoS 0 / 1 / 2 동작 원리
 
@@ -29,9 +32,14 @@ QoS(Quality of Service)는 메시지 **전달 보장 수준**이다. MQTT에서 
 
 "보내고 잊어버린다" 방식이다. 메시지를 한 번 전송하고 응답을 기다리지 않는다. 네트워크 문제로 메시지가 유실되어도 재전송하지 않는다. 가장 빠르고 가벼운 방식이지만, 메시지 전달을 보장하지 않는다.
 
-```
-[Publisher] ──PUBLISH──> [Broker] ──PUBLISH──> [Subscriber]
-             (끝)                    (끝)
+```mermaid
+sequenceDiagram
+    participant P as Publisher
+    participant B as Broker
+    participant S as Subscriber
+    P->>B: PUBLISH
+    B->>S: PUBLISH
+    Note over P,S: ACK 없음, 끝
 ```
 
 **특징:**
@@ -45,12 +53,17 @@ QoS(Quality of Service)는 메시지 **전달 보장 수준**이다. MQTT에서 
 
 "받았다고 확인할 때까지 재전송" 방식이다.
 
-```
-[Publisher] ──PUBLISH──> [Broker]
-[Publisher] <──PUBACK─── [Broker]  # ACK 받으면 끝
-
-[Broker] ──PUBLISH──> [Subscriber]
-[Broker] <──PUBACK─── [Subscriber]  # ACK 받으면 끝
+```mermaid
+sequenceDiagram
+    participant P as Publisher
+    participant B as Broker
+    participant S as Subscriber
+    P->>B: PUBLISH
+    B-->>P: PUBACK
+    Note over P,B: ACK 받으면 끝
+    B->>S: PUBLISH
+    S-->>B: PUBACK
+    Note over B,S: ACK 받으면 끝
 ```
 
 **특징:**
@@ -64,13 +77,16 @@ QoS(Quality of Service)는 메시지 **전달 보장 수준**이다. MQTT에서 
 
 "중복 없이 정확히 한 번 전달" 방식이다.
 
-```
-[Publisher] ──PUBLISH──> [Broker]
-[Publisher] <──PUBREC─── [Broker]  # 받았음
-[Publisher] ──PUBREL──> [Broker]   # 삭제해도 됨
-[Publisher] <──PUBCOMP── [Broker]  # 완료
-
-# Broker → Subscriber도 동일한 4단계
+```mermaid
+sequenceDiagram
+    participant P as Publisher
+    participant B as Broker
+    participant S as Subscriber
+    P->>B: PUBLISH
+    B-->>P: PUBREC (받았음)
+    P->>B: PUBREL (삭제해도 됨)
+    B-->>P: PUBCOMP (완료)
+    Note over B,S: Broker → Subscriber도 동일한 4단계
 ```
 
 **특징:**
@@ -80,7 +96,24 @@ QoS(Quality of Service)는 메시지 **전달 보장 수준**이다. MQTT에서 
 
 **비유**: 은행 송금 - 정확히 한 번만 실행되어야 함
 
-### 1.1.4 한눈에 비교
+### 1.1.4 MQTT Control Packet 타입
+
+위 다이어그램에서 사용된 PUBLISH, PUBACK 등은 MQTT 프로토콜에서 정의한 공식 패킷 타입이다.
+
+| 패킷 | 용도 |
+|------|------|
+| CONNECT / CONNACK | 연결 요청 / 응답 |
+| PUBLISH | 메시지 발행 |
+| PUBACK | QoS 1 응답 |
+| PUBREC / PUBREL / PUBCOMP | QoS 2 핸드셰이크 (3단계) |
+| SUBSCRIBE / SUBACK | 구독 요청 / 응답 |
+| UNSUBSCRIBE / UNSUBACK | 구독 해제 요청 / 응답 |
+| PINGREQ / PINGRESP | Keep Alive 체크 |
+| DISCONNECT | 연결 종료 |
+| AUTH | 인증 (v5에서 추가) |
+
+
+### 1.1.5 한눈에 비교
 
 | QoS | 이름 | 전달 보장 | 중복 가능 | 속도 |
 |-----|------|-----------|-----------|------|
@@ -269,13 +302,14 @@ Session이 유지되는 동안 Broker가 메시지를 저장한다.
 
 ### 2.2.1 Ping 메커니즘
 
-```
-Keep Alive = 60초로 설정
-
-[Client] ──PINGREQ──> [Broker]  # 60초 동안 통신 없으면
-[Client] <──PINGRESP── [Broker]
-
-# 응답 없으면 연결 끊김으로 판단
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant B as Broker
+    Note over C,B: Keep Alive = 60초
+    C->>B: PINGREQ (60초 동안 통신 없으면)
+    B-->>C: PINGRESP
+    Note over C,B: 응답 없으면 연결 끊김으로 판단
 ```
 
 **동작 방식:**
@@ -623,11 +657,36 @@ for _, msg := range messages {
 
 ---
 
-> **다음 편 안내**: [MQTT v5 완벽 가이드 (4): 고급 기능과 보안](/database/mqtt-v5-완벽-가이드-4-고급-기능과-보안)에서는 Shared Subscription, Request/Response 패턴, Reason Code, 그리고 TLS 보안 설정을 다룹니다.
+# 4. 마무리
+
+이번 편에서 다룬 핵심 내용을 정리한다.
+
+**QoS 선택**
+- QoS 0: 빠르지만 유실 가능. 주기적 상태 보고에 적합
+- QoS 1: 전달 보장하지만 중복 가능. 가장 많이 사용
+- QoS 2: 정확히 한 번 전달. 오버헤드가 커서 거의 사용 안 함
+- 중복 처리는 Idempotent 설계로 해결
+
+**Session 관리**
+- Clean Start=false로 세션 유지하면 오프라인 메시지 수신 가능
+- Session Expiry Interval로 세션 유지 시간 설정
+- Keep Alive로 연결 상태 확인. 네트워크 환경에 따라 조절
+- Retained Message는 상태 정보에만 사용. 이벤트에는 부적합
+
+**재연결 전략**
+- 네트워크 끊김은 "만약"이 아니라 "언제"의 문제
+- Exponential Backoff + Jitter로 Broker 부하 분산
+- 재연결 후 재구독, 중복 체크, 상태 동기화 필수
+
+실무에서는 재연결 로직이 전체 코드의 상당 부분을 차지한다. 안정적인 MQTT 시스템을 구축하려면 이 세 가지를 확실히 이해해야 한다.
 
 ---
 
-# 4. 참고
+> **다음 편 안내**: [MQTT v5 완벽 가이드 (4): 고급 기능과 보안](/database/mqtt-v5-완벽-가이드-4-고급-기능과-보안)에서는 Shared Subscription, Request/Response 패턴, Reason Code, 그리고 TLS 보안 설정을 다룬다.
+
+---
+
+# 5. 참고
 
 - [MQTT v5 스펙](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
 - [Eclipse Paho Go Client](https://github.com/eclipse/paho.golang)
