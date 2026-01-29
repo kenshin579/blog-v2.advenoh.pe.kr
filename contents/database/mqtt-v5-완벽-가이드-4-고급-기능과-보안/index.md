@@ -22,11 +22,11 @@ series: "MQTT v5 완벽 가이드"
 
 # 1. MQTT v5 고급 기능
 
-MQTT v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, HTTP 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룬다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
+MQTT v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, `HTTP` 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룬다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
 
 ## 1.1 Shared Subscription
 
-여러 Subscriber가 **메시지를 나눠서** 처리하는 기능이다. 일반적인 MQTT 구독에서는 같은 Topic을 구독하는 모든 Subscriber가 동일한 메시지를 받는다. 하지만 Shared Subscription을 사용하면 메시지가 구독자들 사이에 분배되어 로드 밸런싱 효과를 얻을 수 있다. 이는 대량의 메시지를 처리해야 하는 시스템에서 수평 확장을 가능하게 한다.
+여러 Subscriber가 **메시지를 나눠서** 처리하는 기능이다. 일반적인 `MQTT` 구독에서는 같은 Topic을 구독하는 모든 Subscriber가 동일한 메시지를 받는다. 하지만 Shared Subscription을 사용하면 메시지가 구독자들 사이에 분배되어 로드 밸런싱 효과를 얻을 수 있다. 이는 대량의 메시지를 처리해야 하는 시스템에서 수평 확장을 가능하게 한다.
 
 ### 1.1.1 개념
 
@@ -98,11 +98,11 @@ Message 3 → Subscriber A
 
 ## 1.2 Request / Response 패턴
 
-MQTT는 기본적으로 Publish/Subscribe 모델이지만, v5에서 추가된 Response Topic과 Correlation Data를 활용하면 HTTP처럼 요청-응답 패턴을 구현할 수 있다. 디바이스 상태 조회나 원격 명령 실행 등 응답이 필요한 시나리오에서 유용하다.
+`MQTT`는 기본적으로 `Publish`/`Subscribe` 모델이지만, v5에서 추가된 Response Topic과 Correlation Data를 활용하면 `HTTP`처럼 요청-응답 패턴을 구현할 수 있다. 디바이스 상태 조회나 원격 명령 실행 등 응답이 필요한 시나리오에서 유용하다.
 
 ### 1.2.1 Response Topic
 
-요청자는 PUBLISH 메시지의 `response_topic` 속성에 응답을 받을 Topic을 지정한다. 응답자는 이 Topic으로 결과를 PUBLISH하므로, 요청자는 반드시 해당 Topic을 미리 SUBSCRIBE 해두어야 한다.
+요청자는 `PUBLISH` 메시지의 `response_topic` 속성에 응답을 받을 Topic을 지정한다. 응답자는 이 Topic으로 결과를 `PUBLISH`하므로, 요청자는 반드시 해당 Topic을 미리 `SUBSCRIBE` 해두어야 한다.
 
 ```mermaid
 sequenceDiagram
@@ -124,9 +124,9 @@ sequenceDiagram
 
 **핵심 포인트:**
 
-- **요청자**는 요청 전에 `response_topic`을 미리 **SUBSCRIBE** 해야 함
-- **응답자**는 요청의 `response_topic`으로 **PUBLISH**하여 응답
-- 요청과 응답 모두 PUBLISH이며, 구독은 응답을 받기 위한 사전 준비
+- **요청자**는 요청 전에 `response_topic`을 미리 `SUBSCRIBE` 해야 함
+- **응답자**는 요청의 `response_topic`으로 `PUBLISH`하여 응답
+- 요청과 응답 모두 `PUBLISH`이며, 구독은 응답을 받기 위한 사전 준비
 
 ### 1.2.2 Correlation Data
 
@@ -152,7 +152,7 @@ func onMessage(msg Message) {
 
 ### 1.2.3 Timeout 처리
 
-MQTT는 비동기 프로토콜이므로 응답이 오지 않을 수 있다. 응답자가 오프라인이거나 처리에 실패한 경우를 대비하여 반드시 타임아웃을 설정하고, 시간 내에 응답이 없으면 재시도하거나 에러로 처리해야 한다.
+`MQTT`는 비동기 프로토콜이므로 응답이 오지 않을 수 있다. 응답자가 오프라인이거나 처리에 실패한 경우를 대비하여 반드시 타임아웃을 설정하고, 시간 내에 응답이 없으면 재시도하거나 에러로 처리해야 한다.
 
 ```go
 func requestWithTimeout(request Message, timeout time.Duration) (Response, error) {
@@ -181,7 +181,7 @@ func requestWithTimeout(request Message, timeout time.Duration) (Response, error
 
 ## 1.3 Reason Code
 
-MQTT v3에서는 연결이나 구독이 실패해도 구체적인 원인을 알기 어려웠다. v5에서는 CONNACK, PUBACK, SUBACK 등 모든 응답에 Reason Code가 포함되어, 성공 여부뿐 아니라 실패 원인까지 정확히 파악할 수 있다. 이를 통해 클라이언트 측에서 적절한 에러 처리와 디버깅이 가능해진다.
+MQTT v3에서는 연결이나 구독이 실패해도 구체적인 원인을 알기 어려웠다. v5에서는 `CONNACK`, `PUBACK`, `SUBACK` 등 모든 응답에 Reason Code가 포함되어, 성공 여부뿐 아니라 실패 원인까지 정확히 파악할 수 있다. 이를 통해 클라이언트 측에서 적절한 에러 처리와 디버깅이 가능해진다.
 
 ### 1.3.1 성공/실패 세분화
 
@@ -230,15 +230,15 @@ v5: "연결 실패 - Reason Code 134: Bad User Name or Password"
 
 # 2. 보안
 
-MQTT 시스템의 보안은 세 가지 축으로 구성된다: 인증(Authentication), 인가(Authorization), 그리고 암호화(Encryption). 인증은 "당신이 누구인가"를 확인하고, 인가는 "무엇을 할 수 있는가"를 결정하며, 암호화는 "통신 내용이 노출되지 않는가"를 보장한다. 특히 IoT 환경에서는 수많은 디바이스가 연결되므로 보안 설계가 더욱 중요한다.
+`MQTT` 시스템의 보안은 세 가지 축으로 구성된다: 인증(Authentication), 인가(Authorization), 그리고 암호화(Encryption). 인증은 "당신이 누구인가"를 확인하고, 인가는 "무엇을 할 수 있는가"를 결정하며, 암호화는 "통신 내용이 노출되지 않는가"를 보장한다. 특히 IoT 환경에서는 수많은 디바이스가 연결되므로 보안 설계가 더욱 중요한다.
 
 ## 2.1 인증
 
-Client가 **누구인지** 확인한다. MQTT에서는 연결 시점에 인증이 이루어지며, 한 번 인증된 연결은 세션이 유지되는 동안 유효한다. 인증에 실패하면 Broker는 연결을 거부하고, v5에서는 Reason Code를 통해 실패 원인을 알려준다.
+Client가 **누구인지** 확인한다. `MQTT`에서는 연결 시점에 인증이 이루어지며, 한 번 인증된 연결은 세션이 유지되는 동안 유효한다. 인증에 실패하면 Broker는 연결을 거부하고, v5에서는 Reason Code를 통해 실패 원인을 알려준다.
 
 ### 2.1.1 Username / Password
 
-가장 기본적인 인증 방식이다. 설정이 간단하여 개발 및 테스트 환경에서 많이 사용된다. 하지만 보안 수준이 높지 않으므로 프로덕션에서는 TLS와 함께 사용하거나 다른 인증 방식을 고려해야 한다.
+가장 기본적인 인증 방식이다. 설정이 간단하여 개발 및 테스트 환경에서 많이 사용된다. 하지만 보안 수준이 높지 않으므로 프로덕션에서는 `TLS`와 함께 사용하거나 다른 인증 방식을 고려해야 한다.
 
 ```go
 // 연결 시 인증 정보 제공
@@ -250,13 +250,13 @@ config := paho.Connect{
 ```
 
 **주의사항:**
-- 평문으로 전송됨 (TLS 필수)
+- 평문으로 전송됨 (`TLS` 필수)
 - 비밀번호 관리 필요
 - 각 디바이스별 고유 인증 정보 권장
 
 ### 2.1.2 Token 기반 인증
 
-JWT 등의 토큰을 사용하는 방식이다.
+`JWT` 등의 토큰을 사용하는 방식이다.
 
 ```go
 // JWT 토큰을 Password로 사용
@@ -275,7 +275,7 @@ config := paho.Connect{
 
 ## 2.2 인가
 
-인증된 Client가 **무엇을 할 수 있는지** 결정한다. ACL(Access Control List)은 **Broker 측에서 설정**하며, 클라이언트 코드가 아닌 Broker의 설정 파일이나 관리 시스템에서 구성한다.
+인증된 Client가 **무엇을 할 수 있는지** 결정한다. `ACL`(Access Control List)은 **Broker 측에서 설정**하며, 클라이언트 코드가 아닌 Broker의 설정 파일이나 관리 시스템에서 구성한다.
 
 ### 2.2.1 Broker별 ACL 설정 방식
 
@@ -308,7 +308,7 @@ topic readwrite #             # 모든 토픽 읽기/쓰기
 
 ### 2.2.3 ACL 변경 적용 방법
 
-ACL 파일을 수정한 후에는 Broker에 변경 사항을 적용해야 한다.
+`ACL` 파일을 수정한 후에는 Broker에 변경 사항을 적용해야 한다.
 
 **Mosquitto 적용 방법:**
 
@@ -329,7 +329,7 @@ ACL 파일을 수정한 후에는 Broker에 변경 사항을 적용해야 한다
 
 ### 2.2.4 Mosquitto Dynamic Security 플러그인
 
-Mosquitto 2.0부터 제공되는 **Dynamic Security 플러그인**을 사용하면 Broker 재시작 없이 런타임에 사용자, 그룹, ACL을 관리할 수 있다.
+Mosquitto 2.0부터 제공되는 **Dynamic Security 플러그인**을 사용하면 Broker 재시작 없이 런타임에 사용자, 그룹, `ACL`을 관리할 수 있다.
 
 **활성화 방법:**
 
@@ -357,11 +357,11 @@ mosquitto_ctrl dynsec addClientRole sensor-001 sensor-role
 **장점:**
 - Broker 재시작 없이 사용자/권한 관리
 - JSON 기반 설정으로 백업/복원 용이
-- `mosquitto_ctrl` CLI 또는 MQTT 메시지로 관리 가능
+- `mosquitto_ctrl` CLI 또는 `MQTT` 메시지로 관리 가능
 
 ### 2.2.5 mosquitto-go-auth 플러그인
 
-외부 시스템과 연동하여 동적으로 ACL을 체크하려면 **mosquitto-go-auth** 플러그인을 사용할 수 있다. 이 오픈소스 플러그인은 매 요청마다 외부 Backend에서 권한을 조회하므로, Broker 재시작 없이 실시간으로 권한 변경이 반영된다.
+외부 시스템과 연동하여 동적으로 `ACL`을 체크하려면 **mosquitto-go-auth** 플러그인을 사용할 수 있다. 이 오픈소스 플러그인은 매 요청마다 외부 Backend에서 권한을 조회하므로, Broker 재시작 없이 실시간으로 권한 변경이 반영된다.
 
 - GitHub: https://github.com/iegomez/mosquitto-go-auth
 
@@ -416,10 +416,10 @@ func checkACL(w http.ResponseWriter, r *http.Request) {
 ```
 
 **장점:**
-- 매 요청마다 실시간 ACL 체크
+- 매 요청마다 실시간 `ACL` 체크
 - Broker 재시작 없이 권한 변경 즉시 반영
 - 비즈니스 로직에 맞는 복잡한 권한 체크 가능
-- 기존 인증 시스템(LDAP, OAuth 등)과 통합 용이
+- 기존 인증 시스템(LDAP, `OAuth` 등)과 통합 용이
 
 프로덕션 환경에서는 동적 변경이 가능한 방식을 선택하는 것이 운영에 유리한다.
 
@@ -439,7 +439,7 @@ dashboard:
 
 ## 2.3 TLS
 
-통신 내용을 **암호화**한다. MQTT는 기본적으로 평문 통신을 하므로, 인터넷을 통한 통신이나 민감한 데이터 전송 시 TLS를 반드시 적용해야 한다.
+통신 내용을 **암호화**한다. `MQTT`는 기본적으로 평문 통신을 하므로, 인터넷을 통한 통신이나 민감한 데이터 전송 시 `TLS`를 반드시 적용해야 한다.
 
 ### 2.3.1 MQTT 포트 규약
 
@@ -587,13 +587,13 @@ func createMutualTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error
 | 권장 환경 | 레거시 호환 필요 시 | 신규 시스템 |
 
 **경량 디바이스 고려사항:**
-- TLS 1.3 사용 권장 (핸드셰이크 오버헤드 감소)
+- `TLS` 1.3 사용 권장 (핸드셰이크 오버헤드 감소)
 - 하드웨어 암호화 가속 지원 여부 확인
 - 리소스 제약 시 VPN으로 네트워크 레벨 보안 대체 고려
 
 ## 2.4 MQTT over WebSocket
 
-브라우저는 TCP 소켓을 직접 사용할 수 없기 때문에, 웹 애플리케이션에서 MQTT를 사용하려면 WebSocket으로 감싸야 한다. MQTT over WebSocket을 사용하면 프론트엔드에서도 실시간으로 MQTT Topic을 구독하고 메시지를 발행할 수 있다.
+브라우저는 TCP 소켓을 직접 사용할 수 없기 때문에, 웹 애플리케이션에서 `MQTT`를 사용하려면 WebSocket으로 감싸야 한다. `MQTT` over WebSocket을 사용하면 프론트엔드에서도 실시간으로 `MQTT` Topic을 구독하고 메시지를 발행할 수 있다.
 
 ### 2.4.1 동작 원리
 
@@ -614,13 +614,13 @@ sequenceDiagram
 ```
 
 **핵심 포인트:**
-- WebSocket 클라이언트도 일반 MQTT 클라이언트와 **동일하게 동작**
+- WebSocket 클라이언트도 일반 `MQTT` 클라이언트와 **동일하게 동작**
 - 같은 Topic을 공유하며 서로 메시지를 주고받을 수 있음
 - Broker 입장에서는 연결 방식만 다를 뿐 동일한 클라이언트
 
 ### 2.4.2 Mosquitto WebSocket 설정
 
-Mosquitto에서 WebSocket을 활성화하려면 별도의 listener를 추가하고 `protocol websockets`를 지정하면 된다. 개발 환경에서는 평문 WebSocket(8083)을, 프로덕션에서는 TLS가 적용된 WSS(8084)를 사용한다.
+Mosquitto에서 WebSocket을 활성화하려면 별도의 listener를 추가하고 `protocol websockets`를 지정하면 된다. 개발 환경에서는 평문 WebSocket(8083)을, 프로덕션에서는 `TLS`가 적용된 `WSS`(8084)를 사용한다.
 
 ```bash
 # mosquitto.conf
@@ -642,7 +642,7 @@ keyfile /mosquitto/certs/server.key
 
 ### 2.4.3 프론트엔드 연동 (JavaScript)
 
-브라우저에서 MQTT를 사용하려면 MQTT.js 라이브러리를 활용한다. WebSocket URL(`wss://`)로 Broker에 연결하면 일반 MQTT 클라이언트와 동일하게 Topic 구독, 메시지 발행이 가능하다.
+브라우저에서 `MQTT`를 사용하려면 MQTT.js 라이브러리를 활용한다. WebSocket URL(`wss://`)로 Broker에 연결하면 일반 `MQTT` 클라이언트와 동일하게 Topic 구독, 메시지 발행이 가능하다.
 
 **MQTT.js 설치:**
 
@@ -703,7 +703,7 @@ client.end();
 
 ### 2.4.4 React Hook 예시
 
-React에서 MQTT 연결을 재사용하려면 커스텀 Hook으로 추상화하는 것이 효과적이다. 연결 상태 관리, Topic 구독, 메시지 수신을 Hook 내부에서 처리하면 컴포넌트에서는 데이터만 가져다 쓰면 된다.
+React에서 `MQTT` 연결을 재사용하려면 커스텀 Hook으로 추상화하는 것이 효과적이다. 연결 상태 관리, Topic 구독, 메시지 수신을 Hook 내부에서 처리하면 컴포넌트에서는 데이터만 가져다 쓰면 된다.
 
 ```javascript
 import { useEffect, useState } from 'react';
@@ -765,8 +765,6 @@ function Dashboard() {
 }
 ```
 
----
-
 # 3. 마무리
 
 이번 편에서는 MQTT v5의 고급 기능과 보안을 다뤘다.
@@ -774,16 +772,13 @@ function Dashboard() {
 - **Shared Subscription**으로 메시지를 여러 Subscriber에 분배하여 로드 밸런싱을 구현할 수 있다
 - **Request/Response 패턴**으로 Response Topic과 Correlation Data를 활용한 요청-응답 통신이 가능하다
 - **Reason Code**로 연결·구독·발행 실패의 원인을 정확히 파악할 수 있다
-- **인증/인가**는 Username/Password, JWT, ACL을 조합하여 구성한다
-- **TLS/mTLS**로 통신을 암호화하고, **WebSocket**으로 브라우저에서도 MQTT를 사용할 수 있다
+- **인증/인가**는 Username/Password, `JWT`, `ACL`을 조합하여 구성한다
+- **`TLS`/`mTLS`**로 통신을 암호화하고, **WebSocket**으로 브라우저에서도 MQTT를 사용할 수 있다
 
 다음 편에서는 Go 언어로 이 기능들을 실제로 구현하는 방법을 살펴본다.
 
----
 
 > **다음 편 안내**: [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영)에서는 Go 언어로 MQTT v5 클라이언트를 구현하는 방법과 프로덕션 운영 전략을 다룬다.
-
----
 
 # 4. 참고
 
