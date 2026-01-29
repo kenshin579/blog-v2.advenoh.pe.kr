@@ -22,7 +22,7 @@ series: "MQTT v5 완벽 가이드"
 
 # 1. MQTT v5 고급 기능
 
-MQTT v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, `HTTP` 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룬다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
+`MQTT` v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, `HTTP` 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룬다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
 
 ## 1.1 Shared Subscription
 
@@ -181,7 +181,7 @@ func requestWithTimeout(request Message, timeout time.Duration) (Response, error
 
 ## 1.3 Reason Code
 
-MQTT v3에서는 연결이나 구독이 실패해도 구체적인 원인을 알기 어려웠다. v5에서는 `CONNACK`, `PUBACK`, `SUBACK` 등 모든 응답에 Reason Code가 포함되어, 성공 여부뿐 아니라 실패 원인까지 정확히 파악할 수 있다. 이를 통해 클라이언트 측에서 적절한 에러 처리와 디버깅이 가능해진다.
+`MQTT` v3에서는 연결이나 구독이 실패해도 구체적인 원인을 알기 어려웠다. v5에서는 `CONNACK`, `PUBACK`, `SUBACK` 등 모든 응답에 Reason Code가 포함되어, 성공 여부뿐 아니라 실패 원인까지 정확히 파악할 수 있다. 이를 통해 클라이언트 측에서 적절한 에러 처리와 디버깅이 가능해진다.
 
 ### 1.3.1 성공/실패 세분화
 
@@ -419,7 +419,7 @@ func checkACL(w http.ResponseWriter, r *http.Request) {
 - 매 요청마다 실시간 `ACL` 체크
 - Broker 재시작 없이 권한 변경 즉시 반영
 - 비즈니스 로직에 맞는 복잡한 권한 체크 가능
-- 기존 인증 시스템(LDAP, `OAuth` 등)과 통합 용이
+- 기존 인증 시스템(`LDAP`, `OAuth` 등)과 통합 용이
 
 프로덕션 환경에서는 동적 변경이 가능한 방식을 선택하는 것이 운영에 유리한다.
 
@@ -620,7 +620,7 @@ sequenceDiagram
 
 ### 2.4.2 Mosquitto WebSocket 설정
 
-Mosquitto에서 WebSocket을 활성화하려면 별도의 listener를 추가하고 `protocol websockets`를 지정하면 된다. 개발 환경에서는 평문 WebSocket(8083)을, 프로덕션에서는 `TLS`가 적용된 `WSS`(8084)를 사용한다.
+Mosquitto에서 WebSocket을 활성화하려면 별도의 listener를 추가하고 `protocol websockets`를 지정하면 된다. 개발 환경에서는 평문 WebSocket(`8083`)을, 프로덕션에서는 `TLS`가 적용된 `WSS`(`8084`)를 사용한다.
 
 ```bash
 # mosquitto.conf
@@ -703,7 +703,7 @@ client.end();
 
 ### 2.4.4 React Hook 예시
 
-React에서 `MQTT` 연결을 재사용하려면 커스텀 Hook으로 추상화하는 것이 효과적이다. 연결 상태 관리, Topic 구독, 메시지 수신을 Hook 내부에서 처리하면 컴포넌트에서는 데이터만 가져다 쓰면 된다.
+React에서 `MQTT` 연결을 재사용하려면 커스텀 `Hook`으로 추상화하는 것이 효과적이다. 연결 상태 관리, Topic 구독, 메시지 수신을 `Hook` 내부에서 처리하면 컴포넌트에서는 데이터만 가져다 쓰면 된다.
 
 ```javascript
 import { useEffect, useState } from 'react';
@@ -767,7 +767,7 @@ function Dashboard() {
 
 # 3. 마무리
 
-이번 편에서는 MQTT v5의 고급 기능과 보안을 다뤘다.
+이번 편에서는 `MQTT` v5의 고급 기능과 보안을 다뤘다.
 
 - **Shared Subscription**으로 메시지를 여러 Subscriber에 분배하여 로드 밸런싱을 구현할 수 있다
 - **Request/Response 패턴**으로 Response Topic과 Correlation Data를 활용한 요청-응답 통신이 가능하다
@@ -775,10 +775,10 @@ function Dashboard() {
 - **인증/인가**는 Username/Password, `JWT`, `ACL`을 조합하여 구성한다
 - **`TLS`/`mTLS`**로 통신을 암호화하고, **WebSocket**으로 브라우저에서도 MQTT를 사용할 수 있다
 
-다음 편에서는 Go 언어로 이 기능들을 실제로 구현하는 방법을 살펴본다.
+다음 편에서는 `Go` 언어로 이 기능들을 실제로 구현하는 방법을 살펴본다.
 
 
-> **다음 편 안내**: [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영)에서는 Go 언어로 MQTT v5 클라이언트를 구현하는 방법과 프로덕션 운영 전략을 다룬다.
+> **다음 편 안내**: [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영)에서는 Go 언어로 `MQTT` v5 클라이언트를 구현하는 방법과 프로덕션 운영 전략을 다룬다.
 
 # 4. 참고
 
