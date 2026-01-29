@@ -14,6 +14,9 @@ tags:
   - WebSocket
   - 보안
   - 인증
+  - 메시지 큐
+  - IoT
+  - 로드 밸런싱
 series: "MQTT v5 완벽 가이드"
 ---
 
