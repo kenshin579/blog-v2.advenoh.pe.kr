@@ -22,9 +22,9 @@ series: "MQTT v5 완벽 가이드"
 
 # 1. QoS 완전 정복
 
-QoS(Quality of Service)는 메시지의 **전달 보장 수준**을 의미한다. MQTT에서 가장 중요한 개념 중 하나로, 네트워크 상태와 메시지의 중요도에 따라 적절한 QoS를 선택해야 한다. QoS 선택은 시스템의 **신뢰성과 성능 간 트레이드오프**를 수반한다. QoS 수준이 높을수록 메시지 전달은 더 확실해지지만, 그만큼 네트워크 오버헤드와 지연이 증가한다.
+`QoS`(Quality of Service)는 메시지의 **전달 보장 수준**을 의미한다. `MQTT`에서 가장 중요한 개념 중 하나로, 네트워크 상태와 메시지의 중요도에 따라 적절한 `QoS`를 선택해야 한다. `QoS` 선택은 시스템의 **신뢰성과 성능 간 트레이드오프**를 수반한다. `QoS` 수준이 높을수록 메시지 전달은 더 확실해지지만, 그만큼 네트워크 오버헤드와 지연이 증가한다.
 
-이 장에서는 각 QoS 레벨의 동작 원리를 살펴보고, 실무에서 어떤 상황에 어떤 QoS를 선택하는 것이 적절한지 알아본다. 또한 QoS 1에서 발생할 수 있는 **중복 메시지 처리 방법**에 대해서도 함께 다룬다.
+이 장에서는 각 `QoS` 레벨의 동작 원리를 살펴보고, 실무에서 어떤 상황에 어떤 `QoS`를 선택하는 것이 적절한지 알아본다. 또한 `QoS` 1에서 발생할 수 있는 **중복 메시지 처리 방법**에 대해서도 함께 다룬다.
 
 ## 1.1 QoS 0 / 1 / 2 동작 원리
 
@@ -45,7 +45,7 @@ sequenceDiagram
 **특징:**
 - 가장 빠름
 - 메시지 유실 가능
-- ACK 없음
+- `ACK` 없음
 
 **비유**: 엽서 보내기 - 보냈는지 확인 안 함
 
@@ -68,7 +68,7 @@ sequenceDiagram
 
 **특징:**
 - 메시지 전달 보장
-- 중복 가능 (ACK 유실 시 재전송)
+- 중복 가능 (`ACK` 유실 시 재전송)
 - 가장 많이 사용됨
 
 **비유**: 등기 우편 - 받았다는 확인 필요
@@ -98,19 +98,19 @@ sequenceDiagram
 
 ### 1.1.4 MQTT Control Packet 타입
 
-위 다이어그램에서 사용된 PUBLISH, PUBACK 등은 MQTT 프로토콜에서 정의한 공식 패킷 타입이다.
+위 다이어그램에서 사용된 `PUBLISH`, `PUBACK` 등은 `MQTT` 프로토콜에서 정의한 공식 패킷 타입이다.
 
 | 패킷 | 용도 |
 |------|------|
-| CONNECT / CONNACK | 연결 요청 / 응답 |
-| PUBLISH | 메시지 발행 |
-| PUBACK | QoS 1 응답 |
-| PUBREC / PUBREL / PUBCOMP | QoS 2 핸드셰이크 (3단계) |
-| SUBSCRIBE / SUBACK | 구독 요청 / 응답 |
-| UNSUBSCRIBE / UNSUBACK | 구독 해제 요청 / 응답 |
-| PINGREQ / PINGRESP | Keep Alive 체크 |
-| DISCONNECT | 연결 종료 |
-| AUTH | 인증 (v5에서 추가) |
+| `CONNECT` / `CONNACK` | 연결 요청 / 응답 |
+| `PUBLISH` | 메시지 발행 |
+| `PUBACK` | `QoS` 1 응답 |
+| `PUBREC` / `PUBREL` / `PUBCOMP` | `QoS` 2 핸드셰이크 (3단계) |
+| `SUBSCRIBE` / `SUBACK` | 구독 요청 / 응답 |
+| `UNSUBSCRIBE` / `UNSUBACK` | 구독 해제 요청 / 응답 |
+| `PINGREQ` / `PINGRESP` | Keep Alive 체크 |
+| `DISCONNECT` | 연결 종료 |
+| `AUTH` | 인증 (v5에서 추가) |
 
 
 ### 1.1.5 한눈에 비교
@@ -125,6 +125,8 @@ sequenceDiagram
 
 ### 1.2.1 상태 보고: QoS 0 또는 1
 
+온도, 습도 같은 센서 데이터는 주기적으로 전송되므로 하나쯤 놓쳐도 다음 값이 곧 온다. 따라서 전송 빈도와 데이터 중요도에 따라 `QoS` 0 또는 1을 선택한다.
+
 ```
 # 예: 온도 센서가 1초마다 값 전송
 topic: sensor/temp
@@ -133,10 +135,12 @@ qos: 0  # 하나쯤 놓쳐도 다음 값이 옴
 ```
 
 **판단 기준:**
-- 주기적으로 전송됨 → QoS 0
-- 가끔 전송되고 중요함 → QoS 1
+- 주기적으로 전송됨 → `QoS` 0
+- 가끔 전송되고 중요함 → `QoS` 1
 
 ### 1.2.2 이벤트: QoS 1
+
+문 열림, 버튼 클릭 같은 이벤트는 한 번 발생하면 끝이므로 놓치면 복구가 어렵다. 반드시 전달되어야 하므로 `QoS` 1을 사용한다.
 
 ```
 # 예: 문 열림 이벤트
@@ -145,9 +149,9 @@ payload: {"time": "10:30:00"}
 qos: 1  # 이벤트는 놓치면 안 됨
 ```
 
-이벤트는 보통 한 번 발생하면 끝이므로 놓치면 복구가 어렵다.
-
 ### 1.2.3 명령: QoS 1 또는 2
+
+디바이스에 보내는 명령은 반드시 전달되어야 한다. 대부분 `QoS` 1이면 충분하지만, 결제처럼 중복 실행이 치명적인 경우에는 `QoS` 2 또는 Idempotent 처리를 고려한다.
 
 ```
 # 예: 조명 끄기 명령
@@ -169,21 +173,26 @@ qos: 2  # 정확히 한 번만 실행
 
 ### 1.3.1 At-Least-Once의 현실
 
-QoS 1을 사용하면 중복이 발생할 수 있다.
+`QoS` 1은 메시지 전달을 보장하지만, `PUBACK`이 유실되면 Publisher가 같은 메시지를 재전송하여 중복이 발생할 수 있다. 이는 `QoS` 1의 설계상 의도된 동작이므로, Subscriber 측에서 중복을 처리에 대한 작업이 필요하다.
 
-```
-# 시나리오
-1. Publisher가 메시지 전송
-2. Broker가 받고 저장
-3. Broker가 PUBACK 전송
-4. 네트워크 문제로 PUBACK 유실
-5. Publisher가 메시지 재전송 (타임아웃)
-6. Broker가 같은 메시지를 또 받음 → 중복!
+```mermaid
+sequenceDiagram
+    participant P as Publisher
+    participant B as Broker
+    participant S as Subscriber
+    P->>B: PUBLISH (msg-1)
+    B->>S: PUBLISH (msg-1)
+    B--xP: PUBACK (네트워크 유실)
+    Note over P: 타임아웃, 재전송
+    P->>B: PUBLISH (msg-1, 재전송)
+    B->>S: PUBLISH (msg-1, 중복!)
+    B-->>P: PUBACK
+    Note over S: 같은 메시지를 2번 받음
 ```
 
 ### 1.3.2 Idempotent Consumer 설계
 
-중복 메시지를 받아도 문제없게 설계하는 것이 **멱등성(Idempotency)**이다.
+중복 메시지를 받아도 결과가 동일하도록 설계하는 것이 **멱등성(Idempotency)**이다. `QoS` 2의 오버헤드 없이도 실질적으로 "정확히 한 번" 처리와 동일한 효과를 얻을 수 있어, 실무에서는 `QoS` 1 + 멱등성 조합이 가장 널리 사용된다.
 
 **방법 1: 메시지 ID로 중복 체크**
 ```go
@@ -225,11 +234,11 @@ func handleState(msg StateMessage) {
 
 # 2. Session & 연결 관리
 
-MQTT에서 세션(Session)은 단순히 TCP 연결을 넘어서는 개념이다. 세션에는 구독 정보, 전달되지 않은 메시지, QoS 흐름 상태 등이 포함된다. 올바른 세션 관리는 네트워크가 불안정한 환경에서 메시지 손실을 방지하는 핵심이다. 이 장에서는 세션의 생명주기와 Keep Alive 메커니즘, 그리고 Retained Message 활용법을 다룹니다.
+`MQTT`에서 세션(Session)은 단순히 `TCP` 연결을 넘어서는 개념이다. 세션에는 구독 정보, 전달되지 않은 메시지, `QoS` 흐름 상태 등이 포함된다. 올바른 세션 관리는 네트워크가 불안정한 환경에서 메시지 손실을 방지하는 핵심이다. 이 장에서는 세션의 생명주기와 Keep Alive 메커니즘, 그리고 Retained Message 활용법을 다룬다.
 
 ## 2.1 Session Expiry Interval
 
-세션은 Client와 Broker 간의 **연결 상태 정보**이다. v5에서는 Session Expiry Interval을 통해 연결이 끊어진 후에도 세션을 얼마나 유지할지 세밀하게 제어할 수 있다. 이 기능은 모바일 앱처럼 연결이 자주 끊어지는 환경에서 특히 유용한다.
+세션은 Client와 Broker 간의 **연결 상태 정보**이다. v5에서는 Session Expiry Interval을 통해 연결이 끊어진 후에도 세션을 얼마나 유지할지 세밀하게 제어할 수 있다. 이 기능은 모바일 앱처럼 연결이 자주 끊어지는 환경에서 특히 유용하다.
 
 ### 2.1.1 Clean Start vs Session 유지
 
@@ -276,29 +285,41 @@ SessionExpiryInterval: 3600  // 1시간
 
 **권장 값:**
 - 모바일 앱: 1-24시간
-- IoT 기기: 필요에 따라 (분~일)
+- `IoT` 기기: 필요에 따라 (분~일)
 - 임시 연결: 0 (세션 유지 안 함)
 
 ### 2.1.3 오프라인 메시지
 
-Session이 유지되는 동안 Broker가 메시지를 저장한다.
+Session이 유지되는 동안 Broker가 메시지를 저장한다. Client가 오프라인이더라도 세션이 살아있으면 `QoS` 1 이상의 메시지는 Broker에 쌓이고, 재연결 시 한꺼번에 전달된다. 이 덕분에 네트워크가 불안정한 환경에서도 메시지 유실 없이 안정적으로 데이터를 수신할 수 있다.
 
-```
-1. Subscriber가 오프라인
-2. Publisher가 메시지 발행 (QoS 1)
-3. Broker가 메시지 저장 (Subscriber 세션이 살아있으므로)
-4. Subscriber가 재연결
-5. Broker가 저장된 메시지 전달
+```mermaid
+sequenceDiagram
+    participant P as Publisher
+    participant B as Broker
+    participant S as Subscriber
+    Note over S: 오프라인 (세션 유지 중)
+    P->>B: PUBLISH (QoS 1)
+    B-->>P: PUBACK
+    Note over B: 메시지 저장 (세션 살아있음)
+    P->>B: PUBLISH (QoS 1)
+    B-->>P: PUBACK
+    Note over B: 메시지 저장
+    S->>B: CONNECT (Clean Start=false)
+    B-->>S: CONNACK (Session Present=true)
+    B->>S: PUBLISH (저장된 메시지 1)
+    S-->>B: PUBACK
+    B->>S: PUBLISH (저장된 메시지 2)
+    S-->>B: PUBACK
 ```
 
 **주의사항:**
-- QoS 0 메시지는 저장되지 않음
+- `QoS` 0 메시지는 저장되지 않음
 - 저장 용량에 제한이 있을 수 있음
 - Session Expiry 전에 재연결해야 함
 
 ## 2.2 Keep Alive
 
-연결이 살아있는지 확인하는 메커니즘이다.
+연결이 살아있는지 확인하는 메커니즘이다. `TCP` 연결은 상대방이 비정상 종료되어도 이를 즉시 감지하지 못하는 경우가 많기 때문에, `MQTT`는 주기적으로 `PINGREQ`/`PINGRESP`를 교환하여 연결 상태를 확인한다. 이를 통해 끊어진 연결을 빠르게 감지하고 재연결을 시도할 수 있다.
 
 ### 2.2.1 Ping 메커니즘
 
@@ -314,8 +335,8 @@ sequenceDiagram
 
 **동작 방식:**
 1. Client가 Keep Alive 간격 설정 (예: 60초)
-2. 해당 시간 동안 메시지가 없으면 PINGREQ 전송
-3. Broker가 PINGRESP로 응답
+2. 해당 시간 동안 메시지가 없으면 `PINGREQ` 전송
+3. Broker가 `PINGRESP`로 응답
 4. Keep Alive * 1.5 시간 내 응답 없으면 연결 종료
 
 ### 2.2.2 네트워크 품질과의 관계
@@ -338,7 +359,7 @@ keep_alive: 300초 이상
 
 ## 2.3 Retained Message
 
-Topic에 **마지막 메시지를 저장**하는 기능이다.
+Topic에 **마지막 메시지를 저장**하는 기능이다. Broker가 해당 Topic의 가장 최근 메시지를 보관하고 있다가, 새로운 Subscriber가 구독하면 즉시 전달한다. 이를 통해 Subscriber는 Publisher의 다음 발행을 기다리지 않고도 현재 상태를 바로 알 수 있다.
 
 ### 2.3.1 Last Known State 패턴
 
@@ -390,57 +411,47 @@ PUBLISH
 
 > 이 장은 실무에서 **가장 중요한** 부분이다.
 
-많은 MQTT 튜토리얼이 연결과 메시지 전송만 다루지만, 실제 프로덕션 코드에서는 재연결 로직이 전체 코드의 상당 부분을 차지한다. 네트워크는 반드시 끊기며, 이에 대한 준비 없이는 안정적인 서비스를 운영할 수 없다. 이 장에서는 재연결이 필요한 이유, 재연결 시 발생하는 문제들, 그리고 검증된 재연결 전략을 상세히 다룹니다.
+많은 `MQTT` 튜토리얼이 연결과 메시지 전송만 다루지만, 실제 프로덕션 코드에서는 재연결 로직이 전체 코드의 상당 부분을 차지한다. 네트워크는 반드시 끊기며, 이에 대한 준비 없이는 안정적인 서비스를 운영할 수 없다. 이 장에서는 재연결이 필요한 이유, 재연결 시 발생하는 문제들, 그리고 검증된 재연결 전략을 상세히 다룬다.
 
 ## 3.1 재연결이 반드시 필요한 이유
 
 ### 3.1.1 현실 세계의 네트워크
 
-이상적인 세계에서는 한 번 연결하면 영원히 유지된다. 하지만 현실은 다릅니다. 네트워크 연결은 다양한 이유로 끊어질 수 있으며, 이는 버그가 아닌 정상적인 운영 환경의 일부이다. 따라서 재연결은 예외 처리가 아니라 핵심 기능으로 설계해야 한다.
+이상적인 세계에서는 한 번 연결하면 영원히 유지된다. 하지만 현실은 다르다. 네트워크 연결은 다양한 이유로 끊어질 수 있으며, 이는 버그가 아닌 정상적인 운영 환경의 일부이다. 따라서 재연결은 예외 처리가 아니라 핵심 기능으로 설계해야 한다.
 
-```
-# 네트워크 끊김 원인들
-- Wi-Fi → LTE 전환 (모바일)
+**네트워크 끊김 원인들:**
+- Wi-Fi → `LTE` 전환 (모바일)
 - 터널, 엘리베이터 (모바일)
 - 라우터 재시작
 - ISP 장애
 - Broker 재시작
 - 로드밸런서 타임아웃
 - 메모리 부족으로 인한 강제 종료
-```
 
 ### 3.1.2 환경별 특성
 
 **모바일**
-```
 - 수시로 네트워크 전환
 - 백그라운드 진입 시 OS가 연결 끊음
 - 배터리 절약으로 인한 제한
-```
 
 **로봇/차량**
-```
 - 이동 중 기지국 전환
 - 음영 지역 통과
 - 하드웨어 재부팅
-```
 
-**IoT 센서**
-```
+**`IoT` 센서**
 - 전원 불안정
 - 무선 간섭
 - 펌웨어 업데이트로 재시작
-```
 
 ### 3.1.3 Broker 장애
 
 Broker도 죽을 수 있다:
-```
 - 메모리 부족
 - 디스크 가득 참
 - 업그레이드/패치
 - 하드웨어 장애
-```
 
 **결론**: 재연결은 "만약"이 아니라 "언제" 발생하느냐의 문제이다.
 
@@ -448,49 +459,63 @@ Broker도 죽을 수 있다:
 
 ### 3.2.1 구독 유실
 
-Clean Start 설정에 따라 구독이 사라질 수 있다.
+Clean Start 설정에 따라 구독이 사라질 수 있다. Session Expiry가 지났거나 Clean Start=true로 재연결하면 Broker가 이전 세션을 삭제하므로, 기존 구독 정보가 모두 사라진다. 이 경우 Client는 메시지를 받지 못하면서도 구독 중이라고 착각할 수 있어 디버깅이 어렵다.
 
-```
-# 시나리오
-1. Client가 topic/a, topic/b 구독 중
-2. 연결 끊김
-3. Session Expiry 지남 또는 Clean Start=true로 재연결
-4. 구독 정보 사라짐
-5. 메시지를 못 받음!
+```mermaid
+sequenceDiagram
+    participant C as Client
+    participant B as Broker
+    C->>B: SUBSCRIBE (topic/a, topic/b)
+    B-->>C: SUBACK
+    Note over C,B: 정상 구독 중
+    C--xB: 연결 끊김
+    Note over B: Session Expiry 지남 → 세션 삭제
+    C->>B: CONNECT (Clean Start=true)
+    B-->>C: CONNACK (Session Present=false)
+    Note over C: 구독 정보 사라짐, 메시지 못 받음!
 ```
 
 ### 3.2.2 중복 메시지
 
-재연결 시점에 따라 같은 메시지를 여러 번 받을 수 있다.
+재연결 시점에 따라 같은 메시지를 여러 번 받을 수 있다. Client가 메시지를 수신했지만 `PUBACK`을 보내기 전에 연결이 끊기면, Broker는 전달이 실패했다고 판단하고 재연결 후 같은 메시지를 다시 전송한다. 이는 `QoS` 1의 At-Least-Once 보장 때문이며, 앞서 다룬 Idempotent 설계로 대응해야 한다.
 
-```
-# 시나리오
-1. Broker가 메시지 전송
-2. Client가 받았지만 ACK 전송 전 연결 끊김
-3. 재연결
-4. Broker가 ACK 못 받았으므로 재전송
-5. 같은 메시지 2번 받음
+```mermaid
+sequenceDiagram
+    participant B as Broker
+    participant C as Client
+    B->>C: PUBLISH (msg-1)
+    Note over C: 메시지 수신, ACK 전송 전
+    C--xB: 연결 끊김 (PUBACK 미전송)
+    C->>B: CONNECT (재연결)
+    B-->>C: CONNACK
+    B->>C: PUBLISH (msg-1, 재전송)
+    Note over C: 같은 메시지 2번 받음!
+    C-->>B: PUBACK
 ```
 
 ### 3.2.3 메시지 순서 깨짐
 
-```
-# 시나리오
-1. 메시지 A 전송됨
-2. 연결 끊김
-3. 메시지 B, C가 Broker에 저장됨
-4. 재연결
-5. 저장된 B, C가 먼저 옴
-6. 순서: B → C → D (A는 이미 처리됨)
+`QoS` 1에서 여러 메시지가 동시에 전송 중(inflight)일 때, 일부 메시지가 유실되어 재전송되면 원래 순서와 다르게 도착할 수 있다. 순서에 의존하는 로직이 있는 경우, 타임스탬프나 시퀀스 번호를 기반으로 올바른 순서를 보장하는 처리가 필요하다.
 
-# 문제: A 처리 후 연결 끊기 전에 온 메시지는?
+```mermaid
+sequenceDiagram
+    participant B as Broker
+    participant C as Client
+    B->>C: PUBLISH (msg-1)
+    B->>C: PUBLISH (msg-2)
+    Note over B,C: msg-1은 네트워크에서 유실,<br/>msg-2는 정상 수신
+    C-->>B: PUBACK (msg-2)
+    Note over B: msg-1 ACK 타임아웃 → 재전송
+    B->>C: PUBLISH (msg-1, 재전송)
+    C-->>B: PUBACK (msg-1)
+    Note over C: 수신 순서: msg-2 → msg-1 (역전!)
 ```
 
 ## 3.3 재연결 설계 전략
 
 ### 3.3.1 Auto Reconnect
 
-대부분의 MQTT 클라이언트 라이브러리는 자동 재연결을 지원한다.
+대부분의 `MQTT` 클라이언트 라이브러리는 자동 재연결을 지원한다.
 
 ```go
 // Paho v5 예시
@@ -568,7 +593,7 @@ CleanStart: true
 
 ### 3.4.1 재구독 전략
 
-Session이 만료되었거나 Clean Start를 사용한 경우, 재구독이 필요한다.
+Session이 만료되었거나 Clean Start를 사용한 경우, 재구독이 필요하다.
 
 ```go
 // 재연결 성공 시 콜백
@@ -662,9 +687,9 @@ for _, msg := range messages {
 이번 편에서 다룬 핵심 내용을 정리한다.
 
 **QoS 선택**
-- QoS 0: 빠르지만 유실 가능. 주기적 상태 보고에 적합
-- QoS 1: 전달 보장하지만 중복 가능. 가장 많이 사용
-- QoS 2: 정확히 한 번 전달. 오버헤드가 커서 거의 사용 안 함
+- `QoS` 0: 빠르지만 유실 가능. 주기적 상태 보고에 적합
+- `QoS` 1: 전달 보장하지만 중복 가능. 가장 많이 사용
+- `QoS` 2: 정확히 한 번 전달. 오버헤드가 커서 거의 사용 안 함
 - 중복 처리는 Idempotent 설계로 해결
 
 **Session 관리**
@@ -678,7 +703,7 @@ for _, msg := range messages {
 - Exponential Backoff + Jitter로 Broker 부하 분산
 - 재연결 후 재구독, 중복 체크, 상태 동기화 필수
 
-실무에서는 재연결 로직이 전체 코드의 상당 부분을 차지한다. 안정적인 MQTT 시스템을 구축하려면 이 세 가지를 확실히 이해해야 한다.
+실무에서는 재연결 로직이 전체 코드의 상당 부분을 차지한다. 안정적인 `MQTT` 시스템을 구축하려면 이 세 가지를 확실히 이해해야 한다.
 
 ---
 
