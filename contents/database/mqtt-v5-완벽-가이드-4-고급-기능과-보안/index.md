@@ -61,6 +61,8 @@ $share/mygroup/sensor/temperature
 
 ### 1.1.2 로드 분산 vs 순서 보장
 
+Shared Subscription은 처리량을 높여주지만, 메시지가 여러 Subscriber에 분배되므로 전체 순서가 보장되지 않는다. 이 트레이드오프를 이해하고 사용해야 한다.
+
 **로드 분산 관점:**
 ```
 처리량 = 단일 Subscriber 처리량 × Subscriber 수
