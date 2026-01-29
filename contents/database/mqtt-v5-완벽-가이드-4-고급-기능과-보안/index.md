@@ -767,11 +767,25 @@ function Dashboard() {
 
 ---
 
+# 3. 마무리
+
+이번 편에서는 MQTT v5의 고급 기능과 보안을 다뤘다.
+
+- **Shared Subscription**으로 메시지를 여러 Subscriber에 분배하여 로드 밸런싱을 구현할 수 있다
+- **Request/Response 패턴**으로 Response Topic과 Correlation Data를 활용한 요청-응답 통신이 가능하다
+- **Reason Code**로 연결·구독·발행 실패의 원인을 정확히 파악할 수 있다
+- **인증/인가**는 Username/Password, JWT, ACL을 조합하여 구성한다
+- **TLS/mTLS**로 통신을 암호화하고, **WebSocket**으로 브라우저에서도 MQTT를 사용할 수 있다
+
+다음 편에서는 Go 언어로 이 기능들을 실제로 구현하는 방법을 살펴본다.
+
+---
+
 > **다음 편 안내**: [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영)에서는 Go 언어로 MQTT v5 클라이언트를 구현하는 방법과 프로덕션 운영 전략을 다룬다.
 
 ---
 
-# 3. 참고
+# 4. 참고
 
 - [MQTT v5 스펙](https://docs.oasis-open.org/mqtt/mqtt/v5.0/mqtt-v5.0.html)
 - [Mosquitto 문서](https://mosquitto.org/documentation/)
