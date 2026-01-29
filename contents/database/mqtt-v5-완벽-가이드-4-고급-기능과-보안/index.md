@@ -1,6 +1,6 @@
 ---
 title: "MQTT v5 완벽 가이드 (4): 고급 기능과 보안"
-description: "MQTT v5의 Shared Subscription, Request/Response 패턴, Reason Code 활용법과 TLS, ACL 등 보안 설정을 다룹니다."
+description: "MQTT v5의 Shared Subscription, Request/Response 패턴, Reason Code 활용법과 TLS, ACL 등 보안 설정을 다룬다."
 date: 2026-01-18
 update: 2026-01-18
 tags:
@@ -22,7 +22,7 @@ series: "MQTT v5 완벽 가이드"
 
 # 1. MQTT v5 고급 기능
 
-MQTT v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, HTTP 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룹니다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
+MQTT v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, HTTP 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룬다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
 
 ## 1.1 Shared Subscription
 
@@ -95,7 +95,7 @@ MQTT로 HTTP처럼 요청-응답을 구현하는 패턴이다.
 
 ### 1.2.1 Response Topic
 
-응답을 받을 Topic을 요청에 포함시킵니다. 전체 흐름을 이해하는 것이 중요한다.
+응답을 받을 Topic을 요청에 포함시킨다. 전체 흐름을 이해하는 것이 중요하다.
 
 ![Request/Response 패턴](image-20260118172008215.png)
 
@@ -148,7 +148,7 @@ func onMessage(msg Message) {
 
 ### 1.2.3 Timeout 처리
 
-응답이 안 오면 어떻게 할까요?
+응답이 안 오면 어떻게 할까?
 
 ```go
 func requestWithTimeout(request Message, timeout time.Duration) (Response, error) {
@@ -226,7 +226,7 @@ MQTT 시스템의 보안은 세 가지 축으로 구성된다: 인증(Authentica
 
 ## 2.1 인증
 
-Client가 **누구인지** 확인한다. MQTT에서는 연결 시점에 인증이 이루어지며, 한 번 인증된 연결은 세션이 유지되는 동안 유효한다. 인증에 실패하면 Broker는 연결을 거부하고, v5에서는 Reason Code를 통해 실패 원인을 알려줍니다.
+Client가 **누구인지** 확인한다. MQTT에서는 연결 시점에 인증이 이루어지며, 한 번 인증된 연결은 세션이 유지되는 동안 유효한다. 인증에 실패하면 Broker는 연결을 거부하고, v5에서는 Reason Code를 통해 실패 원인을 알려준다.
 
 ### 2.1.1 Username / Password
 
@@ -772,7 +772,7 @@ function Dashboard() {
 
 ---
 
-> **다음 편 안내**: [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영)에서는 Go 언어로 MQTT v5 클라이언트를 구현하는 방법과 프로덕션 운영 전략을 다룹니다.
+> **다음 편 안내**: [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영)에서는 Go 언어로 MQTT v5 클라이언트를 구현하는 방법과 프로덕션 운영 전략을 다룬다.
 
 ---
 
