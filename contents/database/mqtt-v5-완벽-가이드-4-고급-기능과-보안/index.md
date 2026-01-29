@@ -597,17 +597,20 @@ func createMutualTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error
 
 ### 2.4.1 동작 원리
 
-```
-[IoT 디바이스]                   [MQTT Broker]                  [웹 브라우저]
-      │                              │                              │
-      ├── TCP:1883 ─────────────────►│◄───────────── WSS:8084 ──────┤
-      │   (MQTT 원본)                │   (MQTT over WebSocket)      │
-      │                              │                              │
-      ├── PUBLISH sensor/temp ──────►│──────────────────────────────►│
-      │                              │         (실시간 전달)         │
-      │                              │                              │
-      │◄─────────────────────────────┤◄── PUBLISH command/device ───┤
-      │   (명령 수신)                │                              │
+```mermaid
+sequenceDiagram
+    participant D as IoT 디바이스
+    participant B as MQTT Broker
+    participant W as 웹 브라우저
+
+    D->>B: TCP:1883 연결 (MQTT 원본)
+    W->>B: WSS:8084 연결 (MQTT over WebSocket)
+
+    D->>B: PUBLISH sensor/temp
+    B->>W: 실시간 전달
+
+    W->>B: PUBLISH command/device
+    B->>D: 명령 수신
 ```
 
 **핵심 포인트:**
