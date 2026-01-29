@@ -98,7 +98,7 @@ Message 3 → Subscriber A
 
 ## 1.2 Request / Response 패턴
 
-MQTT로 HTTP처럼 요청-응답을 구현하는 패턴이다.
+MQTT는 기본적으로 Publish/Subscribe 모델이지만, v5에서 추가된 Response Topic과 Correlation Data를 활용하면 HTTP처럼 요청-응답 패턴을 구현할 수 있다. 디바이스 상태 조회나 원격 명령 실행 등 응답이 필요한 시나리오에서 유용하다.
 
 ### 1.2.1 Response Topic
 
