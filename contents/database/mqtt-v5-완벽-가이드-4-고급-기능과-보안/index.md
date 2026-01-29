@@ -32,16 +32,22 @@ MQTT v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었�
 
 Shared Subscription의 핵심은 같은 그룹 내의 Subscriber들이 메시지를 분배받는다는 것이다. 이를 통해 단일 Subscriber의 처리 한계를 넘어서는 대량의 메시지를 처리할 수 있다.
 
-```
-# 일반 구독
-[Subscriber A] ←─ message ─┐
-[Subscriber B] ←─ message ─┤ Broker (같은 메시지를 모두에게)
-[Subscriber C] ←─ message ─┘
+**일반 구독** - 같은 메시지를 모두에게 전달:
 
-# Shared Subscription
-[Subscriber A] ←─ message 1 ─┐
-[Subscriber B] ←─ message 2 ─┤ Broker (메시지를 분배)
-[Subscriber C] ←─ message 3 ─┘
+```mermaid
+graph LR
+    Broker -->|message| A[Subscriber A]
+    Broker -->|message| B[Subscriber B]
+    Broker -->|message| C[Subscriber C]
+```
+
+**Shared Subscription** - 메시지를 분배:
+
+```mermaid
+graph LR
+    Broker -->|message 1| A[Subscriber A]
+    Broker -->|message 2| B[Subscriber B]
+    Broker -->|message 3| C[Subscriber C]
 ```
 
 **사용 방법:**
