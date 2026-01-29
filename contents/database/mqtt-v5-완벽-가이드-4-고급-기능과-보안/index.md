@@ -181,9 +181,11 @@ func requestWithTimeout(request Message, timeout time.Duration) (Response, error
 
 ## 1.3 Reason Code
 
-모든 응답에 **성공/실패 이유**를 포함한다.
+MQTT v3에서는 연결이나 구독이 실패해도 구체적인 원인을 알기 어려웠다. v5에서는 CONNACK, PUBACK, SUBACK 등 모든 응답에 Reason Code가 포함되어, 성공 여부뿐 아니라 실패 원인까지 정확히 파악할 수 있다. 이를 통해 클라이언트 측에서 적절한 에러 처리와 디버깅이 가능해진다.
 
 ### 1.3.1 성공/실패 세분화
+
+Reason Code는 0~255 범위의 숫자로, 0은 성공을 의미하고 128 이상은 에러를 나타낸다. 연결, 발행, 구독 등 각 동작마다 고유한 Reason Code 집합이 정의되어 있다.
 
 ```
 # 연결 응답 Reason Code 예시
@@ -199,6 +201,8 @@ func requestWithTimeout(request Message, timeout time.Duration) (Response, error
 ```
 
 ### 1.3.2 장애 원인 파악
+
+Reason Code를 활용하면 연결 실패 시 인증 문제인지, 권한 문제인지, 서버 문제인지를 코드 레벨에서 구분하여 처리할 수 있다. 운영 환경에서는 이를 로깅하여 장애 원인을 빠르게 파악하는 데 활용한다.
 
 ```go
 // 연결 실패 시
