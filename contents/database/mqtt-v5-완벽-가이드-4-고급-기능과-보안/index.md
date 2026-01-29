@@ -102,7 +102,7 @@ MQTT는 기본적으로 Publish/Subscribe 모델이지만, v5에서 추가된 Re
 
 ### 1.2.1 Response Topic
 
-응답을 받을 Topic을 요청에 포함시킨다. 전체 흐름을 이해하는 것이 중요하다.
+요청자는 PUBLISH 메시지의 `response_topic` 속성에 응답을 받을 Topic을 지정한다. 응답자는 이 Topic으로 결과를 PUBLISH하므로, 요청자는 반드시 해당 Topic을 미리 SUBSCRIBE 해두어야 한다.
 
 ```mermaid
 sequenceDiagram
@@ -130,7 +130,7 @@ sequenceDiagram
 
 ### 1.2.2 Correlation Data
 
-요청과 응답을 매칭하는 데이터이다.
+하나의 Response Topic으로 여러 요청의 응답이 올 수 있으므로, 어떤 요청에 대한 응답인지 구분할 수단이 필요하다. Correlation Data는 요청 시 설정한 임의의 바이트 값으로, 응답에 그대로 포함되어 돌아오기 때문에 요청-응답을 정확히 매칭할 수 있다.
 
 ```go
 // 요청 보내기
@@ -152,7 +152,7 @@ func onMessage(msg Message) {
 
 ### 1.2.3 Timeout 처리
 
-응답이 안 오면 어떻게 할까?
+MQTT는 비동기 프로토콜이므로 응답이 오지 않을 수 있다. 응답자가 오프라인이거나 처리에 실패한 경우를 대비하여 반드시 타임아웃을 설정하고, 시간 내에 응답이 없으면 재시도하거나 에러로 처리해야 한다.
 
 ```go
 func requestWithTimeout(request Message, timeout time.Duration) (Response, error) {
