@@ -104,25 +104,22 @@ MQTT는 기본적으로 Publish/Subscribe 모델이지만, v5에서 추가된 Re
 
 응답을 받을 Topic을 요청에 포함시킨다. 전체 흐름을 이해하는 것이 중요하다.
 
-![Request/Response 패턴](image-20260118172008215.png)
+```mermaid
+sequenceDiagram
+    participant A as 요청자 Client A
+    participant Broker
+    participant B as 응답자 Client B
 
-```
-[요청자 Client A]                              [응답자 Client B]
-       │                                              │
-       ├─ 1. SUBSCRIBE: reply/client-123/status       │
-       │     (응답 받을 Topic 미리 구독)              │
-       │                                              │
-       ├─ 2. PUBLISH ─────────────────────────────────┼──► 요청 수신
-       │      topic: device/cmd/get_status            │
-       │      response_topic: reply/client-123/status │
-       │      correlation_data: req-001               │
-       │                                              │
-       │                                         처리 후
-       │                                              │
-       ◄──────────────────────────────────────────────┼─ 3. PUBLISH (응답)
-         응답 수신                                    │      topic: reply/client-123/status
-                                                      │      correlation_data: req-001
-                                                      │      payload: {"status": "ok"}
+    A->>Broker: 1. SUBSCRIBE: reply/client-123/status
+    Note left of A: 응답 받을 Topic 미리 구독
+
+    A->>Broker: 2. PUBLISH<br/>topic: device/cmd/get_status<br/>response_topic: reply/client-123/status<br/>correlation_data: req-001
+    Broker->>B: 요청 전달
+
+    Note right of B: 처리 후
+
+    B->>Broker: 3. PUBLISH<br/>topic: reply/client-123/status<br/>correlation_data: req-001<br/>payload: {"status": "ok"}
+    Broker->>A: 응답 전달
 ```
 
 **핵심 포인트:**
