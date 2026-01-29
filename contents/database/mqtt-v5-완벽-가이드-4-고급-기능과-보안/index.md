@@ -620,6 +620,8 @@ sequenceDiagram
 
 ### 2.4.2 Mosquitto WebSocket 설정
 
+Mosquitto에서 WebSocket을 활성화하려면 별도의 listener를 추가하고 `protocol websockets`를 지정하면 된다. 개발 환경에서는 평문 WebSocket(8083)을, 프로덕션에서는 TLS가 적용된 WSS(8084)를 사용한다.
+
 ```bash
 # mosquitto.conf
 
@@ -639,6 +641,8 @@ keyfile /mosquitto/certs/server.key
 ```
 
 ### 2.4.3 프론트엔드 연동 (JavaScript)
+
+브라우저에서 MQTT를 사용하려면 MQTT.js 라이브러리를 활용한다. WebSocket URL(`wss://`)로 Broker에 연결하면 일반 MQTT 클라이언트와 동일하게 Topic 구독, 메시지 발행이 가능하다.
 
 **MQTT.js 설치:**
 
@@ -698,6 +702,8 @@ client.end();
 ```
 
 ### 2.4.4 React Hook 예시
+
+React에서 MQTT 연결을 재사용하려면 커스텀 Hook으로 추상화하는 것이 효과적이다. 연결 상태 관리, Topic 구독, 메시지 수신을 Hook 내부에서 처리하면 컴포넌트에서는 데이터만 가져다 쓰면 된다.
 
 ```javascript
 import { useEffect, useState } from 'react';
@@ -761,6 +767,8 @@ function Dashboard() {
 
 ### 2.4.5 실제 사용 사례
 
+MQTT over WebSocket은 실시간 양방향 통신이 필요한 다양한 웹 애플리케이션에서 활용된다. 특히 IoT 디바이스와 웹 UI를 직접 연결해야 하는 시나리오에서 강점을 발휘한다.
+
 | 사용 사례 | 설명 |
 |----------|------|
 | **IoT 대시보드** | 센서 데이터 실시간 시각화 |
@@ -771,6 +779,8 @@ function Dashboard() {
 | **협업 도구** | 문서 동시 편집 상태 공유 |
 
 ### 2.4.6 WebSocket vs HTTP Polling
+
+실시간 데이터를 웹에서 받는 방법으로 HTTP Polling도 있지만, WebSocket과 비교하면 지연 시간, 서버 부하, 리소스 효율성에서 큰 차이가 있다. 아래 표에서 두 방식의 차이를 비교한다.
 
 | 항목 | WebSocket (MQTT) | HTTP Polling |
 |------|------------------|--------------|
