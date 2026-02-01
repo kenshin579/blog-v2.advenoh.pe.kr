@@ -1,0 +1,13 @@
+name: Fix Future Date
+
+on:
+  pull_request:
+    types: [closed]
+
+jobs:
+  fix-date:
+    if: github.event.pull_request.merged == true
+    uses: kenshin579/actions/.github/workflows/fix-future-date.yml@main
+    with:
+      pr_number: ${{ github.event.pull_request.number }}
+    secrets: inherit
