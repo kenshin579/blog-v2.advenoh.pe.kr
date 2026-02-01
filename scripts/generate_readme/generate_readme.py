@@ -24,8 +24,7 @@ WORKSPACE_DIR = os.getenv('WORKSPACE_DIR', os.path.dirname(os.path.dirname(os.pa
 CONTENT_DIR = os.getenv('CONTENT_DIR', 'contents')
 BLOG_URL = os.getenv('BLOG_URL', 'https://blog.advenoh.pe.kr')
 PROJECT_TITLE = os.getenv('PROJECT_TITLE', "Frank's IT Blog")
-HITCOUNT_PATH = os.getenv('HITCOUNT_PATH', 'kenshin579/advenohpekr')
-NETLIFY_BADGE_ID = os.getenv('NETLIFY_BADGE_ID', '31900f77-681f-4ace-8b3b-906936f57a60')
+NETLIFY_BADGE_ID = os.getenv('NETLIFY_BADGE_ID', '68c25f86-908d-419b-8b5c-925e22a2149d')
 README_PATH = os.getenv('README_PATH', os.path.join(WORKSPACE_DIR, 'README.md'))
 HEADER_TEMPLATE = os.getenv('HEADER_TEMPLATE', 'data/HEADER.md')
 
@@ -76,8 +75,7 @@ class Generator:
             template = f.read()
 
         # Replace placeholders with environment variables
-        header = template.replace('{{HITCOUNT_PATH}}', HITCOUNT_PATH)
-        header = header.replace('{{NETLIFY_BADGE_ID}}', NETLIFY_BADGE_ID)
+        header = template.replace('{{NETLIFY_BADGE_ID}}', NETLIFY_BADGE_ID)
         header = header.replace('{{PROJECT_TITLE}}', PROJECT_TITLE)
 
         return header
