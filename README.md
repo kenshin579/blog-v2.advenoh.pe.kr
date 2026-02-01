@@ -3,11 +3,12 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-01-22
+Updated 2026-02-01
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
 ## Ai
+* [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](https://blog.advenoh.pe.kr/claude-code-확장-기능-완벽-가이드-command-skill-subagent/)
 * [맥에서 직접 AI 모델 돌려보자! Ollama로 LLM 서버 구축하기](https://blog.advenoh.pe.kr/맥에서-직접-ai-모델-돌려보자-ollama로-llm-서버-구축하기/)
 
 ## Algorithm
