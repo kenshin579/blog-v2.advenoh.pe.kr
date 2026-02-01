@@ -9,8 +9,7 @@ FULL_IMAGE := $(IMAGE_NAME):$(IMAGE_TAG)
 CONTENT_DIR ?= contents
 BLOG_URL ?= https://blog.advenoh.pe.kr
 PROJECT_TITLE ?= Frank's IT Blog
-HITCOUNT_PATH ?= kenshin579/advenohpekr
-NETLIFY_BADGE_ID ?= 31900f77-681f-4ace-8b3b-906936f57a60
+NETLIFY_BADGE_ID ?= 68c25f86-908d-419b-8b5c-925e22a2149d
 
 help:
 	@echo "Available targets:"
@@ -32,7 +31,6 @@ docker-run:
 	@echo "  CONTENT_DIR=$(CONTENT_DIR)"
 	@echo "  BLOG_URL=$(BLOG_URL)"
 	@echo "  PROJECT_TITLE=$(PROJECT_TITLE)"
-	@echo "  HITCOUNT_PATH=$(HITCOUNT_PATH)"
 	@echo "  NETLIFY_BADGE_ID=$(NETLIFY_BADGE_ID)"
 	docker run --rm \
 		-v $(PWD)/../..:/workspace \
@@ -40,7 +38,6 @@ docker-run:
 		-e CONTENT_DIR=$(CONTENT_DIR) \
 		-e BLOG_URL=$(BLOG_URL) \
 		-e PROJECT_TITLE="$(PROJECT_TITLE)" \
-		-e HITCOUNT_PATH=$(HITCOUNT_PATH) \
 		-e NETLIFY_BADGE_ID=$(NETLIFY_BADGE_ID) \
 		$(FULL_IMAGE)
 

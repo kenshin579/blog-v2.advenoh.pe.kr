@@ -1,5 +1,4 @@
-[![HitCount](http://hits.dwyl.io/kenshin579/advenohpekr.svg)](http://hits.dwyl.io/kenshin579/advenohpekr)
-[![Netlify Status](https://api.netlify.com/api/v1/badges/31900f77-681f-4ace-8b3b-906936f57a60/deploy-status)](https://app.netlify.com/sites/advenoh/deploys)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/68c25f86-908d-419b-8b5c-925e22a2149d/deploy-status)](https://app.netlify.com/projects/blogv2-advenoh/deploys)
 
 # Frank's IT Blog - Table of Contents
 
