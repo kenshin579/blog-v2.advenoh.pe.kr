@@ -1,8 +1,8 @@
 ---
 title: "맥에서 직접 AI 모델 돌려보자! Ollama로 LLM 서버 구축하기"
 description: "맥에서 직접 AI 모델 돌려보자! Ollama로 LLM 서버 구축하기"
-date: 2025-03-23
-update: 2025-03-23
+date: 2025-02-01
+update: 2025-02-01
 tags:
   - AI
   - ollama
