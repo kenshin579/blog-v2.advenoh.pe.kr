@@ -1,8 +1,9 @@
-[![Netlify Status](https://api.netlify.com/api/v1/badges/68c25f86-908d-419b-8b5c-925e22a2149d/deploy-status)](https://app.netlify.com/projects/blogv2-advenoh/deploys)
+[![HitCount](http://hits.dwyl.io/kenshin579/advenohpekr.svg)](http://hits.dwyl.io/kenshin579/advenohpekr)
+[![Netlify Status](https://api.netlify.com/api/v1/badges/31900f77-681f-4ace-8b3b-906936f57a60/deploy-status)](https://app.netlify.com/sites/advenoh/deploys)
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-02-01
+Updated 2026-02-02
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -17,6 +18,7 @@ Updated 2026-02-01
 
 ## Biweekly
 * [Frank's IT Biweekly News (2025-12-18 ~ 2026-01-01)](https://blog.advenoh.pe.kr/news-2026-01-01/)
+* [Frank's IT Biweekly News (2026-01-19 ~ 2026-02-02)](https://blog.advenoh.pe.kr/news-2026-02-02/)
 
 ## Cloud
 * [(Docker-1) Docker 도커 명령어 모음](https://blog.advenoh.pe.kr/docker-도커-명령어-모음/)
