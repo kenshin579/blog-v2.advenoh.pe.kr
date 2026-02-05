@@ -1,8 +1,8 @@
 ---
 title: "Go에서 Strategy 패턴 제대로 활용하기"
 description: "Go 인터페이스를 활용한 Strategy 패턴 구현 방법과 결제/알림 시스템 실전 예제를 통해 런타임에 알고리즘을 교체하는 유연한 설계 방법을 알아본다"
-date: 2025-02-04
-update: 2025-02-04
+date: 2026-03-18
+update: 2026-03-18
 tags:
   - go
   - golang
