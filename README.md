@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-02-02
+Updated 2026-02-13
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -52,6 +52,7 @@ Updated 2026-02-02
 * [JPA 일대일(1:1) @One-To-One 연관관계](https://blog.advenoh.pe.kr/jpa-일대일-one-to-one-연관관계/)
 * [Liquibase 사용해서 DB 스키마 관리하기](https://blog.advenoh.pe.kr/liquibase-사용해서-db-스키마-관리하기/)
 * [M1 맥북에서 Memongo 실행하기](https://blog.advenoh.pe.kr/m1-맥북에서-memongo-실행하기/)
+* [MQTT v5 완벽 가이드 (1): 개념과 아키텍처 이해하기](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-1-입문과-기본-아키텍처/)
 * [Mongo Script Collection 모음](https://blog.advenoh.pe.kr/mongo-script-collection-모음/)
 * [Mongodb Collection Cloning하는 방법](https://blog.advenoh.pe.kr/mongodb-collection-cloning하는-방법/)
 * [Mongodb 원격 서버에 있는 Collection을 로컬환경 서버로 복사하기](https://blog.advenoh.pe.kr/mongodb-원격-서버에-있는-collection을-로컬환경-서버로-복사하기/)
