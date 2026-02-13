@@ -1,8 +1,8 @@
 ---
 title: "WebRTC 완벽 가이드: 기초 - 개념부터 연결 흐름까지"
 description: "WebRTC의 개념, 프로토콜 스택, 핵심 프로토콜(SDP, ICE, STUN, TURN), 연결 흐름 6단계, 네트워크 토폴로지까지 기초 이론을 한 편으로 정리합니다."
-date: 2026-03-25
-update: 2026-03-25
+date: 2026-02-13
+update: 2026-02-13
 tags:
   - WebRTC
   - 실시간 통신
