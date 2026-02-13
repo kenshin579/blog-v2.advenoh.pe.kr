@@ -5,6 +5,11 @@ on:
     - cron: '0 22 * * *'  # 매일 오전 7시 실행 (UTC 기준: 한국시간으로는 7am으로 실행함)
   workflow_dispatch:  # 수동 실행 가능
 
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+
 jobs:
   auto-merge:
     uses: kenshin579/actions/.github/workflows/auto-merge-pr.yml@main
