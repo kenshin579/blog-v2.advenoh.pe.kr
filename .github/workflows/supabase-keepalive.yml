@@ -28,13 +28,23 @@ jobs:
         run: |
           python -c "
           import os
+          from datetime import datetime, timezone
           from supabase import create_client
 
           url = os.environ['SUPABASE_URL']
           key = os.environ['SUPABASE_KEY']
           client = create_client(url, key)
 
-          # 활동을 위한 간단한 쿼리
-          result = client.table('collected_articles').select('id').limit(1).execute()
-          print(f'Keepalive ping successful: {len(result.data)} rows checked')
+          # 1. health 테이블의 단일 row UPDATE (쓰기 활동)
+          now = datetime.now(timezone.utc).isoformat()
+          result = client.table('health').update({
+              'checked_at': now
+          }).eq('id', 1).execute()
+          print(f'Health check updated: {result.data}')
+
+          # 2. collected_articles 테이블 읽기 확인
+          articles = client.table('collected_articles').select('id').limit(1).execute()
+          print(f'Articles table check: {len(articles.data)} rows found')
+
+          print('Keepalive completed successfully')
           "
