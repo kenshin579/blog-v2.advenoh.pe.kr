@@ -2,8 +2,8 @@
 
 ## Phase 1: DB 스키마
 
-- [ ] Supabase SQL Editor에서 `health` 테이블 생성 DDL 실행 (초기 row INSERT 포함)
-- [ ] Table Editor에서 테이블 생성 및 id=1 row 존재 확인
+- [x] Supabase SQL Editor에서 `health` 테이블 생성 DDL 실행 (초기 row INSERT 포함)
+- [x] Table Editor에서 테이블 생성 및 id=1 row 존재 확인
 
 ## Phase 2: 워크플로우 수정
 
@@ -11,8 +11,8 @@
 
 ## Phase 3: 테스트
 
-- [ ] `gh workflow run supabase-keepalive.yml` 수동 실행
-- [ ] GitHub Actions 로그에서 `Health check updated` 메시지 확인
+- [x] `gh workflow run supabase-keepalive.yml` 수동 실행
+- [x] GitHub Actions 로그에서 `Health check updated` 메시지 확인
 - [ ] Supabase 대시보드 > `health` 테이블의 `checked_at` 타임스탬프 갱신 확인
 
 ## Phase 4: 모니터링
