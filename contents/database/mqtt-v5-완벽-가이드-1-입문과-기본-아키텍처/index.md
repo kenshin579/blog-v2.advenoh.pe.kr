@@ -25,6 +25,8 @@ series: "MQTT v5 완벽 가이드"
 
 # 1. 개요
 
+![MQTT v5 Basic Architecture](./thumbnail.png)
+
 이 장에서는 MQTT가 무엇인지, 왜 필요한지, 그리고 v3 -> v5에서 어떤 점이 개선되었는지 알아본다. MQTT의 기본 개념을 이해하면 이후 장에서 다루는 Topic 설계, QoS 선택, 재연결 전략 등을 더 쉽게 이해할 수 있다.
 
 ## 1.1 MQTT란 무엇인가
