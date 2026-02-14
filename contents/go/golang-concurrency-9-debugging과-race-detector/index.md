@@ -4,7 +4,6 @@ description: "Go 동시성 프로그램의 디버깅 기법 - Race Detector, Dea
 date: 2025-05-14
 tags: ["go", "golang", "concurrency", "race-detector", "deadlock", "debugging", "goroutine-dump"]
 series: "Golang Concurrency"
-seriesOrder: 9
 draft: false
 ---
 

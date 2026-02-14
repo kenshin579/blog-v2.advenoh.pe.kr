@@ -1,6 +1,6 @@
 ---
 title: "Golang Concurrency (3) - Select와 Channel 심화 패턴"
-description: "Golang Concurrency (3) - Select와 Channel 심화 패턴"
+description: "Go select문을 활용한 timeout, fan-in/fan-out, nil channel 동적 비활성화 등 Channel 심화 패턴을 다룹니다"
 date: 2026-02-14
 update: 2026-02-14
 tags:
@@ -15,7 +15,6 @@ tags:
   - 고랭
   - 동시성
 series: "Golang Concurrency"
-seriesOrder: 3
 ---
 
 `select`문은 **여러 channel을 동시에 기다리는** Go만의 강력한 제어 구조다. 이를 활용하면 timeout, fan-in/fan-out, 동적 channel 관리 등 다양한 동시성 패턴을 구현할 수 있다.
@@ -158,11 +157,11 @@ func TestSimulateAPICallTimeout(t *testing.T) {
 
 하나의 입력을 **여러 worker에게 분배**하는 패턴이다. 여러 goroutine이 같은 channel에서 작업을 가져간다.
 
-```
-Fan-out:
-                 ┌── Worker 1 ──▶ result
-  jobs ─────────┼── Worker 2 ──▶ result
-                 └── Worker 3 ──▶ result
+```mermaid
+graph LR
+    J[jobs] --> W1[Worker 1] --> R1[result]
+    J --> W2[Worker 2] --> R2[result]
+    J --> W3[Worker 3] --> R3[result]
 ```
 
 ```go
@@ -199,11 +198,11 @@ func TestFanOut(t *testing.T) {
 
 여러 channel의 결과를 **하나의 channel로 합치는** 패턴이다.
 
-```
-Fan-in:
-  source1 ──┐
-  source2 ──┼──▶ merged channel
-  source3 ──┘
+```mermaid
+graph LR
+    S1[source1] --> M[merged channel]
+    S2[source2] --> M
+    S3[source3] --> M
 ```
 
 ```go
@@ -234,8 +233,16 @@ func fanIn(channels ...<-chan string) <-chan string {
 
 실전에서는 두 패턴을 조합하여 **병렬 처리 파이프라인**을 구성한다.
 
-```
-입력 ──▶ Fan-out ──▶ [Worker1, Worker2, Worker3] ──▶ Fan-in ──▶ 결과
+```mermaid
+graph LR
+    입력 --> Fan-out
+    Fan-out --> Worker1
+    Fan-out --> Worker2
+    Fan-out --> Worker3
+    Worker1 --> Fan-in
+    Worker2 --> Fan-in
+    Worker3 --> Fan-in
+    Fan-in --> 결과
 ```
 
 ## 5. Nil Channel 트릭

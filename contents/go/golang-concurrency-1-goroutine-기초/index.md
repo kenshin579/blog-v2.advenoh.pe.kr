@@ -1,6 +1,6 @@
 ---
 title: "Golang Concurrency (1) - 개요와 Goroutine 기초"
-description: "Golang Concurrency (1) - 개요와 Goroutine 기초"
+description: "Go 동시성의 기본 개념 Concurrency vs Parallelism, CSP 모델, GMP 스케줄러와 Goroutine 기초를 다룹니다"
 date: 2026-02-14
 update: 2026-02-14
 tags:
@@ -15,7 +15,6 @@ tags:
   - 동시성
   - 고루틴
 series: "Golang Concurrency"
-seriesOrder: 1
 ---
 
 Go 언어가 다른 언어와 차별화되는 가장 큰 특징 중 하나는 **동시성(Concurrency)** 지원이다. Go는 언어 차원에서 goroutine과 channel을 제공하여, 복잡한 동시성 프로그래밍을 간결하고 안전하게 작성할 수 있도록 설계되었다.
@@ -33,19 +32,21 @@ Concurrency와 Parallelism은 자주 혼동되지만 서로 다른 개념이다.
 | CPU | 1개의 CPU에서도 가능 | 여러 CPU 필요 |
 | 비유 | 한 사람이 여러 일을 번갈아 처리 | 여러 사람이 각자 일을 동시에 처리 |
 
+```mermaid
+graph LR
+    subgraph "Concurrency (하나의 CPU)"
+        A1[Task A] --> B1[Task B] --> A2[Task A] --> B2[Task B]
+    end
 ```
-Concurrency (하나의 CPU):
-┌─────────────────────────────────────────┐
-│ Task A ──▶ Task B ──▶ Task A ──▶ Task B │
-│ (번갈아가며 진행)                         │
-└─────────────────────────────────────────┘
 
-Parallelism (여러 CPU):
-┌──────────────────────┐
-│ CPU 1: Task A ──────▶│
-│ CPU 2: Task B ──────▶│
-│ (동시에 실행)          │
-└──────────────────────┘
+```mermaid
+graph LR
+    subgraph "Parallelism (여러 CPU)"
+        C1[CPU 1: Task A] --> C1E[ ]
+        C2[CPU 2: Task B] --> C2E[ ]
+    end
+    style C1E fill:none,stroke:none
+    style C2E fill:none,stroke:none
 ```
 
 Go의 창시자 Rob Pike는 이렇게 설명한다:
@@ -72,18 +73,19 @@ Go에서는 이를 **goroutine**(독립적인 실행 단위)과 **channel**(메�
 
 Go는 **channel을 통한 데이터 전달**을 권장한다. 데이터의 소유권이 channel을 통해 이전되므로, 한 시점에 하나의 goroutine만 데이터에 접근하게 된다.
 
+```mermaid
+graph LR
+    subgraph "전통적 방식 (Shared Memory + Lock)"
+        TA[Thread A] --> SD[Shared Data\n+ Lock]
+        TB[Thread B] --> SD
+    end
 ```
-전통적 방식 (Shared Memory + Lock):
-┌──────────┐     ┌──────────────┐     ┌──────────┐
-│ Thread A │────▶│ Shared Data  │◀────│ Thread B │
-│          │     │ (+ Lock)     │     │          │
-└──────────┘     └──────────────┘     └──────────┘
 
-Go 방식 (Message Passing):
-┌──────────────┐   channel   ┌──────────────┐
-│ Goroutine A  │────────────▶│ Goroutine B  │
-│ (데이터 소유)  │   (전달)    │ (데이터 수신)  │
-└──────────────┘             └──────────────┘
+```mermaid
+graph LR
+    subgraph "Go 방식 (Message Passing)"
+        GA[Goroutine A\n데이터 소유] -- "channel (전달)" --> GB[Goroutine B\n데이터 수신]
+    end
 ```
 
 ## 3. 언제 Concurrency를 사용해야 하는가
@@ -223,27 +225,31 @@ func TestGoroutineLightweight(t *testing.T) {
 
 Go runtime은 **GMP 모델**로 goroutine을 스케줄링한다.
 
-```
-GMP 모델:
-┌─────────────────────────────────────────────────┐
-│                  Go Scheduler                    │
-│                                                  │
-│  G (Goroutine)     M (Machine)     P (Processor) │
-│  ┌──┐ ┌──┐ ┌──┐   ┌──┐ ┌──┐      ┌──┐ ┌──┐    │
-│  │G1│ │G2│ │G3│   │M1│ │M2│      │P1│ │P2│    │
-│  └──┘ └──┘ └──┘   └──┘ └──┘      └──┘ └──┘    │
-│  ┌──┐ ┌──┐ ┌──┐                                 │
-│  │G4│ │G5│ │G6│   M = OS Thread                  │
-│  └──┘ └──┘ └──┘   P = 논리 프로세서 (run queue)     │
-│                    G = Goroutine                  │
-└─────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph "Go Scheduler (GMP 모델)"
+        subgraph "G (Goroutine)"
+            G1[G1]
+            G2[G2]
+            G3[G3]
+            G4[G4]
+            G5[G5]
+            G6[G6]
+        end
+        subgraph "M (OS Thread)"
+            M1[M1]
+            M2[M2]
+        end
+        subgraph "P (논리 프로세서)"
+            P1[P1]
+            P2[P2]
+        end
+    end
 
-실행 흐름:
-  P1 ──▶ M1 (OS Thread)
-   │
-   ├── G1 실행 중
-   ├── G2 대기 (run queue)
-   └── G3 대기 (run queue)
+    P1 --> M1
+    G1 -- "실행 중" --> P1
+    G2 -- "대기 (run queue)" --> P1
+    G3 -- "대기 (run queue)" --> P1
 ```
 
 | 구성 요소 | 역할 |

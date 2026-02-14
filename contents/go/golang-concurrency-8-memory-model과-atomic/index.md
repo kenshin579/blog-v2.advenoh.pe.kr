@@ -4,7 +4,6 @@ description: "Go Memory Model의 happens-before 규칙과 sync/atomic 패키지�
 date: 2025-05-13
 tags: ["go", "golang", "concurrency", "memory-model", "atomic", "happens-before"]
 series: "Golang Concurrency"
-seriesOrder: 8
 draft: false
 ---
 

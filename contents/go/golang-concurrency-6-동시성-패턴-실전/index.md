@@ -4,7 +4,6 @@ description: "Go 동시성 패턴 Worker Pool, Pipeline, Semaphore, Rate Limitin
 date: 2025-05-11
 tags: ["go", "golang", "concurrency", "worker-pool", "pipeline", "semaphore", "rate-limiting", "pubsub"]
 series: "Golang Concurrency"
-seriesOrder: 6
 draft: false
 ---
 
@@ -27,32 +26,35 @@ Go의 goroutine과 channel은 강력하지만, 잘못 사용하면 goroutine 누
 
 이 글에서 다룰 패턴의 전체 구조는 다음과 같다.
 
-```
-┌─────────────────────────────────────────────────────┐
-│                  동시성 패턴 맵                        │
-├─────────────┬───────────────────────────────────────┤
-│ Worker Pool │ 고정 수의 worker가 job queue를 처리      │
-│ Pipeline    │ 데이터가 stage를 순서대로 통과            │
-│ Semaphore   │ 동시 실행 수를 N개로 제한                │
-│ Rate Limit  │ 시간당 처리량을 제한                     │
-│ Pub/Sub     │ 1:N 메시지 브로드캐스트                  │
-└─────────────┴───────────────────────────────────────┘
+```mermaid
+graph LR
+    WP["Worker Pool<br/>고정 수의 worker가 job queue를 처리"]
+    PL["Pipeline<br/>데이터가 stage를 순서대로 통과"]
+    SM["Semaphore<br/>동시 실행 수를 N개로 제한"]
+    RL["Rate Limit<br/>시간당 처리량을 제한"]
+    PS["Pub/Sub<br/>1:N 메시지 브로드캐스트"]
+
+    subgraph 동시성 패턴 맵
+        WP
+        PL
+        SM
+        RL
+        PS
+    end
 ```
 
 ## Worker Pool 패턴
 
 Worker Pool은 **고정된 수의 goroutine(worker)** 이 공유 작업 큐에서 job을 꺼내 처리하는 패턴이다. goroutine을 무제한으로 생성하는 대신, 제한된 수의 worker가 작업을 분배받아 처리한다.
 
-```
-                    ┌──────────┐
-              ┌────>│ Worker 0 │────┐
-              │     └──────────┘    │
-┌──────────┐  │     ┌──────────┐    │     ┌─────────┐
-│ Jobs Chan │──├────>│ Worker 1 │────├────>│ Results │
-└──────────┘  │     └──────────┘    │     │  Chan   │
-              │     ┌──────────┐    │     └─────────┘
-              └────>│ Worker 2 │────┘
-                    └──────────┘
+```mermaid
+graph LR
+    Jobs["Jobs Chan"] --> W0["Worker 0"]
+    Jobs --> W1["Worker 1"]
+    Jobs --> W2["Worker 2"]
+    W0 --> Results["Results Chan"]
+    W1 --> Results
+    W2 --> Results
 ```
 
 ### Job/Result 구조체 기반 Worker Pool
@@ -187,12 +189,11 @@ func TestWorkerPoolWithFunc(t *testing.T) {
 
 Pipeline은 데이터를 **여러 단계(stage)** 를 통해 순차적으로 변환하는 패턴이다. 각 stage는 독립된 goroutine으로 동작하며, channel로 연결된다. Unix의 파이프(`|`)와 같은 개념이다.
 
-```
-┌───────────┐     ┌──────────┐     ┌──────────┐     ┌─────────┐
-│ generator │────>│  square  │────>│  filter  │────>│ collect │
-│ (생성)     │ ch  │ (변환)    │ ch  │ (필터링)  │ ch  │ (수집)   │
-└───────────┘     └──────────┘     └──────────┘     └─────────┘
-  goroutine         goroutine        goroutine        메인 루틴
+```mermaid
+graph LR
+    G["generator<br/>(생성)<br/>goroutine"] -- ch --> S["square<br/>(변환)<br/>goroutine"]
+    S -- ch --> F["filter<br/>(필터링)<br/>goroutine"]
+    F -- ch --> C["collect<br/>(수집)<br/>메인 루틴"]
 ```
 
 ### generator - 값을 생성하는 첫 번째 stage
@@ -291,14 +292,20 @@ Pipeline 패턴의 핵심 장점은 다음과 같다.
 
 Semaphore는 **동시에 실행할 수 있는 goroutine 수를 제한**하는 패턴이다. Go에서는 **buffered channel**을 세마포어로 활용할 수 있다.
 
-```
-        sem = make(chan struct{}, 3)   // 최대 3개 동시 실행
+```mermaid
+sequenceDiagram
+    participant sem as sem (버퍼 3)
+    participant A as goroutine A
+    participant B as goroutine B
+    participant C as goroutine C
+    participant D as goroutine D
 
-        goroutine A: sem <- struct{}{}  ✅ (1/3)
-        goroutine B: sem <- struct{}{}  ✅ (2/3)
-        goroutine C: sem <- struct{}{}  ✅ (3/3)
-        goroutine D: sem <- struct{}{}  ⏳ 대기... (버퍼 가득)
-        goroutine A: <-sem              해제 → D 진입 가능
+    A->>sem: sem <- struct{}{} (1/3)
+    B->>sem: sem <- struct{}{} (2/3)
+    C->>sem: sem <- struct{}{} (3/3)
+    D--xsem: sem <- struct{}{} 대기 (버퍼 가득)
+    sem->>A: <-sem 해제
+    D->>sem: sem <- struct{}{} (D 진입 가능)
 ```
 
 ```go
@@ -365,12 +372,17 @@ Rate Limiting은 **시간 기반으로 처리량을 제한**하는 패턴이다.
 
 `time.Ticker`는 일정 간격으로 값을 보내는 channel이다. 작업 전에 tick을 기다리면 자연스럽게 속도가 제한된다.
 
-```
-시간 →  0ms    20ms    40ms    60ms    80ms
-        tick    tick    tick    tick    tick
-         │       │       │       │       │
-         ▼       ▼       ▼       ▼       ▼
-       작업 0  작업 1  작업 2  작업 3  작업 4
+```mermaid
+gantt
+    title Rate Limiting (20ms 간격)
+    dateFormat X
+    axisFormat %L ms
+    section 작업
+        작업 0 : 0, 1
+        작업 1 : 20, 21
+        작업 2 : 40, 41
+        작업 3 : 60, 61
+        작업 4 : 80, 81
 ```
 
 ```go
@@ -396,13 +408,18 @@ func TestRateLimitWithTicker(t *testing.T) {
 
 실전에서는 처음 몇 개 요청은 즉시 처리하고, 이후부터 속도를 제한하고 싶은 경우가 많다. 이것이 **Burst Rate Limiting**이다.
 
-```
-시간 →  0ms                 20ms    40ms
-        ┌─────────────────┐
-        │ burst (3개 즉시) │  tick    tick
-        │ 작업0 작업1 작업2│   │       │
-        └─────────────────┘   ▼       ▼
-                            작업 3  작업 4
+```mermaid
+gantt
+    title Burst Rate Limiting (burst 3 + 20ms 간격)
+    dateFormat X
+    axisFormat %L ms
+    section Burst
+        작업 0 : 0, 1
+        작업 1 : 0, 1
+        작업 2 : 0, 1
+    section Rate Limited
+        작업 3 : 20, 21
+        작업 4 : 40, 41
 ```
 
 ```go
@@ -452,16 +469,11 @@ Burst Rate Limiter의 동작 원리는 다음과 같다.
 
 Pub/Sub(Publish/Subscribe)는 **발행자가 메시지를 보내면 모든 구독자가 받는** 1:N 메시지 전달 패턴이다. Go의 제네릭을 활용하면 타입 안전한 Pub/Sub 브로커를 구현할 수 있다.
 
-```
-                        ┌──────────────┐
-                   ┌───>│ Subscriber A │
-                   │    └──────────────┘
-┌───────────┐      │    ┌──────────────┐
-│ Publisher  │─────>├───>│ Subscriber B │
-└───────────┘      │    └──────────────┘
-   Publish()       │    ┌──────────────┐
-                   └───>│ Subscriber C │
-                        └──────────────┘
+```mermaid
+graph LR
+    P["Publisher<br/>Publish()"] --> A["Subscriber A"]
+    P --> B["Subscriber B"]
+    P --> C["Subscriber C"]
 ```
 
 ### Generic Broker 구현

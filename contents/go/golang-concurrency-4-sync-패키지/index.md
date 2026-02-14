@@ -1,6 +1,6 @@
 ---
 title: "Golang Concurrency (4) - sync 패키지 완벽 가이드"
-description: "Golang Concurrency (4) - sync 패키지 완벽 가이드"
+description: "Go sync 패키지의 WaitGroup, Mutex, RWMutex, Once, sync.Map 사용법과 Race Condition 해결법을 다룹니다"
 date: 2026-02-14
 update: 2026-02-14
 tags:
@@ -17,7 +17,6 @@ tags:
   - 동시성
   - 동기화
 series: "Golang Concurrency"
-seriesOrder: 4
 ---
 
 Go는 channel을 통한 통신을 권장하지만, 모든 상황에서 channel이 최적은 아니다. 단순한 공유 메모리 보호에는 `sync` 패키지의 동기화 프리미티브가 더 직관적이고 효율적이다.

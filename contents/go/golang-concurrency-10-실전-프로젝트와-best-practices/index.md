@@ -4,7 +4,6 @@ description: "Go 동시성을 활용한 실전 프로젝트(웹 크롤러, Grace
 date: 2025-05-15
 tags: ["go", "golang", "concurrency", "crawler", "graceful-shutdown", "best-practices"]
 series: "Golang Concurrency"
-seriesOrder: 10
 draft: false
 ---
 
@@ -386,35 +385,20 @@ func TestCrawlerLinkExtraction(t *testing.T) {
 
 ### 크롤러 동시성 패턴 요약
 
-```
-┌─────────────────────────────────────────────────────────────┐
-│                   동시성 웹 크롤러 구조                        │
-├─────────────────────────────────────────────────────────────┤
-│                                                             │
-│  ┌─────────┐    ┌──────────┐    ┌──────────────────────┐   │
-│  │ URL List │───>│ Ticker   │───>│ sync.Map (visited)   │   │
-│  └─────────┘    │ (rate    │    │ 중복 URL 필터링         │   │
-│                 │  limit)  │    └──────────┬───────────┘   │
-│                 └──────────┘               │               │
-│                                            v               │
-│                 ┌─────────────────────────────────────┐    │
-│                 │   Semaphore (buffered channel)       │    │
-│                 │   maxWorkers개까지 동시 실행           │    │
-│                 └────────┬──────────┬──────────┬──────┘    │
-│                          │          │          │           │
-│                    ┌─────v┐   ┌─────v┐   ┌─────v┐         │
-│                    │fetch │   │fetch │   │fetch │         │
-│                    │(ctx) │   │(ctx) │   │(ctx) │         │
-│                    └──┬───┘   └──┬───┘   └──┬───┘         │
-│                       │          │          │              │
-│                       v          v          v              │
-│                 ┌─────────────────────────────────────┐    │
-│                 │   sync.Mutex (results 보호)          │    │
-│                 │   []Result에 안전하게 append          │    │
-│                 └─────────────────────────────────────┘    │
-│                                                             │
-│  context.Done() → 전체 크롤링 취소                           │
-└─────────────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    subgraph 동시성 웹 크롤러 구조
+        URL["URL List"] --> Ticker["Ticker<br/>(rate limit)"]
+        Ticker --> Visited["sync.Map (visited)<br/>중복 URL 필터링"]
+        Visited --> Sem["Semaphore (buffered channel)<br/>maxWorkers개까지 동시 실행"]
+        Sem --> F1["fetch(ctx)"]
+        Sem --> F2["fetch(ctx)"]
+        Sem --> F3["fetch(ctx)"]
+        F1 --> Mutex["sync.Mutex (results 보호)<br/>[]Result에 안전하게 append"]
+        F2 --> Mutex
+        F3 --> Mutex
+        CTX["context.Done() → 전체 크롤링 취소"]
+    end
 ```
 
 ## 실전 프로젝트 2: Graceful Shutdown
@@ -431,26 +415,12 @@ func TestCrawlerLinkExtraction(t *testing.T) {
 
 Graceful Shutdown은 이런 문제를 방지한다.
 
-```
-┌─────────────────────────────────────────────────────┐
-│              Graceful Shutdown 흐름                   │
-├─────────────────────────────────────────────────────┤
-│                                                     │
-│  1. SIGTERM/SIGINT 수신                              │
-│          │                                          │
-│          v                                          │
-│  2. 새 연결 수락 중지 (리스너 닫기)                     │
-│          │                                          │
-│          v                                          │
-│  3. 진행 중인 요청 완료 대기                            │
-│          │                                          │
-│          v                                          │
-│  4. shutdown timeout 초과 시 강제 종료                 │
-│          │                                          │
-│          v                                          │
-│  5. 서버 종료 완료                                    │
-│                                                     │
-└─────────────────────────────────────────────────────┘
+```mermaid
+graph TD
+    A["1. SIGTERM/SIGINT 수신"] --> B["2. 새 연결 수락 중지<br/>(리스너 닫기)"]
+    B --> C["3. 진행 중인 요청 완료 대기"]
+    C --> D["4. shutdown timeout 초과 시<br/>강제 종료"]
+    D --> E["5. 서버 종료 완료"]
 ```
 
 ### Server 구조체 설계

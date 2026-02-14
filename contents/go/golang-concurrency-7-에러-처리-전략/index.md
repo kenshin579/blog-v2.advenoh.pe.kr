@@ -4,7 +4,6 @@ description: "Go 동시성 환경에서의 에러 처리 패턴 - error channel,
 date: 2025-05-12
 tags: ["go", "golang", "concurrency", "error-handling", "errgroup"]
 series: "Golang Concurrency"
-seriesOrder: 7
 draft: false
 ---
 

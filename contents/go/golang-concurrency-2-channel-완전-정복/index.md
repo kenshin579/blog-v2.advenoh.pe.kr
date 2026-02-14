@@ -1,6 +1,6 @@
 ---
 title: "Golang Concurrency (2) - Channel 완전 정복"
-description: "Golang Concurrency (2) - Channel 완전 정복"
+description: "Go Channel의 기본 동작부터 buffered/unbuffered 차이, 방향 제한, close 규칙, producer-consumer 패턴까지 다룹니다"
 date: 2026-02-14
 update: 2026-02-14
 tags:
@@ -15,7 +15,6 @@ tags:
   - 동시성
   - 채널
 series: "Golang Concurrency"
-seriesOrder: 2
 ---
 
 Channel은 goroutine 간 **데이터를 주고받는 통신 수단**이다. Go의 동시성 철학인 "메모리를 공유하지 말고, 통신으로 메모리를 공유하라"를 실현하는 핵심 메커니즘이다.
@@ -81,24 +80,18 @@ Channel의 가장 중요한 특성은 **blocking**이다.
 - **Unbuffered channel**: send와 receive가 **동시에 준비**되어야 진행된다
 - **Buffered channel**: 버퍼가 가득 차면 send가 blocking, 버퍼가 비면 receive가 blocking
 
+```mermaid
+graph LR
+    subgraph "Unbuffered Channel"
+        GA[Goroutine A\nsend - blocking] -- "핸드셰이크\n(동시에 진행)" --> GB[Goroutine B\nreceive - blocking]
+    end
 ```
-Unbuffered Channel:
-  Goroutine A         Goroutine B
-     │                    │
-     │── send (blocking) ─│
-     │                    │── receive (blocking)
-     │◀── 핸드셰이크 ──────│
-     │   (동시에 진행)      │
 
-Buffered Channel (크기 3):
-  Goroutine A              Buffer              Goroutine B
-     │                  ┌─┬─┬─┐                   │
-     │── send ─────────▶│1│ │ │                   │
-     │── send ─────────▶│1│2│ │                   │
-     │── send ─────────▶│1│2│3│                   │
-     │── send (BLOCK!) ─│1│2│3│ (버퍼 가득)        │
-     │                  │ │2│3│◀── receive ────────│
-     │                  └─┴─┴─┘                   │
+```mermaid
+graph LR
+    subgraph "Buffered Channel (크기 3)"
+        GA2[Goroutine A\nsend x3 가능\n4번째 send BLOCK!] --> BUF[Buffer\n크기: 3] --> GB2[Goroutine B\nreceive]
+    end
 ```
 
 ## 4. Unbuffered vs Buffered Channel

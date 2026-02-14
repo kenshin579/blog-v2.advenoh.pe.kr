@@ -4,7 +4,6 @@ description: "Go context 패키지의 WithCancel, WithTimeout, WithDeadline, Wit
 date: 2025-05-10
 tags: ["go", "golang", "concurrency", "context", "timeout", "cancel"]
 series: "Golang Concurrency"
-seriesOrder: 5
 draft: false
 ---
 
