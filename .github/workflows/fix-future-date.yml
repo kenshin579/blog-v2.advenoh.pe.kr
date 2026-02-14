@@ -14,4 +14,5 @@ jobs:
     uses: kenshin579/actions/.github/workflows/fix-future-date.yml@main
     with:
       pr_number: ${{ github.event.pull_request.number }}
+      content_dir: contents
     secrets: inherit
