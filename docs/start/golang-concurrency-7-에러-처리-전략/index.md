@@ -1,7 +1,7 @@
 ---
 title: "Golang Concurrency 7편 - 에러 처리 전략"
 description: "Go 동시성 환경에서의 에러 처리 패턴 - error channel, errgroup, errors.Join을 활용한 실전 전략을 다룹니다"
-date: 2026-05-06
+date: 2026-02-14
 tags: ["go", "golang", "concurrency", "error-handling", "errgroup"]
 series: "Golang Concurrency"
 draft: false
