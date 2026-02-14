@@ -114,6 +114,13 @@ Markdown content...
 3. `manifest.json`에 파일명 추가
 4. 브라우저에서 캐시 클리어 후 확인 (`clearArticlesCache()`)
 
+## Diagram Style
+
+**다이어그램은 반드시 Mermaid 형식으로 작성한다.**
+- ASCII art 다이어그램 사용 금지
+- 마크다운 코드블록에 ```mermaid 사용
+- flowchart, sequence, class, state 등 적절한 Mermaid 다이어그램 타입 선택
+
 ## Design System
 
 **Component Library:** shadcn/ui (Radix UI primitives)
