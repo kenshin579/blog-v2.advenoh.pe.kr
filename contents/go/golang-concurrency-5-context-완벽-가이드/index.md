@@ -1,7 +1,7 @@
 ---
 title: "Golang Concurrency 5편 - Context 완벽 가이드"
 description: "Go context 패키지의 WithCancel, WithTimeout, WithDeadline, WithValue 사용법과 context 전파 패턴을 다룹니다"
-date: 2026-03-25
+date: 2026-04-22
 tags: ["go", "golang", "concurrency", "context", "timeout", "cancel"]
 series: "Golang Concurrency"
 draft: false

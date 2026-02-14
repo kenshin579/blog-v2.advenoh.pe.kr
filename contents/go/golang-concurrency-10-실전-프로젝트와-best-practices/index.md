@@ -1,7 +1,7 @@
 ---
 title: "Golang Concurrency 10편 - 실전 프로젝트와 Best Practices"
 description: "Go 동시성을 활용한 실전 프로젝트(웹 크롤러, Graceful Shutdown)와 Best Practices를 다룹니다"
-date: 2026-03-25
+date: 2026-05-27
 tags: ["go", "golang", "concurrency", "crawler", "graceful-shutdown", "best-practices"]
 series: "Golang Concurrency"
 draft: false

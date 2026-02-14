@@ -1,8 +1,8 @@
 ---
 title: "Golang Concurrency (3) - Select와 Channel 심화 패턴"
 description: "Go select문을 활용한 timeout, fan-in/fan-out, nil channel 동적 비활성화 등 Channel 심화 패턴을 다룹니다"
-date: 2026-03-25
-update: 2026-03-25
+date: 2026-04-08
+update: 2026-04-08
 tags:
   - golang
   - go
