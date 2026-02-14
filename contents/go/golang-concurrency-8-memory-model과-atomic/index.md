@@ -1,7 +1,7 @@
 ---
 title: "Golang Concurrency 8편 - Go Memory Model과 Atomic"
 description: "Go Memory Model의 happens-before 규칙과 sync/atomic 패키지의 Atomic 연산을 실전 예제로 배웁니다"
-date: 2025-05-13
+date: 2026-03-25
 tags: ["go", "golang", "concurrency", "memory-model", "atomic", "happens-before"]
 series: "Golang Concurrency"
 draft: false
