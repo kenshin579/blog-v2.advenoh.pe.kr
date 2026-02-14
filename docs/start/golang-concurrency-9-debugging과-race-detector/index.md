@@ -1,7 +1,7 @@
 ---
 title: "Golang Concurrency 9편 - Debugging과 Race Detector"
 description: "Go 동시성 프로그램의 디버깅 기법 - Race Detector, Deadlock 탐지, Goroutine Dump를 실전 예제로 배웁니다"
-date: 2026-05-20
+date: 2026-02-14
 tags: ["go", "golang", "concurrency", "race-detector", "deadlock", "debugging", "goroutine-dump"]
 series: "Golang Concurrency"
 draft: false
