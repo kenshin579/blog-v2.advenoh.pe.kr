@@ -1,7 +1,7 @@
 ---
 title: "Golang Concurrency 6편 - 동시성 패턴 실전"
 description: "Go 동시성 패턴 Worker Pool, Pipeline, Semaphore, Rate Limiting, Pub/Sub 패턴을 실전 예제로 배웁니다"
-date: 2026-04-29
+date: 2026-02-14
 tags: ["go", "golang", "concurrency", "worker-pool", "pipeline", "semaphore", "rate-limiting", "pubsub"]
 series: "Golang Concurrency"
 draft: false
