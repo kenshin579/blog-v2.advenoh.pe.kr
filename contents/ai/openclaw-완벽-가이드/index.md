@@ -151,6 +151,347 @@ docker run -d \
 
 온보딩이 완료되면 선택한 메시징 앱에서 바로 AI 에이전트와 대화할 수 있다.
 
+## 3.4 모델 설정
+
+OpenClaw는 `~/.openclaw/openclaw.json` 파일(JSON5 형식)에서 모델을 관리한다. Claude Code의 설정 방식과 유사하게, 설정 파일 기반으로 모델을 지정하고 CLI로 전환할 수 있다.
+
+### 3.4.1 설정 파일 구조
+
+모델 참조는 `provider/model` 형식을 사용한다.
+
+```json5
+// ~/.openclaw/openclaw.json
+{
+  agents: {
+    defaults: {
+      model: {
+        primary: "anthropic/claude-sonnet-4-5",
+        fallbacks: [
+          "anthropic/claude-opus-4-5",
+          "openai/gpt-5.1-codex"
+        ]
+      }
+    }
+  }
+}
+```
+
+Primary 모델이 사용 불가능할 때 fallbacks 목록의 모델을 순서대로 시도한다. Claude Code에서 모델을 지정하는 것처럼, OpenClaw도 기본 모델과 대체 모델을 선언적으로 설정할 수 있다.
+
+### 3.4.2 모델 Alias와 Allowlist
+
+허용할 모델 목록을 지정하고 별칭을 부여할 수 있다.
+
+```json5
+{
+  agents: {
+    defaults: {
+      models: {
+        "anthropic/claude-sonnet-4-5": { alias: "Sonnet" },
+        "anthropic/claude-opus-4-6": { alias: "Opus" },
+        "openai/gpt-5.1-codex": { alias: "Codex" }
+      }
+    }
+  }
+}
+```
+
+목록에 없는 모델을 선택하면 `"Model 'provider/model' is not allowed"` 메시지가 반환된다.
+
+### 3.4.3 Provider 인증
+
+API 키는 `~/.openclaw/.env` 파일에 저장하고, 설정 파일에서 `${VAR_NAME}` 구문으로 참조한다.
+
+```bash
+# ~/.openclaw/.env
+ANTHROPIC_API_KEY=sk-ant-api03-...
+OPENAI_API_KEY=sk-proj-...
+GEMINI_API_KEY=AIzaSy...
+```
+
+### 3.4.4 CLI를 통한 모델 관리
+
+Claude Code에서 `/model` 명령으로 모델을 전환하듯, OpenClaw도 CLI와 채팅 명령으로 모델을 관리할 수 있다.
+
+```bash
+# 모델 목록 조회
+openclaw models list
+
+# 기본 모델 변경
+openclaw models set anthropic/claude-sonnet-4-5
+
+# 현재 모델 상태 확인
+openclaw models status
+```
+
+채팅 중에도 게이트웨이 재시작 없이 모델을 전환할 수 있다.
+
+```
+/model list                          # 사용 가능한 모델 목록
+/model 3                             # 번호로 선택
+/model anthropic/claude-opus-4-6     # 직접 지정
+```
+
+### 3.4.5 로컬 모델 (Ollama) 설정
+
+API 비용 없이 로컬 LLM을 사용하려면 Ollama를 연동할 수 있다.
+
+```bash
+# 환경변수만 설정하면 자동 검색
+export OLLAMA_API_KEY="ollama-local"
+```
+
+```json5
+{
+  agents: {
+    defaults: {
+      model: {
+        primary: "ollama/qwen3:8b"
+      }
+    }
+  }
+}
+```
+
+`http://127.0.0.1:11434`에서 실행 중인 Ollama 모델을 자동으로 검색한다.
+
+## 3.5 Telegram 채널 연결
+
+OpenClaw에서 Telegram을 채널로 연결하는 과정을 단계별로 설명한다.
+
+### 3.5.1 BotFather에서 봇 생성
+
+1. Telegram에서 **@BotFather**에게 메시지를 보낸다
+2. `/newbot` 명령어를 입력한다
+3. 봇 이름을 입력한다 (예: "My OpenClaw Bot")
+4. 봇 username을 입력한다 (반드시 `bot`으로 끝나야 함, 예: `my_openclaw_bot`)
+5. 생성된 **토큰을 안전하게 저장**한다
+
+### 3.5.2 OpenClaw 설정
+
+토큰을 `.env` 파일에 저장하고, 설정 파일에서 참조한다.
+
+```bash
+# ~/.openclaw/.env
+TELEGRAM_BOT_TOKEN=123456789:ABCdefGHIjklMNOpqrsTUVwxyz
+```
+
+```json5
+// ~/.openclaw/openclaw.json
+{
+  channels: {
+    telegram: {
+      enabled: true,
+      botToken: "${TELEGRAM_BOT_TOKEN}",
+      dmPolicy: "pairing",
+      groups: {
+        "*": { requireMention: true }
+      }
+    }
+  }
+}
+```
+
+### 3.5.3 페어링 승인
+
+게이트웨이를 시작하고, Telegram에서 봇에게 DM을 보낸 후 페어링을 승인한다.
+
+```bash
+# 게이트웨이 시작
+openclaw gateway
+
+# 페어링 요청 확인
+openclaw pairing list telegram
+
+# 페어링 승인 (코드는 1시간 후 만료)
+openclaw pairing approve telegram <CODE>
+```
+
+### 3.5.4 DM 정책 옵션
+
+| 정책 | 설명 |
+|------|------|
+| `pairing` (기본값) | 페어링 승인 필요 |
+| `allowlist` | 특정 사용자만 허용 |
+| `open` | 모든 사용자 허용 |
+| `disabled` | 모든 DM 차단 |
+
+### 3.5.5 그룹 채팅 설정
+
+특정 그룹에 대한 개별 설정이 가능하다.
+
+```json5
+{
+  channels: {
+    telegram: {
+      groups: {
+        "*": { requireMention: true },
+        "-1001234567890": {
+          groupPolicy: "open",
+          requireMention: false
+        }
+      }
+    }
+  }
+}
+```
+
+그룹에서 봇의 모든 메시지를 수신하려면 BotFather에서 `/setprivacy` → Privacy Mode를 비활성화해야 한다. Privacy Mode 변경 후에는 봇을 그룹에서 제거한 다음 다시 추가해야 적용된다.
+
+## 3.6 권장 기본 설정
+
+OpenClaw를 처음 설치한 후 설정하면 좋은 항목들을 정리한다.
+
+### 3.6.1 보안 설정 (필수)
+
+**파일 권한 설정:**
+
+```bash
+chmod 700 ~/.openclaw
+chmod 600 ~/.openclaw/openclaw.json
+chmod 600 ~/.openclaw/.env
+```
+
+**게이트웨이 바인딩:**
+
+```json5
+{
+  gateway: {
+    bind: "loopback",    // 절대 "0.0.0.0"으로 설정하지 말 것
+    auth: {
+      mode: "token",
+      token: "your-long-random-token"
+    }
+  }
+}
+```
+
+원격 접근이 필요하면 Tailscale이나 SSH 포트 포워딩을 사용한다. 게이트웨이 포트를 공개 인터넷에 직접 노출해서는 안 된다.
+
+**샌드박스:**
+
+```json5
+{
+  agents: {
+    defaults: {
+      sandbox: { mode: "all" }   // off | non-main | all
+    }
+  }
+}
+```
+
+처음에는 `"all"`로 시작하고, 필요에 따라 완화하는 것을 권장한다.
+
+### 3.6.2 메모리 검색 설정
+
+메모리 검색의 정확도를 높이려면 하이브리드 서치를 활성화한다.
+
+```json5
+{
+  agents: {
+    defaults: {
+      memorySearch: {
+        provider: "openai",
+        model: "text-embedding-3-small",
+        query: {
+          hybrid: {
+            enabled: true,
+            vectorWeight: 0.7,
+            textWeight: 0.3
+          }
+        },
+        cache: {
+          enabled: true,
+          maxEntries: 50000
+        }
+      }
+    }
+  }
+}
+```
+
+API 비용을 절감하려면 `provider: "local"`로 로컬 임베딩을 사용할 수도 있다.
+
+### 3.6.3 하트비트와 Cron
+
+하트비트는 주기적 체크, Cron은 정확한 시간 실행에 적합하다.
+
+```json5
+{
+  agents: {
+    defaults: {
+      heartbeat: {
+        every: "30m",
+        activeHours: {
+          start: "08:00",
+          end: "22:00"
+        }
+      }
+    }
+  }
+}
+```
+
+정확한 시간에 실행해야 하는 작업은 Cron을 사용한다.
+
+```bash
+# 매일 아침 7시 브리핑
+openclaw cron add --name "Morning briefing" \
+  --cron "0 7 * * *" --tz "Asia/Seoul" --announce
+
+# 4시간마다 프로젝트 체크
+openclaw cron add --name "Check project" --every "4h"
+```
+
+### 3.6.4 성능 튜닝
+
+```json5
+{
+  agents: {
+    defaults: {
+      maxConcurrent: 4,
+      contextPruning: "cache-ttl",
+      contextTtl: "1h",
+      contextMaxTokens: 150000
+    }
+  }
+}
+```
+
+비용 절감 팁:
+- 비싼 모델(Opus)은 fallback으로 두고, 기본 모델은 Sonnet으로 설정
+- `contextPruning: "cache-ttl"`로 토큰 사용량 증가 방지
+- 로컬 임베딩으로 메모리 검색 API 비용 절감
+
+### 3.6.5 초기 설정 체크리스트
+
+첫 설정 시 확인할 항목을 정리하면 다음과 같다.
+
+1. `openclaw onboard` 실행하여 인터랙티브 설정 완료
+2. `openclaw doctor --fix` 실행하여 설정 검증
+3. `openclaw security audit --fix` 실행하여 보안 감사
+4. `.env` 파일에 API 키 저장 (설정 파일에 직접 키를 넣지 말 것)
+5. `bind: "loopback"` 확인
+6. `dmPolicy: "pairing"` 설정 확인
+7. 그룹 채팅에서 `requireMention: true` 설정 확인
+8. `sandbox: { mode: "all" }` 설정으로 시작
+
+### 3.6.6 로그 민감정보 삭제
+
+```json5
+{
+  logging: {
+    redactSensitive: "tools",
+    redactPatterns: [
+      "Bearer [A-Za-z0-9-._~+/]+=*",
+      "api[_-]?key[=:]\\s*[^\\s]+"
+    ]
+  }
+}
+```
+
+로그에 API 키나 토큰이 남지 않도록 민감정보 패턴을 설정해두면 안전하다.
+
 # 4. 핵심 기능
 
 ## 4.1 Memory 시스템 (영속적 기억)
