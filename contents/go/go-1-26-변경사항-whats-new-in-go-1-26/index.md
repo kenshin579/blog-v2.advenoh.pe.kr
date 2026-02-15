@@ -1,8 +1,8 @@
 ---
 title: "Go 1.26 변경사항 총정리 (What's New in Go 1.26)"
 description: "Go 1.26의 주요 변경사항을 정리합니다. new(expr) 초기값 지정, 제네릭 자기참조, errors.AsType, Green Tea GC 기본화, cgo 30% 성능 향상, reflect 반복자, crypto/hpke, SIMD, 고루틴 누수 프로필 등 언어, 성능, 보안 개선 사항을 샘플 코드와 함께 알아봅니다."
-date: 2026-02-14
-update: 2026-02-14
+date: 2026-04-08
+update: 2026-04-08
 tags:
   - golang
   - go
@@ -20,11 +20,6 @@ tags:
 ---
 
 Go 1.26은 2026년 2월에 릴리스되었다. 이번 버전의 핵심 테마는 **언어 표현력 향상**, **성능 대폭 개선**, **보안 강화**이다. `new(expr)` 초기값 지정, 제네릭 자기참조, Green Tea GC 기본 활성화, cgo 30% 성능 향상 등 실무에 바로 적용할 수 있는 변경사항이 많다.
-
-> 참고 자료
-> - [Go 1.26 Release Notes](https://go.dev/doc/go1.26)
-> - [Go 1.26 is released](https://go.dev/blog/go1.26)
-> - [Go 1.26 변경사항 상세](https://antonz.org/go-1-26/)
 
 # 1.언어 변경사항
 
@@ -104,7 +99,20 @@ func TestNewWithJSON(t *testing.T) {
 
 ## 1.2 제네릭 타입 자기참조 (Recursive Type Constraints)
 
-제네릭 타입이 자기 자신을 타입 파라미터로 참조할 수 있게 되었다. F-bounded 다형성(F-bounded polymorphism) 패턴을 구현할 수 있어 복잡한 타입 관계를 표현할 수 있다.
+제네릭 타입이 자기 자신을 타입 파라미터로 참조할 수 있게 되었다. 이를 통해 **F-bounded 다형성(F-bounded polymorphism)** 패턴을 구현할 수 있다.
+
+### 1.2.1 F-bounded polymorphism이란?
+
+F-bounded polymorphism은 **인터페이스(타입 제약)가 자기 자신을 구현하는 타입을 파라미터로 받는 패턴**이다. 일반적인 제네릭 제약은 "T는 이런 메서드를 가져야 한다"고 선언하지만, F-bounded 제약은 **"T는 자기 자신의 타입을 인자로 받는 메서드를 가져야 한다"**고 선언한다.
+
+```
+일반 제약:     Comparable       → Equal(other any) bool
+F-bounded 제약: Comparable[T]   → Equal(other T) bool   ← T가 자기 자신
+```
+
+이 패턴의 핵심 장점은 **타입 안전성**이다. 일반 인터페이스에서는 `Equal(other any)`처럼 아무 타입이나 받아야 하고 런타임에 타입 단언이 필요하다. 하지만 F-bounded 패턴에서는 `Equal(other T)`로 **컴파일 타임에 같은 타입끼리만 비교되도록 보장**한다.
+
+Java의 `Comparable<T>`, Rust의 `trait Add<Rhs = Self>` 등 다른 언어에서도 널리 사용되는 패턴이며, Go 1.26부터 이를 지원하게 되었다.
 
 ```go
 // Ordered - 제네릭 타입이 자기 자신을 타입 파라미터로 참조
@@ -629,3 +637,9 @@ Go 1.27에서 제거 예정인 GODEBUG 옵션:
 - `tlsunsafeekm`, `tlsrsakex`, `tls10server`, `tls3des`
 - `x509keypairleaf`, `gotypesalias`, `asynctimerchan`
 - `GOEXPERIMENT=nogreenteagc` (비활성화 옵션 제거)
+
+# 9.참고 자료
+
+- [Go 1.26 Release Notes](https://go.dev/doc/go1.26)
+- [Go 1.26 is released](https://go.dev/blog/go1.26)
+- [Go 1.26 변경사항 상세](https://antonz.org/go-1-26/)
