@@ -1,8 +1,8 @@
 ---
 title: "Claude Code Plugin & Hooks 완벽 가이드: 확장 기능 패키징부터 이벤트 자동화까지"
 description: "Claude Code의 Plugin 시스템과 Hooks를 심층 분석합니다. Plugin 구조, Marketplace, 이벤트 기반 자동화, 실전 예제를 다룹니다."
-date: 2026-04-01
-update: 2026-04-01
+date: 2026-03-10
+update: 2026-03-10
 tags:
   - Claude Code
   - Plugin
