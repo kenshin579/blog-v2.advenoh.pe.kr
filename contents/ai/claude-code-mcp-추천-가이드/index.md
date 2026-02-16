@@ -1,8 +1,8 @@
 ---
 title: "Claude Code에서 사용하면 좋은 MCP 서버 추천 가이드"
 description: "Claude Code CLI에서 활용할 수 있는 MCP 서버를 카테고리별로 정리하고, 설정 방법과 추천 조합을 소개합니다."
-date: 2026-03-25
-update: 2026-03-25
+date: 2026-03-04
+update: 2026-03-04
 tags:
   - Claude Code
   - MCP
