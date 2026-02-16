@@ -100,7 +100,6 @@ date: "2024-01-15"
 excerpt: "Brief description"
 tags: ["typescript", "react"]
 series: "Series Name"  # optional
-seriesOrder: 1          # optional
 ---
 
 Markdown content...
@@ -108,11 +107,20 @@ Markdown content...
 
 **manifest.json:** Must list all article filenames for discovery
 
-### Adding New Articles
-1. `client/public/articles/` 디렉토리에 `.md` 파일 생성
-2. YAML frontmatter 작성 (위 형식 참조)
-3. `manifest.json`에 파일명 추가
-4. 브라우저에서 캐시 클리어 후 확인 (`clearArticlesCache()`)
+### Adding New Articles (블로그 글 작성 워크플로우)
+
+**Draft → Review → Publish** 단계로 진행한다.
+
+**1단계: Draft 작성 (Claude Code 작업)**
+- `docs/start/{글-제목}/index.md`에 초안 작성 (**`contents/`에 직접 넣지 않는다**)
+- feature 브랜치에서 작업 후 PR 생성
+
+**2단계: PR Review & Merge**
+- PR 리뷰 후 merge
+
+**3단계: Publish (최종 리뷰 후)**
+- 최종 리뷰 완료 후 `docs/start/{글-제목}/` → `contents/{카테고리}/{글-제목}/`으로 이동
+- MergeReady label 추가 → 날짜에 맞게 자동 merge
 
 ## Diagram Style
 
