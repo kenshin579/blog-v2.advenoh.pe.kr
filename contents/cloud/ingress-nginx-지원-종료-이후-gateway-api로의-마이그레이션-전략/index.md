@@ -1,8 +1,8 @@
 ---
 title: "Ingress NGINX 지원 종료 이후, Gateway API로의 마이그레이션 전략"
 description: "Ingress NGINX 지원 종료에 따른 Gateway API 개념과 NGINX Gateway Fabric을 활용한 마이그레이션 방법을 정리한다"
-date: 2026-03-11
-update: 2026-03-11
+date: 2026-02-26
+update: 2026-02-26
 tags:
   - kubernetes
   - gateway-api
