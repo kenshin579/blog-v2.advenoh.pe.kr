@@ -2,6 +2,7 @@
 title: "딥러닝 기초 4편 - GAN으로 이미지 생성하기"
 description: "GAN(생성적 적대 신경망)의 원리를 이해하고, Generator와 Discriminator를 구현하여 FashionMNIST 패션 아이템 이미지를 생성합니다"
 date: 2026-02-16
+update: 2026-02-16
 tags:
   - deep-learning
   - pytorch
@@ -9,7 +10,6 @@ tags:
   - generative-model
   - fashionmnist
   - python
-category: python
 series: "딥러닝 기초 시리즈"
 ---
 

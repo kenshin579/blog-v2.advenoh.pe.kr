@@ -2,13 +2,13 @@
 title: "딥러닝 기초 3편 - CNN으로 해결하는 파라미터 폭발 문제"
 description: "합성곱 신경망(CNN)의 원리를 이해하고 FashionMNIST를 분류하며, 완전연결 신경망 대비 파라미터 수와 성능을 비교합니다"
 date: 2026-02-16
+update: 2026-02-16
 tags:
   - deep-learning
   - pytorch
   - cnn
   - fashionmnist
   - python
-category: python
 series: "딥러닝 기초 시리즈"
 ---
 

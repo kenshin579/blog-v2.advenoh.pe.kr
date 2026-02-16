@@ -2,13 +2,13 @@
 title: "딥러닝 기초 2편 - 완전연결 신경망으로 FashionMNIST 분류하기"
 description: "FashionMNIST 데이터셋을 사용하여 1계층, 다계층 완전연결(FC) 신경망을 구현하고, 파라미터 폭발 문제를 직접 체감합니다"
 date: 2026-02-16
+update: 2026-02-16
 tags:
   - deep-learning
   - pytorch
   - neural-network
   - fashionmnist
   - python
-category: python
 series: "딥러닝 기초 시리즈"
 ---
 

@@ -2,13 +2,13 @@
 title: "딥러닝 기초 1편 - 이미지의 디지털 표현과 신경망 첫걸음"
 description: "이미지가 컴퓨터에서 어떻게 숫자 배열로 표현되는지, PyTorch의 Linear 레이어로 학습의 기본 사이클(Forward → Loss → Backward → Step)을 실습합니다"
 date: 2026-02-16
+update: 2026-02-16
 tags:
   - deep-learning
   - pytorch
   - neural-network
   - image-processing
   - python
-category: python
 series: "딥러닝 기초 시리즈"
 ---
 
