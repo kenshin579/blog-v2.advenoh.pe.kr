@@ -108,6 +108,11 @@ Markdown content...
 
 **manifest.json:** Must list all article filenames for discovery
 
+### 샘플 코드 작성 규칙
+- 코드 관련 블로그 글의 샘플 코드는 블로그 내부가 아닌 `../tutorials-go/`에 작성
+- 블로그 글에서 GitHub 저장소 코드를 참조/링크하는 방식으로 연동
+- 코드를 먼저 작성하고 테스트 통과 확인 후 블로그 글 작성
+
 ### Adding New Articles
 1. `client/public/articles/` 디렉토리에 `.md` 파일 생성
 2. YAML frontmatter 작성 (위 형식 참조)
