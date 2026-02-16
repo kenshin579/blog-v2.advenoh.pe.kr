@@ -1,5 +1,5 @@
 import { MetadataRoute } from 'next';
-import { getAllArticles } from '@/lib/articles';
+import { getAllArticles, getArticleTitleFromSlug } from '@/lib/articles';
 
 export const dynamic = 'force-static';
 
@@ -9,7 +9,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
   // Article URLs
   const articleUrls = articles.map((article) => ({
-    url: `${siteUrl}/article/${article.slug}`,
+    url: `${siteUrl}/${getArticleTitleFromSlug(article.slug)}`,
     lastModified: new Date(article.date),
     changeFrequency: 'monthly' as const,
     priority: 0.7,

@@ -65,8 +65,8 @@ export function generateRSS(manifestPath: string, outputPath: string): void {
     const item = channel.ele('item');
 
     item.ele('title').txt(article.title);
-    item.ele('link').txt(`${blogConfig.baseUrl}/article/${article.slug}`);
-    item.ele('guid', { isPermaLink: 'true' }).txt(`${blogConfig.baseUrl}/article/${article.slug}`);
+    item.ele('link').txt(`${blogConfig.baseUrl}/${article.slug.split('/').pop()}`);
+    item.ele('guid', { isPermaLink: 'true' }).txt(`${blogConfig.baseUrl}/${article.slug.split('/').pop()}`);
     item.ele('pubDate').txt(new Date(article.date).toUTCString());
 
     // Excerpt를 description으로 사용 (HTML escape 처리)

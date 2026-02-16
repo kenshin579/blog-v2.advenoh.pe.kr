@@ -1,4 +1,4 @@
-import { getAllArticles } from '@/lib/articles';
+import { getAllArticles, getArticleTitleFromSlug } from '@/lib/articles';
 
 export const dynamic = 'force-static';
 
@@ -23,8 +23,8 @@ export async function GET() {
         (article) => `
     <item>
       <title><![CDATA[${article.title}]]></title>
-      <link>${siteUrl}/article/${article.slug}</link>
-      <guid>${siteUrl}/article/${article.slug}</guid>
+      <link>${siteUrl}/${getArticleTitleFromSlug(article.slug)}</link>
+      <guid>${siteUrl}/${getArticleTitleFromSlug(article.slug)}</guid>
       <pubDate>${new Date(article.date).toUTCString()}</pubDate>
       <description><![CDATA[${article.excerpt || article.title}]]></description>
       <category>${article.category}</category>
