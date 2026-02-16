@@ -1,8 +1,8 @@
 ---
 title: "ArgoCD에서 여러 Application을 GitOps로 관리하기: App of Apps vs ApplicationSet"
 description: "ArgoCD의 App of Apps와 ApplicationSet 패턴을 비교하고, 여러 애플리케이션을 GitOps 방식으로 효율적으로 배포하는 방법을 알아본다"
-date: 2026-03-04
-update: 2026-03-04
+date: 2026-02-23
+update: 2026-02-23
 tags:
   - argocd
   - argo
