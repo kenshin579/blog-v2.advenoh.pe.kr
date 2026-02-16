@@ -46,40 +46,11 @@
 
 ---
 
-## 3. 편 2: 프롬프트 엔지니어링과 RAG 최적화
-
-### 3.1 리서치 항목
-
-| 주제 | 핵심 내용 | 참고 자료 |
-|------|----------|----------|
-| Zero/Few-shot | 예제 유무에 따른 프롬프트 전략 | OpenAI Cookbook |
-| CoT | 단계별 추론 유도 방법 | Wei et al. 논문 |
-| Role-specific | 시스템 프롬프트 설계 패턴 | OpenAI 가이드 |
-| RAG 프롬프트 | 컨텍스트 활용 + "모를 때" 처리 | LangChain Prompts |
-| Hybrid Search | BM25 + 벡터 검색 결합 | LangChain Retrievers |
-| Re-ranking | Cohere Rerank, Cross-encoder | Cohere 문서 |
-| RAFT | RAG + Fine-tuning 결합 학습 | Microsoft RAFT 논문 |
-| RAGAS 평가 | Context Relevance, Faithfulness, Answer Correctness | RAGAS 문서 |
-| 프롬프트 인젝션 | 방어 전략과 사례 | OWASP LLM Top 10 |
-
-### 3.2 다이어그램 (Mermaid)
-
-- 프롬프트 엔지니어링 기법 분류 다이어그램
-- Hybrid Search 흐름 (키워드 + 벡터 → 결합 → Re-ranking)
-- RAFT 학습 프로세스 (Oracle/Distractor 문서)
-- RAGAS 평가 파이프라인
-
-### 3.3 코드 예제 (rag-chatbot 프로젝트에서 참조)
-
-- 프롬프트 템플릿: `app/prompts/templates.py`
-- Hybrid Search 구현: `app/rag/retriever.py`
-- RAGAS 평가: `app/evaluation/evaluator.py`
-- 평가 데이터셋: `app/evaluation/dataset.py`
-- 평가 실행 스크립트: `scripts/evaluate.py`
+> 편 2 (프롬프트 엔지니어링과 RAG 최적화)는 `9_chatbot_blog2_*.md` 참조
 
 ---
 
-## 4. 블로그 작성 규칙
+## 3. 블로그 작성 규칙
 
 - **코드**: 블로그 내 코드 블록은 핵심 부분만 발췌, 전체 코드는 GitHub 링크로 참조
 - **다이어그램**: Mermaid 형식만 사용 (ASCII art 금지)
@@ -87,7 +58,7 @@
 - **인코딩**: UTF-8 필수, 작성 후 `file -I` 로 확인
 - **frontmatter**: title, date, update, description, tags, category 포함
 
-### 4.1 frontmatter 예시
+### 3.1 frontmatter 예시
 
 ```yaml
 ---
