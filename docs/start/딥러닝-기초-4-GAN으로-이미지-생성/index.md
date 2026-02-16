@@ -47,7 +47,7 @@ flowchart LR
 
 ```mermaid
 flowchart TB
-    Z["랜덤 노이즈<br/>(100차원)"] --> G["Generator<br/>위조범"]
+    Z["랜덤 노이즈<br/>(64차원)"] --> G["Generator<br/>위조범"]
     G --> FI["가짜 이미지"]
     RD["학습 데이터"] --> RI["진짜 이미지"]
     FI --> D["Discriminator<br/>감정사"]
@@ -89,9 +89,9 @@ train_data = dsets.FashionMNIST(
     root="data/", train=True, transform=standardizer, download=True
 )
 
-batch_size = 200
+batch_size = 64
 train_loader = torch.utils.data.DataLoader(
-    train_data, batch_size, shuffle=True
+    train_data, batch_size, shuffle=True, drop_last=True
 )
 ```
 
@@ -99,36 +99,43 @@ train_loader = torch.utils.data.DataLoader(
 
 ### Generator (생성자)
 
-랜덤 노이즈(100차원)를 받아 28×28 이미지를 생성합니다.
+랜덤 노이즈(64차원)를 받아 28×28 이미지를 생성합니다. 4개의 확장 레이어(64→128→256→512→784)를 거치며 점진적으로 이미지를 만들어냅니다.
 
 ```mermaid
 flowchart LR
-    A["노이즈<br/>(100)"] --> B["Linear + ReLU<br/>(256)"]
-    B --> C["Linear + ReLU<br/>(256)"]
-    C --> D["Linear + Tanh<br/>(784)"]
-    D --> E["이미지<br/>(28×28)"]
+    A["노이즈<br/>(64)"] --> B["Linear+BN+LeakyReLU<br/>(128)"]
+    B --> C["Linear+BN+LeakyReLU<br/>(256)"]
+    C --> D["Linear+BN+LeakyReLU<br/>(512)"]
+    D --> E["Linear+Tanh<br/>(784)"]
+    E --> F["이미지<br/>(28×28)"]
 ```
 
 ```python
-d_noise = 100   # 노이즈 차원
-d_hidden = 256  # 은닉층 차원
+d_noise = 64
 
-def sample_noise(batch_size=1, d_noise=100):
+def make_noise(batch_size, d_noise=64):
     return torch.randn(batch_size, d_noise, device=device)
 
 G = nn.Sequential(
-    nn.Linear(d_noise, d_hidden),
-    nn.ReLU(),
-    nn.Dropout(0.1),
-    nn.Linear(d_hidden, d_hidden),
-    nn.ReLU(),
-    nn.Dropout(0.1),
-    nn.Linear(d_hidden, 28 * 28),
-    nn.Tanh(),  # 출력 범위: [-1, 1]
+    nn.Linear(d_noise, 128),
+    nn.BatchNorm1d(128),
+    nn.LeakyReLU(0.2),
+    nn.Linear(128, 256),
+    nn.BatchNorm1d(256),
+    nn.LeakyReLU(0.2),
+    nn.Linear(256, 512),
+    nn.BatchNorm1d(512),
+    nn.LeakyReLU(0.2),
+    nn.Linear(512, 28 * 28),
+    nn.Tanh(),
 ).to(device)
 ```
 
 **Tanh**를 사용하는 이유: 이미지 픽셀이 [-1, 1]로 정규화되어 있으므로, Generator의 출력도 같은 범위여야 합니다.
+
+**BatchNorm1d**을 사용하는 이유: 각 레이어의 출력을 정규화하여 학습을 안정화합니다. GAN의 Generator에서 BatchNorm은 모드 붕괴를 방지하는 핵심 기법입니다.
+
+**LeakyReLU**를 사용하는 이유 (Generator에서도): ReLU 대신 LeakyReLU를 사용하면 음수 영역에서도 기울기가 유지되어 더 안정적인 학습이 가능합니다.
 
 ### Discriminator (판별자)
 
@@ -136,14 +143,14 @@ G = nn.Sequential(
 
 ```python
 D = nn.Sequential(
-    nn.Linear(28 * 28, d_hidden),
+    nn.Linear(28 * 28, 512),
     nn.LeakyReLU(0.2),
-    nn.Dropout(0.1),
-    nn.Linear(d_hidden, d_hidden),
+    nn.Dropout(0.3),
+    nn.Linear(512, 256),
     nn.LeakyReLU(0.2),
-    nn.Dropout(0.1),
-    nn.Linear(d_hidden, 1),
-    nn.Sigmoid(),  # 출력: 진짜일 확률 [0, 1]
+    nn.Dropout(0.3),
+    nn.Linear(256, 1),
+    nn.Sigmoid(),
 ).to(device)
 ```
 
@@ -153,12 +160,12 @@ D = nn.Sequential(
 
 ```python
 print(f"Generator 파라미터:     {sum(p.numel() for p in G.parameters()):,}")
-# Generator 파라미터:     267,536
+# Generator 파라미터:     576,912
 print(f"Discriminator 파라미터: {sum(p.numel() for p in D.parameters()):,}")
-# Discriminator 파라미터: 267,009
+# Discriminator 파라미터: 533,505
 ```
 
-두 모델 합쳐 **약 53만 개**로, CNN(약 120만 개)보다 적습니다.
+두 모델 합쳐 **약 111만 개**입니다. Generator에 BatchNorm 레이어가 추가되고 은닉층이 더 커졌기 때문에 이전 구조보다 파라미터가 늘었지만, 학습 안정성과 생성 품질이 크게 향상됩니다.
 
 ## 5. GAN 학습 과정
 
@@ -166,48 +173,60 @@ print(f"Discriminator 파라미터: {sum(p.numel() for p in D.parameters()):,}")
 
 ### Discriminator 학습
 
-진짜 이미지는 1, 가짜 이미지는 0으로 판별하도록 학습합니다.
+진짜 이미지는 1, 가짜 이미지는 0으로 판별하도록 학습합니다. 손실 함수로 `nn.BCELoss()`를 사용합니다.
 
 ```python
+criterion = nn.BCELoss()
+
 # 진짜 이미지에 대한 판별
+real_labels = torch.full((batch_size, 1), 0.9, device=device)  # 레이블 스무딩
 p_real = D(real_images.view(-1, 28*28))
-loss_real = -torch.log(p_real).mean()       # 1에 가까울수록 손실 감소
+loss_real = criterion(p_real, real_labels)
 
 # 가짜 이미지에 대한 판별
-p_fake = D(G(sample_noise(batch_size)))
-loss_fake = -torch.log(1.0 - p_fake).mean() # 0에 가까울수록 손실 감소
+fake_labels = torch.zeros(batch_size, 1, device=device)
+fake_images = G(make_noise(batch_size))
+p_fake = D(fake_images.detach())
+loss_fake = criterion(p_fake, fake_labels)
 
 loss_d = loss_real + loss_fake
 loss_d.backward()
-optimizer_d.step()
+opt_d.step()
 ```
+
+**레이블 스무딩**: 진짜 이미지의 레이블을 1.0 대신 0.9로 설정합니다. 이는 Discriminator가 과도하게 확신하는 것을 방지하여 학습을 안정화합니다.
+
+**BCELoss**: 이전에 `-torch.log()`로 직접 계산하던 Binary Cross Entropy를 `nn.BCELoss()`로 대체했습니다. 결과는 동일하지만 코드가 간결하고 수치적으로 더 안정적입니다.
 
 ### Generator 학습
 
 가짜 이미지를 Discriminator가 **진짜로 판별**하도록 속이는 방향으로 학습합니다.
 
 ```python
-p_fake = D(G(sample_noise(batch_size)))
-loss_g = -torch.log(p_fake).mean()  # 1에 가까울수록 손실 감소 (속이기 성공)
+real_labels = torch.ones(batch_size, 1, device=device)
+p_fake = D(G(make_noise(batch_size)))
+loss_g = criterion(p_fake, real_labels)
 loss_g.backward()
-optimizer_g.step()
+opt_g.step()
 ```
 
 ### 전체 학습 루프
 
 ```python
-def init_weights(model):
-    for p in model.parameters():
-        if p.dim() > 1:
-            nn.init.xavier_normal_(p)
-        else:
-            nn.init.uniform_(p, 0.1, 0.2)
+def init_weights(m):
+    if isinstance(m, nn.Linear):
+        nn.init.kaiming_normal_(m.weight)
+        if m.bias is not None:
+            nn.init.zeros_(m.bias)
 
-init_weights(G)
-init_weights(D)
+G.apply(init_weights)
+D.apply(init_weights)
 
-opt_g = optim.Adam(G.parameters(), lr=0.0002)
-opt_d = optim.Adam(D.parameters(), lr=0.0002)
+opt_g = optim.Adam(G.parameters(), lr=0.0001, betas=(0.5, 0.999))
+opt_d = optim.Adam(D.parameters(), lr=0.0001, betas=(0.5, 0.999))
+
+# 고정 노이즈: 학습 진행 상황을 일관되게 추적
+fixed_noise = make_noise(64)
 
 for epoch in range(100):
     train_one_epoch(G, D, opt_g, opt_d)
@@ -215,9 +234,16 @@ for epoch in range(100):
 
     if (epoch + 1) % 10 == 0:
         print(f"Epoch {epoch+1:3d} | p_real: {p_real:.4f} | p_fake: {p_fake:.4f}")
+        # fixed_noise로 이미지 생성하여 진행 상황 시각화
+        with torch.no_grad():
+            samples = G(fixed_noise).view(-1, 28, 28)
 ```
 
-**Adam 옵티마이저**를 사용하는 이유: SGD보다 학습률을 적응적으로 조절하여 GAN의 불안정한 학습을 안정화합니다.
+**Kaiming 초기화**: ReLU/LeakyReLU 활성화 함수에 최적화된 초기화 방법입니다. Xavier 초기화보다 더 적합합니다.
+
+**betas=(0.5, 0.999)**: GAN 학습에서 흔히 사용하는 Adam 하이퍼파라미터입니다. 기본값보다 낮은 beta1은 momentum을 줄여 학습을 안정화합니다.
+
+**고정 노이즈(fixed_noise)**: 매 에포크마다 동일한 노이즈로 이미지를 생성하면, Generator의 학습 진행 상황을 일관되게 비교할 수 있습니다.
 
 ## 6. 학습 결과 분석
 
@@ -258,6 +284,22 @@ Generator와 Discriminator의 학습 속도 균형이 중요합니다:
 ### 평가 기준 부재
 
 분류 모델은 정확도(accuracy)로 성능을 측정하지만, 생성 모델은 "이미지가 얼마나 자연스러운가"를 객관적으로 측정하기 어렵습니다. FID(Frechet Inception Distance) 같은 지표가 사용되지만, 완벽하지 않습니다.
+
+## 노이즈 공간 탐험
+
+두 개의 랜덤 노이즈 벡터 사이를 보간(interpolation)하면 Generator가 학습한 **잠재 공간(latent space)**을 탐험할 수 있습니다.
+
+```python
+z1 = make_noise(1)
+z2 = make_noise(1)
+
+steps = 8
+for i, alpha in enumerate(np.linspace(0, 1, steps)):
+    z = z1 * (1 - alpha) + z2 * alpha
+    img = G(z).view(28, 28)
+```
+
+이 결과는 Generator가 단순히 학습 데이터를 암기한 것이 아니라, 패션 아이템의 **의미 있는 표현**을 학습했음을 보여줍니다. 예를 들어 운동화와 앵클부츠 사이를 보간하면, 중간 단계에서 두 스타일이 자연스럽게 혼합된 이미지가 나타납니다. 이는 잠재 공간이 연속적이고 매끄럽게 구성되어 있다는 증거입니다.
 
 ## 시리즈 전체 요약
 

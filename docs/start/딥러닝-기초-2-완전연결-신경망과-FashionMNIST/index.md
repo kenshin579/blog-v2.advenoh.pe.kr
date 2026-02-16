@@ -36,6 +36,7 @@ series: "딥러닝 기초 시리즈"
 ```python
 import torch
 from torch import nn
+import torch.nn.functional as F
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
@@ -58,15 +59,15 @@ print(f"테스트 데이터: {len(test_data)}장")    # 10000
 전체 60,000장을 한 번에 학습하면 메모리 부족과 비효율이 발생합니다. **DataLoader**는 데이터를 배치(batch) 단위로 나누어 제공합니다.
 
 ```python
-batch_size = 128
+batch_size = 64
 train_dataloader = DataLoader(training_data, batch_size=batch_size)
 
 for images, labels in train_dataloader:
     print(f"배치 이미지 shape: {images.shape}")
-    # torch.Size([128, 1, 28, 28])
-    # → 128장 × 1채널 × 28×28
+    # torch.Size([64, 1, 28, 28])
+    # → 64장 × 1채널 × 28×28
     print(f"Flatten 후: {images.view(-1, 28 * 28).shape}")
-    # torch.Size([128, 784])
+    # torch.Size([64, 784])
     break
 ```
 
@@ -74,7 +75,7 @@ for images, labels in train_dataloader:
 |---|---|
 | Dataset | 개별 데이터(이미지, 레이블)에 접근하는 인터페이스 |
 | DataLoader | 배치 단위로 데이터를 묶어 반복자(iterator)로 제공 |
-| batch_size | 한 번에 학습할 데이터 수 (128이면 469 배치) |
+| batch_size | 한 번에 학습할 데이터 수 (64이면 938 배치) |
 | Flatten | 2D 이미지(28×28)를 1D 벡터(784)로 펼치는 연산 |
 
 FC 레이어에 입력하려면 2D 이미지를 1D 벡터로 **Flatten**해야 합니다. 이 과정에서 **픽셀 간의 공간적 관계가 사라진다**는 점이 중요합니다.
@@ -114,10 +115,10 @@ print(f"총 파라미터 수: {total_params:,}개")  # 7,850개
 ```python
 import time
 
-optimizer = torch.optim.SGD(single_net.parameters(), lr=0.001, momentum=0.9)
+optimizer = torch.optim.Adam(single_net.parameters(), lr=0.001)
 criterion = nn.CrossEntropyLoss().to(device)
 
-for epoch in range(10):
+for epoch in range(15):
     start_time = time.time()
     avg_cost = 0
     total_batch = len(train_dataloader)
@@ -136,17 +137,17 @@ for epoch in range(10):
     print(f"Epoch {epoch+1:02d} | cost = {avg_cost:.6f} | time = {elapsed:.2f}s")
 ```
 
-10 에포크를 학습하면 cost가 점차 줄어드는 것을 확인할 수 있습니다.
+15 에포크를 학습하면 cost가 점차 줄어드는 것을 확인할 수 있습니다.
 
 ## 4. 다계층 완전연결 신경망
 
-"계층을 더 쌓으면 성능이 좋아지지 않을까?" — 맞는 말이지만, **파라미터 수가 폭발적으로 증가**합니다.
+"계층을 더 쌓으면 성능이 좋아지지 않을까?" — 맞는 말이지만, 활성화 함수와 정규화 기법을 함께 적용해야 효과적입니다.
 
 ```mermaid
 flowchart LR
-    A["이미지<br/>784"] --> B["Linear<br/>784→7840"]
-    B --> C["Linear<br/>7840→7840"]
-    C --> D["Linear<br/>7840→10"]
+    A["이미지<br/>784"] --> B["Linear+ReLU<br/>784→512"]
+    B --> C["Linear+ReLU<br/>512→256"]
+    C --> D["Linear<br/>256→10"]
     D --> E["출력"]
 ```
 
@@ -154,14 +155,17 @@ flowchart LR
 class MultiLayerNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.linear1 = nn.Linear(28 * 28, 28 * 28 * 10)       # 784→7840
-        self.linear2 = nn.Linear(28 * 28 * 10, 28 * 28 * 10)  # 7840→7840
-        self.linear3 = nn.Linear(28 * 28 * 10, 10)             # 7840→10
+        self.fc1 = nn.Linear(784, 512)
+        self.fc2 = nn.Linear(512, 256)
+        self.fc3 = nn.Linear(256, 10)
+        self.dropout = nn.Dropout(0.3)
 
     def forward(self, x):
-        x = self.linear1(x)
-        x = self.linear2(x)
-        x = self.linear3(x)
+        x = F.relu(self.fc1(x))
+        x = self.dropout(x)
+        x = F.relu(self.fc2(x))
+        x = self.dropout(x)
+        x = self.fc3(x)
         return x
 ```
 
@@ -169,24 +173,23 @@ class MultiLayerNet(nn.Module):
 
 | 레이어 | 계산 | 파라미터 수 |
 |---|---|---|
-| linear1 (784→7840) | 784 × 7,840 + 7,840 | 6,154,240 |
-| linear2 (7840→7840) | 7,840 × 7,840 + 7,840 | 61,473,440 |
-| linear3 (7840→10) | 7,840 × 10 + 10 | 78,410 |
-| **합계** | | **67,706,090** |
+| fc1 (784→512) | 784 × 512 + 512 | 401,920 |
+| fc2 (512→256) | 512 × 256 + 256 | 131,328 |
+| fc3 (256→10) | 256 × 10 + 10 | 2,570 |
+| **합계** | | **535,818** |
 
-1계층(7,850개) 대비 **약 8,600배**나 증가했습니다!
+1계층(7,850개) 대비 **약 68배** 증가했습니다. 이전 예시처럼 히든 레이어를 7,840 차원으로 잡으면 6,700만 개까지 폭발하지만, 실용적인 크기(512, 256)로 설계하면 파라미터 수를 합리적으로 유지할 수 있습니다.
 
 ## 5. 1계층 vs 다계층 비교
 
-같은 조건(SGD, lr=0.001, momentum=0.9, 10 에포크)으로 학습한 결과를 비교합니다.
+같은 조건(Adam, lr=0.001, 15 에포크)으로 학습한 결과를 비교합니다.
 
 | 항목 | 1계층 FC | 3계층 FC | 배율 |
 |---|---|---|---|
-| 파라미터 수 | 7,850 | 67,706,090 | 8,625x |
-| 에포크 당 학습 시간 | ~4s | ~11s | 2.8x |
+| 파라미터 수 | 7,850 | 535,818 | 68x |
 | 최종 cost | ~0.40 | ~0.29 | - |
 
-3계층이 cost는 낮지만, **학습 시간이 약 3배** 걸립니다. 그리고 이것은 겨우 28×28의 작은 이미지입니다.
+실용적인 히든 레이어 크기(512, 256)와 ReLU 활성화 함수, Dropout 정규화를 적용한 3계층 네트워크는 파라미터 수가 약 53만 개로 합리적인 수준이며, 1계층보다 낮은 cost를 달성합니다. 하지만 이것은 겨우 28×28의 작은 이미지입니다.
 
 ## 완전연결 신경망의 한계
 
@@ -199,9 +202,9 @@ class MultiLayerNet(nn.Module):
 | Full HD | 1920×1080×3 | 62,208,010 |
 | 4K | 3840×2160×3 | 248,832,010 |
 
-4K 이미지를 **1계층**으로만 처리해도 파라미터가 **2억 5천만 개**입니다. 여기에 수십 계층을 쌓으면 학습이 사실상 **불가능**해집니다.
+4K 이미지를 **1계층**으로만 처리해도 파라미터가 **2억 5천만 개**입니다. 실용적인 히든 레이어 크기를 사용하더라도, 입력 차원 자체가 거대하기 때문에 첫 번째 레이어의 파라미터 수를 줄이기 어렵습니다.
 
-근본적인 문제는 **이미지의 공간적 구조를 활용하지 못한다**는 것입니다:
+하지만 파라미터 수보다 더 근본적인 문제는 **이미지의 공간적 구조를 활용하지 못한다**는 것입니다:
 - FC 레이어는 모든 픽셀을 1차원으로 펼침 → 인접 픽셀 간의 관계가 사라짐
 - 옷의 소매, 신발의 밑창 같은 **지역적 패턴**을 인식할 구조적 방법이 없음
 

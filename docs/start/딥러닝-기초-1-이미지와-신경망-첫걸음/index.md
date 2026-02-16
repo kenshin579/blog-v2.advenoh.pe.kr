@@ -122,19 +122,19 @@ $$y = xW^T + b$$
 
 | 기호 | 의미 | 예시 |
 |---|---|---|
-| x | 입력 벡터 | (4,) 차원 |
-| W | 가중치 행렬 | (2, 4) — 학습 대상 |
-| b | 편향 벡터 | (2,) — 학습 대상 |
-| y | 출력 벡터 | (2,) 차원 |
+| x | 입력 벡터 | (6,) 차원 |
+| W | 가중치 행렬 | (3, 6) — 학습 대상 |
+| b | 편향 벡터 | (3,) — 학습 대상 |
+| y | 출력 벡터 | (3,) 차원 |
 
 ```python
 import torch.nn as nn
 
-# 4차원 입력 → 2차원 출력
-linear = nn.Linear(4, 2, bias=True).to(device)
+# 6차원 입력 → 3차원 출력
+linear = nn.Linear(6, 3, bias=True).to(device)
 
-print(f"가중치(W) shape: {linear.weight.shape}")  # torch.Size([2, 4])
-print(f"편향(b) shape: {linear.bias.shape}")       # torch.Size([2])
+print(f"가중치(W) shape: {linear.weight.shape}")  # torch.Size([3, 6])
+print(f"편향(b) shape: {linear.bias.shape}")       # torch.Size([3])
 ```
 
 가중치(W)와 편향(b)은 **학습을 통해 최적값을 찾아야 하는 파라미터**입니다. 초기값은 랜덤으로 설정됩니다.
@@ -161,26 +161,26 @@ flowchart LR
 ### 한 사이클 상세 관찰
 
 ```python
-# 간단한 분류 문제 설정
-inputs = np.array([2.0, 4.0, 5.0, 6.0])
-target_class = 0
+# 3-클래스 분류 문제 설정
+inputs = np.array([1.0, 3.0, 5.0, 7.0, 9.0, 2.0])
+target_class = 2  # 클래스 2로 분류되어야 하는 입력
 
-X = torch.Tensor(inputs).view(1, -1).to(device)
+X = torch.tensor(inputs, dtype=torch.float32).unsqueeze(0).to(device)  # (1, 6)
 Y = torch.tensor([target_class]).to(device)
 
-criterion = nn.CrossEntropyLoss().to(device)
-optimizer = torch.optim.SGD(linear.parameters(), lr=0.1)
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(linear.parameters(), lr=0.05)
 ```
 
 ```python
 # 1단계: Forward (순전파)
 optimizer.zero_grad()  # 기울기 초기화 (누적 방지)
 prediction = linear(X)
-# prediction: tensor([[-2.23, -0.70]])
+# prediction: tensor([[-0.52, 1.13, -0.87]])  — 3개 클래스에 대한 점수
 
 # 2단계: Loss (손실 계산)
 loss = criterion(prediction, Y)
-# loss: 1.7273
+# loss: 2.4035
 
 # 3단계: Backward (역전파) — 기울기 계산
 loss.backward()
@@ -188,7 +188,7 @@ loss.backward()
 
 # 4단계: Step (가중치 업데이트)
 optimizer.step()
-# weight가 기울기 방향으로 lr(0.1)만큼 업데이트됨
+# weight가 기울기 방향으로 lr(0.05)만큼 업데이트됨
 ```
 
 `optimizer.zero_grad()`를 매번 호출하는 이유는 PyTorch가 기울기를 **누적(accumulate)**하기 때문입니다. 초기화하지 않으면 이전 배치의 기울기와 합산됩니다.
@@ -199,22 +199,21 @@ optimizer.step()
 
 ```python
 losses = []
-for epoch in range(20):
+for epoch in range(30):
     optimizer.zero_grad()
-    prediction = linear(X)
-    loss = criterion(prediction, Y)
+    pred = linear(X)
+    loss = criterion(pred, Y)
     loss.backward()
     optimizer.step()
     losses.append(loss.item())
-    if (epoch + 1) % 5 == 0:
+    if (epoch + 1) % 10 == 0:
         print(f"Epoch {epoch+1:02d} | loss = {loss.item():.6f}")
 ```
 
 ```
-Epoch 05 | loss = 0.000342
-Epoch 10 | loss = 0.000005
-Epoch 15 | loss = 0.000005
-Epoch 20 | loss = 0.000005
+Epoch 10 | loss = 0.000258
+Epoch 20 | loss = 0.000001
+Epoch 30 | loss = 0.000000
 ```
 
 loss가 0에 수렴한다는 것은 모델의 예측이 정답에 가까워졌다는 의미입니다.

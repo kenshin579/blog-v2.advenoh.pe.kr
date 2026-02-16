@@ -51,6 +51,7 @@ flowchart LR
 | 레이어 | 역할 | PyTorch |
 |---|---|---|
 | Conv2d | 합성곱으로 특징 추출 | `nn.Conv2d(in, out, kernel)` |
+| BatchNorm2d | 배치 정규화로 학습 안정화 | `nn.BatchNorm2d(channels)` |
 | ReLU | 비선형성 추가 (음수 → 0) | `F.relu(x)` |
 | MaxPool2d | 공간 크기 축소 (최대값 추출) | `F.max_pool2d(x, 2)` |
 | Dropout | 과적합 방지 (뉴런 무작위 비활성화) | `nn.Dropout(p)` |
@@ -64,59 +65,79 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 sample = torch.randn(1, 1, 28, 28)  # (배치, 채널, 높이, 너비)
-print(f"입력:             {sample.shape}")
+print(f"입력:              {sample.shape}")
 
-conv1_out = nn.Conv2d(1, 32, 3)(sample)
-print(f"Conv2d(1→32, 3×3): {conv1_out.shape}")
-# → (1, 32, 26, 26) — 28-3+1=26
+# Block 1
+x = nn.Conv2d(1, 16, 5, padding=2)(sample)
+print(f"Conv2d(1→16, 5×5): {x.shape}")   # (1, 16, 28, 28) — padding=2 preserves size
+x = F.max_pool2d(x, 2)
+print(f"MaxPool2d(2):      {x.shape}")    # (1, 16, 14, 14)
 
-conv2_out = nn.Conv2d(32, 64, 3)(conv1_out)
-print(f"Conv2d(32→64, 3×3): {conv2_out.shape}")
-# → (1, 64, 24, 24) — 26-3+1=24
+# Block 2
+x = nn.Conv2d(16, 32, 3, padding=1)(x)
+print(f"Conv2d(16→32, 3×3): {x.shape}")  # (1, 32, 14, 14) — padding=1 preserves size
+x = F.max_pool2d(x, 2)
+print(f"MaxPool2d(2):       {x.shape}")   # (1, 32, 7, 7)
 
-pool_out = F.max_pool2d(conv2_out, 2)
-print(f"MaxPool2d(2):       {pool_out.shape}")
-# → (1, 64, 12, 12) — 24/2=12
+# Block 3
+x = nn.Conv2d(32, 64, 3, padding=1)(x)
+print(f"Conv2d(32→64, 3×3): {x.shape}")  # (1, 64, 7, 7)
+
+flat = x.view(1, -1)
+print(f"Flatten:            {flat.shape}") # (1, 3136)
 ```
 
-Conv2d를 통과하면 크기가 `커널-1`만큼 줄고, MaxPool2d를 통과하면 **절반**으로 줄어듭니다.
+padding을 사용하면 Conv2d 통과 후에도 크기를 유지할 수 있습니다. MaxPool2d를 통과하면 **절반**으로 줄어듭니다.
 
 ## 3. CNN 모델 구현
 
 ```mermaid
 flowchart TB
-    A["입력 (1, 28, 28)"] --> B["Conv2d(1→32, 3×3) + ReLU<br/>(32, 26, 26)"]
-    B --> C["Conv2d(32→64, 3×3) + ReLU<br/>(64, 24, 24)"]
-    C --> D["MaxPool2d(2)<br/>(64, 12, 12)"]
-    D --> E["Dropout(0.25)"]
-    E --> F["Flatten<br/>(9216)"]
-    F --> G["Linear(9216→128) + ReLU"]
-    G --> H["Dropout(0.5)"]
-    H --> I["Linear(128→10)"]
-    I --> J["출력 (10 클래스)"]
+    A["입력 (1, 28, 28)"] --> B["Block 1: Conv2d(1→16, 5×5) + BN + ReLU + Pool<br/>(16, 14, 14)"]
+    B --> C["Block 2: Conv2d(16→32, 3×3) + BN + ReLU + Pool<br/>(32, 7, 7)"]
+    C --> D["Block 3: Conv2d(32→64, 3×3) + BN + ReLU<br/>(64, 7, 7)"]
+    D --> E["Flatten (3136)"]
+    E --> F["Dropout(0.3) → Linear(3136→128) + ReLU"]
+    F --> G["Dropout(0.5) → Linear(128→10)"]
+    G --> H["출력 (10 클래스)"]
 ```
 
 ```python
 class ConvNet(nn.Module):
     def __init__(self):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 32, 3)    # 합성곱 레이어 1
-        self.conv2 = nn.Conv2d(32, 64, 3)   # 합성곱 레이어 2
-        self.dropout1 = nn.Dropout(0.25)
-        self.dropout2 = nn.Dropout(0.5)
-        self.fc1 = nn.Linear(9216, 128)      # 완전연결 레이어 1
-        self.fc2 = nn.Linear(128, 10)        # 완전연결 레이어 2
+        self.block1 = nn.Sequential(
+            nn.Conv2d(1, 16, kernel_size=5, padding=2),
+            nn.BatchNorm2d(16),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+        )
+        self.block2 = nn.Sequential(
+            nn.Conv2d(16, 32, kernel_size=3, padding=1),
+            nn.BatchNorm2d(32),
+            nn.ReLU(),
+            nn.MaxPool2d(2),
+        )
+        self.block3 = nn.Sequential(
+            nn.Conv2d(32, 64, kernel_size=3, padding=1),
+            nn.BatchNorm2d(64),
+            nn.ReLU(),
+        )
+        self.classifier = nn.Sequential(
+            nn.Dropout(0.3),
+            nn.Linear(64 * 7 * 7, 128),
+            nn.ReLU(),
+            nn.Dropout(0.5),
+            nn.Linear(128, 10),
+        )
 
     def forward(self, x):
-        x = F.relu(self.conv1(x))      # (N, 32, 26, 26)
-        x = F.relu(self.conv2(x))      # (N, 64, 24, 24)
-        x = F.max_pool2d(x, 2)         # (N, 64, 12, 12)
-        x = self.dropout1(x)
-        x = torch.flatten(x, 1)        # (N, 9216)
-        x = F.relu(self.fc1(x))        # (N, 128)
-        x = self.dropout2(x)
-        x = self.fc2(x)                # (N, 10)
-        return F.log_softmax(x, dim=1)
+        x = self.block1(x)
+        x = self.block2(x)
+        x = self.block3(x)
+        x = x.view(x.size(0), -1)
+        x = self.classifier(x)
+        return x
 ```
 
 FC 모델과의 가장 큰 차이점: CNN은 **이미지를 Flatten하지 않고 2D 구조 그대로** 입력받습니다.
@@ -130,10 +151,10 @@ FC 모델과의 가장 큰 차이점: CNN은 **이미지를 Flatten하지 않고
 
 ```python
 cnn_net = ConvNet().to(device)
-optimizer = torch.optim.SGD(cnn_net.parameters(), lr=0.001, momentum=0.9)
+optimizer = torch.optim.Adam(cnn_net.parameters(), lr=0.001)
 criterion = nn.CrossEntropyLoss().to(device)
 
-for epoch in range(10):
+for epoch in range(15):
     start_time = time.time()
     avg_cost = 0
     for X, Y in train_dataloader:
@@ -151,43 +172,41 @@ for epoch in range(10):
 
 ## 5. FC NN vs CNN 비교
 
-세 모델을 동일 조건(SGD, lr=0.001, momentum=0.9, 10 에포크)으로 학습한 결과입니다.
+세 모델의 학습 결과를 비교합니다.
 
 ### 파라미터 수 비교
 
 | 모델 | 파라미터 수 | FC 1계층 대비 |
 |---|---|---|
 | FC 1계층 | 7,850 | 1x |
-| FC 3계층 | 67,706,090 | 8,625x |
-| **CNN** | **1,199,882** | **153x** |
+| FC 3계층 | 535,818 | 68x |
+| **CNN** | **~426,602** | **~54x** |
 
-CNN은 FC 3계층보다 **약 56배 적은 파라미터**를 사용합니다.
+CNN은 FC 3계층보다 **파라미터가 적으면서도 성능이 더 좋습니다**.
 
 ### CNN 파라미터가 적은 이유
 
 ```
-Conv2d(1→32, 3×3):  1 × 32 × 3 × 3 + 32(bias) =        320
-Conv2d(32→64, 3×3): 32 × 64 × 3 × 3 + 64(bias) =     18,496
-Linear(9216→128):   9216 × 128 + 128(bias) =        1,179,776
-Linear(128→10):     128 × 10 + 10(bias) =                1,290
-──────────────────────────────────────────────────
-합계:                                               1,199,882
+Block 1 Conv2d(1→16, 5×5): 1×16×5×5 + 16(bias) + 32(BN) =   448
+Block 2 Conv2d(16→32, 3×3): 16×32×3×3 + 32 + 64(BN) =     4,704
+Block 3 Conv2d(32→64, 3×3): 32×64×3×3 + 64 + 128(BN) =   18,624
+Linear(3136→128): 3136×128 + 128 =                       401,536
+Linear(128→10): 128×10 + 10 =                              1,290
+──────────────────────────────────────────────
+합계:                                                    426,602
 ```
 
-합성곱 레이어의 파라미터(320 + 18,496 = **18,816개**)는 전체의 **1.6%**에 불과합니다.
+합성곱 블록의 파라미터(448 + 4,704 + 18,624 = **23,776개**)는 전체의 **5.6%**에 불과합니다.
 나머지 대부분은 마지막 FC 레이어에 있습니다. 이것이 합성곱의 파라미터 효율성입니다.
 
 ### 성능 비교 요약
 
 | 항목 | FC 1계층 | FC 3계층 | CNN |
 |---|---|---|---|
-| 파라미터 수 | 7,850 | 67,706,090 | 1,199,882 |
-| 에포크 당 시간 | ~4s | ~11s | ~5s |
-| 10 에포크 후 cost | ~0.40 | ~0.29 | ~0.22 |
+| 파라미터 수 | 7,850 | 535,818 | ~426,602 |
 
 CNN은 FC 3계층보다:
-- 파라미터가 **56배 적고**
-- 학습 시간이 **약 2배 빠르며**
+- 파라미터가 **적고**
 - cost가 **더 낮습니다** (성능이 더 좋음)
 
 ## CNN이 효과적인 이유 정리
