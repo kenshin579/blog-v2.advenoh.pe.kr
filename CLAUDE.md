@@ -95,15 +95,20 @@ npm run db:push
 **Required Format:**
 ```markdown
 ---
-title: "Article Title"
-date: "2024-01-15"
-excerpt: "Brief description"
-tags: ["typescript", "react"]
-series: "Series Name"  # optional
+title: "글 제목"
+description: "글 설명"
+date: 2026-01-15
+update: 2026-01-15
+tags:
+  - tag1
+  - tag2
+series: "시리즈명"  # optional
 ---
 
 Markdown content...
 ```
+
+**주의:** `category`는 frontmatter에 넣지 않는다. `contents/{category}/` 디렉토리 구조로 자동 결정된다.
 
 **manifest.json:** Must list all article filenames for discovery
 
