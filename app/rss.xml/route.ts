@@ -4,7 +4,7 @@ export const dynamic = 'force-static';
 
 export async function GET() {
   const articles = await getAllArticles();
-  const siteUrl = 'https://advenoh.pe.kr';
+  const siteUrl = 'https://blog.advenoh.pe.kr';
 
   // 최신 20개 글만 RSS에 포함
   const latestArticles = articles.slice(0, 20);

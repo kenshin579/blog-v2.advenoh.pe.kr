@@ -8,6 +8,6 @@ export default function robots(): MetadataRoute.Robots {
       userAgent: '*',
       allow: '/',
     },
-    sitemap: 'https://advenoh.pe.kr/sitemap.xml',
+    sitemap: 'https://blog.advenoh.pe.kr/sitemap.xml',
   };
 }
