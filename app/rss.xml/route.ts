@@ -12,7 +12,7 @@ export async function GET() {
   const rss = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Advenoh IT Blog</title>
+    <title>Frank's IT Blog</title>
     <link>${siteUrl}</link>
     <description>IT 기술 블로그 - 개발, 클라우드, 데이터베이스</description>
     <language>ko</language>
