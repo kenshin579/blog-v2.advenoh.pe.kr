@@ -1,8 +1,8 @@
 ---
 title: "Go 1.26 변경사항 총정리 (What's New in Go 1.26)"
 description: "Go 1.26의 주요 변경사항을 정리합니다. new(expr) 초기값 지정, 제네릭 자기참조, errors.AsType, Green Tea GC 기본화, cgo 30% 성능 향상, reflect 반복자, crypto/hpke, SIMD, 고루틴 누수 프로필 등 언어, 성능, 보안 개선 사항을 샘플 코드와 함께 알아봅니다."
-date: 2026-04-08
-update: 2026-04-08
+date: 2026-03-13
+update: 2026-03-13
 tags:
   - golang
   - go
