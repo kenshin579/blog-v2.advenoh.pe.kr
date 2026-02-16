@@ -706,7 +706,7 @@ LLM의 컨텍스트 윈도우 크기에 따라 전달 가능한 문서 수가 �
 
 # 6. 기본 RAG 챗봇 구현
 
-이 섹션에서는 앞서 배운 RAG 개념을 **단일 파일 MVP 코드**로 직접 구현해본다. 복잡한 프로젝트 구조 없이 핵심 동작 원리에 집중한다.
+이 섹션에서는 앞서 배운 RAG 개념을 **단일 파일 코드**로 직접 구현해본다. 복잡한 프로젝트 구조 없이 핵심 동작 원리에 집중하되, **유사도 점수와 출처 표시**, **대화형 루프**까지 포함하여 실용적인 수준으로 구현한다.
 
 > 전체 소스 코드는 [tutorials-python/ai/rag/basic-rag](https://github.com/kenshin579/tutorials-python/tree/main/ai/rag/basic-rag)를 참조한다.
 
@@ -724,9 +724,10 @@ pip install -e .
 
 ## 6.2 전체 코드
 
-`main.py` 하나로 **문서 인덱싱**과 **질의응답**이 모두 동작한다.
+`main.py` 하나로 **문서 인덱싱**, **출처 포함 질의응답**, **대화형 모드**가 모두 동작한다.
 
 ```python
+import os
 import sys
 
 from langchain_chroma import Chroma
@@ -747,30 +748,51 @@ embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
 def index_documents():
     """문서를 로드 → 청킹 → 임베딩 → 벡터 저장소에 저장"""
 
-    # 문서 로드
     loader = DirectoryLoader(DOCS_DIR, glob="**/*.md", loader_cls=TextLoader)
     documents = loader.load()
     print(f"로드된 문서: {len(documents)}개")
 
-    # 청킹
     splitter = RecursiveCharacterTextSplitter(chunk_size=500, chunk_overlap=50)
     chunks = splitter.split_documents(documents)
     print(f"생성된 청크: {len(chunks)}개")
 
-    # 벡터 저장소 생성
     Chroma.from_documents(chunks, embeddings, persist_directory=CHROMA_DIR)
     print("인덱싱 완료!")
 
 
-# ── 2단계: 질의응답 ──────────────────────────────────────
-def query(question: str):
-    """질문을 받아 관련 문서를 검색하고 LLM으로 답변 생성"""
+# ── 2단계: 유사도 검색 + 출처 표시 ────────────────────────
+def retrieve_with_sources(vector_store, question: str, k: int = 3):
+    """유사도 점수와 함께 관련 문서를 검색하고 출처 정보를 반환"""
+    results = vector_store.similarity_search_with_relevance_scores(question, k=k)
 
-    # 벡터 저장소 로드 & 검색기 생성
-    vector_store = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
-    retriever = vector_store.as_retriever(search_kwargs={"k": 3})
+    sources = []
+    for doc, score in results:
+        source_file = os.path.basename(doc.metadata.get("source", "알 수 없음"))
+        sources.append({
+            "file": source_file,
+            "score": score,
+            "preview": doc.page_content[:80] + "...",
+        })
+    return results, sources
 
-    # 프롬프트 템플릿
+
+def format_docs_simple(docs):
+    """retriever용 포맷 함수 (Document 리스트 → 텍스트)"""
+    return "\n\n".join(doc.page_content for doc in docs)
+
+
+def print_sources(sources):
+    """출처 정보를 포맷팅하여 출력"""
+    print("\n📚 참조 문서:")
+    for i, src in enumerate(sources, 1):
+        print(f"  [{i}] {src['file']} (유사도: {src['score']:.3f})")
+        print(f"      {src['preview']}")
+
+
+# ── 3단계: RAG 체인 구성 ─────────────────────────────────
+def build_chain(vector_store):
+    """RAG 체인을 구성하여 반환"""
+
     prompt = ChatPromptTemplate.from_template(
         """다음 컨텍스트를 기반으로 질문에 답변하세요.
 컨텍스트에 답이 없으면 "해당 정보를 찾을 수 없습니다"라고 답변하세요.
@@ -782,42 +804,87 @@ def query(question: str):
 답변:"""
     )
 
-    # 검색된 문서를 텍스트로 결합
-    def format_docs(docs):
-        return "\n\n".join(doc.page_content for doc in docs)
+    retriever = vector_store.as_retriever(search_kwargs={"k": 3})
 
-    # RAG 체인 구성 (LCEL)
     chain = (
-        {"context": retriever | format_docs, "question": RunnablePassthrough()}
+        {"context": retriever | format_docs_simple, "question": RunnablePassthrough()}
         | prompt
         | ChatOpenAI(model="gpt-4o", temperature=0)
         | StrOutputParser()
     )
+    return chain
 
+
+def query(question: str):
+    """단일 질문에 대해 답변 생성 + 출처 표시"""
+
+    vector_store = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
+    results, sources = retrieve_with_sources(vector_store, question)
+
+    chain = build_chain(vector_store)
     answer = chain.invoke(question)
-    print(f"\n질문: {question}")
-    print(f"답변: {answer}")
+
+    print(f"\n💬 질문: {question}")
+    print(f"\n🤖 답변: {answer}")
+    print_sources(sources)
+
+
+# ── 4단계: 대화형 루프 ───────────────────────────────────
+def chat():
+    """대화형 모드 - 반복적으로 질문하고 답변을 받을 수 있다"""
+
+    vector_store = Chroma(persist_directory=CHROMA_DIR, embedding_function=embeddings)
+    chain = build_chain(vector_store)
+
+    print("=" * 50)
+    print("RAG 챗봇 대화 모드")
+    print("종료: quit 또는 exit 입력")
+    print("=" * 50)
+
+    while True:
+        try:
+            question = input("\n❓ 질문: ").strip()
+        except (EOFError, KeyboardInterrupt):
+            print("\n대화를 종료합니다.")
+            break
+
+        if not question:
+            continue
+        if question.lower() in ("quit", "exit", "q"):
+            print("대화를 종료합니다.")
+            break
+
+        results, sources = retrieve_with_sources(vector_store, question)
+        answer = chain.invoke(question)
+
+        print(f"\n🤖 답변: {answer}")
+        print_sources(sources)
 
 
 # ── 실행 ─────────────────────────────────────────────────
 if __name__ == "__main__":
     if len(sys.argv) < 2:
-        print("사용법: python main.py [index|query] [질문]")
+        print("사용법: python main.py [index|query|chat]")
+        print("  index         - docs/ 디렉토리의 문서를 인덱싱")
+        print("  query <질문>  - 단일 질문에 답변")
+        print("  chat          - 대화형 모드 시작")
         sys.exit(1)
 
     command = sys.argv[1]
     if command == "index":
         index_documents()
     elif command == "query":
-        question = sys.argv[2] if len(sys.argv) > 2 else "RAG란 무엇인가요?"
+        question = sys.argv[2] if len(sys.argv) > 2 else "청약철회 기간은?"
         query(question)
+    elif command == "chat":
+        chat()
     else:
         print(f"알 수 없는 명령: {command}")
 ```
 
 ## 6.3 코드 흐름 설명
 
-전체 코드는 크게 **인덱싱**과 **질의응답** 두 단계로 나뉜다.
+전체 코드는 **인덱싱**, **출처 포함 검색**, **RAG 체인**, **대화형 루프** 네 부분으로 구성된다.
 
 ### 인덱싱 (`index_documents`)
 
@@ -827,26 +894,37 @@ if __name__ == "__main__":
 2. **청킹**: `RecursiveCharacterTextSplitter`로 500자 단위로 분할 (50자 겹침)
 3. **임베딩 + 저장**: `OpenAIEmbeddings`로 벡터화 후 `ChromaDB`에 저장
 
-### 질의응답 (`query`)
+### 출처 포함 검색 (`retrieve_with_sources`)
 
-온라인 단계에 해당하며, LangChain의 LCEL(LangChain Expression Language)로 체인을 구성한다.
+일반적인 `similarity_search`는 Document 객체만 반환하지만, `similarity_search_with_relevance_scores`를 사용하면 **유사도 점수**를 함께 받을 수 있다. 이를 통해 검색 결과의 품질을 확인하고, 어떤 문서에서 답변이 생성되었는지 **출처를 투명하게 제공**할 수 있다.
+
+### RAG 체인 (`build_chain`)
+
+LangChain의 LCEL(LangChain Expression Language)로 체인을 구성한다. 체인을 별도 함수로 분리하면 `query`와 `chat` 모드에서 재사용할 수 있다.
 
 1. **검색기 생성**: 저장된 ChromaDB에서 상위 3개 유사 청크를 검색하는 retriever 설정
-2. **문서 포맷팅**: `format_docs`로 검색된 Document 객체들을 하나의 문자열로 결합
+2. **문서 포맷팅**: `format_docs_simple`로 검색된 Document 객체들을 하나의 문자열로 결합
 3. **프롬프트 구성**: 포맷팅된 컨텍스트와 사용자 질문을 템플릿에 삽입
 4. **LLM 호출**: GPT-4o로 답변 생성
 5. **출력 파싱**: `StrOutputParser`로 최종 답변 추출
 
+### 대화형 루프 (`chat`)
+
+`while` 루프로 사용자 입력을 반복적으로 받으며, 매 질문마다 **검색 → 답변 생성 → 출처 표시**를 수행한다. vector_store와 chain 객체를 루프 밖에서 한 번만 초기화하여 효율적으로 재사용한다.
+
 ```mermaid
 flowchart LR
-    Q["사용자 질문"] --> RET["retriever<br/>(ChromaDB 검색)"]
+    Q["사용자 질문"] --> SRC["retrieve_with_sources<br/>(유사도 검색)"]
+    Q --> RET["retriever<br/>(ChromaDB 검색)"]
     RET --> FMT["format_docs<br/>(텍스트 결합)"]
     Q --> MERGE["프롬프트 구성"]
     FMT --> MERGE
     MERGE --> LLM["ChatOpenAI<br/>(GPT-4o)"]
     LLM --> PARSE["StrOutputParser"]
-    PARSE --> ANS["답변 출력"]
+    PARSE --> ANS["답변 + 출처 출력"]
+    SRC --> ANS
 
+    style SRC fill:#e74c3c,color:#fff
     style RET fill:#45b7d1,color:#fff
     style FMT fill:#f39c12,color:#fff
     style LLM fill:#2ecc71,color:#fff
@@ -854,27 +932,45 @@ flowchart LR
 
 ## 6.4 실행 및 테스트
 
+샘플 문서로 소비자기본법, 근로기준법, 주택임대차보호법 요약 마크다운 파일을 `docs/` 디렉토리에 넣어 테스트한다.
+
 ```bash
 # 1. 환경 변수 설정
 export OPENAI_API_KEY=your_api_key
 
-# 2. docs/ 디렉토리에 마크다운 문서 배치
-mkdir -p docs
-# (인덱싱할 마크다운 문서를 docs/ 에 넣는다)
-
-# 3. 문서 인덱싱
+# 2. 문서 인덱싱
 python main.py index
-# 로드된 문서: 5개
-# 생성된 청크: 42개
+# 로드된 문서: 3개
+# 생성된 청크: 18개
 # 인덱싱 완료!
 
-# 4. 질의응답
-python main.py query "RAG란 무엇인가요?"
-# 질문: RAG란 무엇인가요?
-# 답변: RAG(Retrieval-Augmented Generation)는 ...
+# 3. 단일 질의 (출처 포함)
+python main.py query "청약철회 기간은?"
+# 💬 질문: 청약철회 기간은?
+# 🤖 답변: 소비자는 계약내용에 관한 서면을 받은 날부터 7일 이내에 ...
+#
+# 📚 참조 문서:
+#   [1] consumer-protection-act.md (유사도: 0.872)
+#       ## 청약철회(전자상거래법) ### 청약철회 기간 소비자는 다음 기간 내에 청약의 철회를 할...
+#   [2] consumer-protection-act.md (유사도: 0.814)
+#       ### 환불 의무 사업자는 청약철회를 받은 날부터 3영업일 이내에 이미 지급받은 대금을 환...
+#   [3] tenant-protection-act.md (유사도: 0.627)
+#       # 주택임대차보호법 주요 내용 요약 ## 대항력 ### 대항력의 요건 임차인이 주택의 인...
+
+# 4. 대화형 모드
+python main.py chat
+# ==================================================
+# RAG 챗봇 대화 모드
+# 종료: quit 또는 exit 입력
+# ==================================================
+# ❓ 질문: 연차휴가는 며칠인가요?
+# 🤖 답변: 1년간 80% 이상 출근한 근로자에게 15일의 유급휴가가 ...
+# 📚 참조 문서:
+#   [1] labor-standards-act.md (유사도: 0.891)
+#       ...
 ```
 
-> 이 MVP 코드를 FastAPI + React UI를 갖춘 프로덕션 수준의 챗봇으로 확장하는 방법은 별도 시리즈에서 다룰 예정이다.
+> 이 코드를 FastAPI + React UI를 갖춘 프로덕션 수준의 챗봇으로 확장하는 방법은 별도 시리즈에서 다룰 예정이다.
 
 ---
 
