@@ -1,12 +1,11 @@
-# 블로그 ChatWindow 통합 - 프로젝트 PRD
+# 블로그 ChatWindow 통합 (blog-v2) - 프로젝트 PRD
 
 ## 1. 개요
 
 ### 1.1 목적
-RAG 챗봇 API 서버(`ai-chatbot.advenoh.pe.kr`)가 배포된 후, 각 블로그에 ChatWindow 컴포넌트를 추가하여 방문자가 블로그 내에서 바로 Q&A를 이용할 수 있도록 한다.
+RAG 챗봇 API 서버(`ai-chatbot.advenoh.pe.kr`)가 배포된 후, IT 블로그(`blog-v2.advenoh.pe.kr`)에 ChatWindow 컴포넌트를 추가하여 방문자가 블로그 내에서 바로 Q&A를 이용할 수 있도록 한다.
 
-- **1차**: IT 블로그(`blog-v2.advenoh.pe.kr`)에 ChatWindow 통합
-- **2차**: 투자 블로그(`investment.advenoh.pe.kr`)에 ChatWindow 통합 + investment Collection 인덱싱
+> 투자 블로그(`investment.advenoh.pe.kr`) ChatWindow 통합은 `10_investment_chat_integration_*` 문서 참조
 
 ### 1.2 선행 조건
 - `ai-chatbot.advenoh.pe.kr` API 서버 배포 완료 (`6_chatbot_project_prd.md`)
@@ -18,8 +17,7 @@ RAG 챗봇 API 서버(`ai-chatbot.advenoh.pe.kr`)가 배포된 후, 각 블로�
 | Repo | 역할 |
 |------|------|
 | [ai-chatbot.advenoh.pe.kr](https://github.com/kenshin579/ai-chatbot.advenoh.pe.kr) | RAG API 서버 (이미 배포됨) |
-| [blog-v2.advenoh.pe.kr](https://github.com/kenshin579/blog-v2.advenoh.pe.kr) | IT 블로그 - ChatWindow 추가 (1차) |
-| [investment.advenoh.pe.kr](https://github.com/kenshin579/investment.advenoh.pe.kr) | 투자 블로그 - ChatWindow 추가 (2차) |
+| [blog-v2.advenoh.pe.kr](https://github.com/kenshin579/blog-v2.advenoh.pe.kr) | IT 블로그 - ChatWindow 추가 |
 
 ---
 
@@ -27,20 +25,16 @@ RAG 챗봇 API 서버(`ai-chatbot.advenoh.pe.kr`)가 배포된 후, 각 블로�
 
 ```mermaid
 flowchart LR
-    subgraph "Blog Frontend"
-        A[blog-v2.advenoh.pe.kr] -->|blog_id: blog-v2| C
-        B[investment.advenoh.pe.kr] -->|blog_id: investment| C
-    end
+    A[blog-v2.advenoh.pe.kr] -->|blog_id: blog-v2| B
     subgraph "RAG Server"
-        C["ai-chatbot.advenoh.pe.kr\n/chat API"] --> D[ChromaDB]
-        D --> E["collection: blog-v2"]
-        D --> F["collection: investment"]
+        B["ai-chatbot.advenoh.pe.kr\n/chat API"] --> C[ChromaDB]
+        C --> D["collection: blog-v2"]
     end
 ```
 
-- 각 블로그 FE에서 `ai-chatbot.advenoh.pe.kr/chat` API를 호출
-- `blog_id`는 각 블로그 FE에서 고정값으로 전송
-- CORS 설정: API 서버에서 블로그 도메인 허용 필요
+- blog-v2 FE에서 `ai-chatbot.advenoh.pe.kr/chat` API를 호출
+- `blog_id: "blog-v2"` 고정값으로 전송
+- CORS 설정: API 서버에서 blog-v2 도메인 허용 필요
 
 ---
 
@@ -113,7 +107,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "https://blog-v2.advenoh.pe.kr",
-        "https://investment.advenoh.pe.kr",
+        "http://localhost:3000",  # 개발 환경
     ],
     allow_methods=["POST"],
     allow_headers=["Content-Type"],
@@ -124,21 +118,11 @@ app.add_middleware(
 
 ## 5. 구현 순서 (마일스톤)
 
-**1차: IT 블로그 (blog-v2)**
-
 | 단계 | 작업 | 산출물 |
 |------|------|--------|
 | M1 | API 서버 CORS 설정 (blog-v2 도메인 허용) | CORS 미들웨어 |
 | M2 | blog-v2에 ChatWindow 컴포넌트 구현 | 채팅 컴포넌트 |
 | M3 | blog-v2 배포 및 E2E 테스트 | 프로덕션 채팅 기능 |
-
-**2차: 투자 블로그 (investment)**
-
-| 단계 | 작업 | 산출물 |
-|------|------|--------|
-| M4 | investment `contents/` 문서 인덱싱 (investment Collection) | 투자 블로그 인덱싱 |
-| M5 | investment에 ChatWindow 컴포넌트 구현 (`blog_id: "investment"`) | 채팅 컴포넌트 |
-| M6 | investment 배포 및 E2E 테스트 | 프로덕션 채팅 기능 |
 
 ---
 
