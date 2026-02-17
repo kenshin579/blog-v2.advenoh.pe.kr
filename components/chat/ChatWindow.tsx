@@ -35,6 +35,8 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
           role: "assistant",
           content: res.answer,
           sources: res.sources,
+          message_id: res.message_id,
+          question,
         };
         setMessages((prev) => [...prev, assistantMsg]);
         setChatHistory((prev) => [...prev, [question, res.answer]]);
@@ -80,7 +82,7 @@ export function ChatWindow({ onClose }: ChatWindowProps) {
         </div>
 
         {/* Messages */}
-        <MessageList messages={messages} isLoading={isLoading} />
+        <MessageList messages={messages} isLoading={isLoading} blogId="blog-v2" />
 
         {/* Input */}
         <ChatInput onSend={handleSend} disabled={isLoading} />

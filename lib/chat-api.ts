@@ -11,6 +11,14 @@ export interface SourceDocument {
 export interface ChatResponse {
   answer: string;
   sources: SourceDocument[];
+  message_id: string;
+}
+
+export interface FeedbackRequest {
+  message_id: string;
+  blog_id: string;
+  question: string;
+  rating: "up" | "down";
 }
 
 export async function sendChatMessage(
@@ -32,4 +40,16 @@ export async function sendChatMessage(
   }
 
   return res.json();
+}
+
+export async function sendFeedback(params: FeedbackRequest): Promise<void> {
+  const res = await fetch(`${CHAT_API_URL}/feedback`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(params),
+  });
+
+  if (!res.ok) {
+    throw new Error(`Feedback API error: ${res.status}`);
+  }
 }
