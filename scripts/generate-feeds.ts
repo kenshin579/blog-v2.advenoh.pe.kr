@@ -5,7 +5,7 @@ import { generateRSS } from './generators/rss';
 /**
  * Sitemap과 RSS 피드를 생성하는 메인 스크립트
  */
-function main() {
+async function main() {
   const manifestPath = path.join(process.cwd(), 'public', 'content-manifest.json');
   const sitemapOutput = path.join(process.cwd(), 'public', 'sitemap.xml');
   const rssOutput = path.join(process.cwd(), 'public', 'rss.xml');
@@ -17,7 +17,7 @@ function main() {
   console.log('');
 
   // RSS 피드 생성
-  generateRSS(manifestPath, rssOutput);
+  await generateRSS(manifestPath, rssOutput);
   console.log('');
 
   console.log('✅ Feed generation completed!');

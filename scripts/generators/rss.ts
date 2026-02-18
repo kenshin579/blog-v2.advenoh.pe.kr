@@ -1,4 +1,11 @@
 import fs from 'fs';
+import path from 'path';
+import matter from 'gray-matter';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import remarkGfm from 'remark-gfm';
+import remarkRehype from 'remark-rehype';
+import rehypeStringify from 'rehype-stringify';
 import { create } from 'xmlbuilder2';
 import { blogConfig } from '../config';
 
@@ -23,9 +30,63 @@ interface Manifest {
 }
 
 /**
+ * 마크다운 → HTML 변환 (RSS용 경량 파이프라인)
+ */
+async function markdownToHtml(markdown: string, slug: string): Promise<string> {
+  const result = await unified()
+    .use(remarkParse)
+    .use(remarkGfm)
+    .use(remarkRehype)
+    .use(rehypeStringify)
+    .process(markdown);
+
+  let html = String(result);
+
+  // 상대 경로 이미지 → 절대 URL 변환 (./ 접두사 제거 포함)
+  html = html.replace(
+    /<img([^>]*)\ssrc="(?!http|\/)(.*?)"/g,
+    (_, attrs, imgPath) => {
+      const cleanPath = imgPath.replace(/^\.\//, '');
+      return `<img${attrs} src="${blogConfig.baseUrl}/images/${slug}/${cleanPath}"`;
+    }
+  );
+
+  return html;
+}
+
+/**
+ * HTML에서 텍스트만 추출하여 요약 생성
+ */
+function extractTextSummary(html: string, maxLength: number = 300): string {
+  const text = html
+    .replace(/<[^>]+>/g, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+  if (text.length <= maxLength) return text;
+  return text.substring(0, maxLength) + '...';
+}
+
+/**
+ * 마크다운 파일에서 본문 읽기
+ */
+function readArticleContent(slug: string): string | null {
+  const contentsDir = path.join(process.cwd(), 'contents');
+  const indexPath = path.join(contentsDir, slug, 'index.md');
+
+  if (!fs.existsSync(indexPath)) {
+    console.warn(`⚠️  Article not found: ${indexPath}`);
+    return null;
+  }
+
+  const raw = fs.readFileSync(indexPath, 'utf-8');
+  const { content } = matter(raw);
+  return content;
+}
+
+/**
  * RSS 2.0 피드 생성
  */
-export function generateRSS(manifestPath: string, outputPath: string): void {
+export async function generateRSS(manifestPath: string, outputPath: string): Promise<void> {
   console.log('📡 Generating RSS feed...');
 
   // Manifest 로드
@@ -44,6 +105,7 @@ export function generateRSS(manifestPath: string, outputPath: string): void {
     .ele('rss', {
       version: '2.0',
       'xmlns:atom': 'http://www.w3.org/2005/Atom',
+      'xmlns:content': 'http://purl.org/rss/1.0/modules/content/',
     });
 
   const channel = root.ele('channel');
@@ -63,15 +125,26 @@ export function generateRSS(manifestPath: string, outputPath: string): void {
   // Article 아이템 추가
   for (const article of recentArticles) {
     const item = channel.ele('item');
+    const articleUrl = `${blogConfig.baseUrl}/${article.slug.split('/').pop()}`;
 
     item.ele('title').txt(article.title);
-    item.ele('link').txt(`${blogConfig.baseUrl}/${article.slug.split('/').pop()}`);
-    item.ele('guid', { isPermaLink: 'true' }).txt(`${blogConfig.baseUrl}/${article.slug.split('/').pop()}`);
+    item.ele('link').txt(articleUrl);
+    item.ele('guid', { isPermaLink: 'true' }).txt(articleUrl);
     item.ele('pubDate').txt(new Date(article.date).toUTCString());
 
-    // Excerpt를 description으로 사용 (HTML escape 처리)
-    if (article.excerpt) {
-      item.ele('description').txt(escapeHtml(article.excerpt));
+    // 본문 HTML 생성
+    const markdown = readArticleContent(article.slug);
+    if (markdown) {
+      const html = await markdownToHtml(markdown, article.slug);
+
+      // description: excerpt 또는 본문 앞 300자
+      const description = article.excerpt || extractTextSummary(html);
+      item.ele('description').txt(description);
+
+      // content:encoded: 본문 전체 HTML (CDATA)
+      item.ele('content:encoded').dat(html);
+    } else if (article.excerpt) {
+      item.ele('description').txt(article.excerpt);
     }
 
     // 카테고리 (category 태그)
@@ -103,16 +176,4 @@ export function generateRSS(manifestPath: string, outputPath: string): void {
 
   console.log(`✅ RSS feed generated at ${outputPath}`);
   console.log(`📊 Total items: ${recentArticles.length} (latest 20 articles)`);
-}
-
-/**
- * HTML 특수 문자 이스케이프
- */
-function escapeHtml(text: string): string {
-  return text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&#039;');
 }
