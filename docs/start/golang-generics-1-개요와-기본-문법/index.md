@@ -18,13 +18,13 @@ series: "Golang Generics"
 seriesOrder: 1
 ---
 
-# Generics란 무엇인가
+# 1. Generics란 무엇인가
 
 Generics는 함수나 타입을 정의할 때 **구체적인 타입을 지정하지 않고**, 사용 시점에 타입을 결정할 수 있게 해주는 프로그래밍 기법이다. Java, C++, Rust 등 많은 언어에서 이미 지원하고 있던 기능으로, Go에서는 **Go 1.18**(2022년 3월)부터 정식 지원되었다.
 
 Generics가 필요한 가장 큰 이유는 **코드 중복 제거**이다. 타입만 다르고 로직은 동일한 함수를 여러 번 작성해야 하는 문제를 해결해준다.
 
-# Go에서 Generics가 도입된 배경
+# 2. Go에서 Generics가 도입된 배경
 
 Go는 태생부터 **단순함(simplicity)** 을 핵심 철학으로 설계된 언어다. Rob Pike를 비롯한 Go 설계자들은 언어의 복잡도를 낮추기 위해 많은 기능을 의도적으로 제외했고, Generics도 오랫동안 그 대상이었다.
 
@@ -32,9 +32,9 @@ Go는 태생부터 **단순함(simplicity)** 을 핵심 철학으로 설계된 �
 
 > Go의 Generics는 다른 언어 대비 의도적으로 단순하게 설계되었다. 템플릿 메타프로그래밍(C++)이나 higher-kinded types(Haskell)와 같은 고급 기능은 포함하지 않으며, **실용적인 수준의 타입 파라미터**를 제공하는 것에 집중했다.
 
-# Generics 도입 전 Go의 한계
+# 3. Generics 도입 전 Go의 한계
 
-## interface{} 기반 구현의 문제점
+## 3.1 interface{} 기반 구현의 문제점
 
 Generics가 없던 시절, Go에서 여러 타입을 처리하려면 `interface{}`(현재는 `any`)를 사용해야 했다. 하지만 이 방식에는 근본적인 문제가 있다.
 
@@ -67,7 +67,7 @@ func main() {
 - **타입 캐스팅 비용**: 매번 `.(Type)` 형태로 타입 단언을 해야 한다
 - **IDE 지원 부족**: 반환 타입이 `interface{}`이므로 자동완성, 타입 체크 등이 제한된다
 
-## 코드 중복 문제
+## 3.2 코드 중복 문제
 
 타입별로 동일한 로직의 함수를 반복 작성해야 하는 것도 큰 문제였다.
 
@@ -99,9 +99,9 @@ func minFloat64(a, b float64) float64 {
 
 타입만 다를 뿐 **완전히 동일한 로직**을 3번 작성했다. 지원해야 할 타입이 늘어날수록 중복은 더욱 심해진다.
 
-# Generics 기본 문법
+# 4. Generics 기본 문법
 
-## Type Parameter 선언
+## 4.1 Type Parameter 선언
 
 Go의 Generics는 **대괄호 `[]`** 안에 타입 파라미터를 선언한다.
 
@@ -114,7 +114,7 @@ func 함수명[T constraint](매개변수 T) T {
 - `T`: 타입 파라미터 이름 (관례적으로 대문자 한 글자)
 - `constraint`: 타입 제약 조건 (어떤 타입이 올 수 있는지 제한)
 
-## Generic 함수
+## 4.2 Generic 함수
 
 가장 기본적인 형태의 Generic 함수다.
 
@@ -151,7 +151,7 @@ func main() {
 
 > `any` constraint는 `< ` 연산을 지원하지 않기 때문에, 비교 연산이 필요한 경우 `int | float64` 같은 **union type constraint**로 허용 타입을 지정해야 한다. 이 부분은 2편에서 자세히 다룬다.
 
-## 커스텀 Constraint (interface로 선언)
+## 4.3 커스텀 Constraint (interface로 선언)
 
 매번 인라인으로 타입을 나열하는 것은 비효율적이다. **interface 키워드**로 재사용 가능한 constraint를 정의할 수 있다.
 
@@ -177,7 +177,7 @@ func minComparableNumbers[T ComparableNumbers](a, b T) T {
 }
 ```
 
-## Generic Struct
+## 4.4 Generic Struct
 
 함수뿐 아니라 **구조체(struct)** 에도 타입 파라미터를 사용할 수 있다.
 
@@ -212,7 +212,7 @@ strNode.Push("world")
 
 > **주의**: Go에서 메서드(method)에는 추가 타입 파라미터를 선언할 수 없다. `func (n *Node[T]) Push[F any](f F)` 같은 문법은 허용되지 않으며, 구조체에 선언된 타입 파라미터만 사용 가능하다.
 
-## Generic Map 함수
+## 4.5 Generic Map 함수
 
 두 개 이상의 타입 파라미터를 활용하면 `Map`과 같은 함수형 유틸리티도 작성할 수 있다.
 
@@ -238,11 +238,11 @@ func main() {
 }
 ```
 
-# 타입 추론 (Type Inference)
+# 5. 타입 추론 (Type Inference)
 
 Go 컴파일러는 함수 인자로부터 타입 파라미터를 **자동 추론**할 수 있다. 덕분에 대부분의 경우 타입을 명시적으로 지정할 필요가 없다.
 
-## 명시적 타입 지정 vs 타입 추론
+## 5.1 명시적 타입 지정 vs 타입 추론
 
 ```go
 func identity[T any](v T) T {
@@ -260,7 +260,7 @@ result4 := identity("hello")      // T = string 추론
 
 두 방식 모두 동일한 결과를 생성한다. 타입 추론이 가능한 경우 **추론 방식이 더 간결하므로 권장**된다.
 
-## 여러 타입 파라미터에서의 추론
+## 5.2 여러 타입 파라미터에서의 추론
 
 타입 파라미터가 여러 개인 경우에도 각 인자로부터 개별적으로 추론한다.
 
@@ -274,7 +274,7 @@ pair(1, "hello")    // T=int, U=string
 pair(3.14, true)    // T=float64, U=bool
 ```
 
-## 타입 추론이 실패하는 경우
+## 5.3 타입 추론이 실패하는 경우
 
 컴파일러가 인자로부터 타입을 결정할 수 없는 경우 **명시적 타입 지정이 필요**하다.
 
@@ -299,7 +299,7 @@ emptyStrings := toSlice[string]()  // 명시적 지정 필요
 - 리턴 타입만으로는 타입을 결정할 수 없을 때
 - 인자 타입이 모호할 때
 
-# 정리
+# 6. 마무리
 
 | 항목 | Generics 도입 전 | Generics 도입 후 |
 |------|-----------------|-----------------|
@@ -311,7 +311,7 @@ emptyStrings := toSlice[string]()  // 명시적 지정 필요
 
 다음 편에서는 Generics의 핵심인 **Type Constraint**를 다룬다. `any`, `comparable`, union type(`|`), tilde(`~`), 커스텀 constraint 설계 등 타입 제약 조건을 깊이 있게 살펴본다.
 
-# 참고
+# 7. 참고
 
 - https://go.dev/doc/tutorial/generics
 - https://go.dev/blog/intro-generics
