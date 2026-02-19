@@ -311,7 +311,29 @@ emptyStrings := toSlice[string]()  // 명시적 지정 필요
 
 다음 편에서는 Generics의 핵심인 **Type Constraint**를 다룬다. `any`, `comparable`, union type(`|`), tilde(`~`), 커스텀 constraint 설계 등 타입 제약 조건을 깊이 있게 살펴본다.
 
-# 7. 참고
+# 7. FAQ
+
+### Q. 타입 단언(Type Assertion)이란?
+
+`interface{}` 타입의 값에서 실제 구체적인 타입의 값을 꺼내는 연산이다. `value.(Type)` 형태로 사용한다.
+
+```go
+var val interface{} = "hello"
+
+s := val.(string)  // OK: "hello"
+i := val.(int)     // panic! string인데 int로 꺼내려 함
+```
+
+만약 실제 타입이 일치하지 않으면 런타임에 panic이 발생한다. 안전하게 사용하려면 두 번째 반환값으로 성공 여부를 확인할 수 있다.
+
+```go
+s, ok := val.(string)  // ok = true, s = "hello"
+i, ok := val.(int)     // ok = false, i = 0 (panic 없음)
+```
+
+Generics를 사용하면 타입 단언 자체가 불필요해진다. 컴파일 타임에 타입이 결정되므로 런타임 panic 위험이 없다.
+
+# 8. 참고
 
 - https://go.dev/doc/tutorial/generics
 - https://go.dev/blog/intro-generics
