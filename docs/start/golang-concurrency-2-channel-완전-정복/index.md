@@ -384,6 +384,55 @@ func TestMultipleProducers(t *testing.T) {
 
 다음 편에서는 여러 channel을 동시에 처리하는 **select**문과 **fan-in/fan-out** 등 channel 심화 패턴을 다룬다.
 
+## FAQ
+
+### Q. `struct{}`와 `struct{}{}`의 차이는?
+
+`struct{}`는 **타입**이고, `struct{}{}`는 **값(인스턴스)**이다.
+
+일반 구조체로 비유하면 이해하기 쉽다:
+
+```go
+type Person struct {
+    Name string
+    Age  int
+}
+
+p := Person{Name: "Frank", Age: 30}
+//   ^^^^^^ 타입
+//         ^^^^^^^^^^^^^^^^^^^^^^^^ 값
+```
+
+마찬가지로 빈 구조체도 동일한 구조다:
+
+```go
+v := struct{}{}
+//   ^^^^^^^^ 타입: struct{} (필드가 없는 구조체)
+//           ^^ 값: {} (빈 리터럴)
+```
+
+| 표현 | 의미 | 비유 |
+|------|------|------|
+| `int` | int 타입 | 설계도 |
+| `42` | int 값 | 실물 |
+| `struct{}` | 빈 구조체 타입 | 설계도 (필드 없음) |
+| `struct{}{}` | 빈 구조체 값 | 실물 (내용 없음) |
+
+Channel에서 사용할 때:
+
+```go
+// channel 생성 — 타입을 지정
+done := make(chan struct{})  // struct{} 타입의 channel
+
+// 값을 보냄 — struct{}{} 인스턴스를 send
+done <- struct{}{}
+
+// close — 값 대신 "닫힘" 신호를 모든 receiver에게 전달
+close(done)
+```
+
+`struct{}`는 메모리를 0바이트 차지하므로, 데이터 없이 **신호만 전달**할 때 가장 효율적인 선택이다.
+
 ## 참고
 
 - [Go Tour - Channels](https://go.dev/tour/concurrency/2)
