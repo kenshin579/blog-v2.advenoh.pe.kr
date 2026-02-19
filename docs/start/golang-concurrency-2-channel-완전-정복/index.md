@@ -105,6 +105,20 @@ ch := make(chan int) // 버퍼 크기 0
 - send하면 **receiver가 receive할 때까지** blocking
 - 동기적(synchronous) 통신: 양쪽이 모두 준비되어야 진행
 
+```go
+func TestUnbufferedChannel(t *testing.T) {
+    ch := make(chan int)
+
+    go func() {
+        ch <- 42 // receiver가 준비될 때까지 여기서 blocking
+    }()
+
+    time.Sleep(100 * time.Millisecond) // sender는 이미 blocking 중
+    value := <-ch                       // receive하는 순간 sender도 진행
+    assert.Equal(t, 42, value)
+}
+```
+
 ### Buffered Channel
 
 ```go
