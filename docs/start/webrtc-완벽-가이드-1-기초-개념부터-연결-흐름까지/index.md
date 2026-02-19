@@ -1121,7 +1121,7 @@ graph LR
 
 실제 서비스에서는 하나의 토폴로지만 사용하지 않는다. **1:1에서는 P2P, 다자간에서는 SFU로 전환**하는 하이브리드 방식이 일반적이다.
 
-# 6. 정리
+# 6. 마무리
 
 이 글에서 다룬 WebRTC 기초 이론을 한눈에 정리하면 다음과 같다.
 
@@ -1149,7 +1149,39 @@ graph TD
     E --> F["SRTP/SCTP 암호화 통신 시작"]
 ```
 
-# 7. 참고 자료
+# 7. FAQ
+
+### Q. ICE, STUN, TURN은 각각 무엇의 약자인가?
+
+| 약어 | 풀네임 | 한 줄 설명 |
+|------|--------|-----------|
+| **ICE** | Interactive Connectivity Establishment | 두 피어 간 최적의 연결 경로를 찾는 프레임워크 |
+| **STUN** | Session Traversal Utilities for NAT | NAT 뒤에 있는 기기의 공인 IP와 포트를 알려주는 서버 |
+| **TURN** | Traversal Using Relays around NAT | 직접 연결이 불가능할 때 트래픽을 중계하는 서버 |
+
+세 가지의 관계를 정리하면: **ICE**가 전체를 관장하는 프레임워크이고, 그 안에서 **STUN**으로 공인 주소를 알아내고, STUN만으로 연결이 안 되면 **TURN**으로 중계한다.
+
+```mermaid
+graph LR
+    ICE["ICE<br/>(프레임워크)"] --> STUN["STUN<br/>(공인 IP 발견)"]
+    ICE --> TURN["TURN<br/>(중계 서버)"]
+    STUN -->|"성공"| P2P["P2P 직접 연결"]
+    STUN -->|"실패"| TURN
+    TURN --> RELAY["중계 연결"]
+```
+
+### Q. SDP, SRTP, DTLS, SCTP는 무엇의 약자인가?
+
+| 약어 | 풀네임 | 역할 |
+|------|--------|------|
+| **SDP** | Session Description Protocol | 세션 정보(코덱, IP, 포트 등)를 교환하는 프로토콜 |
+| **SRTP** | Secure Real-time Transport Protocol | RTP 미디어 데이터를 암호화하는 프로토콜 |
+| **DTLS** | Datagram Transport Layer Security | UDP 위에서 TLS와 동일한 보안을 제공하는 프로토콜 |
+| **SCTP** | Stream Control Transmission Protocol | DataChannel의 스트림 관리 및 신뢰성 제어 프로토콜 |
+| **RTP** | Real-time Transport Protocol | 실시간 미디어를 전송하는 프로토콜 |
+| **RTCP** | RTP Control Protocol | RTP 전송 품질에 대한 피드백 프로토콜 |
+
+# 8. 참고 자료
 
 - [WebRTC for the Curious (한국어)](https://webrtcforthecurious.com/ko/)
 - [Pion WebRTC GitHub](https://github.com/pion/webrtc)
