@@ -217,20 +217,24 @@ strNode.Push("world")
 두 개 이상의 타입 파라미터를 활용하면 `Map`과 같은 함수형 유틸리티도 작성할 수 있다.
 
 ```go
+// F: 입력 슬라이스의 요소 타입, T: 출력 슬라이스의 요소 타입
+// s: 변환할 원본 슬라이스, f: 각 요소를 변환하는 함수
 func Map[F, T any](s []F, f func(F) T) []T {
-    rst := make([]T, len(s))
+    rst := make([]T, len(s)) // 원본과 같은 크기의 결과 슬라이스 생성
     for i, v := range s {
-        rst[i] = f(v)
+        rst[i] = f(v) // 각 요소에 변환 함수 적용
     }
     return rst
 }
 
 func main() {
+    // int → int: 각 요소를 2배로 변환 (F=int, T=int)
     doubled := Map([]int{1, 2, 3}, func(i int) int {
         return i * 2
     })
     fmt.Println(doubled) // [2 4 6]
 
+    // string → string: 각 요소를 대문자로 변환 (F=string, T=string)
     uppered := Map([]string{"Hello", "world"}, func(s string) string {
         return strings.ToUpper(s)
     })
