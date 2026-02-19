@@ -312,6 +312,8 @@ func TestChannelSignaling(t *testing.T) {
 
 `close(done)`은 **모든** receiver에게 동시에 신호를 보낸다. 이것이 단순히 `done <- struct{}{}`와의 차이점이다.
 
+> `struct{}`와 `struct{}{}`의 차이가 헷갈린다면 [FAQ](#q-struct와-struct의-차이는)를 참고하자.
+
 ## 8. 실습: Producer / Consumer 패턴
 
 ```go
