@@ -452,7 +452,7 @@ func BenchmarkAllocGenerics(b *testing.B) {
 - **타입 비교 오버헤드**: `interface{}` 동등성 비교는 런타임 타입 체크 포함
 - **캐시 친화성**: `[]int`는 연속 메모리, `[]interface{}`는 포인터를 통한 간접 접근
 
-# 4. 정리
+# 4. 마무리
 
 ## 4.1 Generics를 선택해야 하는 경우
 
@@ -485,7 +485,7 @@ func PrintAll[T fmt.Stringer](items []T) {
 
 본 포스팅에서 작성한 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/generics)를 참고해주세요.
 
-# 참고
+# 5. 참고
 
 - https://go.dev/blog/intro-generics
 - https://go.dev/doc/tutorial/generics
