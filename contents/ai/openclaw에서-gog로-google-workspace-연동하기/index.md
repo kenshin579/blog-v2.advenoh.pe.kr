@@ -13,6 +13,11 @@ tags:
   - telegram
   - oauth
   - ai-agent
+  - 오픈클로
+  - 구글워크스페이스
+  - 텔레그램
+  - AI에이전트
+  - 자동화
 series: "OpenClaw 활용 가이드"
 ---
 # 1. 개요
