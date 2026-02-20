@@ -13,7 +13,7 @@ tags:
   - telegram
   - oauth
   - ai-agent
-series: "OpenClaw"
+series: "OpenClaw 활용 가이드"
 ---
 # 1. 개요
 
