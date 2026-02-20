@@ -507,7 +507,7 @@ flowchart TD
 | 4단계 | 호출부를 직접 Generic 함수로 변경 | 중간 |
 | 5단계 | 기존 `interface{}` 기반 코드 제거 | 높음 |
 
-# 5. 결론
+# 5. 마무리
 
 ## 5.1 Go에서 Generics의 역할
 
@@ -538,7 +538,7 @@ Go 1.21 이상을 사용한다면, 직접 유틸리티를 구현하기 전에 `s
 
 본 포스팅에서 작성한 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/generics)를 참고해주세요.
 
-# 참고
+# 6. 참고
 
 - https://go.dev/blog/intro-generics
 - https://go.dev/doc/tutorial/generics

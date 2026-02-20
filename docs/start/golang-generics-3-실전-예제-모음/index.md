@@ -22,9 +22,9 @@ seriesOrder: 3
 
 1편에서 기본 문법을, 2편에서 Type Constraint를 다뤘다. 이번 편에서는 Generics를 활용한 **실전 예제**들을 구현해본다. 자료구조, 유틸 함수, 함수형 패턴, 그리고 Go 1.21+ 표준 라이브러리까지 살펴본다.
 
-# Generic 자료구조 구현
+# 1. Generic 자료구조 구현
 
-## Generic Stack
+## 1.1 Generic Stack
 
 LIFO(Last In, First Out) 구조의 Stack을 Generics로 구현한다.
 
@@ -87,7 +87,7 @@ val, _ := strStack.Pop()  // "world"
 
 > `var zero T`는 Generic 코드에서 제로값을 반환할 때 사용하는 관용적 패턴이다. `T`의 제로값은 `int`면 `0`, `string`이면 `""`, 포인터면 `nil`이 된다.
 
-## Generic Queue
+## 1.2 Generic Queue
 
 FIFO(First In, First Out) 구조의 Queue를 구현한다.
 
@@ -138,9 +138,9 @@ for !q.IsEmpty() {
 // third
 ```
 
-# Generic 유틸 함수
+# 2. Generic 유틸 함수
 
-## Min / Max 함수
+## 2.1 Min / Max 함수
 
 `constraints.Ordered`를 활용하면 모든 비교 가능한 타입에 대해 동작하는 Min/Max를 구현할 수 있다.
 
@@ -188,9 +188,9 @@ maxVal, _ := MaxSlice([]int{5, 3, 8, 1, 9})           // 9
 minStr, _ := MinSlice([]string{"banana", "apple", "cherry"}) // "apple"
 ```
 
-# Slice 유틸 함수 (함수형 패턴)
+# 3. Slice 유틸 함수 (함수형 패턴)
 
-## Filter
+## 3.1 Filter
 
 조건을 만족하는 요소만 반환한다.
 
@@ -218,7 +218,7 @@ long := Filter([]string{"go", "java", "py", "rust"}, func(s string) bool {
 // [java rust]
 ```
 
-## Map
+## 3.2 Map
 
 슬라이스의 각 요소를 변환한다. 입력과 출력의 타입이 다를 수 있으므로 타입 파라미터가 2개 필요하다.
 
@@ -248,7 +248,7 @@ strs := MapSlice([]int{1, 2, 3}, func(n int) string {
 // [#1 #2 #3]
 ```
 
-## Reduce
+## 3.3 Reduce
 
 슬라이스를 하나의 값으로 축약한다.
 
@@ -275,7 +275,7 @@ joined := Reduce([]string{"Go", "Generics", "Rock"}, "", func(acc, s string) str
 // "Go Generics Rock"
 ```
 
-## Filter + Map + Reduce 조합
+## 3.4 Filter + Map + Reduce 조합
 
 함수형 패턴의 진가는 조합에서 발휘된다.
 
@@ -289,9 +289,9 @@ total := Reduce(doubled, 0, func(acc, n int) int { return acc + n })
 // (2+4+6+8+10) * 2 = 60
 ```
 
-# Generic Map 헬퍼
+# 4. Generic Map 헬퍼
 
-## Values 추출
+## 4.1 Values 추출
 
 ```go
 func MapValues[K comparable, V any](m map[K]V) []V {
@@ -306,7 +306,7 @@ m := map[string]int{"a": 1, "b": 2, "c": 3}
 values := MapValues(m)  // [1 2 3] (순서 비보장)
 ```
 
-## Merge
+## 4.2 Merge
 
 두 map을 합친다. 키가 겹치면 두 번째 map의 값이 우선한다.
 
@@ -328,7 +328,7 @@ merged := MapMerge(m1, m2)
 // {"a": 1, "b": 20, "c": 3}
 ```
 
-## Filter
+## 4.3 Filter
 
 조건을 만족하는 key-value 쌍만 반환한다.
 
@@ -350,11 +350,11 @@ passed := MapFilter(scores, func(k string, v int) bool {
 // {"alice": 85, "carol": 91}
 ```
 
-# 표준 라이브러리 활용 (Go 1.21+)
+# 5. 표준 라이브러리 활용 (Go 1.21+)
 
 Go 1.21부터 Generics를 활용한 표준 패키지 `slices`, `maps`, `cmp`가 추가되었다. 앞서 직접 구현한 유틸 함수들의 상당수가 이미 표준 라이브러리에 포함되어 있다.
 
-## slices 패키지
+## 5.1 slices 패키지
 
 ```go
 import "slices"
@@ -387,7 +387,7 @@ slices.SortFunc(nums, func(a, b int) int {
 // [-1 -2 3 -5 8]
 ```
 
-## maps 패키지
+## 5.2 maps 패키지
 
 ```go
 import "maps"
@@ -405,7 +405,7 @@ maps.Equal(m1, m2)  // true
 maps.Equal(m1, m3)  // false
 ```
 
-## cmp 패키지
+## 5.3 cmp 패키지
 
 ```go
 import "cmp"
@@ -432,7 +432,7 @@ addr = cmp.Or(userConfig, envConfig, defaultConfig)
 // "0.0.0.0:9090" (환경 변수가 설정된 경우)
 ```
 
-# 직접 구현 vs 표준 라이브러리
+# 6. 직접 구현 vs 표준 라이브러리
 
 | 기능 | 직접 구현 | 표준 라이브러리 (Go 1.21+) |
 |------|----------|--------------------------|
@@ -445,7 +445,7 @@ addr = cmp.Or(userConfig, envConfig, defaultConfig)
 
 > **실무 권장사항**: Go 1.21 이상을 사용한다면 `slices`, `maps`, `cmp` 표준 패키지를 우선 사용하자. 직접 구현은 표준 라이브러리에 없는 기능(Filter, Map, Reduce 등)이나 학습 목적으로 활용하면 된다.
 
-# 정리
+# 7. 마무리
 
 이번 편에서 다룬 Generic 패턴들을 요약한다.
 
@@ -459,7 +459,7 @@ addr = cmp.Or(userConfig, envConfig, defaultConfig)
 
 다음 편에서는 **Generics vs Interface 비교**와 **성능 벤치마크**를 다룬다.
 
-# 참고
+# 8. 참고
 
 - https://pkg.go.dev/slices
 - https://pkg.go.dev/maps
