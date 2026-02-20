@@ -1,8 +1,8 @@
 ---
 title: "RAG 기반 블로그 Q&A 챗봇 만들기 (1) - LLM 적응 기법과 RAG 개념"
 description: "LLM 적응 기법(Fine-tuning, PEFT, LoRA)과 RAG 아키텍처를 비교하고, LangChain으로 기본 RAG 챗봇을 구현하는 방법을 소개한다"
-date: 2026-02-16
-update: 2026-02-16
+date: 2026-03-25
+update: 2026-03-25
 tags:
   - rag
   - langchain
@@ -14,13 +14,14 @@ tags:
   - lora
   - embedding
   - vector-store
-category: llm
+category: ai
 series: "RAG 기반 블로그 Q&A 챗봇 만들기"
 ---
 
 > 이 글은 **RAG 기반 블로그 Q&A 챗봇 만들기** 시리즈의 첫 번째 편이다. LLM의 한계를 이해하고, 이를 극복하기 위한 적응 기법들을 비교한 뒤, RAG 파이프라인의 각 단계를 상세히 알아본다.
 > - **편 1** (이 글): LLM 적응 기법과 RAG 개념
 > - **편 2**: 프롬프트 엔지니어링과 RAG 최적화
+> - **편 3**: 프로덕션 RAG 시스템 구축
 
 # 1. LLM 적응 기법 개요
 
@@ -976,7 +977,17 @@ python main.py chat
 
 ---
 
-# 7. 참고
+# 7. 마무리
+
+이번 글에서는 LLM의 세 가지 근본적 한계(환각, 지식 단절, 도메인 지식 부족)를 살펴보고, 이를 극복하기 위한 적응 기법들을 비교했다. Fine-tuning은 강력하지만 비용이 높고, Prompt Engineering은 간편하지만 한계가 있으며, RAG는 두 가지의 장점을 균형 있게 제공한다.
+
+RAG 파이프라인의 핵심 단계인 문서 파싱 → 청킹 → 인덱싱 → 검색 → 생성까지의 흐름을 이해하고, LangChain과 ChromaDB를 활용한 기본 RAG 챗봇을 직접 구현해보았다. 단순한 Naive RAG이지만, 유사도 점수 기반의 출처 표시와 대화형 루프까지 갖춘 실용적인 수준이다.
+
+다음 편에서는 프롬프트 엔지니어링 기법과 Advanced RAG의 최적화 전략(Query Rewriting, Re-ranking, Hybrid Search 등)을 적용하여 검색 품질과 답변 정확도를 한 단계 끌어올리는 방법을 다룬다.
+
+---
+
+# 8. 참고
 
 - [AWS - What is RAG?](https://aws.amazon.com/what-is/retrieval-augmented-generation/)
 - [IBM - RAG vs Fine-tuning vs Prompt Engineering](https://www.ibm.com/think/topics/rag-vs-fine-tuning-vs-prompt-engineering)
