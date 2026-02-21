@@ -125,7 +125,7 @@ Markdown content...
 
 #### 블로그 글 작성 워크플로우
 
-**Draft → Review → Publish** 단계로 진행한다.
+**Draft → Review → Merge Ready → Publish** 단계로 진행한다.
 
 **1단계: Draft 작성 (Claude Code 작업)**
 - `docs/start/{글-제목}/index.md`에 초안 작성 (**`contents/`에 직접 넣지 않는다**)
@@ -134,8 +134,12 @@ Markdown content...
 **2단계: PR Review & Merge**
 - PR 리뷰 후 merge
 
-**3단계: Publish (최종 리뷰 후)**
-- 최종 리뷰 완료 후 `docs/start/{글-제목}/` → `contents/{카테고리}/{글-제목}/`으로 이동
+**3단계: Merge Ready (리뷰 완료)**
+- 리뷰 완료된 글을 `docs/start/{글-제목}/` → `docs/merge_ready/{글-제목}/`으로 이동
+- `docs/start/`에는 아직 리뷰 중인 draft만 남긴다
+
+**4단계: Publish (발행)**
+- `docs/merge_ready/{글-제목}/` → `contents/{카테고리}/{글-제목}/`으로 이동
 - MergeReady label 추가 → 날짜에 맞게 자동 merge
 
 ## Diagram Style
