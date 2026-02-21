@@ -18,7 +18,7 @@ series: "RAG 기반 블로그 Q&A 챗봇 만들기"
 ---
 
 > 이 글은 **RAG 기반 블로그 Q&A 챗봇 만들기** 시리즈의 두 번째 편이다. 편 1에서 구현한 기본 RAG 파이프라인을 기반으로, 프롬프트를 최적화하고, 검색 품질을 높이며, 결과를 정량적으로 평가하는 방법을 다룬다.
-> - **편 1**: [LLM 적응 기법과 RAG 개념](../rag-기반-블로그-qa-챗봇-만들기-1-llm-적응-기법과-rag-개념)
+> - **편 1**: [LLM 적응 기법과 RAG 개념](../../read/rag-기반-블로그-qa-챗봇-만들기-1-llm-적응-기법과-rag-개념)
 > - **편 2** (이 글): 프롬프트 엔지니어링과 RAG 최적화
 
 > 전체 소스 코드는 [tutorials-python/ai/rag/adv-rag](https://github.com/kenshin579/tutorials-python/tree/main/ai/rag/adv-rag)를 참조한다.
