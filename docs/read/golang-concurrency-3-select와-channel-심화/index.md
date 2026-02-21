@@ -25,9 +25,9 @@ series: "Golang Concurrency"
 
 ```go
 select {
-case msg := <-ch1:
+case msg := <-ch1: // ch1에서 먼저 데이터가 오면 실행
     fmt.Println("ch1:", msg)
-case msg := <-ch2:
+case msg := <-ch2: // ch2에서 먼저 데이터가 오면 실행
     fmt.Println("ch2:", msg)
 }
 ```
@@ -38,21 +38,21 @@ case msg := <-ch2:
 
 ```go
 func TestSelectMultipleReady(t *testing.T) {
-    ch1 := make(chan int, 1)
+    ch1 := make(chan int, 1) // 버퍼 1짜리 channel
     ch2 := make(chan int, 1)
 
     ch1Count, ch2Count := 0, 0
-    for range 1000 {
-        ch1 <- 1
+    for range 1000 { // 1000번 반복하여 선택 비율 확인
+        ch1 <- 1 // 두 channel에 동시에 값을 넣어 둘 다 준비 상태로 만듦
         ch2 <- 2
 
         select {
-        case <-ch1:
+        case <-ch1: // 두 case 모두 준비됐으므로 runtime이 무작위 선택
             ch1Count++
         case <-ch2:
             ch2Count++
         }
-        // 남은 값 비우기
+        // 선택되지 않은 channel의 남은 값 비우기
         select {
         case <-ch1:
         case <-ch2:
@@ -107,15 +107,15 @@ func TestTimeoutWithTimeAfter(t *testing.T) {
     ch := make(chan string)
 
     go func() {
-        time.Sleep(200 * time.Millisecond) // 느린 작업
+        time.Sleep(200 * time.Millisecond) // 200ms 걸리는 느린 작업 시뮬레이션
         ch <- "result"
     }()
 
     select {
-    case msg := <-ch:
+    case msg := <-ch: // 작업 결과가 먼저 오면 정상 처리
         t.Log("received:", msg)
-    case <-time.After(50 * time.Millisecond):
-        t.Log("timeout!") // 50ms 안에 결과가 오지 않으면 timeout
+    case <-time.After(50 * time.Millisecond): // 50ms 초과 시 timeout channel에서 값 수신
+        t.Log("timeout!")
     }
 }
 ```
@@ -125,25 +125,27 @@ func TestTimeoutWithTimeAfter(t *testing.T) {
 실무에서는 `context.WithTimeout`을 더 많이 사용한다. context는 취소 전파가 가능하고, 여러 goroutine에 걸쳐 timeout을 관리할 수 있다.
 
 ```go
+// simulateAPICall - context 기반 timeout이 적용된 API 호출 시뮬레이션
 func simulateAPICall(ctx context.Context, delay time.Duration) (string, error) {
-    ch := make(chan string, 1)
+    ch := make(chan string, 1) // 버퍼 1: goroutine이 결과를 보내고 바로 종료 가능
 
     go func() {
-        time.Sleep(delay)
+        time.Sleep(delay) // API 호출 지연 시뮬레이션
         ch <- "api response"
     }()
 
     select {
-    case result := <-ch:
+    case result := <-ch: // API 응답이 먼저 오면 정상 반환
         return result, nil
-    case <-ctx.Done():
+    case <-ctx.Done(): // context timeout 초과 시 에러 반환
         return "", ctx.Err() // context.DeadlineExceeded
     }
 }
 
 func TestSimulateAPICallTimeout(t *testing.T) {
+    // 50ms timeout 설정 — API는 200ms 걸리므로 timeout 발생
     ctx, cancel := context.WithTimeout(context.Background(), 50*time.Millisecond)
-    defer cancel()
+    defer cancel() // 리소스 해제를 위해 반드시 cancel 호출
 
     result, err := simulateAPICall(ctx, 200*time.Millisecond)
     assert.ErrorIs(t, err, context.DeadlineExceeded)
@@ -166,10 +168,10 @@ graph LR
 
 ```go
 func TestFanOut(t *testing.T) {
-    jobs := make(chan int, 10)
+    jobs := make(chan int, 10)  // 작업을 분배할 공유 channel
     numWorkers := 3
 
-    workerResults := make([]chan int, numWorkers)
+    workerResults := make([]chan int, numWorkers) // worker별 결과 channel
     for i := range numWorkers {
         workerResults[i] = make(chan int, 10)
     }
@@ -177,19 +179,19 @@ func TestFanOut(t *testing.T) {
     var wg sync.WaitGroup
     for i := range numWorkers {
         wg.Add(1)
-        go func() {
+        go func() { // 각 worker가 같은 jobs channel에서 작업을 가져감
             defer wg.Done()
-            for job := range jobs {
-                workerResults[i] <- job * job
+            for job := range jobs { // jobs가 close되면 루프 종료
+                workerResults[i] <- job * job // 제곱 연산 후 결과 전송
             }
             close(workerResults[i])
         }()
     }
 
-    for i := 1; i <= 9; i++ {
+    for i := 1; i <= 9; i++ { // 9개의 작업을 channel에 전송
         jobs <- i
     }
-    close(jobs)
+    close(jobs) // 모든 작업 전송 완료 → worker들이 루프 종료
     wg.Wait()
 }
 ```
@@ -206,23 +208,24 @@ graph LR
 ```
 
 ```go
+// fanIn - 여러 channel의 값을 하나의 channel로 합치는 함수
 func fanIn(channels ...<-chan string) <-chan string {
     var wg sync.WaitGroup
-    merged := make(chan string)
+    merged := make(chan string) // 모든 결과가 모이는 단일 channel
 
     for _, ch := range channels {
         wg.Add(1)
-        go func() {
+        go func() { // 각 source channel마다 goroutine이 값을 merged로 전달
             defer wg.Done()
-            for v := range ch {
+            for v := range ch { // source channel이 close되면 루프 종료
                 merged <- v
             }
         }()
     }
 
     go func() {
-        wg.Wait()
-        close(merged)
+        wg.Wait()   // 모든 source가 완료될 때까지 대기
+        close(merged) // 모든 source 완료 후 merged channel 닫기
     }()
 
     return merged
@@ -259,30 +262,31 @@ func TestNilChannelDisable(t *testing.T) {
     ch1 := make(chan int, 3)
     ch2 := make(chan int, 3)
 
-    ch1 <- 1; ch1 <- 2; ch1 <- 3; close(ch1)
-    ch2 <- 10; ch2 <- 20; close(ch2)
+    ch1 <- 1; ch1 <- 2; ch1 <- 3; close(ch1) // ch1에 3개 값 전송 후 닫기
+    ch2 <- 10; ch2 <- 20; close(ch2)           // ch2에 2개 값 전송 후 닫기
 
     var results []int
+    // receive 전용 channel 변수로 선언 — nil 할당으로 비활성화 가능
     var active1, active2 = (<-chan int)(ch1), (<-chan int)(ch2)
 
-    for active1 != nil || active2 != nil {
+    for active1 != nil || active2 != nil { // 둘 다 nil이 되면 모든 데이터 소진
         select {
         case v, ok := <-active1:
             if !ok {
-                active1 = nil // 닫힌 channel → nil로 비활성화
+                active1 = nil // 닫힌 channel → nil로 설정하면 select에서 무시됨
                 continue
             }
             results = append(results, v)
         case v, ok := <-active2:
             if !ok {
-                active2 = nil
+                active2 = nil // 같은 방식으로 ch2도 비활성화
                 continue
             }
             results = append(results, v)
         }
     }
 
-    assert.Len(t, results, 5) // ch1: 3개 + ch2: 2개
+    assert.Len(t, results, 5) // ch1: 3개 + ch2: 2개 = 총 5개
 }
 ```
 
