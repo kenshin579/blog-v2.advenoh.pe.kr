@@ -21,7 +21,7 @@ seriesOrder: 2
 
 1편에서 Generics의 기본 문법과 `any` constraint를 살펴봤다. 이번 편에서는 Generics의 핵심인 **Type Constraint(타입 제약)**를 깊이 있게 다룬다.
 
-# Constraint 개념
+# 1. Constraint 개념
 
 Constraint(제약)는 타입 파라미터 `T`에 **어떤 타입이 올 수 있는지 제한**하는 역할을 한다. Constraint가 없다면 Generic 함수 내부에서 `T`에 대해 아무 연산도 할 수 없다.
 
@@ -42,9 +42,9 @@ func print[T any](a T) {
 
 > Go에서 constraint는 **interface**로 정의한다. 일반적인 interface가 메서드 집합을 정의하는 것처럼, constraint는 **허용되는 타입 집합**을 정의한다.
 
-# 내장 Constraint
+# 2. 내장 Constraint
 
-## any
+## 2.1 any
 
 `any`는 Go 1.18에서 추가된 `interface{}`의 별칭(alias)이다. 모든 타입을 허용하므로 가장 느슨한 constraint이다.
 
@@ -56,7 +56,7 @@ func foo2[T interface{}](a T) T { return a }
 
 `any` constraint에서는 `fmt.Println()` 같은 `interface{}` 를 인자로 받는 함수 호출만 가능하고, `<`, `>`, `==` 같은 연산자는 사용할 수 없다.
 
-## comparable
+## 2.2 comparable
 
 `comparable`은 **`==`와 `!=` 연산이 가능한 타입**을 의미하는 내장 constraint이다. `int`, `string`, `bool`, `struct`(필드가 모두 comparable인 경우), 포인터, 배열 등이 해당된다. 반면 `slice`, `map`, `func`은 comparable이 아니다.
 
@@ -108,9 +108,9 @@ unique([]string{"a", "b", "a", "c", "b"}) // [a b c]
 
 > **any vs comparable**: `any`는 모든 타입을 허용하지만 연산 불가, `comparable`은 `==`/`!=` 연산이 가능한 타입만 허용한다. 크기 비교(`<`, `>`)가 필요하면 별도의 constraint가 필요하다.
 
-# Union Type Constraint
+# 3. Union Type Constraint
 
-## 파이프 연산자 (`|`)
+## 3.1 파이프 연산자 (`|`)
 
 여러 구체적인 타입을 **파이프 연산자 `|`** 로 나열하여 constraint를 정의할 수 있다.
 
@@ -127,7 +127,7 @@ minType(10, 20)           // int: 10
 minType(3.14, 1.14)       // float64: 1.14
 ```
 
-## interface로 constraint 정의
+## 3.2 interface로 constraint 정의
 
 매번 인라인으로 타입을 나열하면 코드가 길어진다. **interface 키워드**로 재사용 가능한 constraint를 정의할 수 있다.
 
@@ -168,9 +168,9 @@ func minComparableNumbers2[T ComparableNumbers2](a, b T) T {
 }
 ```
 
-# Tilde (`~`) - Underlying Type Constraint
+# 4. Tilde (`~`) - Underlying Type Constraint
 
-## `~` 문법
+## 4.1 `~` 문법
 
 Go 1.18에서 추가된 `~` (tilde) 토큰은 **해당 타입을 기반(underlying type)으로 하는 모든 타입**을 포함한다는 의미이다.
 
@@ -182,7 +182,7 @@ type Integer interface {
 
 `~int`는 `int` 자체뿐 아니라, `int`를 기반으로 정의된 **커스텀 타입**까지 허용한다.
 
-## `~` 가 필요한 이유
+## 4.2 `~` 가 필요한 이유
 
 `~` 없이 `int`만 명시하면, `type MyInt int`처럼 정의된 커스텀 타입은 해당 constraint를 만족하지 못한다.
 
@@ -207,9 +207,9 @@ min2(a, b)  // OK: MyInt의 underlying type이 int
 
 > **실무 팁**: 커스텀 타입을 지원하려면 `~`를 붙이는 것이 좋다. 특히 라이브러리를 작성할 때는 사용자가 정의한 커스텀 타입도 동작해야 하므로 `~`를 기본으로 사용하자.
 
-# 커스텀 Constraint 설계
+# 5. 커스텀 Constraint 설계
 
-## 숫자 타입 묶기
+## 5.1 숫자 타입 묶기
 
 실무에서 자주 사용하는 패턴은 숫자 타입들을 그룹으로 묶는 것이다.
 
@@ -244,7 +244,7 @@ sum([]float64{1.5, 2.5, 3.0})   // 7
 sum([]uint{10, 20, 30})         // 60
 ```
 
-## Ordered 타입 만들기
+## 5.2 Ordered 타입 만들기
 
 크기 비교(`<`, `>`)가 가능한 타입을 묶는 constraint이다. 표준 라이브러리 `cmp.Ordered`와 유사하다.
 
@@ -265,7 +265,7 @@ maxVal(3.14, 2.71)          // 3.14
 maxVal("apple", "banana")   // banana (문자열 사전순 비교)
 ```
 
-## constraints.Ordered 활용
+## 5.3 constraints.Ordered 활용
 
 Go 표준 확장 패키지 `golang.org/x/exp/constraints`에는 이미 잘 정의된 constraint들이 있다.
 
@@ -287,7 +287,7 @@ min("Hello", "World")    // Hello
 
 > Go 1.21부터는 `cmp.Ordered`가 표준 라이브러리에 포함되어 `golang.org/x/exp` 없이도 사용할 수 있다.
 
-## 메서드 요구 + 타입 제한 결합
+## 5.4 메서드 요구 + 타입 제한 결합
 
 constraint에 **타입 제한과 메서드 요구를 동시에** 정의할 수 있다. 이 경우 해당 constraint는 타입 파라미터로만 사용 가능하고, 일반 인터페이스 변수로는 사용할 수 없다.
 
@@ -338,7 +338,7 @@ PrintMin(a, b)  // 10
 > func PrintMin3(a, b Stringer) { ... }
 > ```
 
-# 재사용 가능한 Constraint 설계 전략
+# 6. 재사용 가능한 Constraint 설계 전략
 
 실무에서 constraint를 설계할 때 참고할 가이드라인을 정리한다.
 
@@ -369,7 +369,7 @@ type Number interface { Signed | Unsigned }
 
 필요 이상으로 복잡한 constraint는 가독성을 떨어뜨린다. `any`나 `comparable`로 충분한 경우가 많다.
 
-# 정리
+# 7. 마무리
 
 | Constraint | 허용 연산 | 사용 시점 |
 |-----------|----------|----------|
@@ -382,7 +382,7 @@ type Number interface { Signed | Unsigned }
 
 다음 편에서는 이 constraint들을 활용한 **실전 예제**를 다룬다. Generic Stack, Queue, Filter/Map/Reduce, 그리고 Go 1.21+ 표준 라이브러리(`slices`, `maps`, `cmp`)를 살펴본다.
 
-# 참고
+# 8. 참고
 
 - https://go.dev/ref/spec#Type_parameter_declarations
 - https://go.dev/blog/intro-generics

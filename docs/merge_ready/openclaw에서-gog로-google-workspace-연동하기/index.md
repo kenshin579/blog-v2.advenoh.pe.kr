@@ -1,17 +1,23 @@
 ---
 title: "OpenClaw에서 gog로 Google Workspace 연동하기"
-description: "OpenClaw에 gog(Google Workspace CLI)를 연동하여 Telegram 채팅으로 Gmail, Calendar, Drive를 제어하는 방법을 정리합니다."
+description: "OpenClaw에 gog(Google Workspace CLI)를 설정하여 Telegram에서 Gmail, Calendar, Drive를 제어하는 방법을 정리한다"
 date: 2026-02-21
 update: 2026-02-21
 tags:
-  - OpenClaw
-  - Google Workspace
+  - openclaw
   - gog
-  - Telegram
-  - OAuth
-  - Gmail
-  - Google Calendar
+  - google-workspace
+  - gmail
+  - google-calendar
+  - google-drive
+  - telegram
+  - oauth
+  - ai-agent
+  - 오픈클로
+  - 구글워크스페이스
+  - 텔레그램
   - AI에이전트
+  - 자동화
 series: "OpenClaw 활용 가이드"
 ---
 # 1. 개요
