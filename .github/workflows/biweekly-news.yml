@@ -28,7 +28,7 @@ jobs:
         env:
           BLOG_IT_NEWS_SUPABASE_URL: ${{ secrets.BLOG_IT_NEWS_SUPABASE_URL }}
           BLOG_IT_NEWS_SUPABASE_API_KEY: ${{ secrets.BLOG_IT_NEWS_SUPABASE_API_KEY }}
-          BLOGV2_CATEGORIZER_OPENAI_API_KEY: ${{ secrets.BLOGV2_CATEGORIZER_OPENAI_API_KEY }}
+          BLOGV2_OPENAI_API_KEY: ${{ secrets.BLOGV2_OPENAI_API_KEY }}
         run: python scripts/news/main.py
 
       - name: Create Pull Request
