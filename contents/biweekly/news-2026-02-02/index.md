@@ -12,6 +12,8 @@ series: "Frank's IT News 2026 상반기"
 
 2주간의 주요 IT 뉴스를 카테고리별로 정리했습니다.
 
+<img src="biweekly.png" alt="Frank's IT Biweekly News" width="50%" />
+
 ---
 
 ## ☁️ Cloud & Infra
