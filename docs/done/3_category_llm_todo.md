@@ -4,8 +4,8 @@
 
 - [x] OpenAI API 키 발급 및 설정
   - [x] [OpenAI Platform](https://platform.openai.com/api-keys)에서 API 키 생성
-  - [x] `~/.zshrc`에 `BLOGV2_CATEGORIZER_OPENAI_API_KEY` 환경변수 추가
-  - [x] 환경변수 적용 확인: `echo $BLOGV2_CATEGORIZER_OPENAI_API_KEY`
+  - [x] `~/.zshrc`에 `BLOGV2_OPENAI_API_KEY` 환경변수 추가
+  - [x] 환경변수 적용 확인: `echo $BLOGV2_OPENAI_API_KEY`
 
 - [x] 의존성 추가
   - [x] `scripts/news/pyproject.toml`에 `openai>=1.0.0`, `pydantic>=2.0.0` 추가
@@ -82,13 +82,13 @@
 
 - [ ] GitHub Secrets 추가
   - [ ] Repository Settings → Secrets and variables → Actions
-  - [ ] `BLOGV2_CATEGORIZER_OPENAI_API_KEY` 시크릿 추가
+  - [ ] `BLOGV2_OPENAI_API_KEY` 시크릿 추가
 
 - [x] workflow 파일 수정
   - [x] `.github/workflows/biweekly-news.yml`에 환경변수 추가
   ```yaml
   env:
-    BLOGV2_CATEGORIZER_OPENAI_API_KEY: ${{ secrets.BLOGV2_CATEGORIZER_OPENAI_API_KEY }}
+    BLOGV2_OPENAI_API_KEY: ${{ secrets.BLOGV2_OPENAI_API_KEY }}
   ```
 
 ---

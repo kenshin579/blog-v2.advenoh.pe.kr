@@ -14,7 +14,7 @@ BATCH_SIZE = 30
 TEMPERATURE = 0.1
 
 # 환경 변수 이름
-ENV_API_KEY = "BLOGV2_CATEGORIZER_OPENAI_API_KEY"
+ENV_API_KEY = "BLOGV2_OPENAI_API_KEY"
 
 # 카테고리 타입 정의
 CategoryType = Literal["Cloud & Infra", "AI / ML", "Development", "Security", "Misc"]
