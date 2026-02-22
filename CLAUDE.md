@@ -148,6 +148,7 @@ Markdown content...
 - ASCII art 다이어그램 사용 금지
 - 마크다운 코드블록에 ```mermaid 사용
 - flowchart, sequence, class, state 등 적절한 Mermaid 다이어그램 타입 선택
+- **노드 텍스트에 `<br/>`, `<br>` 등 HTML 태그 사용 금지** → Mermaid 파서 syntax error 발생. 줄바꿈이 필요하면 노드 텍스트를 단순화하거나 별도 노드로 분리할 것
 
 ## Design System
 
