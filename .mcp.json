@@ -6,6 +6,13 @@
       "env": {
         "GEMINI_API_KEY": "${NANOBANANA_MCP_GOOGLE_API_KEY}"
       }
+    },
+    "imagegen": {
+      "command": "npx",
+      "args": ["-y", "imagegen-mcp@latest", "--models", "gpt-image-1"],
+      "env": {
+        "OPENAI_API_KEY": "${BLOGV2_OPENAI_API_KEY}"
+      }
     }
   }
 }

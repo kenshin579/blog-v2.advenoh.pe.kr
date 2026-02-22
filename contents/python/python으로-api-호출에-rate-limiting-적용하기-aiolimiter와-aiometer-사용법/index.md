@@ -14,6 +14,8 @@ tags:
 
 # 1. 개요
 
+<img src="thumbnail.png" width="75%" />
+
 Rate limiting은 API 호출이나 서버 요청을 특정 시간 단위 내에서 제한하는 기법이다. 이는 서버 과부하를 방지하고, 과도한 요청으로 인한 장애를 예방하기 위해 사용된다. 예를 들어, 특정 API에서는 "1초당 20건"과 같은 방식으로 호출 횟수를 제한하기도 한다. 이러한 상황에서 Python으로 개발할 때, 효율적으로 rate limit을 적용할 수 있는 방법에 대해 알아보자.
 
 > 개인적으로 [korea-investment-stock](https://pypi.org/project/korea-investment-stock/) API를 사용하고 있고 한국투자 API 는 1초당 20건 호출 제약이 있어서 이 부분을 해결하기 위해 스터디를 하게 되었다.
