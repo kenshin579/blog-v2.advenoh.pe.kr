@@ -20,6 +20,8 @@ series: "MQTT v5 완벽 가이드"
 
 # 1. Topic 설계
 
+<img src="./thumbnail.png" alt="MQTT v5 Basic Architecture" width="50%" />
+
 이 장에서는 Topic 네이밍 규칙, Wildcard 사용법, 그리고 실무에서 검증된 Best Practice를 다룬다. 이 내용을 숙지하면 수천 개의 디바이스가 연결된 시스템에서도 효율적으로 메시지를 관리할 수 있다.
 
 ## 1.1 Topic 구조와 규칙
