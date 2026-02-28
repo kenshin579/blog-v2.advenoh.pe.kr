@@ -202,7 +202,7 @@ m.Range(func(key, value any) bool {
 })
 ```
 
-## 6.1 일반 map + Mutex vs sync.Map
+그렇다면 일반 `map + Mutex`와 `sync.Map` 중 어떤 것을 선택해야 할까?
 
 | 상황 | 추천 |
 |------|------|
@@ -212,7 +212,9 @@ m.Range(func(key, value any) bool {
 
 > 대부분의 경우 `map + RWMutex` 조합이 더 범용적이다. `sync.Map`은 키가 한번 설정되면 거의 변경되지 않는 캐시 시나리오에서 진가를 발휘한다.
 
-# 7. 정리
+# 7. 마무리
+
+이번 편에서는 Go의 `sync` 패키지가 제공하는 핵심 동기화 프리미티브를 살펴보았다. 각 도구는 고유한 목적이 있으며, 상황에 맞게 선택하는 것이 중요하다.
 
 | 프리미티브 | 용도 | 핵심 |
 |----------|------|------|
@@ -222,9 +224,7 @@ m.Range(func(key, value any) bool {
 | Once | 한 번만 실행 | Singleton, 초기화에 적합 |
 | sync.Map | concurrent-safe map | 읽기 위주에 효율적 |
 
-## 7.1 Channel vs Mutex 언제 쓸까?
-
-Go 공식 Wiki에서는 "데이터의 소유권을 넘길 때는 Channel, 구조체의 내부 상태를 보호할 때는 Mutex"를 권장한다. 아래 표를 참고하여 상황에 맞는 도구를 선택하자.
+그렇다면 Channel과 Mutex 중 어떤 것을 선택해야 할까? Go 공식 Wiki에서는 "데이터의 소유권을 넘길 때는 Channel, 구조체의 내부 상태를 보호할 때는 Mutex"를 권장한다. 아래 표를 참고하여 상황에 맞는 도구를 선택하자.
 
 | Channel | Mutex |
 |---------|-------|
@@ -232,6 +232,8 @@ Go 공식 Wiki에서는 "데이터의 소유권을 넘길 때는 Channel, 구조
 | goroutine 간 통신 | 캐시, 카운터 |
 | 파이프라인, fan-in/out | 구조체의 필드 보호 |
 | 복잡한 동기화 패턴 | 간단한 임계 영역 |
+
+실무에서는 하나의 도구만 고집하기보다 상황에 맞게 조합하는 것이 좋다. 예를 들어, WaitGroup으로 goroutine 완료를 기다리면서 Mutex로 공유 데이터를 보호하는 패턴은 매우 흔하다. 중요한 것은 항상 `go test -race`로 Data Race를 검증하는 습관을 들이는 것이다.
 
 다음 편에서는 goroutine의 생명주기를 관리하는 핵심 도구인 **Context 패키지**를 다룬다.
 
