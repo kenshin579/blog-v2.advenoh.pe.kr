@@ -9,7 +9,7 @@ draft: false
 
 Go에서 여러 goroutine을 다루다 보면 자연스럽게 마주치는 문제가 있다. "이 goroutine을 언제 멈춰야 하지?", "요청이 3초 안에 끝나지 않으면 어떻게 하지?", "요청 ID를 하위 함수까지 어떻게 전달하지?" 이 모든 질문에 대한 답이 바로 `context` 패키지다.
 
-## 서론 - context 패키지가 필요한 이유
+# 1. 서론 - context 패키지가 필요한 이유
 
 서버가 HTTP 요청을 처리할 때, 하나의 요청이 여러 goroutine으로 분산되어 처리되는 것은 흔한 일이다. 이때 세 가지 핵심 요구사항이 생긴다.
 
@@ -33,7 +33,7 @@ type Context interface {
 - `Deadline()`: 만료 시간을 반환한다
 - `Value()`: context에 저장된 값을 조회한다
 
-## context.Background()와 context.TODO()
+# 2. context.Background()와 context.TODO()
 
 모든 context 트리의 **루트**가 되는 두 가지 빈 context가 있다.
 
@@ -47,9 +47,9 @@ ctx := context.TODO()       // 아직 어떤 context를 쓸지 모를 때
 
 실무에서는 대부분 `context.Background()`를 루트로 사용하고, 여기에 `WithCancel`, `WithTimeout`, `WithValue` 등을 감싸서 파생 context를 만든다.
 
-## WithCancel - 취소 전파
+# 3. WithCancel - 취소 전파
 
-### 기본 사용법
+## 3.1 기본 사용법
 
 `context.WithCancel`은 부모 context로부터 새로운 context와 `cancel` 함수를 반환한다. `cancel()`을 호출하면 `Done()` channel이 닫히고, 이를 감시하는 goroutine이 종료된다.
 
@@ -74,7 +74,7 @@ func TestWithCancel(t *testing.T) {
 
 `cancel()`이 호출되면 `ctx.Done()`이 닫히면서 goroutine이 깨어난다. `ctx.Err()`는 `context.Canceled`를 반환한다.
 
-### 취소 체인 (parent -> child)
+## 3.2 취소 체인 (parent -> child)
 
 context는 트리 구조를 이룬다. **부모가 취소되면 모든 자식도 자동으로 취소**된다. 반대로 자식의 취소는 부모에 영향을 주지 않는다.
 
@@ -94,7 +94,7 @@ func TestCancelChain(t *testing.T) {
 
 `parentCancel()`만 호출했는데 `child.Err()`도 `context.Canceled`가 된다. 이것이 context 전파의 핵심이다.
 
-### worker 패턴에서의 활용
+## 3.3 worker 패턴에서의 활용
 
 실무에서 가장 많이 쓰이는 패턴이다. worker goroutine이 `select`로 `ctx.Done()`을 감시하면서, 취소 신호가 오면 깨끗하게 종료한다.
 
@@ -132,9 +132,9 @@ func TestCancelWorker(t *testing.T) {
 
 worker는 무한 루프를 돌면서 결과를 channel로 보내다가, `ctx.Done()`이 닫히면 `return`으로 빠져나온다. `defer close(results)`로 channel도 정리되므로, `range results`가 자연스럽게 종료된다.
 
-## WithTimeout과 WithDeadline
+# 4. WithTimeout과 WithDeadline
 
-### timeout vs deadline 차이
+## 4.1 timeout vs deadline 차이
 
 둘 다 시간 기반으로 context를 취소하지만, 시간을 지정하는 방식이 다르다.
 
@@ -177,7 +177,7 @@ func TestWithDeadline(t *testing.T) {
 
 `WithDeadline`은 절대 시각을 사용한다. `Deadline()` 메서드로 설정된 만료 시간을 조회할 수 있다.
 
-### 중첩 timeout (inner가 더 짧은 경우)
+## 4.2 중첩 timeout (inner가 더 짧은 경우)
 
 timeout을 중첩할 때, **더 짧은 timeout이 항상 우선**한다. inner context가 먼저 만료되어도 outer context는 영향을 받지 않는다.
 
@@ -202,9 +202,9 @@ outer는 200ms, inner는 50ms다. inner가 먼저 만료되지만, outer는 여�
 
 만약 inner의 timeout이 outer보다 **길다면** 어떻게 될까? 이 경우에도 outer가 먼저 취소되면 inner도 함께 취소된다. 부모의 취소는 항상 자식에게 전파되기 때문이다.
 
-## WithValue - 요청 범위 값 전달
+# 5. WithValue - 요청 범위 값 전달
 
-### 기본 사용법
+## 5.1 기본 사용법
 
 `context.WithValue`는 context에 key-value 쌍을 저장한다. 주로 요청 ID, 인증 토큰, 트레이싱 정보 등 **요청 범위(request-scoped)** 데이터를 전달할 때 사용한다.
 
@@ -225,7 +225,7 @@ func TestWithValue(t *testing.T) {
 
 존재하지 않는 키를 조회하면 `nil`이 반환된다. 따라서 type assertion 전에 nil 체크를 하는 것이 안전하다.
 
-### typed key로 충돌 방지
+## 5.2 typed key로 충돌 방지
 
 context 키로 `string`을 직접 사용하면, 서로 다른 패키지에서 같은 문자열을 키로 써서 충돌이 발생할 수 있다. **비공개 타입을 키로 정의**하면 이 문제를 방지할 수 있다.
 
@@ -241,7 +241,7 @@ const (
 
 `contextKey`는 `string` 기반이지만 별도의 타입이므로, 다른 패키지에서 `string("userID")`로 접근해도 타입이 달라서 매칭되지 않는다. 이것이 Go에서 context key 충돌을 방지하는 표준 패턴이다.
 
-### value chain (부모 -> 자식 값 조회)
+## 5.3 value chain (부모 -> 자식 값 조회)
 
 context value는 트리를 따라 **부모 방향으로 탐색**한다. 자식 context에서 값을 조회하면, 자신에게 없으면 부모를, 부모에게 없으면 그 부모를 순서대로 확인한다.
 
@@ -261,9 +261,9 @@ func TestWithValueChain(t *testing.T) {
 
 child는 parent의 `userIDKey` 값에 접근할 수 있지만, parent는 child의 `requestIDKey` 값에 접근할 수 없다. 값 조회는 항상 **아래에서 위로** (자식에서 부모 방향으로) 진행된다.
 
-## Context 전파 패턴
+# 6. Context 전파 패턴
 
-### parent 취소 -> 모든 child 취소
+## 6.1 parent 취소 -> 모든 child 취소
 
 하나의 루트 context에서 여러 child goroutine을 생성하면, 루트를 취소하는 것만으로 모든 goroutine을 한 번에 정리할 수 있다.
 
@@ -294,7 +294,7 @@ func TestPropagation(t *testing.T) {
 
 `rootCancel()` 한 번으로 3개의 child goroutine이 모두 정리된다. 이것이 context 전파의 힘이다. HTTP 서버에서 클라이언트가 연결을 끊으면, 해당 요청에서 파생된 모든 goroutine을 이 패턴으로 정리할 수 있다.
 
-### context를 함수의 첫 번째 파라미터로 전달 (Go 관례)
+## 6.2 context를 함수의 첫 번째 파라미터로 전달 (Go 관례)
 
 Go 커뮤니티에서 확립된 관례가 있다. **context는 함수의 첫 번째 파라미터로 전달하고, 변수명은 `ctx`를 사용한다.**
 
@@ -345,9 +345,9 @@ func TestContextAsFirstParam(t *testing.T) {
 
 `WithTimeout`으로 50ms 제한을 걸고, WaitGroup으로 모든 worker의 종료를 기다린 후 channel을 닫는다. context와 WaitGroup을 조합하면 "시간 제한이 있는 병렬 작업"을 안전하게 관리할 수 있다.
 
-## 모범 사례
+# 7. 모범 사례
 
-### context.Value 남용 금지
+## 7.1 context.Value 남용 금지
 
 `context.Value`는 편리하지만, 함수 시그니처를 대체하는 용도로 사용하면 안 된다.
 
@@ -364,7 +364,7 @@ func HandleRequest(ctx context.Context, db *sql.DB, log *slog.Logger) {
 
 context.Value에 적합한 데이터는 **요청 범위(request-scoped)** 이면서 **함수 시그니처에 넣기 어려운** 것들이다. 대표적으로 요청 ID, 트레이싱 span, 인증 토큰 등이 있다.
 
-### context는 struct에 저장하지 않기
+## 7.2 context는 struct에 저장하지 않기
 
 ```go
 // 나쁜 예
@@ -380,7 +380,7 @@ func (s *Server) HandleRequest(ctx context.Context) {
 
 context는 요청의 생명주기와 함께 존재해야 한다. struct에 저장하면 어떤 요청의 context인지 모호해지고, 취소 전파가 제대로 동작하지 않을 수 있다.
 
-### cancel() 항상 defer로 호출
+## 7.3 cancel() 항상 defer로 호출
 
 `WithCancel`, `WithTimeout`, `WithDeadline`이 반환하는 cancel 함수는 **반드시 호출**해야 한다. 호출하지 않으면 context 관련 리소스가 해제되지 않아 메모리 누수가 발생한다.
 
@@ -393,7 +393,7 @@ defer cancel() // 항상 defer로 호출
 
 timeout이 만료되어 자동 취소된 경우에도 `cancel()`을 호출하는 것이 안전하다. 이미 취소된 context에 `cancel()`을 호출해도 아무 일도 일어나지 않는다(idempotent).
 
-## 정리
+# 8. 마무리
 
 | 함수 | 용도 | Done 닫히는 시점 | Err 반환값 |
 |------|------|-----------------|-----------|
@@ -412,7 +412,7 @@ context 패키지의 핵심 원칙을 정리하면 다음과 같다.
 
 context는 Go에서 goroutine의 생명주기를 관리하는 핵심 도구다. 특히 서버 프로그래밍에서 요청 처리, timeout 관리, 우아한 종료(graceful shutdown)를 구현할 때 필수적으로 사용된다.
 
-## 참고
+# 9. 참고
 
 - 예제 코드: [tutorials-go/golang/concurrency/context](https://github.com/kenshin579/tutorials-go/tree/master/golang/concurrency/context)
 - [Go 공식 문서 - context 패키지](https://pkg.go.dev/context)
