@@ -232,6 +232,38 @@ func fanIn(channels ...<-chan string) <-chan string {
 }
 ```
 
+**fanIn 호출 예시:**
+
+```go
+func TestFanIn(t *testing.T) {
+    // 3개의 독립적인 데이터 소스
+    source1 := make(chan string, 3)
+    source2 := make(chan string, 3)
+
+    go func() {
+        for _, s := range []string{"a1", "a2", "a3"} {
+            source1 <- s
+        }
+        close(source1) // 데이터 전송 완료 후 반드시 close
+    }()
+
+    go func() {
+        for _, s := range []string{"b1", "b2"} {
+            source2 <- s
+        }
+        close(source2)
+    }()
+
+    // Fan-in: 2개 channel을 하나로 합침
+    merged := fanIn(source1, source2)
+
+    for v := range merged { // merged channel이 close되면 루프 종료
+        fmt.Println(v)
+    }
+    // 출력 (순서는 비결정적): a1, b1, a2, b2, a3
+}
+```
+
 ### Fan-out + Fan-in 조합
 
 실전에서는 두 패턴을 조합하여 **병렬 처리 파이프라인**을 구성한다.
