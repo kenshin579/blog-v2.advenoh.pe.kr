@@ -1,6 +1,7 @@
 [build]
   command = "npm run build"
   publish = "out"
+  ignore = "/bin/bash -c '[[ \"$CONTEXT\" == \"deploy-preview\" ]] && exit 0 || exit 1'"
 
 [[redirects]]
   from = "/*"
