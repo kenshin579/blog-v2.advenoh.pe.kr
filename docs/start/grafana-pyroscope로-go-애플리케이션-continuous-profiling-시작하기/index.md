@@ -15,6 +15,7 @@ tags:
   - pprof
   - 고랭
   - 프로파일링
+series: "Grafana 완벽 가이드"
 ---
 
 # 1. 들어가며
