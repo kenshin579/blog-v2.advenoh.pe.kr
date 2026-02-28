@@ -19,7 +19,7 @@ series: "Golang Concurrency"
 
 `select`문은 **여러 channel을 동시에 기다리는** Go만의 강력한 제어 구조다. 이를 활용하면 timeout, fan-in/fan-out, 동적 channel 관리 등 다양한 동시성 패턴을 구현할 수 있다.
 
-## 1. Select 문 기본
+# 1. Select 문 기본
 
 <img src="cover.png" alt="cover" width="75%" />
 
@@ -34,7 +34,7 @@ case msg := <-ch2: // ch2에서 먼저 데이터가 오면 실행
 }
 ```
 
-### 랜덤 선택 특성
+## 1.1 랜덤 선택 특성
 
 여러 case가 동시에 준비되면 Go runtime이 **무작위로** 하나를 선택한다. 이를 통해 특정 channel이 우선되는 **starvation** 문제를 방지한다.
 
@@ -67,11 +67,11 @@ func TestSelectMultipleReady(t *testing.T) {
 }
 ```
 
-## 2. Default Case 활용
+# 2. Default Case 활용
 
 `default` case를 추가하면 **non-blocking** 동작이 된다. 모든 channel이 준비되지 않았을 때 즉시 default가 실행된다.
 
-### Non-blocking Receive
+## 2.1 Non-blocking Receive
 
 ```go
 select {
@@ -82,7 +82,7 @@ default:
 }
 ```
 
-### Non-blocking Send
+## 2.2 Non-blocking Send
 
 ```go
 ch := make(chan int, 1)
@@ -98,9 +98,9 @@ default:
 
 > default는 polling이나 busy-wait에 유용하지만, 루프에서 남용하면 CPU를 과도하게 사용할 수 있다.
 
-## 3. Timeout 처리
+# 3. Timeout 처리
 
-### time.After
+## 3.1 time.After
 
 `time.After`는 지정된 시간 후에 값을 보내는 channel을 반환한다. select와 조합하면 간단히 timeout을 구현할 수 있다.
 
@@ -122,7 +122,7 @@ func TestTimeoutWithTimeAfter(t *testing.T) {
 }
 ```
 
-### context.WithTimeout
+## 3.2 context.WithTimeout
 
 실무에서는 `context.WithTimeout`을 더 많이 사용한다. context는 취소 전파가 가능하고, 여러 goroutine에 걸쳐 timeout을 관리할 수 있다.
 
@@ -155,9 +155,9 @@ func TestSimulateAPICallTimeout(t *testing.T) {
 }
 ```
 
-## 4. Fan-in / Fan-out 패턴
+# 4. Fan-in / Fan-out 패턴
 
-### Fan-out
+## 4.1 Fan-out
 
 하나의 입력을 **여러 worker에게 분배**하는 패턴이다. 여러 goroutine이 같은 channel에서 작업을 가져간다.
 
@@ -198,7 +198,7 @@ func TestFanOut(t *testing.T) {
 }
 ```
 
-### Fan-in
+## 4.2 Fan-in
 
 여러 channel의 결과를 **하나의 channel로 합치는** 패턴이다.
 
@@ -266,7 +266,7 @@ func TestFanIn(t *testing.T) {
 }
 ```
 
-### Fan-out + Fan-in 조합
+## 4.3 Fan-out + Fan-in 조합
 
 실전에서는 두 패턴을 조합하여 **병렬 처리 파이프라인**을 구성한다.
 
@@ -282,7 +282,7 @@ graph LR
     Fan-in --> 결과
 ```
 
-## 5. Nil Channel 트릭
+# 5. Nil Channel 트릭
 
 nil channel의 특성:
 - nil channel에 **send하면 영원히 blocking**
@@ -328,7 +328,7 @@ func TestNilChannelDisable(t *testing.T) {
 - 여러 데이터 소스를 merge할 때, 각 소스가 완료되면 비활성화
 - 조건에 따라 특정 channel 처리를 on/off
 
-## 6. 정리
+# 6. 마무리
 
 | 개념 | 핵심 |
 |------|------|
@@ -343,7 +343,7 @@ func TestNilChannelDisable(t *testing.T) {
 
 다음 편에서는 goroutine 간 **공유 자원을 안전하게 관리**하는 `sync` 패키지를 다룬다.
 
-## 참고
+# 7. 참고
 
 - [Go Tour - Select](https://go.dev/tour/concurrency/5)
 - [Go Blog - Pipelines and cancellation](https://go.dev/blog/pipelines)
