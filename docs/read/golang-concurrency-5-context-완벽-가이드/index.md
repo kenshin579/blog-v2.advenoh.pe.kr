@@ -74,6 +74,8 @@ func TestWithCancel(t *testing.T) {
 
 `cancel()`이 호출되면 `ctx.Done()`이 닫히면서 goroutine이 깨어난다. `ctx.Err()`는 `context.Canceled`를 반환한다.
 
+> `cancel()` 함수의 내부 구현이 궁금하다면 [FAQ - cancel() 내부 구현](#9-faq)을 참고하자.
+
 ## 3.2 취소 체인 (parent -> child)
 
 context는 트리 구조를 이룬다. **부모가 취소되면 모든 자식도 자동으로 취소**된다. 반대로 자식의 취소는 부모에 영향을 주지 않는다.
