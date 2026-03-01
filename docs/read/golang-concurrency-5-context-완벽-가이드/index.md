@@ -571,6 +571,20 @@ func handler(w http.ResponseWriter, r *http.Request) {
 | 레이어별 timeout | DB/외부 API마다 허용 시간이 다를 때 (가장 권장) |
 | errgroup + context | 독립적인 호출을 병렬로 하고, 하나 실패 시 나머지 취소 |
 
+> **resty의 `SetContext()` 내부 동작**: resty는 `SetContext(ctx)`를 호출하면 내부적으로 Go 표준 라이브러리의 `http.Request.WithContext(ctx)`를 사용한다. 이 context는 `net/http.Transport`의 `roundTrip()` 단계까지 전파되어, context가 취소되면 **DNS 조회, TCP 연결, TLS 핸드셰이크, 응답 읽기** 등 HTTP 요청의 모든 단계에서 즉시 중단된다. 따라서 `SetContext(ctx)`만 정확히 전달하면, timeout이나 cancel 시 불필요한 네트워크 리소스가 즉시 해제된다.
+>
+> ```go
+> // resty 내부 (간략화)
+> func (r *Request) Execute(method, url string) (*Response, error) {
+>     // 1. http.Request 생성
+>     req, _ := http.NewRequestWithContext(r.ctx, method, url, body)
+>
+>     // 2. http.Client.Do() 호출 — context 취소 시 즉시 중단
+>     resp, err := r.client.httpClient.Do(req)
+>     // context.DeadlineExceeded 또는 context.Canceled 에러 반환
+> }
+> ```
+
 ### Q. Echo 프레임워크에서 timeout 관리는 어떻게 하는가?
 
 Echo에는 `TimeoutMiddleware`가 내장되어 있어, 모든 핸들러에 자동으로 timeout을 적용할 수 있다.
