@@ -74,6 +74,66 @@ func TestWithCancel(t *testing.T) {
 
 `cancel()`이 호출되면 `ctx.Done()`이 닫히면서 goroutine이 깨어난다. `ctx.Err()`는 `context.Canceled`를 반환한다.
 
+### cancel() 내부 구현
+
+`context.WithCancel`이 반환하는 `cancel()` 함수는 내부적으로 어떻게 동작할까? Go 표준 라이브러리(`go/src/context/context.go`)의 핵심 구조를 살펴보자.
+
+```go
+// cancelCtx - 취소 가능한 context의 내부 구조체
+type cancelCtx struct {
+    Context                        // 부모 context 임베딩
+    mu       sync.Mutex            // 동시 접근 보호용 뮤텍스
+    done     atomic.Value          // chan struct{} 저장, 최초 호출 시 lazy 생성
+    children map[canceler]struct{} // 자식 context 목록 (취소 전파용)
+    err      error                 // 취소 사유 (Canceled 또는 DeadlineExceeded)
+    cause    error                 // Go 1.20+ cause 체인
+}
+
+// cancel - 실제 취소 로직
+func (c *cancelCtx) cancel(removeFromParent bool, err, cause error) {
+    c.mu.Lock()
+
+    if c.err != nil {
+        c.mu.Unlock()
+        return // 이미 취소된 상태면 무시 (멱등성 보장)
+    }
+
+    c.err = err     // context.Canceled 설정
+    c.cause = cause
+
+    // done channel을 닫아서 <-ctx.Done()으로 대기 중인 goroutine을 깨움
+    d, _ := c.done.Load().(chan struct{})
+    if d == nil {
+        c.done.Store(closedchan) // 아직 생성 안 됐으면 미리 닫힌 channel 저장
+    } else {
+        close(d) // 기존 channel을 닫음 → 모든 수신자가 즉시 깨어남
+    }
+
+    // 모든 자식 context도 재귀적으로 취소
+    for child := range c.children {
+        child.cancel(false, err, cause)
+    }
+    c.children = nil
+    c.mu.Unlock()
+
+    if removeFromParent {
+        removeChild(c.Context, c) // 부모의 children map에서 자신을 제거
+    }
+}
+```
+
+핵심 동작을 정리하면 다음과 같다.
+
+| 단계 | 동작 | 설명 |
+|------|------|------|
+| 1 | 멱등성 체크 | `cancel()`을 여러 번 호출해도 안전 (첫 번째만 실행) |
+| 2 | `err` 설정 | `ctx.Err()`가 `context.Canceled`를 반환하도록 설정 |
+| 3 | `done` channel 닫기 | `close(d)`로 `<-ctx.Done()` 대기 중인 모든 goroutine을 깨움 |
+| 4 | 자식 취소 전파 | `children` map을 순회하며 모든 자식도 재귀적으로 취소 |
+| 5 | 부모에서 제거 | 부모의 `children` map에서 자신을 제거하여 메모리 해제 |
+
+`close(d)`가 핵심인데, Go에서 **닫힌 channel은 즉시 zero value를 반환**하므로 `<-ctx.Done()`으로 대기 중인 모든 goroutine이 동시에 깨어난다. 이것이 context의 취소 전파가 효율적인 이유다.
+
 ## 3.2 취소 체인 (parent -> child)
 
 context는 트리 구조를 이룬다. **부모가 취소되면 모든 자식도 자동으로 취소**된다. 반대로 자식의 취소는 부모에 영향을 주지 않는다.
