@@ -476,6 +476,134 @@ func (c *cancelCtx) cancel(removeFromParent bool, err, cause error) {
 
 `close(d)`가 핵심인데, Go에서 **닫힌 channel은 즉시 zero value를 반환**하므로 `<-ctx.Done()`으로 대기 중인 모든 goroutine이 동시에 깨어난다. 이것이 context의 취소 전파가 효율적인 이유다.
 
+### Q. API 핸들러에서 DB/외부 API 호출 시 context timeout은 어떻게 설정해야 하는가?
+
+API 핸들러에서 DB 조회나 외부 API를 호출할 때, 각 레이어에서 문제가 생기면 전체 요청이 멈출 수 있다. 이를 방지하기 위해 context timeout을 적절히 설정해야 한다.
+
+**방법 1: 전체 요청에 단일 timeout**
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+    ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second) // 전체 5초 제한
+    defer cancel()
+
+    user, err := db.GetUser(ctx, userID)       // DB 조회 — ctx 취소 시 중단
+    if err != nil { return }
+
+    profile, err := externalAPI.GetProfile(ctx, user.Email) // 외부 API — 같은 ctx
+    if err != nil { return }
+}
+```
+
+단순하지만, DB가 4.5초 걸리면 외부 API는 0.5초밖에 못 쓰는 문제가 있다.
+
+**방법 2: 레이어별 개별 timeout (권장)**
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+    ctx := r.Context() // 부모 context
+
+    // DB는 2초 제한
+    dbCtx, dbCancel := context.WithTimeout(ctx, 2*time.Second)
+    defer dbCancel()
+    user, err := db.GetUser(dbCtx, userID)
+    if err != nil { return }
+
+    // 외부 API는 3초 제한
+    apiCtx, apiCancel := context.WithTimeout(ctx, 3*time.Second)
+    defer apiCancel()
+    profile, err := externalAPI.GetProfile(apiCtx, user.Email)
+    if err != nil { return }
+}
+```
+
+각 레이어에 적절한 timeout을 부여하여 하나가 느려도 다른 레이어에 영향을 주지 않는다.
+
+**방법 3: 병렬 호출 + errgroup (독립적인 호출일 때)**
+
+DB와 외부 API가 서로 독립적이면 병렬로 호출하고, 하나라도 실패하면 나머지를 취소할 수 있다.
+
+```go
+func handler(w http.ResponseWriter, r *http.Request) {
+    ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second)
+    defer cancel()
+
+    g, gCtx := errgroup.WithContext(ctx) // 하나라도 에러 → 나머지 자동 취소
+
+    var user *User
+    var profile *Profile
+
+    g.Go(func() error {
+        var err error
+        user, err = db.GetUser(gCtx, userID) // gCtx 사용
+        return err
+    })
+
+    g.Go(func() error {
+        var err error
+        profile, err = externalAPI.GetProfile(gCtx, email) // gCtx 사용
+        return err
+    })
+
+    if err := g.Wait(); err != nil { return }
+}
+```
+
+| 패턴 | 언제 쓰나 |
+|------|----------|
+| 전체 timeout | 간단한 API, 레이어가 1~2개일 때 |
+| 레이어별 timeout | DB/외부 API마다 허용 시간이 다를 때 (가장 권장) |
+| errgroup + context | 독립적인 호출을 병렬로 하고, 하나 실패 시 나머지 취소 |
+
+### Q. Echo 프레임워크에서 timeout 관리는 어떻게 하는가?
+
+Echo에는 `TimeoutMiddleware`가 내장되어 있어, 모든 핸들러에 자동으로 timeout을 적용할 수 있다.
+
+```go
+import "github.com/labstack/echo/v4/middleware"
+
+e := echo.New()
+
+// 모든 핸들러에 5초 timeout 적용
+e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+    Timeout: 5 * time.Second,
+}))
+```
+
+핸들러에서는 `c.Request().Context()`로 미들웨어가 설정한 timeout context를 사용한다.
+
+```go
+func getUser(c echo.Context) error {
+    ctx := c.Request().Context() // 미들웨어가 설정한 timeout context
+
+    user, err := db.GetUser(ctx, id)
+    if err != nil {
+        if errors.Is(err, context.DeadlineExceeded) {
+            return echo.NewHTTPError(http.StatusGatewayTimeout, "요청 시간 초과")
+        }
+        return err
+    }
+    return c.JSON(http.StatusOK, user)
+}
+```
+
+라우트별로 다른 timeout을 설정할 수도 있다.
+
+```go
+// 기본 5초
+e.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+    Timeout: 5 * time.Second,
+}))
+
+// 파일 업로드 라우트만 30초
+uploadGroup := e.Group("/upload")
+uploadGroup.Use(middleware.TimeoutWithConfig(middleware.TimeoutConfig{
+    Timeout: 30 * time.Second,
+}))
+```
+
+미들웨어는 **전체 요청의 상한선**이고, 레이어별 세분화(DB 2초, 외부 API 3초)는 핸들러 내부에서 직접 `context.WithTimeout`으로 설정하는 것이 실무 패턴이다.
+
 # 10. 참고
 
 - 예제 코드: [tutorials-go/golang/concurrency/context](https://github.com/kenshin579/tutorials-go/tree/master/golang/concurrency/context)
