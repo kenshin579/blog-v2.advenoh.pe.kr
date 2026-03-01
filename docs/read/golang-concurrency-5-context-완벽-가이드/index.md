@@ -483,14 +483,23 @@ API 핸들러에서 DB 조회나 외부 API를 호출할 때, 각 레이어에�
 **방법 1: 전체 요청에 단일 timeout**
 
 ```go
+// resty 클라이언트 (패키지 레벨에서 재사용)
+var client = resty.New()
+
 func handler(w http.ResponseWriter, r *http.Request) {
     ctx, cancel := context.WithTimeout(r.Context(), 5*time.Second) // 전체 5초 제한
     defer cancel()
 
-    user, err := db.GetUser(ctx, userID)       // DB 조회 — ctx 취소 시 중단
+    // DB 조회 — ctx 취소 시 중단
+    user, err := db.GetUser(ctx, userID)
     if err != nil { return }
 
-    profile, err := externalAPI.GetProfile(ctx, user.Email) // 외부 API — 같은 ctx
+    // 외부 API 호출 — resty에 같은 ctx 전달
+    var profile Profile
+    _, err = client.R().
+        SetContext(ctx).           // context 전파
+        SetResult(&profile).
+        Get(fmt.Sprintf("https://api.example.com/profile/%s", user.Email))
     if err != nil { return }
 }
 ```
@@ -509,15 +518,20 @@ func handler(w http.ResponseWriter, r *http.Request) {
     user, err := db.GetUser(dbCtx, userID)
     if err != nil { return }
 
-    // 외부 API는 3초 제한
+    // 외부 API는 3초 제한 — resty에 개별 context 전달
     apiCtx, apiCancel := context.WithTimeout(ctx, 3*time.Second)
     defer apiCancel()
-    profile, err := externalAPI.GetProfile(apiCtx, user.Email)
+
+    var profile Profile
+    _, err = client.R().
+        SetContext(apiCtx).        // 레이어별 timeout context
+        SetResult(&profile).
+        Get(fmt.Sprintf("https://api.example.com/profile/%s", user.Email))
     if err != nil { return }
 }
 ```
 
-각 레이어에 적절한 timeout을 부여하여 하나가 느려도 다른 레이어에 영향을 주지 않는다.
+각 레이어에 적절한 timeout을 부여하여 하나가 느려도 다른 레이어에 영향을 주지 않는다. resty의 `SetContext()`는 내부적으로 `http.Request.WithContext()`를 호출하므로, timeout이나 cancel 발생 시 **TCP 연결까지 즉시 중단**된다.
 
 **방법 3: 병렬 호출 + errgroup (독립적인 호출일 때)**
 
@@ -531,7 +545,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
     g, gCtx := errgroup.WithContext(ctx) // 하나라도 에러 → 나머지 자동 취소
 
     var user *User
-    var profile *Profile
+    var profile Profile
 
     g.Go(func() error {
         var err error
@@ -540,8 +554,10 @@ func handler(w http.ResponseWriter, r *http.Request) {
     })
 
     g.Go(func() error {
-        var err error
-        profile, err = externalAPI.GetProfile(gCtx, email) // gCtx 사용
+        _, err := client.R().
+            SetContext(gCtx).      // errgroup의 context → 다른 goroutine 실패 시 자동 취소
+            SetResult(&profile).
+            Get(fmt.Sprintf("https://api.example.com/profile/%s", email))
         return err
     })
 
