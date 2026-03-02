@@ -58,6 +58,7 @@ Updated 2026-03-02
 * [MQTT v5 완벽 가이드 (2): Topic 설계와 메시지 모델](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-2-topic-설계와-메시지-모델/)
 * [MQTT v5 완벽 가이드 (3): QoS, Session, 재연결 전략](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-3-qos-session-재연결-전략/)
 * [MQTT v5 완벽 가이드 (4): 고급 기능과 보안](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-4-고급-기능과-보안/)
+* [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영/)
 * [Mongo Script Collection 모음](https://blog.advenoh.pe.kr/mongo-script-collection-모음/)
 * [Mongodb Collection Cloning하는 방법](https://blog.advenoh.pe.kr/mongodb-collection-cloning하는-방법/)
 * [Mongodb 원격 서버에 있는 Collection을 로컬환경 서버로 복사하기](https://blog.advenoh.pe.kr/mongodb-원격-서버에-있는-collection을-로컬환경-서버로-복사하기/)
