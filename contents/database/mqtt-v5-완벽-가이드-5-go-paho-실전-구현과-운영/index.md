@@ -1000,7 +1000,7 @@ export function DeviceStatus() {
 
 `Mosquitto`는 `TCP`와 `WebSocket` 두 가지 프로토콜을 동시에 지원한다. 각각 다른 포트에서 리스닝하도록 설정한다.
 
-```conf
+```ini
 # mosquitto/config/mosquitto.conf
 listener 1883
 listener 9001
@@ -1022,7 +1022,7 @@ allow_anonymous true
 
 **프로덕션 환경에서는:**
 
-```conf
+```ini
 listener 1883
 listener 9001
 protocol websockets
