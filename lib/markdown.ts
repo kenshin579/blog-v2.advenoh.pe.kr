@@ -3,6 +3,7 @@ import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
 import remarkRehype from 'remark-rehype';
+import rehypeRaw from 'rehype-raw';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrism from 'rehype-prism-plus';
@@ -42,7 +43,8 @@ export async function parseMarkdown(markdown: string, slug: string): Promise<Art
   const result = await unified()
     .use(remarkParse) // markdown → mdast
     .use(remarkGfm) // GitHub Flavored Markdown 지원
-    .use(remarkRehype) // mdast → hast
+    .use(remarkRehype, { allowDangerousHtml: true }) // mdast → hast
+    .use(rehypeRaw) // raw HTML 파싱
     .use(rehypeSlug) // heading에 id 추가
     .use(rehypeAutolinkHeadings, {
       behavior: 'wrap',
