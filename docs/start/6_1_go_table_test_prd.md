@@ -31,7 +31,14 @@ Go의 테스트 작성 기본기를 다루는 글. 테이블 기반 테스트(Ta
 ### 2.3 Assertion 라이브러리 활용
 - 표준 `testing` 패키지만으로 테스트하기
 - `testify/assert` 활용 (Equal, NotNil, Error 등)
-- 참고 코드: `assert_test.go`
+- `go-cmp` 소개 (`github.com/google/go-cmp`)
+  - `reflect.DeepEqual`의 상위 호환 — 구조체 깊은 비교 전용
+  - `cmp.Equal()`: 두 값이 같은지 비교
+  - `cmp.Diff()`: 차이점을 읽기 쉬운 텍스트로 출력 (테스트 실패 시 디버깅 용이)
+  - `cmpopts.IgnoreFields()`: 특정 필드 제외 비교 (createdAt, updatedAt 등)
+  - `cmpopts.SortSlices()`: 슬라이스 순서 무관 비교
+  - testify vs go-cmp 비교: testify는 올인원 assertion, go-cmp는 비교 로직에 집중
+- 참고 코드: `assert_test.go`, `cmp_test.go` (신규 작성)
 
 ### 2.4 테스트 헬퍼와 유틸리티
 - `t.Helper()` 함수 활용
@@ -43,10 +50,18 @@ Go의 테스트 작성 기본기를 다루는 글. 테이블 기반 테스트(Ta
 - `func BenchmarkXxx(b *testing.B)` 기본 구조
 - `b.N` 루프와 자동 반복 횟수 조정
 - `b.ResetTimer()`, `b.StopTimer()`, `b.StartTimer()`
+- `b.ReportAllocs()` — 메모리 할당 추적
 - 벤치마크 실행: `go test -bench=. -benchmem`
 - 결과 읽는 법 (ns/op, B/op, allocs/op)
+- 참고 코드: `bench_test.go` (신규 작성 — avg.go 대상 기본 벤치마크)
 
-### 2.6 실전 팁
+### 2.6 서브벤치마크 (b.Run)
+- `b.Run(name, func(b *testing.B))` 패턴으로 벤치마크 그룹화
+- 입력 크기별 비교 벤치마크 (예: 입력 10개 vs 100개 vs 1000개)
+- `go test -bench=BenchmarkAvg/size=100` — 특정 서브벤치마크만 실행
+- 참고 코드: `bench_test.go` (서브벤치마크 예제 포함)
+
+### 2.7 실전 팁
 - 테스트 파일 구성 관례 (`_test.go` 접미사)
 - 테스트 커버리지 확인: `go test -cover`, `go tool cover`
 - CI에서 테스트 자동화
@@ -60,13 +75,15 @@ Go의 테스트 작성 기본기를 다루는 글. 테이블 기반 테스트(Ta
 | `golang/testing/avg.go` | 평균 계산 함수 구현 |
 | `golang/testing/avg_test.go` | 테이블 기반 테스트 예제 |
 | `golang/testing/assert_test.go` | testify/assert 활용 예제 |
-| `golang/testing/suite_test.go` | Test Suite 패턴 (기존 블로그 참조) |
+| `golang/testing/cmp_test.go` | go-cmp 활용 예제 **(신규 작성)** |
+| `golang/testing/bench_test.go` | 벤치마크 + 서브벤치마크 예제 **(신규 작성)** |
+| `golang/testing/suite_test.go` | Test Suite 패턴 → [기존 블로그 글](https://blog-v2.advenoh.pe.kr/go/go-test-suite-lifecycle-메서드) 참조 |
 
 ---
 
-## 4. 논의 사항
+## 4. 논의 사항 (결정 완료)
 
-- [ ] 벤치마크 예제를 새로 작성할지, 기존 코드에서 추출할지
-- [ ] `testing.B` 서브벤치마크 (`b.Run`) 패턴도 다룰지
-- [ ] `go-cmp` 라이브러리도 소개할지 (testify 외 대안)
-- [ ] Test Suite는 기존 블로그 글이 있으므로 링크만 걸 것
+- [x] 벤치마크 예제 → `golang/testing/bench_test.go`에 **신규 작성** (기존 코드는 profiling/concurrency 디렉토리에 산재, testing 전용 예제 없음)
+- [x] 서브벤치마크 (`b.Run`) → **다룬다** (현재 코드베이스에 b.Run 예제 0건, 입력 크기별 비교 패턴으로 작성)
+- [x] `go-cmp` → **소개한다** (testify 외 대안으로, cmp.Diff/cmpopts 중심으로 `cmp_test.go` 신규 작성)
+- [x] Test Suite → 기존 블로그 글 [Go Test Suite (Lifecycle 메서드)](https://blog-v2.advenoh.pe.kr/go/go-test-suite-lifecycle-메서드) **링크만 건다**
