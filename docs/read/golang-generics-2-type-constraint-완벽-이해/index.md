@@ -369,20 +369,7 @@ type Number interface { Signed | Unsigned }
 
 필요 이상으로 복잡한 constraint는 가독성을 떨어뜨린다. `any`나 `comparable`로 충분한 경우가 많다.
 
-# 7. 마무리
-
-| Constraint | 허용 연산 | 사용 시점 |
-|-----------|----------|----------|
-| `any` | 없음 (fmt.Println 등만) | 타입에 의존하지 않는 범용 함수 |
-| `comparable` | `==`, `!=` | map key, 동등 비교, 중복 제거 |
-| union type (`int \| string`) | 해당 타입의 모든 연산 | 특정 타입 그룹에 대한 연산 |
-| `~T` (tilde) | underlying type 포함 | 커스텀 타입 지원 |
-| `constraints.Ordered` | `<`, `>`, `<=`, `>=` | 크기 비교, 정렬 |
-| 메서드 constraint | 해당 메서드 호출 | 특정 행동을 요구하는 경우 |
-
-다음 편에서는 이 constraint들을 활용한 **실전 예제**를 다룬다. Generic Stack, Queue, Filter/Map/Reduce, 그리고 Go 1.21+ 표준 라이브러리(`slices`, `maps`, `cmp`)를 살펴본다.
-
-# 8. FAQ
+# 7. FAQ
 
 ### Q. `golang.org/x/exp/constraints` 패키지에는 어떤 constraint가 있는가?
 
@@ -412,6 +399,19 @@ func max[T cmp.Ordered](a, b T) T { ... }
 ```
 
 > **실무 팁**: 새 프로젝트에서 `Ordered`만 필요하면 `cmp.Ordered`를 사용하고, `Integer`나 `Float` 등 세분화된 constraint가 필요할 때만 `golang.org/x/exp/constraints`를 도입하자.
+
+# 8. 마무리
+
+| Constraint | 허용 연산 | 사용 시점 |
+|-----------|----------|----------|
+| `any` | 없음 (fmt.Println 등만) | 타입에 의존하지 않는 범용 함수 |
+| `comparable` | `==`, `!=` | map key, 동등 비교, 중복 제거 |
+| union type (`int \| string`) | 해당 타입의 모든 연산 | 특정 타입 그룹에 대한 연산 |
+| `~T` (tilde) | underlying type 포함 | 커스텀 타입 지원 |
+| `constraints.Ordered` | `<`, `>`, `<=`, `>=` | 크기 비교, 정렬 |
+| 메서드 constraint | 해당 메서드 호출 | 특정 행동을 요구하는 경우 |
+
+다음 편에서는 이 constraint들을 활용한 **실전 예제**를 다룬다. Generic Stack, Queue, Filter/Map/Reduce, 그리고 Go 1.21+ 표준 라이브러리(`slices`, `maps`, `cmp`)를 살펴본다.
 
 # 9. 참고
 
