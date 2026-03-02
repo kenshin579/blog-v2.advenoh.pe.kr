@@ -382,7 +382,38 @@ type Number interface { Signed | Unsigned }
 
 다음 편에서는 이 constraint들을 활용한 **실전 예제**를 다룬다. Generic Stack, Queue, Filter/Map/Reduce, 그리고 Go 1.21+ 표준 라이브러리(`slices`, `maps`, `cmp`)를 살펴본다.
 
-# 8. 참고
+# 8. FAQ
+
+### Q. `golang.org/x/exp/constraints` 패키지에는 어떤 constraint가 있는가?
+
+| Constraint | 포함 타입 |
+|-----------|----------|
+| `Signed` | `~int`, `~int8`, `~int16`, `~int32`, `~int64` |
+| `Unsigned` | `~uint`, `~uint8`, `~uint16`, `~uint32`, `~uint64`, `~uintptr` |
+| `Integer` | `Signed \| Unsigned` |
+| `Float` | `~float32`, `~float64` |
+| `Complex` | `~complex64`, `~complex128` |
+| `Ordered` | `Integer \| Float \| ~string` |
+
+이 constraint들은 본문의 커스텀 Constraint 설계(5장)에서 직접 구현한 `Signed`, `Unsigned`, `Number`와 동일한 구조다. 차이점은 `constraints` 패키지가 `~uintptr`과 `Complex` 타입까지 포함한다는 것이다.
+
+Go 1.21부터는 `cmp.Ordered`가 표준 라이브러리에 포함되어 `golang.org/x/exp` 없이도 사용할 수 있다. 다만 `Signed`, `Unsigned`, `Integer`, `Float`, `Complex`는 여전히 `golang.org/x/exp/constraints`에서만 제공된다.
+
+```go
+// Go 1.18~1.20: 외부 패키지 필요
+import "golang.org/x/exp/constraints"
+
+func sum[T constraints.Integer](nums []T) T { ... }
+
+// Go 1.21+: Ordered만 표준 라이브러리로 편입
+import "cmp"
+
+func max[T cmp.Ordered](a, b T) T { ... }
+```
+
+> **실무 팁**: 새 프로젝트에서 `Ordered`만 필요하면 `cmp.Ordered`를 사용하고, `Integer`나 `Float` 등 세분화된 constraint가 필요할 때만 `golang.org/x/exp/constraints`를 도입하자.
+
+# 9. 참고
 
 - https://go.dev/ref/spec#Type_parameter_declarations
 - https://go.dev/blog/intro-generics
