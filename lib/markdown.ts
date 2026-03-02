@@ -79,9 +79,15 @@ export async function parseMarkdown(markdown: string, slug: string): Promise<Art
  * 첫 번째 이미지 추출
  */
 function extractFirstImage(content: string): string | undefined {
-  const imageRegex = /!\[([^\]]*)]\(([^)]+)\)/;
-  const match = content.match(imageRegex);
-  return match ? match[2] : undefined;
+  // 마크다운 이미지: ![alt](path)
+  const mdMatch = content.match(/!\[([^\]]*)]\(([^)]+)\)/);
+  if (mdMatch) return mdMatch[2];
+
+  // HTML 이미지: <img src="path" />
+  const htmlMatch = content.match(/<img\s[^>]*src=["']([^"']+)["']/);
+  if (htmlMatch) return htmlMatch[1];
+
+  return undefined;
 }
 
 /**

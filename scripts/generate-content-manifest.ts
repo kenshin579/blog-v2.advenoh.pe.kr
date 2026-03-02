@@ -49,9 +49,10 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
         const content = fs.readFileSync(indexPath, 'utf-8');
         const { data } = matter(content);
 
-        // 첫 번째 이미지 추출
-        const imageMatch = content.match(/!\[([^\]]*)]\(([^)]+)\)/);
-        const firstImage = imageMatch ? imageMatch[2] : undefined;
+        // 첫 번째 이미지 추출 (마크다운 + HTML img 태그)
+        const mdImageMatch = content.match(/!\[([^\]]*)]\(([^)]+)\)/);
+        const htmlImageMatch = content.match(/<img\s[^>]*src=["']([^"']+)["']/);
+        const firstImage = mdImageMatch ? mdImageMatch[2] : htmlImageMatch ? htmlImageMatch[1] : undefined;
 
         const article: ArticleMetadata = {
           slug: `${category}/${articleDir}`,
