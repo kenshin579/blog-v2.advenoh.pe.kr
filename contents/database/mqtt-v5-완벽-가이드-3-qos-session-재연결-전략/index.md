@@ -22,7 +22,7 @@ series: "MQTT v5 완벽 가이드"
 
 # 1. QoS 완전 정복
 
-<img src="./thumbnail.png" alt="MQTT v5 Basic Architecture" width="50%" />
+<img src="thumbnail.png" alt="MQTT v5 Basic Architecture" width="50%" />
 
 `QoS`(Quality of Service)는 메시지의 **전달 보장 수준**을 의미한다. `MQTT`에서 가장 중요한 개념 중 하나로, 네트워크 상태와 메시지의 중요도에 따라 적절한 `QoS`를 선택해야 한다. `QoS` 선택은 시스템의 **신뢰성과 성능 간 트레이드오프**를 수반한다. `QoS` 수준이 높을수록 메시지 전달은 더 확실해지지만, 그만큼 네트워크 오버헤드와 지연이 증가한다.
 
