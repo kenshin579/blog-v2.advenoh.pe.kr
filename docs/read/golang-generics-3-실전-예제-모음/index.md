@@ -42,12 +42,12 @@ func (s *Stack[T]) Push(item T) {
 }
 
 func (s *Stack[T]) Pop() (T, bool) {
-    var zero T
+    var zero T // Generic에서 제로값 반환용 관용 패턴
     if len(s.items) == 0 {
         return zero, false
     }
-    item := s.items[len(s.items)-1]
-    s.items = s.items[:len(s.items)-1]
+    item := s.items[len(s.items)-1]   // 마지막 요소 꺼내기
+    s.items = s.items[:len(s.items)-1] // 슬라이스 길이를 줄여서 제거
     return item, true
 }
 
@@ -110,7 +110,7 @@ func (q *Queue[T]) Dequeue() (T, bool) {
         return zero, false
     }
     item := q.items[0]
-    q.items = q.items[1:]
+    q.items = q.items[1:] // 앞 요소 제거 (간단한 구현, 대량 데이터시 ring buffer 고려)
     return item, true
 }
 
@@ -196,9 +196,9 @@ minStr, _ := MinSlice([]string{"banana", "apple", "cherry"}) // "apple"
 
 ```go
 func Filter[T any](s []T, predicate func(T) bool) []T {
-    result := make([]T, 0)
+    result := make([]T, 0) // 결과 크기를 미리 알 수 없으므로 빈 슬라이스로 시작
     for _, v := range s {
-        if predicate(v) {
+        if predicate(v) { // 조건 함수가 true를 반환하면 포함
             result = append(result, v)
         }
     }
@@ -223,8 +223,9 @@ long := Filter([]string{"go", "java", "py", "rust"}, func(s string) bool {
 슬라이스의 각 요소를 변환한다. 입력과 출력의 타입이 다를 수 있으므로 타입 파라미터가 2개 필요하다.
 
 ```go
+// T → U 변환: 입력과 출력 타입이 다를 수 있어 타입 파라미터 2개 필요
 func MapSlice[T, U any](s []T, transform func(T) U) []U {
-    result := make([]U, len(s))
+    result := make([]U, len(s)) // 입력과 1:1 대응이므로 길이를 미리 할당 (append 불필요)
     for i, v := range s {
         result[i] = transform(v)
     }
@@ -254,9 +255,9 @@ strs := MapSlice([]int{1, 2, 3}, func(n int) string {
 
 ```go
 func Reduce[T, U any](s []T, initial U, accumulator func(U, T) U) U {
-    result := initial
+    result := initial // 누적값의 시작점 (합계면 0, 문자열 합치기면 "")
     for _, v := range s {
-        result = accumulator(result, v)
+        result = accumulator(result, v) // 이전 누적값과 현재 요소로 새 누적값 계산
     }
     return result
 }
@@ -282,11 +283,10 @@ joined := Reduce([]string{"Go", "Generics", "Rock"}, "", func(acc, s string) str
 ```go
 nums := []int{1, 2, 3, 4, 5, 6, 7, 8, 9, 10}
 
-// 짝수만 필터링 → 2배로 변환 → 합산
-evens := Filter(nums, func(n int) bool { return n%2 == 0 })
-doubled := MapSlice(evens, func(n int) int { return n * 2 })
-total := Reduce(doubled, 0, func(acc, n int) int { return acc + n })
-// (2+4+6+8+10) * 2 = 60
+// 파이프라인: Filter → Map → Reduce (각 단계의 결과가 다음 단계의 입력)
+evens := Filter(nums, func(n int) bool { return n%2 == 0 })       // [2 4 6 8 10]
+doubled := MapSlice(evens, func(n int) int { return n * 2 })       // [4 8 12 16 20]
+total := Reduce(doubled, 0, func(acc, n int) int { return acc + n }) // 60
 ```
 
 # 4. Generic Map 헬퍼
@@ -295,7 +295,7 @@ total := Reduce(doubled, 0, func(acc, n int) int { return acc + n })
 
 ```go
 func MapValues[K comparable, V any](m map[K]V) []V {
-    values := make([]V, 0, len(m))
+    values := make([]V, 0, len(m)) // len=0, cap=len(m): 크기는 알지만 순서가 없으므로 append 사용
     for _, v := range m {
         values = append(values, v)
     }
@@ -312,12 +312,12 @@ values := MapValues(m)  // [1 2 3] (순서 비보장)
 
 ```go
 func MapMerge[K comparable, V any](m1, m2 map[K]V) map[K]V {
-    result := make(map[K]V, len(m1)+len(m2))
+    result := make(map[K]V, len(m1)+len(m2)) // 최대 크기로 미리 할당 (rehash 방지)
     for k, v := range m1 {
         result[k] = v
     }
     for k, v := range m2 {
-        result[k] = v
+        result[k] = v // 키 충돌 시 m2 값이 m1을 덮어씀
     }
     return result
 }
@@ -376,13 +376,13 @@ slices.Max([]int{5, 3, 8, 1, 9})  // 9
 커스텀 정렬도 `SortFunc`로 간결하게 표현할 수 있다.
 
 ```go
-// 절대값 기준 정렬
+// 절대값 기준 정렬: 비교 함수는 a<b이면 음수, a==b이면 0, a>b이면 양수 반환
 nums := []int{-5, 3, -1, 8, -2}
 slices.SortFunc(nums, func(a, b int) int {
     absA, absB := a, b
     if absA < 0 { absA = -absA }
     if absB < 0 { absB = -absB }
-    return absA - absB
+    return absA - absB // 절대값 차이로 정렬 순서 결정
 })
 // [-1 -2 3 -5 8]
 ```
@@ -424,8 +424,8 @@ userConfig := ""
 envConfig := ""
 defaultConfig := "localhost:8080"
 
-addr := cmp.Or(userConfig, envConfig, defaultConfig)
-// "localhost:8080" (첫 번째 비어있지 않은 값)
+addr := cmp.Or(userConfig, envConfig, defaultConfig) // 제로값("")이 아닌 첫 번째 값 반환
+// "localhost:8080"
 
 envConfig = "0.0.0.0:9090"
 addr = cmp.Or(userConfig, envConfig, defaultConfig)
