@@ -1,8 +1,8 @@
 ---
 title: "Golang Generics (1) - 개요와 기본 문법"
 description: "Golang Generics (1) - 개요와 기본 문법"
-date: 2026-03-04
-update: 2026-03-04
+date: 2026-03-01
+update: 2026-03-01
 tags:
   - golang
   - go
@@ -15,7 +15,6 @@ tags:
   - 타입-추론
   - 고랭
 series: "Golang Generics"
-seriesOrder: 1
 ---
 
 # 1. Generics란 무엇인가

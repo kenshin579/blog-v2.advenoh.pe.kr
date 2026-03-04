@@ -1,8 +1,8 @@
 ---
 title: "Golang Generics (3) - 실전 예제 모음"
 description: "Golang Generics (3) - 실전 예제 모음"
-date: 2026-03-04
-update: 2026-03-04
+date: 2026-03-03
+update: 2026-03-03
 tags:
   - golang
   - go
@@ -17,9 +17,7 @@ tags:
   - 자료구조
   - 고랭
 series: "Golang Generics"
-seriesOrder: 3
 ---
-
 1편에서 기본 문법을, 2편에서 Type Constraint를 다뤘다. 이번 편에서는 Generics를 활용한 **실전 예제**들을 구현해본다. 자료구조, 유틸 함수, 함수형 패턴, 그리고 Go 1.21+ 표준 라이브러리까지 살펴본다.
 
 # 1. Generic 자료구조 구현
@@ -434,14 +432,15 @@ addr = cmp.Or(userConfig, envConfig, defaultConfig)
 
 # 6. 직접 구현 vs 표준 라이브러리
 
-| 기능 | 직접 구현 | 표준 라이브러리 (Go 1.21+) |
-|------|----------|--------------------------|
-| Contains | `contains[T comparable]` | `slices.Contains` |
-| Min/Max | `MinOf[T constraints.Ordered]` | `slices.Min`, `slices.Max` |
-| Sort | - | `slices.Sort`, `slices.SortFunc` |
-| Map Clone | - | `maps.Clone` |
-| Map Equal | - | `maps.Equal` |
-| Filter/Map/Reduce | 직접 구현 필요 | Go 1.23+ `slices.Collect` 등 일부 추가 |
+
+| 기능              | 직접 구현                      | 표준 라이브러리 (Go 1.21+)            |
+| ----------------- | ------------------------------ | ------------------------------------- |
+| Contains          | `contains[T comparable]`       | `slices.Contains`                     |
+| Min/Max           | `MinOf[T constraints.Ordered]` | `slices.Min`, `slices.Max`            |
+| Sort              | -                              | `slices.Sort`, `slices.SortFunc`      |
+| Map Clone         | -                              | `maps.Clone`                          |
+| Map Equal         | -                              | `maps.Equal`                          |
+| Filter/Map/Reduce | 직접 구현 필요                 | Go 1.23+`slices.Collect` 등 일부 추가 |
 
 > **실무 권장사항**: Go 1.21 이상을 사용한다면 `slices`, `maps`, `cmp` 표준 패키지를 우선 사용하자. 직접 구현은 표준 라이브러리에 없는 기능(Filter, Map, Reduce 등)이나 학습 목적으로 활용하면 된다.
 
@@ -449,13 +448,14 @@ addr = cmp.Or(userConfig, envConfig, defaultConfig)
 
 이번 편에서 다룬 Generic 패턴들을 요약한다.
 
-| 패턴 | 핵심 포인트 |
-|------|-----------|
-| Stack / Queue | `var zero T`로 제로값 반환, 메서드에서 struct 타입 파라미터 활용 |
-| Min / Max | `constraints.Ordered`로 비교 가능한 모든 타입 지원 |
-| Filter / Map / Reduce | `func(T) bool`, `func(T) U` 콜백 패턴, 함수형 조합 |
-| Map 헬퍼 | `K comparable, V any` 패턴으로 map key 제약 |
-| 표준 라이브러리 | Go 1.21+ `slices`, `maps`, `cmp` 패키지 적극 활용 |
+
+| 패턴                  | 핵심 포인트                                                      |
+| --------------------- | ---------------------------------------------------------------- |
+| Stack / Queue         | `var zero T`로 제로값 반환, 메서드에서 struct 타입 파라미터 활용 |
+| Min / Max             | `constraints.Ordered`로 비교 가능한 모든 타입 지원               |
+| Filter / Map / Reduce | `func(T) bool`, `func(T) U` 콜백 패턴, 함수형 조합               |
+| Map 헬퍼              | `K comparable, V any` 패턴으로 map key 제약                      |
+| 표준 라이브러리       | Go 1.21+`slices`, `maps`, `cmp` 패키지 적극 활용                 |
 
 다음 편에서는 **Generics vs Interface 비교**와 **성능 벤치마크**를 다룬다.
 
