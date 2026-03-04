@@ -1,104 +1,168 @@
-# Rate Limiting과 Circuit Breaker 패턴 PRD
+# Go Rate Limiting 완벽 가이드 PRD
 
-> 시리즈: Golang 블로그 주제 Phase 5 - 신규 주제 (3/3)
+> 시리즈: Golang 블로그 주제 Phase 5 - 신규 주제 (3/3-a)
 > 참조: `6_golang_topic_prd.md` P3-3
+> 관련: `6_15_go_circuit_breaker_prd.md` (Circuit Breaker 별도 PRD)
 
 ---
 
 ## 1. 개요
 
-분산 시스템에서 서비스 안정성을 확보하기 위한 두 가지 핵심 패턴. Rate Limiting으로 트래픽을 제어하고, Circuit Breaker로 장애 전파를 차단한다. Go 표준 라이브러리와 인기 서드파티 라이브러리를 활용한 구현법을 다룬다.
+API 서버에서 트래픽을 제어하고 서비스 안정성을 확보하기 위한 Rate Limiting 패턴을 다룬다. 알고리즘 이론을 중심으로 설명하고, Go 구현은 핵심 샘플 코드로 보여준다. 단일 인스턴스부터 분산 환경(Redis 기반)까지 커버하며, Retry 패턴(backoff, jitter)도 함께 다룬다.
 
 **대상 독자**: 백엔드 서비스 안정성에 관심 있는 중급 이상 개발자
-**난이도**: 중고급
+**난이도**: 중급
 **예제 코드**: 신규 작성 필요
 
 ---
 
-## 2. 블로그 구조
+## 2. 블로그 목차
 
-### 2.1 왜 필요한가?
-- 과도한 트래픽으로 인한 서비스 장애 시나리오
-- 외부 서비스 장애가 내부로 전파되는 Cascading Failure
-- 방어적 프로그래밍의 핵심 패턴
+> 블로그 글의 heading 구조 (`# 1.` → `## 1.1` → `### 1.1.1`)
 
-### 2.2 Rate Limiting
+```
+# 1. Rate Limiting이란?
+  - 과도한 트래픽으로 인한 서비스 장애 시나리오
+  - DDoS 방어, API 남용 방지, 공정한 리소스 분배
+  - Rate Limiting이 없는 서버 vs 있는 서버 비교 (Mermaid sequence diagram)
 
-#### 알고리즘 개요
-- **Token Bucket**: 일정 속도로 토큰 충전, 요청 시 토큰 소비
-- **Leaky Bucket**: 일정 속도로만 처리, 초과분 대기/거부
-- **Fixed Window**: 고정 시간 창 내 요청 수 제한
-- **Sliding Window**: 이동 시간 창으로 더 정확한 제한
+# 2. Rate Limiting 알고리즘
+  각 알고리즘을 Mermaid 다이어그램으로 시각화하며 이론 중심으로 설명한다.
+  ## 2.1 Token Bucket
+    - 일정 속도로 토큰 충전, 요청 시 토큰 소비
+    - 버스트 허용 (버킷 용량만큼)
+    - 장점: 구현 간단, 버스트 허용 / 단점: 메모리 사용
+    - Mermaid flowchart로 동작 흐름 시각화
+  ## 2.2 Leaky Bucket
+    - 일정 속도로만 처리, 초과분 대기 또는 거부
+    - 출력 속도 일정 보장
+    - 장점: 균일한 처리 속도 / 단점: 버스트 불가
+    - Token Bucket과의 차이점 비교표
+  ## 2.3 Fixed Window Counter
+    - 고정 시간 창(예: 1분) 내 요청 수 제한
+    - 장점: 구현 간단, 메모리 효율적 / 단점: 경계(boundary) 문제
+    - 경계 문제를 Mermaid 다이어그램으로 시각화
+  ## 2.4 Sliding Window Log
+    - 각 요청의 타임스탬프를 기록
+    - 장점: 정확한 제한 / 단점: 메모리 사용량 많음
+  ## 2.5 Sliding Window Counter
+    - Fixed Window + Sliding 방식의 하이브리드
+    - 가중치 기반으로 이전 윈도우와 현재 윈도우 합산
+    - 장점: 정확하면서도 메모리 효율적 / 실무에서 가장 많이 사용
+  ## 2.6 알고리즘 비교 요약표
+    | 알고리즘 | 정확도 | 메모리 | 버스트 허용 | 구현 복잡도 |
 
-#### Go 표준 라이브러리
-- `golang.org/x/time/rate`: Token Bucket 구현
-- `rate.NewLimiter(rate, burst)` - 리미터 생성
-- `Allow()`, `Wait()`, `Reserve()` - 3가지 사용 방식
-- HTTP 미들웨어로 적용
+# 3. Go로 Rate Limiting 구현하기
+  ## 3.1 golang.org/x/time/rate (표준 확장 라이브러리)
+    - Token Bucket 기반
+    - rate.NewLimiter(rate, burst) 생성
+    - 3가지 사용 방식: Allow(), Wait(), Reserve()
+    - 각 방식의 사용 시나리오와 핵심 코드 스니펫
+  ## 3.2 HTTP 미들웨어로 적용
+    - Echo/Gin 미들웨어에서 Rate Limiter 적용
+    - IP별 Rate Limiting (sync.Map으로 리미터 관리)
+    - 429 Too Many Requests 응답 처리
 
-#### 분산 Rate Limiting
-- Redis 기반 Rate Limiting (여러 서버 인스턴스 공유)
-- Sliding Window Counter 패턴
-- `go-redis/redis_rate` 라이브러리
+# 4. 분산 Rate Limiting
+  ## 4.1 왜 분산 Rate Limiting인가?
+    - 다중 서버 인스턴스에서 단일 인스턴스 Rate Limiter의 한계
+    - Mermaid diagram: 여러 서버가 하나의 Redis를 공유하는 구조
+  ## 4.2 go-redis/redis_rate
+    - GCRA(Generic Cell Rate Algorithm) 기반
+    - redis_rate.NewLimiter(rdb) 생성
+    - limiter.Allow(ctx, key, rate) 사용법
+    - 핵심 코드 스니펫
+  ## 4.3 Redis Lua Script 기반 Sliding Window
+    - 원자적 연산으로 race condition 방지
+    - Lua 스크립트 핵심 로직 설명
 
-### 2.3 Circuit Breaker
+# 5. Retry 패턴
+  ## 5.1 왜 Retry가 필요한가?
+    - 일시적 장애(transient fault)에서의 복구
+    - Rate Limit 응답(429)을 받았을 때의 클라이언트 전략
+  ## 5.2 Backoff 전략
+    - Fixed Delay: 일정 간격으로 재시도
+    - Exponential Backoff: 1s → 2s → 4s → 8s 지수적 증가
+    - Exponential Backoff + Jitter: Thundering Herd 방지
+      - Full Jitter / Equal Jitter / Decorrelated Jitter
+    - Mermaid 시각화
+  ## 5.3 Go 구현
+    ### cenkalti/backoff/v5
+      - Exponential backoff 핵심 코드
+      - Context 지원, MaxElapsedTime 설정
+    ### avast/retry-go/v4
+      - FullJitterBackoffDelay 사용법
+      - 커스텀 retry 조건 설정
 
-#### 상태 머신
-- **Closed** (정상): 요청 통과, 실패 횟수 카운트
-- **Open** (차단): 요청 즉시 거부, 타임아웃 대기
-- **Half-Open** (시험): 일부 요청 허용, 성공 시 Closed로 복귀
+# 6. 테스트
+  ## 6.1 Rate Limiter 테스트
+    - 시간 기반 테스트 패턴
+  ## 6.2 Retry 테스트
+    - mock 서버로 실패/성공 시나리오
+  ## 6.3 동시성 테스트
+    - goroutine으로 부하 시뮬레이션
 
-#### Go 구현
-- `sony/gobreaker`: 가장 널리 사용되는 Circuit Breaker
-- `gobreaker.NewCircuitBreaker(settings)` - 생성
-- `cb.Execute(func() (interface{}, error))` - 실행
-- 설정: MaxRequests, Interval, Timeout, ReadyToTrip
-
-#### 실전 패턴
-- HTTP 클라이언트에 Circuit Breaker 적용
-- 외부 API 호출 보호
-- Fallback 전략: 캐시 데이터 반환, 기본값 사용
-
-### 2.4 두 패턴의 조합
-- Rate Limiting + Circuit Breaker 함께 적용
-- 미들웨어 체인에서의 위치와 순서
-- 모니터링: 메트릭 수집 (제한 횟수, 차단 횟수)
-
-### 2.5 테스트 전략
-- Rate Limiter 테스트: 시간 기반 테스트 패턴
-- Circuit Breaker 테스트: 상태 전이 검증
-- 동시성 테스트: goroutine으로 부하 시뮬레이션
+# 마무리
+```
 
 ---
 
 ## 3. 샘플 코드 계획
 
-신규 작성 필요. 예상 구조:
-
 ```
 tutorials-go/golang/resilience/
 ├── ratelimit/
-│   ├── token_bucket.go         # x/time/rate 활용
+│   ├── token_bucket.go           # x/time/rate 활용
 │   ├── token_bucket_test.go
-│   ├── middleware.go           # HTTP 미들웨어
-│   └── redis_limiter.go       # 분산 Rate Limiting
-├── circuitbreaker/
-│   ├── breaker.go             # gobreaker 활용
-│   ├── breaker_test.go
-│   └── http_client.go        # HTTP 클라이언트 래핑
-├── combined/
-│   └── main.go               # 두 패턴 조합 예제
+│   ├── middleware.go             # Echo HTTP 미들웨어
+│   ├── middleware_test.go
+│   ├── redis_limiter.go          # go-redis/redis_rate 분산 Rate Limiting
+│   └── redis_limiter_test.go     # testcontainers-go Redis
+├── retry/
+│   ├── backoff.go                # cenkalti/backoff 활용
+│   ├── backoff_test.go
+│   ├── retry.go                  # avast/retry-go 활용
+│   └── retry_test.go
 └── README.md
 ```
 
 ---
 
-## 4. 논의 사항
+## 4. 사용 라이브러리
 
-- [ ] Rate Limiting과 Circuit Breaker를 한 글에 다룰지, 분리할지
-- [ ] 알고리즘 설명 깊이: 이론 중심 vs 구현 중심
-- [ ] 분산 Rate Limiting (Redis 기반)까지 다루면 범위가 넓어짐
-- [ ] Retry 패턴 (backoff, jitter)도 함께 다룰지
-- [ ] Mermaid 상태 다이어그램으로 Circuit Breaker 시각화
-- [ ] 코드 전체를 신규 작성해야 하므로 작업량 확인
-- [ ] `failsafe-go` (최신 라이브러리) vs `gobreaker` 선택
+| 라이브러리 | 버전 | 용도 | Stars |
+|-----------|------|------|-------|
+| `golang.org/x/time/rate` | latest | Token Bucket Rate Limiter | (표준 확장) |
+| `github.com/redis/go-redis/v9` | v9 | Redis 클라이언트 | 20k+ |
+| `github.com/go-redis/redis_rate/v10` | v10 | 분산 Rate Limiting (GCRA) | 1k |
+| `github.com/cenkalti/backoff/v5` | v5 | Exponential Backoff | 3.9k |
+| `github.com/avast/retry-go/v4` | v4 | Retry with Jitter | 2.9k |
+| `github.com/testcontainers/testcontainers-go` | latest | Redis 통합 테스트 | 3.5k |
+
+---
+
+## 5. 작업량 추정
+
+### 블로그 글 작성
+- 알고리즘 이론 + Mermaid 다이어그램 5~6개: **3~4시간**
+- Go 코드 스니펫 + 설명: **2시간**
+- Retry 패턴 섹션: **1~2시간**
+- **소계: 6~8시간**
+
+### 샘플 코드 작성
+- ratelimit/ (단일 + 분산 + 미들웨어 + 테스트): **3~4시간**
+- retry/ (backoff + retry-go + 테스트): **2시간**
+- **소계: 5~6시간**
+
+### 전체 예상: **11~14시간** (2~3일)
+
+---
+
+## 6. 논의 사항 (결정 완료)
+
+- [x] Rate Limiting과 Circuit Breaker 분리 → **별도 PRD** (`6_15_go_circuit_breaker_prd.md`)
+- [x] 알고리즘 설명 → **이론 중심**, 구현은 핵심 샘플 코드만
+- [x] 분산 Rate Limiting → **포함** (Redis 기반)
+- [x] Retry 패턴 → **포함** (backoff, jitter)
+- [x] 시각화 → **Mermaid** 다이어그램 사용
+- [x] 라이브러리 → **최신 버전** 사용 (cenkalti/backoff v5, avast/retry-go v4 등)
