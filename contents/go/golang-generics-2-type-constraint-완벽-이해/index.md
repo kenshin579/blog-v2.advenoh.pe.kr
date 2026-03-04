@@ -1,8 +1,8 @@
 ---
 title: "Golang Generics (2) - Type Constraint 완벽 이해"
 description: "Golang Generics (2) - Type Constraint 완벽 이해"
-date: 2026-03-04
-update: 2026-03-04
+date: 2026-03-02
+update: 2026-03-02
 tags:
   - golang
   - go
@@ -16,7 +16,6 @@ tags:
   - 타입-제약
   - 고랭
 series: "Golang Generics"
-seriesOrder: 2
 ---
 
 1편에서 Generics의 기본 문법과 `any` constraint를 살펴봤다. 이번 편에서는 Generics의 핵심인 **Type Constraint(타입 제약)**를 깊이 있게 다룬다.
