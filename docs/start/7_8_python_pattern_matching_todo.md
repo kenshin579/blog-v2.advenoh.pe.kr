@@ -27,6 +27,6 @@
 
 ## 3단계: PR 생성
 
-- [ ] feature 브랜치 생성 (blog-v2.advenoh.pe.kr 저장소)
-- [ ] tutorials-python 샘플 코드 커밋 (tutorials-python 저장소)
-- [ ] 블로그 글 커밋 및 PR 생성
+- [x] feature 브랜치 생성 (blog-v2.advenoh.pe.kr 저장소)
+- [x] tutorials-python 샘플 코드 커밋 (tutorials-python 저장소)
+- [x] 블로그 글 커밋 및 PR 생성
