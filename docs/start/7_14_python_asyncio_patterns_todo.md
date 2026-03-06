@@ -58,28 +58,28 @@
 - [x] 전체 테스트 통과 확인 (46개 테스트 통과)
 
 ## Phase 3: 블로그 글 작성
-- [ ] `docs/start/7_14_python_asyncio_patterns/index.md` 초안 작성
-  - [ ] # 1. 개요
-  - [ ] # 2. 동시성 제어 - Semaphore와 Rate Limiting
-    - [ ] ## 2.1 Semaphore로 동시 실행 제한하기
-    - [ ] ## 2.2 Rate Limiting 구현하기
-  - [ ] # 3. Task 실행과 관리 - gather, TaskGroup, Queue
-    - [ ] ## 3.1 asyncio.gather vs TaskGroup
-    - [ ] ## 3.2 asyncio.Queue로 생산자-소비자 패턴 구현하기
-  - [ ] # 4. 에러 처리와 안전한 종료
-    - [ ] ## 4.1 비동기 에러 핸들링 패턴
-    - [ ] ## 4.2 Graceful Shutdown
-  - [ ] # 5. 비동기 리소스 관리
-    - [ ] ## 5.1 비동기 컨텍스트 매니저
-  - [ ] # 6. 실전 종합 예제
-    - [ ] ## 6.1 비동기 웹 크롤러
-    - [ ] ## 6.2 API 배치 호출
-    - [ ] ## 6.3 파일 비동기 처리
-  - [ ] # 7. 마무리
-  - [ ] # 8. 참고
-- [ ] 각 섹션에 GitHub 샘플 코드 링크 연결
-- [ ] 비교 항목 표(table) 정리 (gather vs TaskGroup 등)
-- [ ] UTF-8 인코딩 확인 (`file -I`)
+- [x] `docs/start/7_14_python_asyncio_patterns/index.md` 초안 작성
+  - [x] # 1. 개요
+  - [x] # 2. 동시성 제어 - Semaphore와 Rate Limiting
+    - [x] ## 2.1 Semaphore로 동시 실행 제한하기
+    - [x] ## 2.2 Rate Limiting 구현하기
+  - [x] # 3. Task 실행과 관리 - gather, TaskGroup, Queue
+    - [x] ## 3.1 asyncio.gather vs TaskGroup
+    - [x] ## 3.2 asyncio.Queue로 생산자-소비자 패턴 구현하기
+  - [x] # 4. 에러 처리와 안전한 종료
+    - [x] ## 4.1 비동기 에러 핸들링 패턴
+    - [x] ## 4.2 Graceful Shutdown
+  - [x] # 5. 비동기 리소스 관리
+    - [x] ## 5.1 비동기 컨텍스트 매니저
+  - [x] # 6. 실전 종합 예제
+    - [x] ## 6.1 비동기 웹 크롤러
+    - [x] ## 6.2 API 배치 호출
+    - [x] ## 6.3 파일 비동기 처리
+  - [x] # 7. 마무리
+  - [x] # 8. 참고
+- [x] 각 섹션에 GitHub 샘플 코드 링크 연결
+- [x] 비교 항목 표(table) 정리 (gather vs TaskGroup 등)
+- [x] UTF-8 인코딩 확인 (`file -I`) - charset=utf-8 확인
 
 ## Phase 4: 리뷰 및 발행
 - [ ] PR 생성 (feature 브랜치)
