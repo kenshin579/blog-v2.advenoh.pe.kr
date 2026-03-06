@@ -32,4 +32,4 @@
 ## 5단계: 리뷰 및 PR
 - [x] 글 내용 최종 검토
 - [x] feature 브랜치 생성 및 commit
-- [ ] PR 생성 (gh CLI + HEREDOC)
+- [x] PR 생성 (gh CLI + HEREDOC)
