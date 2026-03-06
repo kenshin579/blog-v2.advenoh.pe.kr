@@ -19,6 +19,8 @@ series: "Golang Generics"
 
 # 1. Generics란 무엇인가
 
+![Golang Generics](golang-generics-hero.png)
+
 Generics는 함수나 타입을 정의할 때 **구체적인 타입을 지정하지 않고**, 사용 시점에 타입을 결정할 수 있게 해주는 프로그래밍 기법이다. Java, C++, Rust 등 많은 언어에서 이미 지원하고 있던 기능으로, Go에서는 **Go 1.18**(2022년 3월)부터 정식 지원되었다.
 
 Generics가 필요한 가장 큰 이유는 **코드 중복 제거**이다. 타입만 다르고 로직은 동일한 함수를 여러 번 작성해야 하는 문제를 해결해준다.

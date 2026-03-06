@@ -18,6 +18,9 @@ tags:
   - 고랭
 series: "Golang Generics"
 ---
+
+![Golang Generics](golang-generics-hero.png)
+
 1편에서 기본 문법을, 2편에서 Type Constraint를 다뤘다. 이번 편에서는 Generics를 활용한 **실전 예제**들을 구현해본다. 자료구조, 유틸 함수, 함수형 패턴, 그리고 Go 1.21+ 표준 라이브러리까지 살펴본다.
 
 # 1. Generic 자료구조 구현
