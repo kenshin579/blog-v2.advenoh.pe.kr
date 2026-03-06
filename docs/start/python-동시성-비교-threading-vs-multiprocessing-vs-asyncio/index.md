@@ -156,7 +156,7 @@ assert counter["value"] == 200_000  # Lock 없으면 200000보다 작을 수 있
 event = threading.Event()
 
 def waiter():
-    event.wait()  # set()이 호출될 때까지 대기
+    event.wait(timeout=1.0)  # set()이 호출될 때까지 대기 (timeout 권장)
     print("Signal received!")
 
 def sender():
@@ -167,6 +167,8 @@ t1 = threading.Thread(target=waiter)
 t2 = threading.Thread(target=sender)
 t1.start()
 t2.start()
+t1.join()
+t2.join()
 ```
 
 ### daemon thread vs non-daemon thread
@@ -238,7 +240,7 @@ for p in processes:
     p.join()
 
 results = set()
-while not q.empty():
+for _ in range(3):  # 프로세스 수만큼 get() (q.empty()는 신뢰할 수 없음)
     results.add(q.get())  # {0, 1, 4}
 ```
 
