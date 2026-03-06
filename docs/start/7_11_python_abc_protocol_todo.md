@@ -2,15 +2,15 @@
 
 ## 1단계: 샘플 코드 작성 (tutorials-python)
 
-- [ ] `tutorials-python/python/abc-protocol/` 디렉토리 생성
-- [ ] `test_abc_basic.py` - ABC 기본 (추상 클래스 정의, 인스턴스 생성 불가, 일반+추상 메서드 혼합)
-- [ ] `test_abstractmethod.py` - @abstractmethod + @property/@classmethod/@staticmethod 조합, super() 호출
-- [ ] `test_collections_abc.py` - collections.abc 주요 ABC, __subclasshook__, register()
-- [ ] `test_protocol_basic.py` - Protocol 정의, 구조적 서브타이핑
-- [ ] `test_runtime_checkable.py` - @runtime_checkable, isinstance() 검사, 제한사항
-- [ ] `test_abc_vs_protocol.py` - 동일 인터페이스를 ABC/Protocol 두 방식으로 구현 비교
-- [ ] `test_patterns.py` - 실전 패턴 (플러그인 시스템, Repository 패턴)
-- [ ] 전체 테스트 실행 및 통과 확인
+- [x] `tutorials-python/python/abc-protocol/` 디렉토리 생성
+- [x] `test_abc_basic.py` - ABC 기본 (추상 클래스 정의, 인스턴스 생성 불가, 일반+추상 메서드 혼합)
+- [x] `test_abstractmethod.py` - @abstractmethod + @property/@classmethod/@staticmethod 조합, super() 호출
+- [x] `test_collections_abc.py` - collections.abc 주요 ABC, __subclasshook__, register()
+- [x] `test_protocol_basic.py` - Protocol 정의, 구조적 서브타이핑
+- [x] `test_runtime_checkable.py` - @runtime_checkable, isinstance() 검사, 제한사항
+- [x] `test_abc_vs_protocol.py` - 동일 인터페이스를 ABC/Protocol 두 방식으로 구현 비교
+- [x] `test_patterns.py` - 실전 패턴 (플러그인 시스템, Repository 패턴)
+- [x] 전체 테스트 실행 및 통과 확인
 
 ## 2단계: 블로그 글 작성 (blog-v2)
 
