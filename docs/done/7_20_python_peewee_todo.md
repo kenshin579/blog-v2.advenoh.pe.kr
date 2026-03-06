@@ -66,6 +66,6 @@
 
 ## Phase 4: PR 생성
 
-- [ ] feature 브랜치 생성
-- [ ] 커밋 및 푸시
-- [ ] PR 생성 (gh CLI + HEREDOC)
+- [x] feature 브랜치 생성
+- [x] 커밋 및 푸시
+- [x] PR 생성 (gh CLI + HEREDOC)
