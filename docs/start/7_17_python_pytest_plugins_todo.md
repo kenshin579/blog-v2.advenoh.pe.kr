@@ -52,4 +52,6 @@
 ## 3단계: PR 생성
 - [x] feature 브랜치: `feat/363-pytest-plugins` (blog-v2), `feat/pytest-plugins` (tutorials-python)
 - [x] 커밋 완료
-- [ ] `gh pr create` + HEREDOC으로 PR 생성
+- [x] `gh pr create` + HEREDOC으로 PR 생성
+  - blog-v2: https://github.com/kenshin579/blog-v2.advenoh.pe.kr/pull/364
+  - tutorials-python: https://github.com/kenshin579/tutorials-python/pull/77
