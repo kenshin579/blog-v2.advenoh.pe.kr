@@ -10,6 +10,8 @@ __enter__/__exit__ 프로토콜과 contextlib를 활용한 리소스 관리 패�
 - **우선순위**: ★★☆
 
 ## 다룰 내용
+
+### 기본 개념
 1. with 문의 동작 원리
    - `with expr as var:` 구문이 실행하는 단계별 흐름
    - 예외 발생 시에도 `__exit__` 호출 보장 원리
@@ -19,25 +21,31 @@ __enter__/__exit__ 프로토콜과 contextlib를 활용한 리소스 관리 패�
    - `__exit__(self, exc_type, exc_val, exc_tb)`: 정리 로직
    - `__exit__`에서 `True` 반환 시 예외 억제 동작
    - 클래스 기반 context manager 직접 구현
+
+### contextlib 모듈
 3. `contextlib.contextmanager` 데코레이터
    - `yield` 기반으로 간결하게 context manager 작성
    - `yield` 전후가 `__enter__`/`__exit__`에 대응
    - try/finally 패턴으로 예외 안전성 확보
-4. `contextlib.asynccontextmanager` (비동기)
-   - `async with` 문법과 함께 사용
-   - `__aenter__`/`__aexit__` 프로토콜
-   - 비동기 리소스(DB 커넥션 풀, HTTP 세션) 관리 예시
-5. `contextlib` 유틸리티
+4. `contextlib` 유틸리티
    - `suppress(*exceptions)`: 특정 예외 무시
    - `redirect_stdout`/`redirect_stderr`: 출력 리다이렉트
    - `closing()`: `close()` 메서드 자동 호출
    - `nullcontext()`: 조건부 context manager 적용
-6. 중첩 context manager (`ExitStack`)
+5. 중첩 context manager (`ExitStack`)
    - 동적 개수의 context manager 관리
    - `enter_context()`, `callback()` 메서드
-   - `AsyncExitStack`: 비동기 버전
    - cleanup 순서 보장 (LIFO)
-7. 실전 예제
+
+### 비동기 Context Manager
+6. `contextlib.asynccontextmanager`
+   - `async with` 문법과 함께 사용
+   - `__aenter__`/`__aexit__` 프로토콜
+   - 비동기 리소스(DB 커넥션 풀, HTTP 세션) 관리 예시
+   - `AsyncExitStack`: 비동기 ExitStack 버전
+
+### 실전 예제
+7. 실전 활용 패턴
    - DB 연결/트랜잭션: commit/rollback 자동 관리
    - 파일 처리: 여러 파일 동시 열기 패턴
    - 락 관리: `threading.Lock()`을 with 문으로 활용
