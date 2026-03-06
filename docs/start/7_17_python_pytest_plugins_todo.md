@@ -50,6 +50,6 @@
 - [x] 시리즈 전편(6-1 입문, 6-2 mock)과 내용 중복 없는지 확인
 
 ## 3단계: PR 생성
-- [x] feature 브랜치: `feat/359-python-pytest-mock` (blog-v2), `feat/pytest-plugins` (tutorials-python)
+- [x] feature 브랜치: `feat/363-pytest-plugins` (blog-v2), `feat/pytest-plugins` (tutorials-python)
 - [x] 커밋 완료
 - [ ] `gh pr create` + HEREDOC으로 PR 생성
