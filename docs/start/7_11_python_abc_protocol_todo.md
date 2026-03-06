@@ -14,22 +14,22 @@
 
 ## 2단계: 블로그 글 작성 (blog-v2)
 
-- [ ] `docs/start/python-abc와-protocol/index.md` 생성
-- [ ] frontmatter 작성 (title, description, date, tags, series)
-- [ ] `# 1. 개요` - ABC와 Protocol 소개, 왜 필요한지
-- [ ] `# 2. ABC (Abstract Base Class)` 작성
-  - [ ] `## 2.1 ABC 기본 사용법` - 추상 클래스 정의, TypeError, 일반+추상 메서드 혼합
-  - [ ] `## 2.2 @abstractmethod 활용` - @property/@classmethod 조합, super() 패턴
-  - [ ] `## 2.3 collections.abc의 주요 ABC` - 주요 ABC 소개, __subclasshook__, register()
-- [ ] `# 3. Protocol (구조적 서브타이핑)` 작성
-  - [ ] `## 3.1 Protocol 기본 사용법` - Protocol 정의, duck typing 공식화
-  - [ ] `## 3.2 runtime_checkable Protocol` - @runtime_checkable, isinstance(), 제한사항
-- [ ] `# 4. ABC vs Protocol 비교` - 비교표, 선택 기준
-- [ ] `# 5. 실전 패턴` 작성
-  - [ ] `## 5.1 플러그인 시스템` - Protocol 기반 플러그인 인터페이스
-  - [ ] `## 5.2 Repository 패턴` - ABC 기반 데이터 접근 계층 추상화
-- [ ] `# 6. 마무리` 작성
-- [ ] UTF-8 인코딩 확인 (`file -I`)
+- [x] `docs/start/python-abc와-protocol/index.md` 생성
+- [x] frontmatter 작성 (title, description, date, tags, series)
+- [x] `# 1. 개요` - ABC와 Protocol 소개, 왜 필요한지
+- [x] `# 2. ABC (Abstract Base Class)` 작성
+  - [x] `## 2.1 ABC 기본 사용법` - 추상 클래스 정의, TypeError, 일반+추상 메서드 혼합
+  - [x] `## 2.2 @abstractmethod 활용` - @property/@classmethod 조합, super() 패턴
+  - [x] `## 2.3 collections.abc의 주요 ABC` - 주요 ABC 소개, __subclasshook__, register()
+- [x] `# 3. Protocol (구조적 서브타이핑)` 작성
+  - [x] `## 3.1 Protocol 기본 사용법` - Protocol 정의, duck typing 공식화
+  - [x] `## 3.2 runtime_checkable Protocol` - @runtime_checkable, isinstance(), 제한사항
+- [x] `# 4. ABC vs Protocol 비교` - 비교표, 선택 기준
+- [x] `# 5. 실전 패턴` 작성
+  - [x] `## 5.1 플러그인 시스템` - Protocol 기반 플러그인 인터페이스
+  - [x] `## 5.2 Repository 패턴` - ABC 기반 데이터 접근 계층 추상화
+- [x] `# 6. 마무리` 작성
+- [x] UTF-8 인코딩 확인 (`file -I`)
 
 ## 3단계: 리뷰 및 정리
 
