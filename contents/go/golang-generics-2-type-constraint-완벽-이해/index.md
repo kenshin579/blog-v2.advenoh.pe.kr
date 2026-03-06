@@ -18,6 +18,8 @@ tags:
 series: "Golang Generics"
 ---
 
+![Golang Generics](golang-generics-hero.png)
+
 1편에서 Generics의 기본 문법과 `any` constraint를 살펴봤다. 이번 편에서는 Generics의 핵심인 **Type Constraint(타입 제약)**를 깊이 있게 다룬다.
 
 # 1. Constraint 개념
