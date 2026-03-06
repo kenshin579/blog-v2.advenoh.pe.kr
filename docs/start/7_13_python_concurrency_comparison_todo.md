@@ -13,29 +13,29 @@
 
 ## 2단계: 블로그 글 작성 (blog-v2)
 
-- [ ] `docs/start/python-동시성-비교-threading-vs-multiprocessing-vs-asyncio/index.md` 생성
-- [ ] frontmatter 작성 (title, description, date, tags, series)
-- [ ] `# 1. 개요` 작성
-  - [ ] `## 1.1 왜 동시성이 필요한가` - 순차 실행 한계, 세 가지 모델 소개
-  - [ ] `## 1.2 CPU-bound vs I/O-bound 작업` - 예시, 구분 기준
-- [ ] `# 2. GIL (Global Interpreter Lock)` 작성
-  - [ ] `## 2.1 GIL이란` - 개념, 존재 이유
-  - [ ] `## 2.2 GIL의 영향` - I/O-bound vs CPU-bound 차이
-  - [ ] `## 2.3 Python 3.13+ free-threading` - PEP 703, python3.13t
-- [ ] `# 3. 동시성 모델별 사용법` 작성
-  - [ ] `## 3.1 threading` - Thread, Lock, Event, daemon thread
-  - [ ] `## 3.2 multiprocessing` - Process, Pool, Queue, Pipe, shared_memory
-  - [ ] `## 3.3 asyncio 개요` - async/await 기본, asyncio 기초 편 링크
-- [ ] `# 4. concurrent.futures` 작성
-  - [ ] `## 4.1 ThreadPoolExecutor` - submit, Future
-  - [ ] `## 4.2 ProcessPoolExecutor` - map
-  - [ ] `## 4.3 공통 패턴` - as_completed, with 문
-- [ ] `# 5. 성능 벤치마크와 선택 기준` 작성
-  - [ ] `## 5.1 벤치마크 비교` - I/O-bound, CPU-bound 결과 비교표
-  - [ ] `## 5.2 선택 기준 의사결정 트리` - Mermaid flowchart
-  - [ ] `## 5.3 한눈에 보는 비교표` - 4가지 모델 특성 비교 테이블
-- [ ] `# 6. 마무리` 작성
-- [ ] UTF-8 인코딩 확인 (`file -I`)
+- [x] `docs/start/python-동시성-비교-threading-vs-multiprocessing-vs-asyncio/index.md` 생성
+- [x] frontmatter 작성 (title, description, date, tags, series)
+- [x] `# 1. 개요` 작성
+  - [x] `## 1.1 왜 동시성이 필요한가` - 순차 실행 한계, 세 가지 모델 소개
+  - [x] `## 1.2 CPU-bound vs I/O-bound 작업` - 예시, 구분 기준
+- [x] `# 2. GIL (Global Interpreter Lock)` 작성
+  - [x] `## 2.1 GIL이란` - 개념, 존재 이유
+  - [x] `## 2.2 GIL의 영향` - I/O-bound vs CPU-bound 차이
+  - [x] `## 2.3 Python 3.13+ free-threading` - PEP 703, python3.13t
+- [x] `# 3. 동시성 모델별 사용법` 작성
+  - [x] `## 3.1 threading` - Thread, Lock, Event, daemon thread
+  - [x] `## 3.2 multiprocessing` - Process, Pool, Queue, Pipe, shared_memory
+  - [x] `## 3.3 asyncio 개요` - async/await 기본, asyncio 기초 편 링크
+- [x] `# 4. concurrent.futures` 작성
+  - [x] `## 4.1 ThreadPoolExecutor` - submit, Future
+  - [x] `## 4.2 ProcessPoolExecutor` - map
+  - [x] `## 4.3 공통 패턴` - as_completed, with 문
+- [x] `# 5. 성능 벤치마크와 선택 기준` 작성
+  - [x] `## 5.1 벤치마크 비교` - I/O-bound, CPU-bound 결과 비교표
+  - [x] `## 5.2 선택 기준 의사결정 트리` - Mermaid flowchart
+  - [x] `## 5.3 한눈에 보는 비교표` - 4가지 모델 특성 비교 테이블
+- [x] `# 6. 마무리` 작성
+- [x] UTF-8 인코딩 확인 (`file -I`)
 
 ## 3단계: 리뷰 및 정리
 
