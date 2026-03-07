@@ -112,7 +112,17 @@ $ wails doctor
 `wails init` 명령으로 새 프로젝트를 생성한다. `-t` 옵션으로 프론트엔드 템플릿을 지정할 수 있다.
 
 ```bash
-wails init -n wails-todo -t react-ts
+$ wails init -n wails-todo -t react-ts
+
+Wails CLI v2.11.0
+
+# Initialising Project 'wails-todo'
+Project Name      | wails-todo
+Project Directory | /path/to/wails-todo
+Template          | React + Vite (Typescript)
+Template Source   | https://wails.io
+
+Initialised project 'wails-todo' in 264ms.
 ```
 
 사용 가능한 템플릿: `react`, `react-ts`, `vue`, `vue-ts`, `svelte`, `svelte-ts`, `vanilla` 등
@@ -120,8 +130,35 @@ wails init -n wails-todo -t react-ts
 생성된 프로젝트를 바로 실행해 볼 수 있다:
 
 ```bash
-cd wails-todo
-wails dev
+$ cd wails-todo
+$ wails dev
+
+Wails CLI v2.11.0
+
+Executing: go mod tidy
+  • Generating bindings: Done.
+  • Installing frontend dependencies: Done.
+  • Compiling frontend: Done.
+
+> frontend@0.0.0 dev
+> vite
+
+  VITE v3.2.11  ready in 144 ms
+
+Vite Server URL: http://localhost:5173/
+  ➜  Local:   http://localhost:5173/
+  ➜  Network: use --host to expose
+Running frontend DevWatcher command: 'npm run dev'
+Building application for development...
+  • Generating bindings: Done.
+  • Compiling application: Done.
+  • Packaging application: Done.
+
+Using DevServer URL: http://localhost:34115
+Using Frontend DevServer URL: http://localhost:5173/
+Watching (sub)/directory: /path/to/wails-todo
+
+To develop in the browser and call your bound Go methods from Javascript, navigate to: http://localhost:34115
 ```
 
 `wails dev`는 프론트엔드 HMR(Hot Module Replacement)과 Go 자동 재빌드를 동시에 지원하는 개발 모드다.
@@ -281,6 +318,10 @@ useEffect(() => {
 이벤트 시스템은 바인딩 호출로는 처리하기 어려운 **단방향 알림**(예: 메뉴에서 파일을 불러온 후 UI 갱신)에 유용하다.
 
 ## 5. 실전 예제: Todo 앱
+
+완성된 Todo 앱의 실행 화면이다. Todo 항목을 추가하고, 체크박스로 완료 표시하며, 삭제할 수 있다.
+
+![Wails Todo 앱 실행 화면](wails-todo-with-items.png)
 
 ### 백엔드 구현 (Go)
 
@@ -726,7 +767,24 @@ runtime.WindowFullscreen(a.ctx)
 ### 프로덕션 빌드
 
 ```bash
-wails build
+$ wails build
+
+Wails CLI v2.11.0
+
+# Build Options
+Platform(s)        | darwin/arm64
+Compiler           | /usr/local/go/bin/go
+Build Mode         | production
+Frontend Directory | /path/to/wails-todo/frontend
+Package            | true
+
+# Building target: darwin/arm64
+  • Generating bindings: Done.
+  • Installing frontend dependencies: Done.
+  • Compiling frontend: Done.
+  • Compiling application: Done.
+  • Packaging application: Done.
+Built 'build/bin/wails-todo.app/Contents/MacOS/wails-todo' in 3.506s.
 ```
 
 빌드가 완료되면 `build/bin/` 디렉토리에 실행 파일이 생성된다:
@@ -735,9 +793,11 @@ wails build
 - **Linux**: `wails-todo` (바이너리)
 
 ```bash
-$ ls -lh build/bin/wails-todo.app
-total 15256
--rwxr-xr-x  1 user  staff   7.5M  ...  wails-todo
+$ ls -lh build/bin/wails-todo.app/Contents/MacOS/wails-todo
+-rwxr-xr-x  1 user  staff   7.5M  Mar  7 13:30 wails-todo
+
+$ du -sh build/bin/wails-todo.app
+7.7M	build/bin/wails-todo.app
 ```
 
 실제 바이너리 크기는 약 **7.5MB**로, Electron 앱(~150MB+)에 비해 매우 작다.
