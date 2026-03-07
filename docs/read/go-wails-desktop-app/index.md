@@ -30,6 +30,8 @@ Electron처럼 Chromium을 번들링하지 않고 **OS의 네이티브 WebView**
 
 # 1. 들어가며
 
+<img src="cover.png" alt="Go Wails 커버 이미지" width="75%" />
+
 ## 1.1 Wails란?
 
 Wails는 Go로 데스크톱 앱을 만들 수 있는 프레임워크다. 핵심 아이디어는 단순하다:
