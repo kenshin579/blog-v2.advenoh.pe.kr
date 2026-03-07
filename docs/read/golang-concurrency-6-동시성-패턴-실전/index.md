@@ -14,6 +14,8 @@ draft: false
 
 ## 서론 - 동시성 패턴이 중요한 이유
 
+<img src="cover.png" alt="cover" width="75%" />
+
 Go의 goroutine과 channel은 강력하지만, 잘못 사용하면 goroutine 누수, deadlock, race condition 같은 문제가 발생한다. 동시성 패턴은 이런 문제를 **반복 검증된 구조**로 해결한다.
 
 실무에서 자주 마주치는 상황을 생각해보자.

@@ -25,6 +25,8 @@ Go는 channel을 통한 통신을 권장하지만, 모든 상황에서 channel�
 
 # 1. 왜 Synchronization이 필요한가
 
+<img src="cover.png" alt="cover" width="75%" />
+
 여러 goroutine이 **같은 변수에 동시에 접근**하면 **Race Condition**이 발생한다. Race Condition이란 두 개 이상의 goroutine이 공유 자원에 동시에 접근할 때, 실행 순서에 따라 결과가 달라지는 현상이다. 프로그램이 때로는 정상 동작하고 때로는 잘못된 결과를 내는 비결정적(non-deterministic) 버그를 만든다.
 
 ```go

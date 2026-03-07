@@ -11,6 +11,8 @@ Go에서 여러 goroutine을 다루다 보면 자연스럽게 마주치는 문�
 
 # 1. 서론 - context 패키지가 필요한 이유
 
+<img src="cover.png" alt="cover" width="75%" />
+
 서버가 HTTP 요청을 처리할 때, 하나의 요청이 여러 goroutine으로 분산되어 처리되는 것은 흔한 일이다. 이때 세 가지 핵심 요구사항이 생긴다.
 
 - **goroutine 취소**: 클라이언트가 연결을 끊으면 관련 goroutine을 모두 정리해야 한다
