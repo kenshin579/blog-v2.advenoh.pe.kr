@@ -23,6 +23,8 @@ Channel은 goroutine 간 **데이터를 주고받는 통신 수단**이다. Go�
 
 ## 1. Channel 개념과 생성
 
+<img src="cover.png" alt="cover" width="75%" />
+
 Channel은 `make` 함수로 생성한다. 타입이 지정된 파이프라고 생각하면 된다.
 
 ```go

@@ -11,6 +11,8 @@ Mutex나 Channel을 사용하면 동시성 문제를 해결할 수 있다는 것
 
 ## 서론 - 왜 Memory Model을 알아야 하는가
 
+<img src="cover.png" alt="cover" width="75%" />
+
 ### 컴파일러와 CPU의 명령어 재배치
 
 우리가 작성한 코드가 **작성한 순서 그대로 실행되는 것은 아니다**. 컴파일러와 CPU는 성능 최적화를 위해 명령어의 실행 순서를 재배치(reordering)할 수 있다.

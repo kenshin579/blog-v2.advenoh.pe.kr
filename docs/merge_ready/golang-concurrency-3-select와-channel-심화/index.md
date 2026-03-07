@@ -21,6 +21,8 @@ series: "Golang Concurrency"
 
 ## 1. Select 문 기본
 
+<img src="cover.png" alt="cover" width="75%" />
+
 `select`는 switch와 비슷하지만 **channel 연산**에 특화되어 있다. 여러 case 중 **준비된 것 하나**를 실행한다.
 
 ```go

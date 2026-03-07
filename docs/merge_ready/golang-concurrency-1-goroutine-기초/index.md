@@ -22,6 +22,8 @@ Go 언어가 다른 언어와 차별화되는 가장 큰 특징 중 하나는 **
 
 ## 1. Concurrency vs Parallelism
 
+<img src="cover.png" alt="cover" width="75%" />
+
 Concurrency와 Parallelism은 자주 혼동되지만 서로 다른 개념이다.
 
 
