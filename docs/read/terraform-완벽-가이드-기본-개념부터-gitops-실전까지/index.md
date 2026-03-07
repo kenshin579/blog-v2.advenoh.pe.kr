@@ -84,7 +84,7 @@ HCL의 주요 특징:
 
 ## 2.2 핵심 구성 요소
 
-Terraform의 핵심 구성 요소를 정리하면 다음과 같다.
+Terraform의 핵심 구성 요소를 정리하면 다음과 같다. 아래 순서는 의존성과 학습 흐름을 기준으로 나열했다. Provider가 있어야 Resource를 만들 수 있고, Variable/Output으로 Resource를 유연하게 구성하며, Data Source로 기존 리소스를 조회하고, Module로 이 모든 것을 재사용 가능한 단위로 묶는다.
 
 ```mermaid
 flowchart LR
@@ -97,9 +97,10 @@ flowchart LR
     end
 ```
 
-### Provider
+### 2.2.1 Provider
 
 **Provider**는 Terraform이 외부 서비스와 통신하기 위한 플러그인이다. AWS, Kubernetes, Helm 등 각 서비스마다 Provider가 있다.
+Provider는 모든 것의 시작점으로, Provider 없이는 Resource를 만들 수 없다. `terraform init` 시 선언된 Provider가 자동으로 다운로드되며, 버전을 고정하여 팀 전체가 동일한 환경에서 작업할 수 있다.
 
 ```hcl
 # Provider 선언
@@ -122,9 +123,10 @@ provider "kubernetes" {
 }
 ```
 
-### Resource
+### 2.2.2 Resource
 
 **Resource**는 Terraform이 생성하고 관리하는 실제 인프라 객체이다. `resource "타입" "이름"` 형태로 선언한다.
+서버, 네트워크, 데이터베이스 등 Provider가 지원하는 모든 인프라를 Resource로 정의할 수 있으며, Terraform이 생성부터 수정, 삭제까지 전체 생명주기를 관리한다.
 
 ```hcl
 # Kind 클러스터 리소스 선언
@@ -146,9 +148,10 @@ resource "kubernetes_namespace" "study" {
 - `kind_cluster.local_cluster`: 리소스 타입과 이름을 조합한 고유 식별자
 - `depends_on`: 리소스 간 명시적 의존성 선언 (이 경우 클러스터가 먼저 생성되어야 함)
 
-### Variable과 Output
+### 2.2.3 Variable과 Output
 
 **Variable**은 설정값을 외부에서 주입할 수 있게 하고, **Output**은 생성된 결과를 출력한다.
+Variable을 사용하면 환경(dev/staging/prod)별로 다른 값을 적용할 수 있고, Output은 다른 모듈이나 스크립트에서 생성된 리소스 정보를 참조할 때 유용하다.
 
 ```hcl
 # Variable: 입력값 정의
@@ -178,9 +181,10 @@ export TF_VAR_kind_cluster_name="my-cluster"
 kind_cluster_name = "my-cluster"
 ```
 
-### Data Source
+### 2.2.4 Data Source
 
 **Data Source**는 Terraform 외부에서 이미 존재하는 리소스의 정보를 읽어온다. Resource가 "생성"이라면 Data Source는 "조회"이다.
+예를 들어 이미 수동으로 만든 VPC나 Namespace의 정보를 가져와 다른 리소스에서 참조할 수 있어, 기존 인프라와 새 리소스를 자연스럽게 연결할 수 있다.
 
 ```hcl
 # 이미 존재하는 Namespace 정보를 조회
@@ -198,9 +202,10 @@ resource "kubernetes_config_map" "example" {
 }
 ```
 
-### Module
+### 2.2.5 Module
 
 **Module**은 관련 리소스들을 하나의 재사용 가능한 패키지로 묶은 것이다. 디렉토리 단위로 분리하여 코드의 구조화와 재사용성을 높인다.
+Terraform Registry에 공개된 커뮤니티 모듈을 가져다 쓸 수도 있고, 사내 공통 인프라 패턴을 모듈로 만들어 여러 프로젝트에서 일관되게 사용할 수도 있다.
 
 ```hcl
 # 모듈 호출 (main.tf)
