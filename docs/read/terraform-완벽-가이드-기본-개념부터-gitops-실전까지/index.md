@@ -594,65 +594,10 @@ Terraform으로 클러스터와 ArgoCD가 준비되었으니, 이제 ArgoCD에 �
 ```
 charts/sample-nginx/
 ├── Chart.yaml           # 차트 메타데이터
-├── values.yaml          # 설정값 정의
+├── values.yaml          # 이미지, 레플리카 수, 리소스 등 설정값 정의
 └── templates/
-    ├── deployment.yaml  # K8s Deployment 템플릿
+    ├── deployment.yaml  # {{ .Values.xxx }}로 설정값을 참조하는 K8s Deployment 템플릿
     └── service.yaml     # K8s Service 템플릿
-```
-
-`values.yaml`에서 이미지, 레플리카 수, 리소스 등의 설정값을 정의한다.
-
-```yaml
-# charts/sample-nginx/values.yaml
-replicaCount: 1
-
-image:
-  repository: nginx
-  tag: "1.27.0"
-
-service:
-  type: ClusterIP
-  port: 80
-
-resources:
-  requests:
-    cpu: 50m
-    memory: 64Mi
-  limits:
-    cpu: 100m
-    memory: 128Mi
-```
-
-`templates/deployment.yaml`에서는 `{{ .Values.xxx }}`로 위 설정값을 참조한다.
-
-```yaml
-# charts/sample-nginx/templates/deployment.yaml
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: {{ .Chart.Name }}
-spec:
-  replicas: {{ .Values.replicaCount }}
-  selector:
-    matchLabels:
-      app: {{ .Chart.Name }}
-  template:
-    metadata:
-      labels:
-        app: {{ .Chart.Name }}
-    spec:
-      containers:
-        - name: nginx
-          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
-          ports:
-            - containerPort: 80
-          resources:
-            requests:
-              cpu: {{ .Values.resources.requests.cpu }}
-              memory: {{ .Values.resources.requests.memory }}
-            limits:
-              cpu: {{ .Values.resources.limits.cpu }}
-              memory: {{ .Values.resources.limits.memory }}
 ```
 
 ### ApplicationSet으로 ArgoCD에 앱 등록
