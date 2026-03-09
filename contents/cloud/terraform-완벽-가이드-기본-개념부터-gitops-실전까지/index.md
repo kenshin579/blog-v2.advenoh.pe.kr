@@ -1,8 +1,8 @@
 ---
 title: "Terraform 완벽 가이드: 기본 개념부터 GitOps 실전까지"
 description: "Terraform의 기본 개념, 아키텍처, 사용법을 알아보고, Kind 클러스터와 ArgoCD를 배포하는 실습을 진행합니다. Terraform + ArgoCD + Helm으로 효율적인 인프라를 관리하는 방법도 소개합니다."
-date: 2026-02-18
-update: 2026-02-18
+date: 2026-04-28
+update: 2026-04-28
 tags:
   - Terraform
   - IaC
