@@ -1,8 +1,8 @@
 ---
 title: "OpenClaw Telegram 멀티 에이전트 구성하기: 하나의 Gateway에서 여러 AI 봇 운영"
 description: "OpenClaw의 멀티 에이전트 아키텍처를 활용하여 Telegram 봇 여러 개를 독립적으로 운영하는 방법을 단계별로 정리합니다."
-date: 2026-02-23
-update: 2026-02-23
+date: 2026-03-09
+update: 2026-03-09
 tags:
   - OpenClaw
   - Telegram
