@@ -15,21 +15,21 @@
 
 ## 2단계: 블로그 2 초안 작성
 
-- [ ] `docs/start/어드민-권한-관리-2-샘플-프로젝트로-보는-구현/index.md` 생성
-- [ ] frontmatter 작성 (series: "어드민 권한 관리")
-- [ ] 인증 vs 인가 설명
-- [ ] 미들웨어 체인 흐름도 작성 (Mermaid flowchart)
-- [ ] JWT 미들웨어 코드 발췌 및 설명
-- [ ] RBAC 미들웨어 코드 발췌 및 설명
-- [ ] Owner 미들웨어 코드 발췌 및 설명
-- [ ] router.go 라우트 설정 코드 발췌
-- [ ] ProtectedRoute 코드 발췌 및 설명
-- [ ] PermissionGate 코드 발췌 및 설명
-- [ ] Sidebar 메뉴 필터링 코드 발췌
-- [ ] ProtectedRoute vs PermissionGate 비교표
+- [x] `docs/start/어드민-권한-관리-2-샘플-프로젝트로-보는-구현/index.md` 생성
+- [x] frontmatter 작성 (series: "어드민 권한 관리")
+- [x] 인증 vs 인가 설명
+- [x] 미들웨어 체인 흐름도 작성 (Mermaid flowchart)
+- [x] JWT 미들웨어 코드 발췌 및 설명
+- [x] RBAC 미들웨어 코드 발췌 및 설명
+- [x] Owner 미들웨어 코드 발췌 및 설명
+- [x] router.go 라우트 설정 코드 발췌
+- [x] ProtectedRoute 코드 발췌 및 설명
+- [x] PermissionGate 코드 발췌 및 설명
+- [x] Sidebar 메뉴 필터링 코드 발췌
+- [x] ProtectedRoute vs PermissionGate 비교표
 - [ ] Role별 화면 스크린샷 촬영 (admin/manager/user)
-- [ ] 전체 소스코드 GitHub 링크 추가
-- [ ] 인코딩 확인 (`file -I`)
+- [x] 전체 소스코드 GitHub 링크 추가
+- [x] 인코딩 확인 (`file -I`)
 
 ## 3단계: 리뷰 및 발행
 
