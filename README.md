@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-03-09
+Updated 2026-03-10
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -30,7 +30,9 @@ Updated 2026-03-09
 * [Argo CD](https://blog.advenoh.pe.kr/argo-cd/)
 * [Argo Projects](https://blog.advenoh.pe.kr/argo-projects/)
 * [ArgoCD Resource Hooks (PreSync, PostSync, SyncWaves)에 대해서 알아보자](https://blog.advenoh.pe.kr/argocd-resource-hooks에-대해서-알아보자/)
+* [ArgoCD에서 여러 Application을 GitOps로 관리하기: App of Apps vs ApplicationSet](https://blog.advenoh.pe.kr/argocd-여러-application-gitops-관리/)
 * [Heroku에 Node.js+MongoDB App 배포하기](https://blog.advenoh.pe.kr/heroku에-node-js-mongodb-app-배포하기/)
+* [Ingress NGINX 지원 종료 이후, Gateway API로의 마이그레이션 전략](https://blog.advenoh.pe.kr/ingress-nginx-지원-종료-이후-gateway-api로의-마이그레이션-전략/)
 * [Introducing Jaeger](https://blog.advenoh.pe.kr/jaeger에-대한-소개-en/)
 * [Introducing ksqlDB](https://blog.advenoh.pe.kr/ksqldb-소개-en/)
 * [Jaeger에 대한 소개](https://blog.advenoh.pe.kr/jaeger에-대한-소개/)
