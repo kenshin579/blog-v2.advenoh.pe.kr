@@ -23,6 +23,8 @@ series: "ArgoCD"
 
 ## 1. 개요
 
+![cover](cover.png)
+
 `GitOps` 환경에서 `Helm Chart`로 여러 애플리케이션을 관리할 때, 각 애플리케이션마다 `ArgoCD` Application을 수동으로 생성하는 것은 번거롭고 실수가 발생하기 쉽다.
 
 예를 들어, 다음과 같은 `Helm Chart` 구조가 있다고 가정해보자.

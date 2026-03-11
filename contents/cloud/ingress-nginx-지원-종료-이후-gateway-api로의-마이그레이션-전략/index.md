@@ -20,6 +20,8 @@ tags:
 
 # 1. 개요
 
+![cover](cover.png)
+
 Kubernetes 환경에서 가장 널리 사용되던 `Ingress Controller` 중 하나인 `Ingress NGINX`가 **2026년 3월을 기점으로 공식 지원 종료(EOL)**를 예고했다.
 
 지원 종료는 단순히 "더 이상 업데이트가 없다"는 의미에 그치지 않는다.
