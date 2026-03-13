@@ -396,6 +396,61 @@ MCP 서버의 도구 호출을 모니터링하고 로깅한다.
 
 **포인트**: `async: true`로 설정하면 Hook 실행이 완료될 때까지 기다리지 않는다. 테스트처럼 시간이 오래 걸리는 작업에 적합하다.
 
+## 2.6 Hooks Best Practices
+
+### 2.6.1 추천 Use Case 모음
+
+| Use Case | 이벤트 | 핸들러 | 설명 |
+|----------|--------|--------|------|
+| 위험 명령 차단 | `PreToolUse` (Bash) | `command` | `rm -rf /`, `git push --force main` 등 차단 |
+| 자동 린트/포맷 | `PostToolUse` (Write\|Edit) | `command` | 파일 저장 시 ESLint, gofmt, ruff 자동 실행 |
+| 커밋 메시지 규칙 강제 | `PreToolUse` (Bash) | `command` | Conventional Commits 형식이 아니면 차단 |
+| 민감 파일 보호 | `PreToolUse` (Write\|Edit) | `command` | `.env`, `secrets.yaml` 등 수정 시 차단 |
+| 테스트 자동 실행 | `PostToolUse` (Write\|Edit) | `command` (async) | 관련 테스트를 비동기로 실행, 워크플로우 차단 없이 |
+| 작업 완료 검증 | `Stop` | `prompt` | 요구사항 충족 여부, 테스트 누락 검토 |
+| 코드 리뷰 자동화 | `Stop` | `agent` | 수정된 파일을 읽고 스타일 가이드 위반 검사 |
+| API 호출 감사 로그 | `PreToolUse` (mcp__*) | `command` | MCP 도구 호출 기록을 파일에 로깅 |
+| 브랜치 보호 | `PreToolUse` (Bash) | `command` | main/master 브랜치 직접 커밋 방지 |
+| 환경 초기화 | `SessionStart` | `command` | 세션 시작 시 `.env` 로드, 필수 도구 존재 확인 |
+
+### 2.6.2 설계 원칙
+
+**1. command 핸들러를 기본으로 사용하라**
+
+린트, 포맷팅, 패턴 검사처럼 규칙이 명확한 작업은 `command`가 가장 효율적이다. `prompt`나 `agent`는 LLM 비용이 발생하므로 판단이 필요한 경우에만 사용한다.
+
+**2. 차단은 최소한으로, 피드백은 명확하게**
+
+exit code 2로 차단할 때는 **왜 차단되었는지** stderr에 구체적으로 알려줘야 Claude가 대안을 찾을 수 있다.
+
+```bash
+# ❌ 나쁜 예: 이유 없이 차단
+echo "차단됨" >&2 && exit 2
+
+# ✅ 좋은 예: 구체적 이유와 대안 제시
+echo "main 브랜치에 직접 push할 수 없습니다. feature 브랜치에서 PR을 생성하세요." >&2 && exit 2
+```
+
+**3. 무거운 작업은 async로 실행하라**
+
+테스트 실행, 빌드 검증 같은 시간이 오래 걸리는 작업은 `"async": true`로 설정하여 Claude의 워크플로우를 차단하지 않도록 한다.
+
+**4. Hook 스크립트는 빠르게 종료하라**
+
+동기 Hook은 Claude의 응답을 블로킹한다. 기본 타임아웃(command: 600초)에 의존하지 말고, 스크립트 자체를 가능한 빠르게 끝나도록 작성한다.
+
+**5. 이벤트 + matcher 조합을 정확히 좁혀라**
+
+matcher를 생략하면 해당 이벤트의 **모든** 도구에 Hook이 실행된다. 불필요한 실행을 줄이려면 matcher를 최대한 구체적으로 지정한다.
+
+```json
+// ❌ 모든 도구에 린트 실행 (불필요)
+{ "matcher": null }
+
+// ✅ 파일 수정 도구에만 린트 실행
+{ "matcher": "Write|Edit" }
+```
+
 # 3. Plugin 시스템
 
 ## 3.1 Plugin이란
