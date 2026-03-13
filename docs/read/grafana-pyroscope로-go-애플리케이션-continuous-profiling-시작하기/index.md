@@ -340,6 +340,14 @@ func handleMemory(c echo.Context) error {
 
 Grafana에서 Pyroscope 데이터소스를 조회하면 `endpoint` label로 `/slow`와 `/memory` 요청의 프로파일을 각각 필터링할 수 있다.
 
+아래는 Push 모드(echo.server)의 CPU 프로파일 Flame Graph이다. `main.fibonacci`가 CPU 시간의 대부분을 차지하는 것을 한눈에 확인할 수 있다.
+
+![Push 모드 CPU Flame Graph](pyroscope-cpu-flamegraph.png)
+
+메모리 프로파일에서는 `main.allocateMemory`의 메모리 할당 패턴을 확인할 수 있다.
+
+![Push 모드 Memory Flame Graph](pyroscope-memory-flamegraph.png)
+
 ## 5.2 Pull 모드: Alloy 연동
 
 Pull 모드는 애플리케이션 코드를 변경하지 않고, 기존 `net/http/pprof` 엔드포인트를 **Grafana Alloy**가 주기적으로 스크래핑하는 방식이다. Prometheus의 Pull 방식과 동일한 개념이다.
@@ -394,6 +402,10 @@ pyroscope.write "endpoint" {
 ```
 
 Alloy가 15초마다 pprof 엔드포인트를 스크래핑하므로, 부하 생성 후 잠시 기다리면 Grafana에서 `pull.golang.app` 애플리케이션으로 프로파일 데이터를 조회할 수 있다.
+
+아래는 Pull 모드(pull.golang.app)의 CPU 프로파일이다. Push 모드와 동일하게 `main.fibonacci`가 CPU 병목으로 표시되지만, `TagWrapper` 기반 label 필터링은 사용할 수 없다.
+
+![Pull 모드 CPU Flame Graph](pyroscope-pull-flamegraph.png)
 
 ## 5.3 부하 테스트
 
