@@ -112,7 +112,86 @@ flowchart TD
 | **Push (SDK)** | 설정이 간단, 코드에 직접 통합 | 애플리케이션 코드 변경 필요 |
 | **Pull (Alloy)** | 코드 변경 없음, 기존 pprof 활용 | Alloy 인프라 추가 필요 |
 
-이 글에서는 **Push 모드(SDK)**를 중심으로 다룬다.
+이 글에서는 **Push 모드(SDK)**를 중심으로 다루되, Pull 모드도 함께 살펴본다.
+
+## 3.3 Pull 모드 상세: Grafana Alloy
+
+Pull 모드는 애플리케이션 코드를 변경하지 않고, 기존 `net/http/pprof` 엔드포인트를 **Grafana Alloy**가 주기적으로 스크래핑하는 방식이다. Prometheus의 Pull 방식과 동일한 개념이다.
+
+### 3.3.1 애플리케이션 측 설정
+
+Pull 모드에서 애플리케이션은 pprof 엔드포인트만 노출하면 된다. Pyroscope SDK를 추가할 필요가 없다.
+
+```go
+import (
+	"net/http"
+	_ "net/http/pprof" // /debug/pprof/* 엔드포인트 자동 등록
+)
+
+func main() {
+	http.ListenAndServe(":8080", nil)
+}
+```
+
+### 3.3.2 Grafana Alloy 설정
+
+Alloy는 Grafana에서 만든 텔레메트리 수집기(collector)로, Pyroscope의 Pull 모드 수집을 담당한다. `config.alloy` 파일에 스크래핑 대상을 정의한다.
+
+```hcl
+// config.alloy
+pyroscope.scrape "default" {
+  targets = [
+    {"__address__" = "app:8080", "service_name" = "my-go-app"},
+  ]
+
+  profiling_config {
+    profile.process_cpu { enabled = true }           // CPU 프로파일
+    profile.memory {                                  // 메모리 프로파일
+      enabled = true
+      path    = "/debug/pprof/allocs"
+    }
+    profile.goroutine { enabled = true }              // 고루틴 프로파일
+    profile.mutex { enabled = true }                  // 뮤텍스 프로파일
+    profile.block { enabled = true }                  // 블로킹 프로파일
+  }
+
+  forward_to = [pyroscope.write.endpoint.receiver]    // 수집 데이터 전송 대상
+}
+
+pyroscope.write "endpoint" {
+  endpoint {
+    url = "http://pyroscope:4040"                     // Pyroscope 서버 주소
+  }
+}
+```
+
+### 3.3.3 Docker Compose에 Alloy 추가
+
+```yaml
+services:
+  alloy:
+    image: grafana/alloy:latest
+    volumes:
+      - ./alloy/config.alloy:/etc/alloy/config.alloy
+    command: ["run", "/etc/alloy/config.alloy"]
+    depends_on:
+      - pyroscope
+    networks:
+      - pyroscope-net
+```
+
+### 3.3.4 Push vs Pull 선택 기준
+
+| 기준 | Push (SDK) | Pull (Alloy) |
+|------|-----------|--------------|
+| **코드 변경** | SDK 추가 필요 | 변경 없음 (`pprof`만 노출) |
+| **인프라** | 추가 없음 | Alloy 설치 필요 |
+| **세밀한 제어** | `TagWrapper`로 label 태깅 가능 | pprof 기본 label만 사용 |
+| **기존 pprof 활용** | 별도 공존 설정 필요 | 그대로 활용 |
+| **K8s 환경** | Pod마다 SDK 설정 | Alloy DaemonSet으로 일괄 수집 |
+| **추천 상황** | 새 프로젝트, 세밀한 분석 필요 | 기존 서비스, 코드 변경 어려운 경우 |
+
+> **실무 팁**: Kubernetes 환경에서 이미 pprof를 노출하는 서비스가 많다면 Pull 모드가 효율적이다. 반면 엔드포인트별 프로파일링 같은 세밀한 분석이 필요하면 Push 모드의 `TagWrapper`가 유리하다.
 
 # 4. 로컬 환경 구축
 
