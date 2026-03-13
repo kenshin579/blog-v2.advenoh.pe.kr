@@ -32,7 +32,7 @@ Go에서 성능 분석을 할 때 `net/http/pprof`나 `runtime/pprof`를 주로 
 
 > 이 글에서 사용한 전체 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/profiling/pyroscope)에서 확인할 수 있다.
 
-# 2. Continuous Profiling이란?
+# 2. Continuous Profiling 개요
 
 ## 2.1 전통적 프로파일링 vs Continuous Profiling
 
@@ -149,17 +149,6 @@ services:
       - pyroscope-net
 
   # --- Push 모드 ---
-  app-basic:
-    build:
-      context: .
-      dockerfile: basic/Dockerfile
-    depends_on:
-      - pyroscope
-    environment:
-      - PYROSCOPE_SERVER=http://pyroscope:4040
-    networks:
-      - pyroscope-net
-
   app-http:
     build:
       context: .
@@ -206,7 +195,7 @@ networks:
 > docker compose up -d
 ```
 
-## 4.2 Grafana에서 Pyroscope 데이터소스 연결
+## 4.2 Grafana 데이터소스 연결
 
 Grafana 프로비저닝 설정으로 Pyroscope 데이터소스를 자동 등록할 수 있다.
 
@@ -233,11 +222,13 @@ datasources:
 
 Grafana에서 **Explore** 메뉴 → Pyroscope 데이터소스를 선택하면 수집된 프로파일 데이터를 Flame Graph로 확인할 수 있다. Push 모드 앱은 `echo.server`, Pull 모드 앱은 `pull.golang.app`으로 표시된다.
 
-# 5. Push 모드: SDK 연동
+# 5. 데이터 수집
+
+## 5.1 Push 모드: SDK 연동
 
 Push 모드는 애플리케이션에 **Pyroscope Go SDK**를 추가하여, 프로파일 데이터를 Pyroscope 서버로 직접 전송하는 방식이다.
 
-## 5.1 SDK 설치 및 기본 설정
+### 5.1.1 SDK 설치 및 기본 설정
 
 ```bash
 > go get github.com/grafana/pyroscope-go
@@ -286,7 +277,7 @@ func main() {
 }
 ```
 
-## 5.2 주요 설정 항목
+### 5.1.2 주요 설정 항목
 
 | 필드 | 설명 | 기본값 |
 |------|------|--------|
@@ -297,95 +288,9 @@ func main() {
 | `Logger` | 로깅 인터페이스 | `nil` |
 | `DisableGCRuns` | GC 실행 비활성화 (CPU 오버헤드 감소) | `false` |
 
-## 5.3 부하 테스트
+### 5.1.3 Profiling Labels (TagWrapper)
 
-```bash
-# 빠른 응답 (기준선)
-> curl http://localhost:8080/fast
-
-# CPU 부하 생성
-> curl http://localhost:8080/slow
-
-# 메모리 부하 생성
-> curl http://localhost:8080/memory
-```
-
-# 6. Pull 모드: Alloy 연동
-
-Pull 모드는 애플리케이션 코드를 변경하지 않고, 기존 `net/http/pprof` 엔드포인트를 **Grafana Alloy**가 주기적으로 스크래핑하는 방식이다. Prometheus의 Pull 방식과 동일한 개념이다.
-
-## 6.1 애플리케이션 측 설정
-
-Pull 모드에서 애플리케이션은 pprof 엔드포인트만 노출하면 된다. Pyroscope SDK를 추가할 필요가 없다.
-
-```go
-import (
-	"net/http"
-	_ "net/http/pprof" // /debug/pprof/* 엔드포인트 자동 등록
-)
-
-func main() {
-	http.ListenAndServe(":6060", nil)
-}
-```
-
-## 6.2 Grafana Alloy 설정
-
-Alloy는 Grafana에서 만든 텔레메트리 수집기(collector)로, Pyroscope의 Pull 모드 수집을 담당한다. `config.alloy` 파일에 스크래핑 대상을 정의한다.
-
-```hcl
-// config.alloy
-pyroscope.scrape "default" {
-  targets = [
-    {"__address__" = "app-pull:6060", "service_name" = "pull.golang.app"},
-  ]
-
-  scrape_interval = "15s"  // 15초마다 스크래핑
-
-  profiling_config {
-    profile.process_cpu { enabled = true }           // CPU 프로파일
-    profile.memory {                                  // 메모리 프로파일
-      enabled = true
-      path    = "/debug/pprof/allocs"
-    }
-    profile.goroutine { enabled = true }              // 고루틴 프로파일
-    profile.mutex { enabled = true }                  // 뮤텍스 프로파일
-    profile.block { enabled = true }                  // 블로킹 프로파일
-  }
-
-  forward_to = [pyroscope.write.endpoint.receiver]    // 수집 데이터 전송 대상
-}
-
-pyroscope.write "endpoint" {
-  endpoint {
-    url = "http://pyroscope:4040"                     // Pyroscope 서버 주소
-  }
-}
-```
-
-## 6.3 부하 테스트
-
-```bash
-# 빠른 응답
-> curl http://localhost:6060/fast
-
-# CPU 부하
-> curl http://localhost:6060/slow
-
-# 메모리 부하
-> curl http://localhost:6060/memory
-
-# pprof 엔드포인트 직접 확인
-> curl http://localhost:6060/debug/pprof/
-```
-
-Alloy가 15초마다 pprof 엔드포인트를 스크래핑하므로, 부하 생성 후 잠시 기다리면 Grafana에서 `pull.golang.app` 애플리케이션으로 프로파일 데이터를 조회할 수 있다.
-
-# 7. Profiling Labels로 세밀한 분석 (Push 모드 전용)
-
-> **참고**: Profiling Labels(`TagWrapper`)는 **Push 모드에서만** 사용할 수 있다. Pull 모드에서는 pprof가 제공하는 기본 스택 트레이스만 수집되므로, 커스텀 label 태깅이 불가능하다. 이것이 Push/Pull 모드의 가장 큰 기능적 차이다.
-
-## 7.1 TagWrapper 사용법
+> **참고**: Profiling Labels는 **Push 모드에서만** 사용할 수 있다. Pull 모드에서는 pprof가 제공하는 기본 스택 트레이스만 수집되므로, 커스텀 label 태깅이 불가능하다. 이것이 Push/Pull 모드의 가장 큰 기능적 차이다.
 
 Pyroscope의 `TagWrapper`를 사용하면 특정 코드 경로에 label을 태깅할 수 있다. 태깅된 프로파일 데이터는 Flame Graph에서 label 기준으로 필터링할 수 있어서, "어떤 엔드포인트가 CPU를 많이 쓰는가?"와 같은 질문에 답할 수 있다.
 
@@ -397,7 +302,7 @@ pyroscope.TagWrapper(ctx,
 	})
 ```
 
-## 7.2 HTTP 서버에서 엔드포인트별 프로파일링
+### 5.1.4 엔드포인트별 프로파일링
 
 Echo HTTP 서버에서 각 핸들러를 `TagWrapper`로 감싸면 엔드포인트별 성능을 개별적으로 분석할 수 있다.
 
@@ -435,11 +340,85 @@ func handleMemory(c echo.Context) error {
 
 Grafana에서 Pyroscope 데이터소스를 조회하면 `endpoint` label로 `/slow`와 `/memory` 요청의 프로파일을 각각 필터링할 수 있다.
 
-# 8. Flame Graph 분석
+## 5.2 Pull 모드: Alloy 연동
 
-**이 섹션부터는 Push/Pull 모드 공통이다.** 어떤 방식으로 수집했든 Pyroscope 서버에 저장된 프로파일 데이터는 동일한 방식으로 분석할 수 있다.
+Pull 모드는 애플리케이션 코드를 변경하지 않고, 기존 `net/http/pprof` 엔드포인트를 **Grafana Alloy**가 주기적으로 스크래핑하는 방식이다. Prometheus의 Pull 방식과 동일한 개념이다.
 
-## 8.1 Flame Graph 읽는 법
+### 5.2.1 애플리케이션 측 설정
+
+Pull 모드에서 애플리케이션은 pprof 엔드포인트만 노출하면 된다. Pyroscope SDK를 추가할 필요가 없다.
+
+```go
+import (
+	"net/http"
+	_ "net/http/pprof" // /debug/pprof/* 엔드포인트 자동 등록
+)
+
+func main() {
+	http.ListenAndServe(":6060", nil)
+}
+```
+
+### 5.2.2 Grafana Alloy 설정
+
+Alloy는 Grafana에서 만든 텔레메트리 수집기(collector)로, Pyroscope의 Pull 모드 수집을 담당한다. `config.alloy` 파일에 스크래핑 대상을 정의한다.
+
+```hcl
+// config.alloy
+pyroscope.scrape "default" {
+  targets = [
+    {"__address__" = "app-pull:6060", "service_name" = "pull.golang.app"},
+  ]
+
+  scrape_interval = "15s"  // 15초마다 스크래핑
+
+  profiling_config {
+    profile.process_cpu { enabled = true }           // CPU 프로파일
+    profile.memory {                                  // 메모리 프로파일
+      enabled = true
+      path    = "/debug/pprof/allocs"
+    }
+    profile.goroutine { enabled = true }              // 고루틴 프로파일
+    profile.mutex { enabled = true }                  // 뮤텍스 프로파일
+    profile.block { enabled = true }                  // 블로킹 프로파일
+  }
+
+  forward_to = [pyroscope.write.endpoint.receiver]    // 수집 데이터 전송 대상
+}
+
+pyroscope.write "endpoint" {
+  endpoint {
+    url = "http://pyroscope:4040"                     // Pyroscope 서버 주소
+  }
+}
+```
+
+Alloy가 15초마다 pprof 엔드포인트를 스크래핑하므로, 부하 생성 후 잠시 기다리면 Grafana에서 `pull.golang.app` 애플리케이션으로 프로파일 데이터를 조회할 수 있다.
+
+## 5.3 부하 테스트
+
+Push/Pull 모드 모두 동일한 엔드포인트로 부하를 생성할 수 있다.
+
+```bash
+# --- Push 모드 (http://localhost:8080) ---
+> curl http://localhost:8080/fast       # 빠른 응답 (기준선)
+> curl http://localhost:8080/slow       # CPU 부하
+> curl http://localhost:8080/memory     # 메모리 부하
+
+# --- Pull 모드 (http://localhost:6060) ---
+> curl http://localhost:6060/fast       # 빠른 응답
+> curl http://localhost:6060/slow       # CPU 부하
+> curl http://localhost:6060/memory     # 메모리 부하
+
+# Pull 모드 pprof 엔드포인트 직접 확인
+> curl http://localhost:6060/debug/pprof/
+```
+
+# 6. Flame Graph 분석
+
+**어떤 수집 방식을 사용하든** Pyroscope 서버에 저장된 프로파일 데이터는 동일한 방식으로 분석할 수 있다.
+
+## 6.1 Flame Graph 읽는 법
 
 Flame Graph는 프로파일링 데이터를 스택 트레이스 기반으로 시각화한 그래프다.
 
@@ -459,7 +438,7 @@ Flame Graph를 분석할 때 주의할 점은 다음과 같다.
 - **깊은 스택** = 호출 체인이 깊음 (반드시 문제를 의미하지는 않음)
 - **Self time vs Total time**: 자기 자신의 실행 시간 vs 하위 함수를 포함한 전체 시간
 
-## 8.2 Pyroscope에서 Flame Graph 활용
+## 6.2 Pyroscope에서 Flame Graph 활용
 
 Grafana에서 Pyroscope 데이터소스를 통해 다양한 분석이 가능하다.
 
@@ -469,15 +448,15 @@ Grafana에서 Pyroscope 데이터소스를 통해 다양한 분석이 가능하�
 - **비교(Comparison) 모드**: 두 시점의 프로파일을 나란히 비교
 - **Diff 뷰**: 변경 전후의 성능 차이를 색상으로 시각화 (빨간색=증가, 초록색=감소)
 
-# 9. 실전 팁
+# 7. 실전 팁
 
-## 9.1 프로덕션 적용 시 주의사항
+## 7.1 프로덕션 적용 시 주의사항
 
 - **오버헤드 관리**: Pyroscope SDK의 CPU 오버헤드는 약 2-5%이다. `DisableGCRuns: true` 옵션으로 GC 관련 오버헤드를 줄일 수 있다
 - **프로파일 유형 선택**: 모든 프로파일을 활성화하면 오버헤드가 늘어나므로, CPU와 메모리 프로파일만 기본 활성화하고 필요 시 Mutex/Block을 추가하는 것을 권장한다
 - **`SetMutexProfileFraction`과 `SetBlockProfileRate` 값**: 값이 작을수록 더 많은 이벤트를 기록한다. 프로덕션에서는 `5` 이상의 값으로 오버헤드를 조절한다
 
-## 9.2 기존 pprof 코드와의 공존
+## 7.2 기존 pprof 코드와의 공존
 
 Pyroscope Go SDK는 내부적으로 `runtime/pprof`를 사용한다. 기존에 `net/http/pprof`를 사용하고 있다면 Pyroscope SDK와 함께 사용할 수 있다.
 
@@ -491,14 +470,14 @@ defer profiler.Stop()
 
 기존 pprof 엔드포인트는 즉석 디버깅용으로 유지하면서, Pyroscope로 상시 프로파일링 데이터를 수집하는 하이브리드 구성이 가능하다.
 
-## 9.3 Push/Pull 모드 마이그레이션
+## 7.3 Push/Pull 모드 마이그레이션
 
 이미 Pull 모드로 운영 중인 서비스에 Push 모드를 추가하거나, 그 반대도 가능하다.
 
 - **Pull → Push 전환**: SDK를 추가하고, Alloy 설정에서 해당 타겟을 제거한다. `TagWrapper`로 세밀한 label 태깅이 필요해진 경우에 전환한다.
 - **Push + Pull 공존**: SDK로 Push하면서 pprof 엔드포인트도 노출할 수 있다. 다만 Alloy가 같은 서비스를 스크래핑하면 **데이터가 중복**되므로, 하나의 수집 방식만 활성화하는 것을 권장한다.
 
-# 10. 마무리
+# 8. 마무리
 
 이 글에서는 Grafana Pyroscope를 활용한 Go 애플리케이션 Continuous Profiling을 다루었다.
 
@@ -509,7 +488,7 @@ defer profiler.Stop()
 
 전체 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/profiling/pyroscope)에서 확인할 수 있다.
 
-# 11. 참고
+# 9. 참고
 
 - [Grafana Pyroscope 공식 문서](https://grafana.com/docs/pyroscope/latest/)
 - [Pyroscope Go SDK (Push 모드)](https://grafana.com/docs/pyroscope/latest/configure-client/language-sdks/go_push/)
