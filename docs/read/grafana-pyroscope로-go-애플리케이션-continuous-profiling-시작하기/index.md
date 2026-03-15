@@ -426,11 +426,38 @@ Push/Pull 모드 모두 동일한 엔드포인트로 부하를 생성할 수 있
 > curl http://localhost:6060/debug/pprof/
 ```
 
-# 6. Flame Graph 분석
+# 6. Grafana Profiles Drilldown
 
-**어떤 수집 방식을 사용하든** Pyroscope 서버에 저장된 프로파일 데이터는 동일한 방식으로 분석할 수 있다.
+**어떤 수집 방식을 사용하든** Pyroscope 서버에 저장된 프로파일 데이터는 동일한 방식으로 분석할 수 있다. 부하 생성 후 Grafana의 **Drilldown > Profiles** 메뉴에서 수집된 프로파일 데이터를 확인할 수 있다. Profiles Drilldown은 서비스 목록 → 프로파일 유형 → Flame Graph → Labels 순서로 점진적으로 분석 범위를 좁혀갈 수 있다.
 
-## 6.1 Flame Graph 읽는 법
+## 6.1 All Services (서비스 목록)
+
+첫 화면에서는 Pyroscope에 등록된 모든 서비스의 프로파일 데이터를 Grid 뷰로 보여준다.
+
+![Grafana Profiles Drilldown - All Services](pyroscope-profiles-drilldown.png)
+
+| 서비스명 | 설명 | 수집 방식 |
+|----------|------|-----------|
+| **echo.server** | Echo HTTP 서버 (엔드포인트별 프로파일링) | Push (SDK) |
+| **pull.golang.app** | pprof 엔드포인트를 노출하는 서버 | Pull (Alloy) |
+| **pyroscope** | Pyroscope 서버 자체의 프로파일 | Push (자체 수집) |
+| **simple.golang.app** | 기본 SDK 연동 예제 | Push (SDK) |
+
+상단의 **Profile type** 드롭다운에서 `process_cpu/cpu`, `memory` 등 프로파일 유형을 전환할 수 있고, 서비스 이름으로 검색 필터링도 가능하다.
+
+## 6.2 Profile Types (프로파일 유형별 현황)
+
+서비스를 선택하면 해당 서비스에서 수집 중인 모든 프로파일 유형을 한눈에 볼 수 있다. 아래는 `echo.server`의 Profile Types 화면이다.
+
+![Profile Types - echo.server](pyroscope-drilldown-profile-types.png)
+
+CPU, memory, goroutine, mutex, block 등 각 프로파일 유형의 시계열 그래프가 표시되어, 어떤 리소스에 이상이 있는지 빠르게 파악할 수 있다. 각 카드의 **Flame graph** 링크를 클릭하면 해당 프로파일 유형의 상세 Flame Graph로 이동한다.
+
+## 6.3 Flame Graph (상세 분석)
+
+특정 프로파일 유형을 선택하면 Flame Graph와 함께 심볼 테이블이 표시된다. 심볼 테이블에서는 각 함수의 Self time과 Total time을 정렬하여 성능 병목 함수를 빠르게 식별할 수 있다.
+
+![Flame Graph - echo.server CPU](pyroscope-drilldown-flamegraph.png)
 
 Flame Graph는 프로파일링 데이터를 스택 트레이스 기반으로 시각화한 그래프다.
 
@@ -450,15 +477,23 @@ Flame Graph를 분석할 때 주의할 점은 다음과 같다.
 - **깊은 스택** = 호출 체인이 깊음 (반드시 문제를 의미하지는 않음)
 - **Self time vs Total time**: 자기 자신의 실행 시간 vs 하위 함수를 포함한 전체 시간
 
-## 6.2 Pyroscope에서 Flame Graph 활용
-
-Grafana에서 Pyroscope 데이터소스를 통해 다양한 분석이 가능하다.
+주요 분석 기능은 다음과 같다.
 
 - **시간 범위 선택**: 특정 시간 구간의 프로파일만 분석
 - **함수 클릭**: 해당 함수 중심으로 필터링하여 상세 확인
 - **Labels 필터링**: `endpoint=/slow` 등으로 특정 코드 경로만 분석 (Push 모드에서 label 태깅한 경우)
-- **비교(Comparison) 모드**: 두 시점의 프로파일을 나란히 비교
-- **Diff 뷰**: 변경 전후의 성능 차이를 색상으로 시각화 (빨간색=증가, 초록색=감소)
+
+## 6.4 Labels (label별 분류)
+
+**Labels** 탭에서는 프로파일 데이터를 label 기준으로 그룹화하여 볼 수 있다. Push 모드에서 `TagWrapper`로 태깅한 label(예: `hostname`, `pyroscope_spy`)별로 시계열을 분리하여 비교할 수 있다.
+
+![Labels - echo.server](pyroscope-drilldown-labels.png)
+
+## 6.5 Diff Flame Graph (비교 분석)
+
+**Diff flame graph** 탭에서는 두 시간 구간의 프로파일을 나란히 비교할 수 있다. Baseline과 Comparison 구간을 각각 선택하면, 변경 전후의 성능 차이를 색상으로 시각화한다 (빨간색=증가, 초록색=감소).
+
+![Diff Flame Graph](pyroscope-drilldown-diff-flamegraph.png)
 
 # 7. 실전 팁
 
