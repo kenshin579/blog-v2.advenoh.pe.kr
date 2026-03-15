@@ -222,6 +222,23 @@ datasources:
 
 Grafana에서 **Explore** 메뉴 → Pyroscope 데이터소스를 선택하면 수집된 프로파일 데이터를 Flame Graph로 확인할 수 있다. Push 모드 앱은 `echo.server`, Pull 모드 앱은 `pull.golang.app`으로 표시된다.
 
+### Grafana Profiles Drilldown
+
+Grafana의 **Drilldown > Profiles** 메뉴에서는 Pyroscope에 등록된 모든 서비스의 프로파일 데이터를 한눈에 확인할 수 있다. Grid 뷰로 각 서비스의 CPU 사용량 추이를 시계열 그래프로 보여준다.
+
+![Grafana Profiles Drilldown](pyroscope-profiles-drilldown.png)
+
+위 화면에서 4개의 서비스를 확인할 수 있다.
+
+| 서비스명 | 설명 | 수집 방식 |
+|----------|------|-----------|
+| **echo.server** | Echo HTTP 서버 (엔드포인트별 프로파일링) | Push (SDK) |
+| **pull.golang.app** | pprof 엔드포인트를 노출하는 서버 | Pull (Alloy) |
+| **pyroscope** | Pyroscope 서버 자체의 프로파일 | Push (자체 수집) |
+| **simple.golang.app** | 기본 SDK 연동 예제 | Push (SDK) |
+
+상단의 **Profile type** 드롭다운에서 `process_cpu/cpu`, `memory` 등 프로파일 유형을 전환할 수 있고, 서비스 이름으로 검색 필터링도 가능하다. 각 서비스 카드에서 **Flame graph** 링크를 클릭하면 해당 서비스의 상세 Flame Graph로 바로 이동할 수 있다.
+
 # 5. 데이터 수집
 
 ## 5.1 Push 모드: SDK 연동
