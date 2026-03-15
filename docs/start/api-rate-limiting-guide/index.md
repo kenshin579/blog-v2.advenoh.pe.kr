@@ -291,19 +291,22 @@ Token Bucket과의 핵심 차이점은 다음과 같다:
 | **Leaky Bucket** | 높음 | 적음 | 불허 | 쉬움 | 트래픽 쉐이핑, 네트워크 |
 
 ```mermaid
-quadrantChart
-    title 알고리즘별 메모리 효율 vs 정확도
-    x-axis "낮은 메모리 효율" --> "높은 메모리 효율"
-    y-axis "낮은 정확도" --> "높은 정확도"
-    quadrant-1 "이상적"
-    quadrant-2 "정확하지만 비쌈"
-    quadrant-3 "비효율적"
-    quadrant-4 "효율적이지만 부정확"
-    "Fixed Window": [0.85, 0.30]
-    "Sliding Window Log": [0.20, 0.95]
-    "Sliding Window Counter": [0.75, 0.85]
-    "Token Bucket": [0.90, 0.80]
-    "Leaky Bucket": [0.70, 0.80]
+flowchart TD
+    subgraph 높은정확도["높은 정확도"]
+        SWL["Sliding Window Log\n(메모리 많음)"]
+        SWC["Sliding Window Counter\n(메모리 적음)"]
+        TB["Token Bucket\n(메모리 매우 적음)"]
+        LB["Leaky Bucket\n(메모리 적음)"]
+    end
+    subgraph 낮은정확도["낮은 정확도"]
+        FW["Fixed Window\n(메모리 매우 적음)"]
+    end
+
+    style SWL fill:#ef5350,stroke:#c62828,color:#fff
+    style SWC fill:#ffa726,stroke:#e65100,color:#000
+    style TB fill:#42a5f5,stroke:#1565c0,color:#fff
+    style LB fill:#ab47bc,stroke:#6a1b9a,color:#fff
+    style FW fill:#66bb6a,stroke:#388e3c,color:#000
 ```
 
 ---
