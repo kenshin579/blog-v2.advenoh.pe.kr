@@ -53,15 +53,15 @@ series: "Frank's IT News 2026 상반기"
 - [CodeSpeak - 코틀린 창시자의 새 언어: 영어 대신 명세(spec)로 LLM과 대화하기](https://news.hada.io/topic?id=27476) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [노화 마우스에서 장-뇌 신호 강화로 인지 저하 역전 및 기억 형성 개선](https://news.hada.io/topic?id=27472) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [AI 에이전트 워크플로우 3가지 패턴, 언제 어떤 걸 써야 할까](https://news.hada.io/topic?id=27461) - GeekNews - 개발/기술/스타트업 뉴스 서비스
+- [ChatGPT에서 요기요 배달 쓰기 — MCP + 위젯 연동 개발기](https://techblog.yogiyo.co.kr/chatgpt%EC%97%90%EC%84%9C-%EC%9A%94%EA%B8%B0%EC%9A%94-%EB%B0%B0%EB%8B%AC-%EC%93%B0%EA%B8%B0-mcp-%EC%9C%84%EC%A0%AF-%EC%97%B0%EB%8F%99-%EA%B0%9C%EB%B0%9C%EA%B8%B0-c6636a9a11ff?source=rss----c1b33ccbbc42---4) - YOGIYO Tech Blog - 요기요 기술블로그 - Medium
+- [Plan mode is now available in Gemini CLI](https://developers.googleblog.com/plan-mode-now-available-in-gemini-cli/) - Google Developers Blog
+- [Introducing Finish Changes and Outlines, now available in Gemini Code Assist extensions on IntelliJ and VS Code](https://developers.googleblog.com/introducing-finish-changes-and-outlines-now-available-in-gemini-code-assist-extensions-on-intellij-and-vs-code/) - Google Developers Blog
 
 ## 💻 Development
 
 - [EP206: Git Workflow: Essential Commands](https://blog.bytebytego.com/p/ep206-git-workflow-essential-commands) - ByteByteGo Newsletter
 - [How to Build High Throughput Systems](https://blog.bytebytego.com/p/how-to-build-high-throughput-systems) - ByteByteGo Newsletter
-- [ChatGPT에서 요기요 배달 쓰기 — MCP + 위젯 연동 개발기](https://techblog.yogiyo.co.kr/chatgpt%EC%97%90%EC%84%9C-%EC%9A%94%EA%B8%B0%EC%9A%94-%EB%B0%B0%EB%8B%AC-%EC%93%B0%EA%B8%B0-mcp-%EC%9C%84%EC%A0%AF-%EC%97%B0%EB%8F%99-%EA%B0%9C%EB%B0%9C%EA%B8%B0-c6636a9a11ff?source=rss----c1b33ccbbc42---4) - YOGIYO Tech Blog - 요기요 기술블로그 - Medium
-- [Plan mode is now available in Gemini CLI](https://developers.googleblog.com/plan-mode-now-available-in-gemini-cli/) - Google Developers Blog
 - [Unleash Your Development Superpowers: Refining the Core Coding Experience](https://developers.googleblog.com/unleash-your-development-superpowers-refining-the-core-coding-experience/) - Google Developers Blog
-- [Introducing Finish Changes and Outlines, now available in Gemini Code Assist extensions on IntelliJ and VS Code](https://developers.googleblog.com/introducing-finish-changes-and-outlines-now-available-in-gemini-code-assist-extensions-on-intellij-and-vs-code/) - Google Developers Blog
 - [Hammerspoon - Lua로 구현된 강력한 macOS 데스크톱 자동화 도구](https://news.hada.io/topic?id=27511) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [XML은 값싼 DSL이다](https://news.hada.io/topic?id=27507) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [Mouser - Logi-Plus 마우스 소프트웨어의 오픈소스 대체제](https://news.hada.io/topic?id=27501) - GeekNews - 개발/기술/스타트업 뉴스 서비스
