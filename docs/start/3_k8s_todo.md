@@ -42,21 +42,21 @@
 
 ## Phase 4: 2편 샘플 코드 작성 및 검증
 
-- [ ] Init Container 체이닝 manifest 작성 (`init-container/init-chain-pod.yaml`)
-- [ ] Init + Sidecar 조합 manifest 작성 (`init-container/init-sidecar-combo-pod.yaml`)
-- [ ] Kind에서 배포 및 동작 검증 (kubectl get pod -w로 init 상태 변화 관찰)
-- [ ] 실패 시 동작 확인 (의도적 실패 → 재시작 동작 관찰)
+- [x] Init Container 체이닝 manifest 작성 (`init-container/init-chain-pod.yaml`)
+- [x] Init + Sidecar 조합 manifest 작성 (`init-container/init-sidecar-combo-pod.yaml`)
+- [x] Kind에서 배포 및 동작 검증 (kubectl get pod -w로 init 상태 변화 관찰)
+- [x] 실패 시 동작 확인 (의도적 실패 → 재시작 동작 관찰)
 
 ## Phase 5: 2편 블로그 작성
 
-- [ ] `docs/start/k8s-pod-디자인-패턴-2-init-container-완벽-가이드/index.md` 생성
-- [ ] 섹션 1: Init Container 개념 + Mermaid sequence 다이어그램
-- [ ] 섹션 2: Pod 라이프사이클 (실행 순서, 실패 시 동작, 리소스 관리)
-- [ ] 섹션 3: 대표 사용 사례 4가지 (의존성 대기, 설정 다운로드, DB 마이그레이션, 파일 권한)
-- [ ] 섹션 4: 실전 예제 - Init Container 체이닝
-- [ ] 섹션 5: Init Container vs Sidecar 비교 + 조합 예제
-- [ ] 섹션 6: 마무리 + 다음 편 예고
-- [ ] 인코딩 확인 (`file -I`)
+- [x] `docs/start/k8s-pod-디자인-패턴-2-init-container-완벽-가이드/index.md` 생성
+- [x] 섹션 1: Init Container 개념 + Mermaid sequence 다이어그램
+- [x] 섹션 2: Pod 라이프사이클 (실행 순서, 실패 시 동작, 리소스 관리)
+- [x] 섹션 3: 대표 사용 사례 4가지 (의존성 대기, 설정 다운로드, DB 마이그레이션, 파일 권한)
+- [x] 섹션 4: 실전 예제 - Init Container 체이닝
+- [x] 섹션 5: Init Container vs Sidecar 비교 + 조합 예제
+- [x] 섹션 6: 마무리 + 다음 편 예고
+- [x] 인코딩 확인 (`file -I`)
 - [ ] tutorials-go PR 생성 (샘플 코드)
 - [ ] blog-v2 PR 생성 (블로그 글)
 
