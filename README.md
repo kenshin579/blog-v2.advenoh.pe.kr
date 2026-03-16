@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-03-15
+Updated 2026-03-16
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -25,6 +25,7 @@ Updated 2026-03-15
 * [Frank's IT Biweekly News (2026-01-19 ~ 2026-02-02)](https://blog.advenoh.pe.kr/news-2026-02-02/)
 * [Frank's IT Biweekly News (2026-02-01 ~ 2026-02-15)](https://blog.advenoh.pe.kr/news-2026-02-15/)
 * [Frank's IT Biweekly News (2026-02-15 ~ 2026-03-01)](https://blog.advenoh.pe.kr/news-2026-03-01/)
+* [Frank's IT Biweekly News (2026-03-01 ~ 2026-03-15)](https://blog.advenoh.pe.kr/news-2026-03-15/)
 
 ## Cloud
 * [(Docker-1) Docker 도커 명령어 모음](https://blog.advenoh.pe.kr/docker-도커-명령어-모음/)
@@ -94,6 +95,7 @@ Updated 2026-03-15
 * [Go Strings (문자열 함수)](https://blog.advenoh.pe.kr/go-strings-문자열-함수/)
 * [Go Ternary Operator (삼항연산자)](https://blog.advenoh.pe.kr/go-ternary-operator-삼항연산자/)
 * [Go Test Suite (Lifecycle 메서드)](https://blog.advenoh.pe.kr/go-test-suite-lifecycle-메서드/)
+* [Go Wails로 데스크톱 앱 만들기](https://blog.advenoh.pe.kr/go-wails-desktop-app/)
 * [Golang Generics (1) - 개요와 기본 문법](https://blog.advenoh.pe.kr/golang-generics-1-개요와-기본-문법/)
 * [Golang Generics (2) - Type Constraint 완벽 이해](https://blog.advenoh.pe.kr/golang-generics-2-type-constraint-완벽-이해/)
 * [Golang Generics (3) - 실전 예제 모음](https://blog.advenoh.pe.kr/golang-generics-3-실전-예제-모음/)
@@ -106,6 +108,7 @@ Updated 2026-03-15
 * [Go에서의 로그깅 (Logging in Go)](https://blog.advenoh.pe.kr/go에서의-로그깅-logging-in-go/)
 * [Go에서의 메서드 (Method in Go)](https://blog.advenoh.pe.kr/go에서의-메서드-method-in-go/)
 * [Go에서의 열거형 상수 (Enums in Go)](https://blog.advenoh.pe.kr/go에서의-열거형-상수-enums-in-go/)
+* [Grafana Pyroscope로 Go 애플리케이션 Continuous Profiling 시작하기](https://blog.advenoh.pe.kr/grafana-pyroscope로-go-애플리케이션-continuous-profiling-시작하기/)
 * [JWKS(JSON Web Key Set)이란?](https://blog.advenoh.pe.kr/jwks-json-web-key-set이란/)
 * [jq - 명령어 JSON 처리기 사용법](https://blog.advenoh.pe.kr/jq-명령어-json-처리기-사용법/)
 * [타입 단언 (Type Assertion)](https://blog.advenoh.pe.kr/타입-단언-type-assertion/)
