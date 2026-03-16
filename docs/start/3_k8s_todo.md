@@ -28,15 +28,15 @@
 
 ## Phase 3: 1편 블로그 작성
 
-- [ ] `docs/start/k8s-pod-디자인-패턴-1-sidecar-ambassador-adapter/index.md` 생성
-- [ ] 섹션 1: 실습 환경 준비 (Kind 클러스터 생성, 이미지 빌드/로드)
-- [ ] 섹션 2: Multi-Container Pod 개념 + 3가지 패턴 개요 Mermaid 다이어그램
-- [ ] 섹션 3: Sidecar 패턴 (개념 + 사례 + Go Request Logger 실전 예제)
-- [ ] 섹션 4: Ambassador 패턴 (개념 + 사례 + Redis Ambassador 실전 예제)
-- [ ] 섹션 5: Adapter 패턴 (개념 + 사례 + Prometheus Exporter 실전 예제)
-- [ ] 섹션 6: 패턴 비교 표 + 의사결정 플로우차트 Mermaid 다이어그램
-- [ ] 섹션 7: 정리 + 다음 편 예고
-- [ ] 인코딩 확인 (`file -I`)
+- [x] `docs/start/k8s-pod-디자인-패턴-1-sidecar-ambassador-adapter/index.md` 생성
+- [x] 섹션 1: 실습 환경 준비 (Kind 클러스터 생성, 이미지 빌드/로드)
+- [x] 섹션 2: Multi-Container Pod 개념 + 3가지 패턴 개요 Mermaid 다이어그램
+- [x] 섹션 3: Sidecar 패턴 (개념 + 사례 + Go Request Logger 실전 예제)
+- [x] 섹션 4: Ambassador 패턴 (개념 + 사례 + Redis Ambassador 실전 예제)
+- [x] 섹션 5: Adapter 패턴 (개념 + 사례 + Prometheus Exporter 실전 예제)
+- [x] 섹션 6: 패턴 비교 표 + 의사결정 플로우차트 Mermaid 다이어그램
+- [x] 섹션 7: 정리 + 다음 편 예고
+- [x] 인코딩 확인 (`file -I`)
 - [ ] tutorials-go PR 생성 (샘플 코드)
 - [ ] blog-v2 PR 생성 (블로그 글)
 
