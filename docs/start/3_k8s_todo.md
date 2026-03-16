@@ -37,8 +37,8 @@
 - [x] 섹션 6: 패턴 비교 표 + 의사결정 플로우차트 Mermaid 다이어그램
 - [x] 섹션 7: 정리 + 다음 편 예고
 - [x] 인코딩 확인 (`file -I`)
-- [ ] tutorials-go PR 생성 (샘플 코드)
-- [ ] blog-v2 PR 생성 (블로그 글)
+- [x] tutorials-go PR 생성 (샘플 코드) → #691
+- [x] blog-v2 PR 생성 (블로그 글) → #416
 
 ## Phase 4: 2편 샘플 코드 작성 및 검증
 
@@ -57,8 +57,8 @@
 - [x] 섹션 5: Init Container vs Sidecar 비교 + 조합 예제
 - [x] 섹션 6: 마무리 + 다음 편 예고
 - [x] 인코딩 확인 (`file -I`)
-- [ ] tutorials-go PR 생성 (샘플 코드)
-- [ ] blog-v2 PR 생성 (블로그 글)
+- [x] tutorials-go PR 생성 (샘플 코드) → #691
+- [x] blog-v2 PR 생성 (블로그 글) → #416
 
 ## Phase 6: 3편 샘플 코드 작성 및 검증
 
@@ -78,8 +78,8 @@
 - [x] 섹션 5: 마이그레이션 가이드 + 호환성 체크리스트
 - [x] 섹션 6: 시리즈 전체 회고
 - [x] 인코딩 확인 (`file -I`)
-- [ ] tutorials-go PR 생성 (샘플 코드)
-- [ ] blog-v2 PR 생성 (블로그 글)
+- [x] tutorials-go PR 생성 (샘플 코드) → https://github.com/kenshin579/tutorials-go/pull/691
+- [x] blog-v2 PR 생성 (블로그 글) → https://github.com/kenshin579/blog-v2.advenoh.pe.kr/pull/416
 
 ## Phase 8: 시리즈 마무리
 
