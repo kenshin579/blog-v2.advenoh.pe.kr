@@ -1,8 +1,8 @@
 ---
 title: "Grafana Pyroscope로 Go 애플리케이션 Continuous Profiling 시작하기"
 description: "Grafana Pyroscope로 Go 애플리케이션 Continuous Profiling 시작하기"
-date: 2026-03-01
-update: 2026-03-01
+date: 2026-03-16
+update: 2026-03-16
 tags:
   - golang
   - profiling
