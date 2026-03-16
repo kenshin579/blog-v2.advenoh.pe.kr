@@ -62,22 +62,22 @@
 
 ## Phase 6: 3편 샘플 코드 작성 및 검증
 
-- [ ] Native Sidecar Pod manifest 작성 (`native-sidecar/native-logger-pod.yaml`)
-- [ ] 기존 vs Native 비교용 manifest 작성 (`native-sidecar/native-vs-legacy-pod.yaml`)
-- [ ] Job + Native Sidecar manifest 작성 (`native-sidecar/job-with-sidecar.yaml`)
-- [ ] Kind에서 배포 및 동작 검증 (시작/종료 순서 확인)
-- [ ] Job 완료 시 Sidecar 자동 종료 확인
+- [x] Native Sidecar Pod manifest 작성 (`native-sidecar/native-logger-pod.yaml`)
+- [x] 기존 vs Native 비교용 manifest 작성 (`native-sidecar/native-vs-legacy-pod.yaml`)
+- [x] Job + Native Sidecar manifest 작성 (`native-sidecar/job-with-sidecar.yaml`)
+- [x] Kind에서 배포 및 동작 검증 (시작/종료 순서 확인)
+- [x] Job 완료 시 Sidecar 자동 종료 확인
 
 ## Phase 7: 3편 블로그 작성
 
-- [ ] `docs/start/k8s-pod-디자인-패턴-3-native-sidecar-kep-753/index.md` 생성
-- [ ] 섹션 1: 기존 Sidecar 문제점 (종료 순서, 시작 순서, Job 문제) + Mermaid 다이어그램
-- [ ] 섹션 2: Native Sidecar 개념 + YAML 문법 + Mermaid 라이프사이클 다이어그램
-- [ ] 섹션 3: 기존 vs Native 비교 표 + 버전별 지원 현황
-- [ ] 섹션 4: 실전 예제 3개 (Native Logger, Job + Sidecar, 기존→Native 전환)
-- [ ] 섹션 5: 마이그레이션 가이드 + 호환성 체크리스트
-- [ ] 섹션 6: 시리즈 전체 회고
-- [ ] 인코딩 확인 (`file -I`)
+- [x] `docs/start/k8s-pod-디자인-패턴-3-native-sidecar-kep-753/index.md` 생성
+- [x] 섹션 1: 기존 Sidecar 문제점 (종료 순서, 시작 순서, Job 문제) + Mermaid 다이어그램
+- [x] 섹션 2: Native Sidecar 개념 + YAML 문법 + Mermaid 라이프사이클 다이어그램
+- [x] 섹션 3: 기존 vs Native 비교 표 + 버전별 지원 현황
+- [x] 섹션 4: 실전 예제 2개 (Native Logger, Job + Sidecar)
+- [x] 섹션 5: 마이그레이션 가이드 + 호환성 체크리스트
+- [x] 섹션 6: 시리즈 전체 회고
+- [x] 인코딩 확인 (`file -I`)
 - [ ] tutorials-go PR 생성 (샘플 코드)
 - [ ] blog-v2 PR 생성 (블로그 글)
 
