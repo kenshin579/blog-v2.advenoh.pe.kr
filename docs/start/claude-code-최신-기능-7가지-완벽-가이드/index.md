@@ -1,8 +1,8 @@
 ---
-title: "Claude Code 최신 기능 7가지 완벽 가이드: /btw, /voice, /batch, /simplify, /loop, /rewind, Remote Control"
-description: "Claude Code에 최근 추가된 7가지 핵심 기능의 개념, 사용법, 실전 활용 시나리오를 정리합니다."
+title: "Claude Code 최신 기능 8가지 완벽 가이드: /btw, /voice, /batch, /simplify, /loop, /rewind, /effort, Remote Control"
+description: "Claude Code에 최근 추가된 8가지 핵심 기능의 개념, 사용법, 실전 활용 시나리오를 정리합니다."
 date: 2026-03-15
-update: 2026-03-15
+update: 2026-03-16
 tags:
   - Claude Code
   - AI
@@ -13,13 +13,14 @@ tags:
   - simplify
   - loop
   - rewind
+  - effort
   - Remote Control
 series: "Claude Code 완벽 가이드"
 ---
 
 # 1. 개요
 
-Claude Code는 빠른 속도로 새로운 기능을 추가하고 있다. 이전 글에서 [Command, Skill, Subagent](../claude-code-확장-기능-완벽-가이드-command-skill-subagent)를 다뤘다면, 이번 글에서는 그 이후에 추가된 **7가지 최신 기능**을 정리한다.
+Claude Code는 빠른 속도로 새로운 기능을 추가하고 있다. 이전 글에서 [Command, Skill, Subagent](../claude-code-확장-기능-완벽-가이드-command-skill-subagent)를 다뤘다면, 이번 글에서는 그 이후에 추가된 **8가지 최신 기능**을 정리한다.
 
 | 기능 | 한줄 설명 | 핵심 키워드 |
 |------|----------|------------|
@@ -29,6 +30,7 @@ Claude Code는 빠른 속도로 새로운 기능을 추가하고 있다. 이전 
 | `/simplify` | 병렬 코드 리뷰 & 자동 수정 | 3 에이전트, 품질 개선 |
 | `/loop` | 반복 작업 자동 스케줄링 | 모니터링, 폴링 |
 | `/rewind` | 체크포인트로 되돌리기 | Undo, 복원 |
+| `/effort` | 추론 깊이 조절 | low/medium/high/max, 비용 최적화 |
 | Remote Control | 어디서든 로컬 세션 원격 제어 | 모바일, 웹, QR 코드 |
 
 각 기능이 **무엇이고**, **어떻게 쓰고**, **언제 쓰면 좋은지**를 중심으로 살펴본다.
@@ -440,7 +442,96 @@ Claude Code는 **모든 사용자 프롬프트마다 자동으로 체크포인�
 
 `/rewind`는 Git을 대체하는 것이 아니라 **세션 수준의 빠른 undo**를 제공하는 보완적 도구이다.
 
-# 8. Remote Control — 어디서든 로컬 세션 제어
+# 8. /effort — 추론 깊이 조절
+
+## 8.1 개념과 동작 방식
+
+`/effort`는 Claude가 응답에 투입하는 **추론(thinking) 깊이를 조절**하는 기능이다. 작업 복잡도에 따라 적절한 수준을 선택하면 속도, 비용, 품질 사이의 균형을 최적화할 수 있다.
+
+핵심 원리:
+- Effort 수준이 높을수록 **더 많은 thinking 토큰**을 사용하여 깊이 추론
+- 낮은 수준은 **빠르고 저렴**하지만 복잡한 문제에서는 정확도가 떨어질 수 있음
+- 설정은 **세션 간 유지** (`max` 제외)
+
+## 8.2 사용법
+
+**세션 내에서 변경:**
+```bash
+/effort low        # 빠르고 간결한 응답
+/effort medium     # 균형 잡힌 기본값
+/effort high       # 깊은 추론
+/effort max        # 최대 추론 (Opus 4.6 전용)
+/effort auto       # 모델 기본값으로 리셋
+```
+
+**CLI 플래그로 시작:**
+```bash
+claude --effort low
+claude --effort high
+```
+
+**환경 변수:**
+```bash
+export CLAUDE_CODE_EFFORT_LEVEL=high
+```
+
+**settings.json 설정:**
+```json
+{
+  "effortLevel": "low"
+}
+```
+
+**모델 피커에서 조절:**
+`/model` 명령으로 모델 선택 화면에 진입하면 **좌우 화살표 키**로 effort 슬라이더를 조절할 수 있다. 현재 설정된 effort 수준은 UI의 로고와 스피너 옆에 표시된다.
+
+**우선순위:** 환경 변수 > settings.json > 모델 기본값
+
+## 8.3 Effort 수준별 비교
+
+| 수준 | 추론 깊이 | 속도 | 비용 | 세션 간 유지 |
+|------|----------|------|------|-------------|
+| `low` | 최소한의 추론 | 가장 빠름 | 가장 저렴 | O |
+| `medium` | 균형 잡힌 추론 | 보통 | 보통 | O |
+| `high` | 깊은 추론 | 느림 | 높음 | O |
+| `max` | 토큰 제한 없는 최대 추론 | 가장 느림 | 가장 높음 | X (현재 세션만) |
+
+`max` 수준은 **Opus 4.6에서만** 사용 가능하며, 현재 세션에만 적용되고 다음 세션에서는 기본값으로 돌아간다.
+
+**지원 모델:** Opus 4.6, Sonnet 4.6
+
+## 8.4 상황별 추천 수준
+
+| 상황 | 추천 수준 | 이유 |
+|------|----------|------|
+| 변수명 변경, 오타 수정 | `low` | 단순 작업에 깊은 추론 불필요 |
+| 일반적인 코드 작성 | `medium` | 대부분의 작업에 적합한 균형점 |
+| 복잡한 리팩토링, 아키텍처 설계 | `high` | 여러 파일 간 영향 분석 필요 |
+| 난해한 버그 추적, 핵심 알고리즘 설계 | `max` | 비용보다 정확도가 중요한 경우 |
+| 빠른 질문 ("이 함수 뭐하는 거야?") | `low` | 설명 수준의 작업 |
+| PR 리뷰, 코드 분석 | `high` | 꼼꼼한 검토 필요 |
+
+**실전 워크플로우 예시:**
+```bash
+# 1. 탐색 단계 — 빠르게 코드 파악
+/effort low
+이 프로젝트의 인증 흐름을 설명해줘
+
+# 2. 구현 단계 — 일반적인 코딩
+/effort medium
+JWT 미들웨어를 추가해줘
+
+# 3. 디버깅 단계 — 깊은 분석 필요
+/effort high
+토큰 갱신 시 race condition이 의심돼. 분석해줘
+```
+
+## 8.5 기본값과 비활성화
+
+- **Opus 4.6** (Max, Team 구독): 기본값 `medium`
+- **adaptive reasoning 비활성화**: 환경 변수 `CLAUDE_CODE_DISABLE_ADAPTIVE_THINKING=1`을 설정하면 고정 thinking budget(`MAX_THINKING_TOKENS`)으로 전환
+
+# 9. Remote Control — 어디서든 로컬 세션 제어
 
 ## 8.1 아키텍처와 보안 모델
 
@@ -528,7 +619,7 @@ Remote Control이 활성화되면 **3가지 방법**으로 원격 기기에서 �
 - Claude Code v2.1.51+
 - Pro, Max, Team, Enterprise 플랜 (API Key 미지원)
 
-# 9. 7가지 기능 비교 정리
+# 10. 8가지 기능 비교 정리
 
 | 기능 | 목적 | 실행 방식 | 비용 영향 | 주요 제한사항 |
 |------|------|----------|----------|-------------|
@@ -538,6 +629,7 @@ Remote Control이 활성화되면 **3가지 방법**으로 원격 기기에서 �
 | `/simplify` | 코드 리뷰 & 수정 | 3 에이전트 병렬 | 중간 | 최근 변경 파일만 대상 |
 | `/loop` | 반복 스케줄링 | 백그라운드 주기 실행 | 실행 횟수 비례 | 세션 종속, 3일 만료 |
 | `/rewind` | 체크포인트 복원 | 즉시 (체크포인트 기반) | 없음 | bash 변경 미추적 |
+| `/effort` | 추론 깊이 조절 | 즉시 (설정 변경) | 수준에 비례 | max는 Opus 4.6 전용 |
 | Remote Control | 원격 세션 제어 | HTTPS 폴링 | 없음 (추가 비용 없음) | 터미널 유지 필요 |
 
 **기능 간 연결 관계:**
@@ -550,18 +642,21 @@ flowchart LR
     LOOP -->|"조합 가능"| SIMPLIFY
     BTW["/btw"] -.->|"작업 중 질문"| BATCH
     REWIND["/rewind"] -.->|"실패 시 복원"| BATCH
+    EFFORT["/effort"] -.->|"추론 깊이 조절"| BATCH
+    EFFORT -.->|"추론 깊이 조절"| SIMPLIFY
     RC["Remote Control"] -.->|"원격 모니터링"| LOOP
     RC -.->|"원격 모니터링"| BATCH
 ```
 
-# 10. 마무리
+# 11. 마무리
 
-이번 글에서 다룬 7가지 기능은 Claude Code의 활용 범위를 크게 넓혀준다.
+이번 글에서 다룬 8가지 기능은 Claude Code의 활용 범위를 크게 넓혀준다.
 
 - **작업 흐름 개선**: `/btw`로 끊김 없이 질문하고, `/voice`로 핸즈프리 작업하고, `/rewind`로 안전하게 실험할 수 있다
 - **대규모 자동화**: `/batch`와 `/simplify`의 조합으로 코드베이스 전체에 걸친 변경을 병렬로 처리할 수 있다
 - **지속적 모니터링**: `/loop`으로 반복 작업을 자동화하고, Remote Control로 어디서든 세션을 관리할 수 있다
+- **비용 최적화**: `/effort`로 작업 복잡도에 맞게 추론 깊이를 조절하여 속도와 비용을 최적화할 수 있다
 
-각 기능은 독립적으로도 유용하지만, 조합하면 더 강력해진다. `/batch`로 대규모 변경을 시작하고, `/loop`으로 CI 결과를 모니터링하면서, Remote Control로 모바일에서 진행 상황을 확인하는 워크플로우가 가능하다.
+각 기능은 독립적으로도 유용하지만, 조합하면 더 강력해진다. `/effort high`로 추론 깊이를 올린 뒤 `/batch`로 대규모 변경을 시작하고, `/loop`으로 CI 결과를 모니터링하면서, Remote Control로 모바일에서 진행 상황을 확인하는 워크플로우가 가능하다.
 
 > 이 글에서 다루지 않은 Hooks, MCP 서버 연동 등은 별도 포스트에서 다룰 예정이다.
