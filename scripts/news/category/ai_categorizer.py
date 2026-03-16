@@ -36,7 +36,7 @@ SYSTEM_PROMPT = """당신은 IT 뉴스 카테고리 분류 전문가입니다.
 
 분류 기준:
 - Cloud & Infra: 클라우드(AWS/GCP/Azure), 인프라, DevOps, Kubernetes, Docker, CI/CD
-- AI / ML: 인공지능, 머신러닝, LLM, AI 코딩 도구(Copilot, Cursor, Claude Code 등)
+- AI / ML: 인공지능, 머신러닝, LLM, AI 코딩 도구(Copilot, Cursor, Claude Code, Gemini CLI, Gemini Code Assist 등), MCP(Model Context Protocol), AI 에이전트
 - Development: 프로그래밍 언어, 프레임워크, 백엔드/프론트엔드, 데이터베이스, 코드 품질
 - Security: 보안, 취약점, 인증, 암호화
 - Misc: 위 카테고리에 해당하지 않는 글 (커리어, 에세이, 일반 뉴스 등)
