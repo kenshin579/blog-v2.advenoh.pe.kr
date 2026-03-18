@@ -30,7 +30,7 @@
 
 ## 4단계: PR 생성
 
-- [ ] feature 브랜치 생성 (`feature/{issue-number}-claude-code-config-guide`)
-- [ ] 커밋 (블로그 글 + tutorials-go 샘플 설정)
+- [x] feature 브랜치 생성 (`feature/417-claude-code-config-guide`)
+- [x] 커밋 (블로그 글 + tutorials-go 샘플 설정)
 - [ ] `gh pr create` + HEREDOC으로 PR 생성
 - [ ] reviewer 지정 (kenshin579)
