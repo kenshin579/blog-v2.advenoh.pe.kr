@@ -644,11 +644,8 @@ model: haiku
 ```mermaid
 flowchart LR
     A[사용자 요청] --> B[메인 Claude]
-    B -- 위임 --> C[Subagent: 분석]
-    C -- 결과 반환 --> D[메인 Claude: 실행]
-
-    C@{ shape: rounded }
-    D@{ shape: rounded }
+    B -- 위임 --> C(Subagent: 분석)
+    C -- 결과 반환 --> D(메인 Claude: 실행)
 
     style C fill:#e8f4fd,stroke:#1a73e8
     style D fill:#fce8e6,stroke:#d93025
@@ -759,16 +756,22 @@ preload된 api-convention, go-project-layout skill의 규칙을 반드시 준수
 flowchart TD
     A["이 작업을 자주 반복하나?"] -- 아니오 --> B["그냥 Claude에게 직접 요청"]
     A -- 예 --> C["매번 같은 절차인가?"]
-    C -- 예 --> D["Command\n(/commit, /start-task 등)"]
+    C -- 예 --> D["Command"]
+    D -.- D1["/commit, /start-task 등"]
     C -- 아니오 --> E["Claude가 알아서 적용하면 좋겠나?"]
-    E -- 예 --> F["Skill\n(go-convention, go-project-layout 등)"]
+    E -- 예 --> F["Skill"]
+    F -.- F1["go-convention, go-project-layout 등"]
     E -- 아니오 --> G["독립적인 분석/처리가 필요한가?"]
-    G -- 예 --> H["Subagent\n(code-reviewer, debugger 등)"]
+    G -- 예 --> H["Subagent"]
+    H -.- H1["code-reviewer, debugger 등"]
     G -- 아니오 --> B
 
     style D fill:#d4edda,stroke:#28a745
+    style D1 fill:#d4edda,stroke:#28a745,stroke-dasharray: 5 5
     style F fill:#e8f4fd,stroke:#1a73e8
+    style F1 fill:#e8f4fd,stroke:#1a73e8,stroke-dasharray: 5 5
     style H fill:#fce8e6,stroke:#d93025
+    style H1 fill:#fce8e6,stroke:#d93025,stroke-dasharray: 5 5
 ```
 
 ## 6.2 상황별 추천
