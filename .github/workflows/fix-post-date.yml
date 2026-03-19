@@ -1,4 +1,4 @@
-name: Fix Future Date
+name: Fix Post Date
 
 on:
   pull_request:
@@ -11,7 +11,7 @@ permissions:
 jobs:
   fix-date:
     if: github.event.pull_request.merged == true
-    uses: kenshin579/actions/.github/workflows/fix-future-date.yml@main
+    uses: kenshin579/actions/.github/workflows/fix-post-date.yml@main
     with:
       pr_number: ${{ github.event.pull_request.number }}
       content_dir: contents
