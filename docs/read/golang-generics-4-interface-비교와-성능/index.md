@@ -454,34 +454,13 @@ func BenchmarkAllocGenerics(b *testing.B) {
 
 # 4. 마무리
 
-## 4.1 Generics를 선택해야 하는 경우
+이번 포스팅에서는 Go의 두 가지 다형성 방식인 interface와 generics를 비교하고, generics의 내부 동작 원리와 실제 성능 차이를 살펴보았다.
 
-- 타입만 다르고 로직이 동일한 함수/자료구조
-- 타입 안전성이 중요한 유틸리티 함수
-- 성능이 중요한 핫 패스(hot path) 코드
-- 컬렉션 라이브러리 (Sort, Filter, Map 등)
-
-## 4.2 Interface를 선택해야 하는 경우
-
-- 서로 다른 구체 타입을 하나의 컬렉션에 담아야 할 때
-- 런타임에 동적으로 타입이 결정되는 경우
-- 플러그인/확장 구조가 필요한 경우
-- 행동(behavior) 기반 추상화가 목적인 경우
-
-## 4.3 Interface + Generics 조합
-
-실무에서는 두 방식을 조합하여 사용하는 경우도 많다.
-
-```go
-// constraint로 interface를 사용하면서 generics의 타입 안전성을 확보
-func PrintAll[T fmt.Stringer](items []T) {
-    for _, item := range items {
-        fmt.Println(item.String())
-    }
-}
-```
-
-이 방식은 interface의 행동 추상화와 generics의 타입 안전성을 동시에 활용한다.
+- **Interface**는 런타임 다형성(dynamic dispatch)으로 이종 타입 컬렉션, 플러그인 구조, 행동 기반 추상화에 적합하다
+- **Generics**는 컴파일 타임 다형성(static dispatch)으로 타입 안전한 유틸리티 함수, 컬렉션 알고리즘, 성능이 중요한 핫 패스에 적합하다
+- Go의 generics는 **GCShape Stenciling + Dictionary** 방식으로 구현되어, Rust의 완전한 monomorphization과 Java의 type erasure 사이의 절충안을 취하고 있다
+- 벤치마크 결과, generics는 합산 연산에서 ~7%, 검색 연산에서 ~7.5배, 메모리 할당에서 ~18배 빠른 성능을 보여주었다. 이는 boxing/unboxing, dynamic dispatch, 타입 비교 오버헤드, 캐시 친화성의 차이에서 기인한다
+- 실무에서는 `func PrintAll[T fmt.Stringer](items []T)`처럼 interface를 constraint로 활용하여 두 방식을 조합하는 것도 좋은 방법이다
 
 본 포스팅에서 작성한 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/generics)를 참고해주세요.
 
