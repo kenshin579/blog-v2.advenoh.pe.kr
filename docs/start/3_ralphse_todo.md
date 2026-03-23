@@ -49,8 +49,8 @@
 - [x] Mermaid: Ralph Loop 전체 워크플로우 (Outer Loop) — 섹션 1.3에 포함
 - [x] Mermaid: 단일 반복 Inner Loop (작업 선택 → 구현 → 테스트 → 커밋) — 섹션 3.3에 포함
 - [x] Mermaid: 3단계 워크플로우 (Specs → Planning → Building) — 섹션 3에 포함
-- [ ] Mermaid: 컨텍스트 관리 비교 (전통 vs Ralph Loop) — 스터디 후 추가
-- [ ] Mermaid: 프로젝트 디렉토리 구조 — 스터디 후 추가
+- [x] Mermaid: 컨텍스트 관리 비교 (전통 vs Ralph Loop) — 섹션 2.3에 시퀀스 다이어그램 포함
+- [x] Mermaid: 프로젝트 디렉토리 구조 — 섹션 2.2에 파일 관리 주체 다이어그램 포함
 - [x] Mermaid: Backpressure 메커니즘 — 섹션 5.2에 포함
 - [ ] 스크린샷 삽입 (터미널, git log, IMPLEMENTATION_PLAN.md) — 실행 체험 후 추가
 

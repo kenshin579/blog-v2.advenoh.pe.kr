@@ -143,6 +143,33 @@ project-root/
 └── src/                       # 애플리케이션 소스 코드
 ```
 
+아래 다이어그램은 각 파일이 누구에 의해 관리되고, 루프에서 어떤 흐름으로 사용되는지를 보여준다:
+
+```mermaid
+flowchart TD
+    subgraph human["인간이 관리"]
+        LOOP["loop.sh"]
+        PROMPT["PROMPT_plan.md\nPROMPT_build.md"]
+        SPECS["specs/\n(1 파일 = 1 관심사)"]
+        CLAUDE["CLAUDE.md"]
+    end
+
+    subgraph ralph["Ralph가 관리"]
+        PLAN["IMPLEMENTATION_PLAN.md"]
+        PRD["prd.json"]
+    end
+
+    subgraph both["공동 관리"]
+        AGENTS["AGENTS.md"]
+    end
+
+    LOOP -->|실행| PROMPT
+    PROMPT -->|지시| SPECS
+    SPECS -->|분석 결과| PLAN
+    PLAN -->|작업 선택| PRD
+    AGENTS -->|운영 지식| PROMPT
+```
+
 각 파일의 역할:
 
 | 파일 | 역할 | 누가 관리 |
@@ -167,11 +194,53 @@ Ralph Loop의 성능은 **컨텍스트 관리**에 달려 있다. 핵심 전략:
 
 **비싼 작업은 서브에이전트로**: 메인 에이전트는 스케줄러 역할만 하고, 코드 읽기/테스트 실행 같은 비용이 큰 작업은 서브에이전트에 위임한다.
 
+```mermaid
+flowchart TD
+    MAIN["메인 에이전트\n(스케줄러)"]
+    READ1["읽기 서브에이전트 1"]
+    READ2["읽기 서브에이전트 2"]
+    READ3["읽기 서브에이전트 N"]
+    BUILD["빌드/테스트\n서브에이전트 1개"]
+
+    MAIN -->|병렬| READ1
+    MAIN -->|병렬| READ2
+    MAIN -->|병렬| READ3
+    MAIN -->|직렬, 1개만| BUILD
 ```
-메인 에이전트 (스케줄러)
-  ├─ 읽기용 서브에이전트 (병렬, 여러 개 가능)
-  └─ 빌드/테스트용 서브에이전트 (1개만 → Backpressure)
+
+전통적 AI 코딩에서는 하나의 긴 세션에서 컨텍스트가 계속 누적되어 성능이 저하된다. 반면 Ralph Loop는 매 반복마다 컨텍스트를 초기화하므로 항상 최적의 성능을 유지한다.
+
+```mermaid
+sequenceDiagram
+    participant D as 디스크
+    participant L1 as Loop 1
+    participant L2 as Loop 2
+    participant L3 as Loop 3
+
+    Note over D: specs/ + PLAN + 소스
+
+    D->>L1: 컨텍스트 로드 (Fresh)
+    Note over L1: 컨텍스트 사용률 30%
+    L1->>L1: 작업 수행
+    Note over L1: 컨텍스트 사용률 50%
+    L1->>D: 결과 저장 + 커밋
+    Note over L1: 종료 (컨텍스트 해제)
+
+    D->>L2: 컨텍스트 로드 (Fresh)
+    Note over L2: 컨텍스트 사용률 30%
+    L2->>L2: 작업 수행
+    Note over L2: 컨텍스트 사용률 50%
+    L2->>D: 결과 저장 + 커밋
+    Note over L2: 종료 (컨텍스트 해제)
+
+    D->>L3: 컨텍스트 로드 (Fresh)
+    Note over L3: 컨텍스트 사용률 30%
+    L3->>L3: 작업 수행
+    Note over L3: 컨텍스트 사용률 50%
+    L3->>D: 결과 저장 + 커밋
 ```
+
+위 시퀀스 다이어그램에서 볼 수 있듯이, 각 루프 반복은 항상 30% 수준에서 시작하여 50% 근처에서 종료된다. **60~70%를 넘기지 않으므로 성능 저하가 발생하지 않는다.**
 
 ## 3. 3단계 워크플로우
 
