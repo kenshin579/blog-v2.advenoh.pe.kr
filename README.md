@@ -3,11 +3,12 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-03-16
+Updated 2026-03-23
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
 ## Ai
+* [Claude Code Plugin & Hooks 완벽 가이드: 확장 기능 패키징부터 이벤트 자동화까지](https://blog.advenoh.pe.kr/claude-code-plugin-hooks-완벽-가이드/)
 * [Claude Code 멀티 계정 전환 가이드: Limit 걸려도 끊김 없이 작업하기](https://blog.advenoh.pe.kr/claude-code-멀티-계정-전환-가이드/)
 * [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](https://blog.advenoh.pe.kr/claude-code-확장-기능-완벽-가이드-command-skill-subagent/)
 * [Claude Code에서 사용하면 좋은 MCP 서버 추천 가이드](https://blog.advenoh.pe.kr/claude-code-mcp-추천-가이드/)
