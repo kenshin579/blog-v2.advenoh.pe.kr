@@ -3,11 +3,12 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-03-16
+Updated 2026-03-24
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
 ## Ai
+* [Claude Code Plugin & Hooks 완벽 가이드: 확장 기능 패키징부터 이벤트 자동화까지](https://blog.advenoh.pe.kr/claude-code-plugin-hooks-완벽-가이드/)
 * [Claude Code 멀티 계정 전환 가이드: Limit 걸려도 끊김 없이 작업하기](https://blog.advenoh.pe.kr/claude-code-멀티-계정-전환-가이드/)
 * [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](https://blog.advenoh.pe.kr/claude-code-확장-기능-완벽-가이드-command-skill-subagent/)
 * [Claude Code에서 사용하면 좋은 MCP 서버 추천 가이드](https://blog.advenoh.pe.kr/claude-code-mcp-추천-가이드/)
@@ -96,6 +97,7 @@ Updated 2026-03-16
 * [Go Ternary Operator (삼항연산자)](https://blog.advenoh.pe.kr/go-ternary-operator-삼항연산자/)
 * [Go Test Suite (Lifecycle 메서드)](https://blog.advenoh.pe.kr/go-test-suite-lifecycle-메서드/)
 * [Go Wails로 데스크톱 앱 만들기](https://blog.advenoh.pe.kr/go-wails-desktop-app/)
+* [Golang Concurrency (1) - 개요와 Goroutine 기초](https://blog.advenoh.pe.kr/golang-concurrency-1-goroutine-기초/)
 * [Golang Generics (1) - 개요와 기본 문법](https://blog.advenoh.pe.kr/golang-generics-1-개요와-기본-문법/)
 * [Golang Generics (2) - Type Constraint 완벽 이해](https://blog.advenoh.pe.kr/golang-generics-2-type-constraint-완벽-이해/)
 * [Golang Generics (3) - 실전 예제 모음](https://blog.advenoh.pe.kr/golang-generics-3-실전-예제-모음/)
