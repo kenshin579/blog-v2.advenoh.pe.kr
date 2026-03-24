@@ -1,8 +1,8 @@
 ---
 title: "Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent"
 description: "Claude Code의 핵심 확장 기능인 Command, Skill, Subagent의 개념과 차이점을 정리하고, 실전 활용법을 알아봅니다."
-date: 2026-03-19
-update: 2026-03-19
+date: 2026-03-24
+update: 2026-03-24
 tags:
   - Claude Code
   - AI
