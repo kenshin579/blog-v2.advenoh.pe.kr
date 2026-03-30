@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-03-23
+Updated 2026-03-24
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -97,6 +97,7 @@ Updated 2026-03-23
 * [Go Ternary Operator (삼항연산자)](https://blog.advenoh.pe.kr/go-ternary-operator-삼항연산자/)
 * [Go Test Suite (Lifecycle 메서드)](https://blog.advenoh.pe.kr/go-test-suite-lifecycle-메서드/)
 * [Go Wails로 데스크톱 앱 만들기](https://blog.advenoh.pe.kr/go-wails-desktop-app/)
+* [Golang Concurrency (1) - 개요와 Goroutine 기초](https://blog.advenoh.pe.kr/golang-concurrency-1-goroutine-기초/)
 * [Golang Generics (1) - 개요와 기본 문법](https://blog.advenoh.pe.kr/golang-generics-1-개요와-기본-문법/)
 * [Golang Generics (2) - Type Constraint 완벽 이해](https://blog.advenoh.pe.kr/golang-generics-2-type-constraint-완벽-이해/)
 * [Golang Generics (3) - 실전 예제 모음](https://blog.advenoh.pe.kr/golang-generics-3-실전-예제-모음/)
