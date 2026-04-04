@@ -106,7 +106,7 @@ Prometheus는 4가지 메트릭 타입을 지원한다.
 | **Histogram** | 값의 분포를 버킷(bucket)으로 측정 | 응답 시간, 요청 크기 | `histogram_quantile()` |
 | **Summary** | 값의 분포를 분위수(quantile)로 측정 | 응답 시간 (클라이언트 측 계산) | 직접 조회 |
 
-### 2.2.1 Counter — 단조 증가(Monotonically Increasing) 값
+### 2.2.1 Counter — 단조 증가 값
 
 Counter는 누적 값만 증가하는 메트릭이다. 서버가 재시작되면 0부터 다시 시작한다. 절대값 자체보다는 `rate()` 함수로 **초당 변화량**을 계산하는 것이 일반적이다.
 
