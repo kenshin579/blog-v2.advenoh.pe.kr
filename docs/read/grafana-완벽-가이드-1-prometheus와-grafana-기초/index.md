@@ -101,12 +101,12 @@ Prometheus는 4가지 메트릭 타입을 지원한다.
 
 | 타입 | 특징 | 사용 예시 | 주요 함수 |
 |------|------|-----------|-----------|
-| **Counter** | 단조 증가만 가능 (리셋 시 0부터 재시작) | HTTP 요청 수, 에러 수 | `rate()`, `increase()` |
+| **Counter** | 단조 증가(monotonically increasing, 값이 감소 없이 증가만 함)만 가능 (리셋 시 0부터 재시작) | HTTP 요청 수, 에러 수 | `rate()`, `increase()` |
 | **Gauge** | 증가/감소 모두 가능 | CPU 사용률, 메모리 사용량, 활성 연결 수 | 직접 조회, `avg_over_time()` |
 | **Histogram** | 값의 분포를 버킷(bucket)으로 측정 | 응답 시간, 요청 크기 | `histogram_quantile()` |
 | **Summary** | 값의 분포를 분위수(quantile)로 측정 | 응답 시간 (클라이언트 측 계산) | 직접 조회 |
 
-### 2.2.1 Counter — 단조 증가 값
+### 2.2.1 Counter — 단조 증가(Monotonically Increasing) 값
 
 Counter는 누적 값만 증가하는 메트릭이다. 서버가 재시작되면 0부터 다시 시작한다. 절대값 자체보다는 `rate()` 함수로 **초당 변화량**을 계산하는 것이 일반적이다.
 
