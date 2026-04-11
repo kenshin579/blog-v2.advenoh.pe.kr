@@ -41,8 +41,8 @@
 ## Phase 4: PR 및 발행
 
 - [x] feature 브랜치 생성 (`docs/442-postgresql-vs-mysql`)
-- [ ] 변경 파일 커밋
-- [ ] PR 생성 (`gh pr create`)
+- [x] 변경 파일 커밋 (`35a885f`)
+- [x] PR 생성 ([#443](https://github.com/kenshin579/blog-v2.advenoh.pe.kr/pull/443))
 - [ ] 리뷰 완료
 - [ ] `docs/start/` → `contents/database/`로 이동
 - [ ] 발행 완료
