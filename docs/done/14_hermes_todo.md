@@ -53,5 +53,5 @@
 ## 6단계: PR 생성
 
 - [x] feature 브랜치 생성 (`feat/445-hermes-agent-guide`)
-- [ ] 커밋 및 push
-- [ ] PR 생성 (`gh pr create` + HEREDOC)
+- [x] 커밋 및 push
+- [x] PR 생성 (`gh pr create` + HEREDOC) → #446
