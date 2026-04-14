@@ -1,8 +1,8 @@
 ---
 title: "Go pprof 프로파일링으로 성능 문제 진단하기 (Profiling Go Programs with pprof)"
 description: "Go의 내장 프로파일링 도구 pprof를 활용하여 CPU, 메모리, 고루틴 등 성능 병목을 진단하고 최적화하는 방법을 설명합니다"
-date: 2026-04-09
-update: 2026-04-09
+date: 2026-04-14
+update: 2026-04-14
 tags:
   - go
   - golang
