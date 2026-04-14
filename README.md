@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-04-11
+Updated 2026-04-14
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -46,6 +46,7 @@ Updated 2026-04-11
 * [Kafka Connect에 대한 소개](https://blog.advenoh.pe.kr/kafka-connect에-대한-소개/)
 * [Kubernetes 환경에서 Secret 안전하게 관리하기](https://blog.advenoh.pe.kr/kubernetes-환경에서-secret-안전하게-관리하기/)
 * [SSL 인증서 Ngnix 서버에 설치하기 (무료 Lets Encrypt 인증서 발급)](https://blog.advenoh.pe.kr/ssl-인증서-ngnix-서버에-설치하기/)
+* [Terraform 완벽 가이드: 기본 개념부터 GitOps 실전까지](https://blog.advenoh.pe.kr/terraform-완벽-가이드-기본-개념부터-gitops-실전까지/)
 * [kcat 사용방법](https://blog.advenoh.pe.kr/kcat-사용방법/)
 * [ksqlDB 소개](https://blog.advenoh.pe.kr/ksqldb-소개/)
 * [도커 이미지 다른 도커 registry로 복사하기 - Skopeo](https://blog.advenoh.pe.kr/도커-이미지-다른-도커-registry로-복사하기-skopeo/)
