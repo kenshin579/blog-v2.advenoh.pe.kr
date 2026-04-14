@@ -15,4 +15,5 @@ jobs:
     with:
       pr_number: ${{ github.event.pull_request.number }}
       content_dir: contents
+      exclude_dirs: contents/biweekly
     secrets: inherit
