@@ -1,8 +1,8 @@
 ---
 title: "Frank's IT Biweekly News (2026-03-01 ~ 2026-03-15)"
 description: "Frank's IT Biweekly News (2026-03-01 ~ 2026-03-15)"
-date: 2026-04-09
-update: 2026-04-09
+date: 2026-04-14
+update: 2026-04-14
 tags:
   - news
   - biweekly
