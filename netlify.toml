@@ -11,3 +11,8 @@
 [build.environment]
   NODE_VERSION = "22"
   NPM_FLAGS = "--legacy-peer-deps"
+
+[[headers]]
+  for = "/rss.xml"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
