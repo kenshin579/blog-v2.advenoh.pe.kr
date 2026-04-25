@@ -1,5 +1,5 @@
 ---
-title: "Golang Concurrency (4) - sync 패키지 완벽 가이드"
+title: "Golang Concurrency 4편 - sync 패키지 완벽 가이드"
 description: "Go sync 패키지의 WaitGroup, Mutex, RWMutex, Once, sync.Map 사용법과 Race Condition 해결법을 다룹니다"
 date: 2026-04-15
 update: 2026-04-15
