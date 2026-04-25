@@ -1,5 +1,5 @@
 ---
-title: "MQTT v5 완벽 가이드 (1): 개념과 아키텍처 이해하기"
+title: "MQTT v5 완벽 가이드 1편: 개념과 아키텍처 이해하기"
 description: "MQTT v5의 기본 개념, Broker 중심 아키텍처, HTTP와의 차이점을 알아봅니다. MQTT를 처음 접하는 개발자를 위한 입문 가이드이다."
 date: 2026-02-04
 update: 2026-02-04
@@ -255,7 +255,7 @@ Broker는 "똑똑한 우체국"과 같다:
 - v5에서는 Reason Code, User Properties 등이 추가되어 디버깅과 확장성이 크게 개선되었다
 - Client, Broker, Topic이 핵심 구성 요소이며, 모든 메시지는 Broker를 통해 라우팅된다
 
-> **다음 편 안내**: MQTT v5 완벽 가이드 (2)에서는 Topic 설계와 메시지 모델을 다룬다.
+> **다음 편 안내**: MQTT v5 완벽 가이드 2편에서는 Topic 설계와 메시지 모델을 다룬다.
 
 # 4. 참고
 
