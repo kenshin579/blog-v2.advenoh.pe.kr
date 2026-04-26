@@ -1,8 +1,8 @@
 ---
 title: "MQTT v5 완벽 가이드 5편: Go + Paho 실전 구현과 운영"
 description: "Go 언어로 MQTT v5 클라이언트를 구현하는 방법과 운영 모니터링, MQTT 사용 판단 기준을 다룬다."
-date: 2026-02-20
-update: 2026-02-20
+date: 2026-04-26
+update: 2026-04-26
 tags:
   - MQTT
   - MQTT v5
