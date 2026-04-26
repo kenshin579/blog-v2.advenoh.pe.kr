@@ -1,8 +1,8 @@
 ---
 title: "MQTT v5 완벽 가이드 2편: Topic 설계와 메시지 모델"
 description: "MQTT Topic 설계 Best Practice와 Wildcard 사용법, v5의 User Properties, Message Expiry 등 메시지 모델을 상세히 알아본다."
-date: 2026-02-11
-update: 2026-02-11
+date: 2026-04-26
+update: 2026-04-26
 tags:
   - MQTT
   - MQTT v5
