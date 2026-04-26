@@ -1,8 +1,8 @@
 ---
 title: "Golang Concurrency 2편 - Channel 완전 정복"
 description: "Go Channel의 기본 동작부터 buffered/unbuffered 차이, 방향 제한, close 규칙, producer-consumer 패턴까지 다룹니다"
-date: 2026-03-19
-update: 2026-03-19
+date: 2026-04-26
+update: 2026-04-26
 tags:
   - golang
   - go
