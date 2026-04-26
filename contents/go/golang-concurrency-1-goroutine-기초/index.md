@@ -1,8 +1,8 @@
 ---
 title: "Golang Concurrency 1편 - 개요와 Goroutine 기초"
 description: "Go 동시성의 기본 개념 Concurrency vs Parallelism, CSP 모델, GMP 스케줄러와 Goroutine 기초를 다룹니다"
-date: 2026-03-07
-update: 2026-03-07
+date: 2026-04-26
+update: 2026-04-26
 tags:
   - golang
   - go
