@@ -1,5 +1,5 @@
 ---
-title: "MQTT v5 완벽 가이드 (4): 고급 기능과 보안"
+title: "MQTT v5 완벽 가이드 4편: 고급 기능과 보안"
 description: "MQTT v5의 Shared Subscription, Request/Response 패턴, Reason Code 활용법과 TLS, ACL 등 보안 설정을 다룬다."
 date: 2026-02-17
 update: 2026-02-17
@@ -780,7 +780,7 @@ function Dashboard() {
 다음 편에서는 `Go` 언어로 이 기능들을 실제로 구현하는 방법을 살펴본다.
 
 
-> **다음 편 안내**: [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영)에서는 Go 언어로 `MQTT` v5 클라이언트를 구현하는 방법과 프로덕션 운영 전략을 다룬다.
+> **다음 편 안내**: [MQTT v5 완벽 가이드 5편: Go + Paho 실전 구현과 운영](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영)에서는 Go 언어로 `MQTT` v5 클라이언트를 구현하는 방법과 프로덕션 운영 전략을 다룬다.
 
 # 4. 참고
 

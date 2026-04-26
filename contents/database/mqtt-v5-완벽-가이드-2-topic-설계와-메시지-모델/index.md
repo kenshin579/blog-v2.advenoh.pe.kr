@@ -1,5 +1,5 @@
 ---
-title: "MQTT v5 완벽 가이드 (2): Topic 설계와 메시지 모델"
+title: "MQTT v5 완벽 가이드 2편: Topic 설계와 메시지 모델"
 description: "MQTT Topic 설계 Best Practice와 Wildcard 사용법, v5의 User Properties, Message Expiry 등 메시지 모델을 상세히 알아본다."
 date: 2026-02-11
 update: 2026-02-11
@@ -356,7 +356,7 @@ v5에서는 User Properties로 메타데이터를 전달하고, Message Expiry�
 
 Topic 설계는 운영 후 변경이 어렵기 때문에 초기 단계에서 충분히 검토하길 바란다.
 
-> **다음 편 안내**: [MQTT v5 완벽 가이드 (3): QoS, Session, 재연결 전략](/database/mqtt-v5-완벽-가이드-3-qos-session-재연결-전략)에서는 `QoS` 동작 원리, 세션 관리, 그리고 실무에서 가장 중요한 재연결 전략을 다룬다.
+> **다음 편 안내**: [MQTT v5 완벽 가이드 3편: QoS, Session, 재연결 전략](/database/mqtt-v5-완벽-가이드-3-qos-session-재연결-전략)에서는 `QoS` 동작 원리, 세션 관리, 그리고 실무에서 가장 중요한 재연결 전략을 다룬다.
 
 
 # 5. 참고
