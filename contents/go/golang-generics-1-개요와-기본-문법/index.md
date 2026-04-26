@@ -1,8 +1,8 @@
 ---
 title: "Golang Generics 1편 - 개요와 기본 문법"
 description: "Golang Generics 1편 - 개요와 기본 문법"
-date: 2026-03-01
-update: 2026-03-01
+date: 2026-04-26
+update: 2026-04-26
 tags:
   - golang
   - go
