@@ -1,8 +1,8 @@
 ---
 title: "Golang Generics 2편 - Type Constraint 완벽 이해"
 description: "Golang Generics 2편 - Type Constraint 완벽 이해"
-date: 2026-03-02
-update: 2026-03-02
+date: 2026-04-26
+update: 2026-04-26
 tags:
   - golang
   - go
