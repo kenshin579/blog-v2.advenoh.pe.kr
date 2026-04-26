@@ -1,8 +1,8 @@
 ---
 title: "Golang Generics 3편 - 실전 예제 모음"
 description: "Golang Generics 3편 - 실전 예제 모음"
-date: 2026-03-03
-update: 2026-03-03
+date: 2026-04-26
+update: 2026-04-26
 tags:
   - golang
   - go
