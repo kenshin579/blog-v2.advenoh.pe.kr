@@ -273,38 +273,7 @@ defensive copy(`copyTimePointer` 헬퍼)를 추가하고 회귀 테스트(`TestS
 
 총 25 commits이 feat/todo-app 브랜치에 쌓였다.
 
-## 5.4 MCP Playwright로 e2e 자동화
-
-수동 e2e 검증을 자동화하기 위해 `@playwright/test`를 도입했다. 이 부분은 별도 phase가 아니라 후속 PR로 분리됐는데, 흥미로운 단계가 있다.
-
-먼저 [Claude Code MCP 추천 가이드](/articles/claude-code-mcp-추천-가이드)에 소개된 Playwright MCP로 **실제 브라우저를 띄워 9개 시나리오를 라이브 테스트**했다.
-
-```
-mcp__plugin_k_playwright__playwright_navigate http://localhost:5173
-→ "할 일이 없습니다." 표시 확인
-mcp__plugin_k_playwright__playwright_fill input[aria-label="제목"] "우유 사기"
-mcp__plugin_k_playwright__playwright_click button[type="submit"]
-→ 항목 등장 확인
-... (체크박스 토글, 필터, 인라인 편집, 삭제, 에러 배너)
-```
-
-라이브 검증이 끝나면 같은 시나리오를 `e2e/todo.spec.ts`에 영속화한다. `playwright.config.ts`의 `webServer`가 BE+FE를 자동 기동/정리하므로 `make test-e2e` 한 줄로 9개 시나리오가 ~5초 안에 회귀 검증된다.
-
-이 과정에서 발견한 함정 하나: hidden radio + label로 구현한 segmented control은 `getByRole('radio').click()`이 actionable check에 걸려 실패한다. label 요소를 직접 클릭하도록 spec을 조정해야 했다.
-
-```ts
-// 실패하는 패턴
-await page.getByRole('radio', { name: '미완료' }).click()
-
-// 동작하는 패턴
-await page.locator('.filter-bar__segment').filter({ hasText: /^미완료/ }).click()
-```
-
-후기 섹션에서 비슷한 함정을 더 다룬다.
-
-![Todo 앱 최종 화면 — 헤더 카운트, segmented 필터, priority 색 뱃지, 완료 항목 line-through, 마감일 subtext](todo-app-final.png)
-
-## 5.5 PR 생성과 머지
+## 5.4 PR 생성과 머지
 
 브랜치 push + PR 생성 + 머지까지 명령 한 줄씩이다.
 
@@ -327,6 +296,8 @@ gh pr merge 701 --merge --delete-branch
 ```
 
 결과: [PR #701](https://github.com/kenshin579/tutorials-go/pull/701) 머지 완료, master 통합. 작업 시작부터 머지까지 한 세션 안에서 끝났다.
+
+![Todo 앱 최종 화면 — 헤더 카운트, segmented 필터, priority 색 뱃지, 완료 항목 line-through, 마감일 subtext](todo-app-final.png)
 
 # 6. 시작하기
 
@@ -363,9 +334,9 @@ Claude Code에서 marketplace를 통해 설치한다.
 
 ## 6.3 권장 사전 준비
 
-- **feature 브랜치에서 시작**: skill이 master/main에 직접 커밋하지 않도록 강제하지만, 사전에 `git checkout -b feat/<name>`을 해 두면 흐름이 더 매끄럽다.
-- **CLAUDE.md 정책 명시**: 자동 push/PR 정책을 CLAUDE.md에 적어두면 skill이 이를 존중한다 (예: "DO NOT push without explicit consent").
-- **코드 컨벤션 룰**: `.claude/rules/*.md`에 코드 스타일/테스트 컨벤션을 적어두면 reviewer subagent가 이를 기준으로 점검한다. 본 사례에선 `gofmt`/`testify-assert`/`gofmt`/`GoDoc` 컨벤션 파일이 있어 일관성 유지가 자동화됐다.
+- **feature 브랜치에서 시작**: 사전에 `git checkout -b feat/<name>`을 해 두면 skill이 master/main에 직접 커밋하지 않고 흐름도 매끄럽다.
+- **CLAUDE.md 정책 명시**: push/PR 자동화 정책을 CLAUDE.md에 적어두면 skill이 이를 존중한다 (예: "DO NOT push without explicit consent").
+- **코드 컨벤션 룰**: `.claude/rules/*.md`에 코드 스타일/테스트 컨벤션을 적어두면 reviewer subagent가 이를 기준으로 점검한다 (예: `gofmt`, `testify/assert`, `GoDoc` 등).
 
 ## 6.4 디렉토리 구조 (재확인)
 
