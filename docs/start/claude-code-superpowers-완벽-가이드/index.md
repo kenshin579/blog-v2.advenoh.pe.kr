@@ -330,6 +330,8 @@ await page.locator('.filter-bar__segment').filter({ hasText: /^미완료/ }).cli
 
 후기 섹션에서 비슷한 함정을 더 다룬다.
 
+![Todo 앱 최종 화면 — 헤더 카운트, segmented 필터, priority 색 뱃지, 완료 항목 line-through, 마감일 subtext](todo-app-final.png)
+
 ## 5.5 PR 생성과 머지
 
 브랜치 push + PR 생성 + 머지까지 명령 한 줄씩이다.
