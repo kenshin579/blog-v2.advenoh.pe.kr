@@ -365,13 +365,6 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 - **토큰 사용량이 빠르게 늘어난다**: 매 task마다 implementer + spec/quality reviewer 3회 디스패치가 누적되어 소모가 크다. Claude Max 100x 플랜에서도 한 사이클 도중에 rate limit이 걸리는 경험을 했다
 - **plan 파일 체크박스 자동 갱신 X**: subagent-driven은 인-메모리 task list로 추적, plan.md는 끝까지 `- [ ]` 그대로. plan을 영구 추적기로 쓰고 싶다면 executing-plans가 더 맞음
 
-## 함정과 주의
-
-- **subagent에 plan 파일을 직접 읽히지 말 것**: controller가 task 텍스트를 발췌해 prompt에 넣어 전달이 정석
-- **한국어 길이는 byte가 아닌 rune count**: Go는 `utf8.RuneCountInString`, JS는 `[..."한글"].length`
-- **hidden radio + segmented control e2e 함정**: `getByRole('radio').click()`이 actionable check에 걸려 실패. label 직접 클릭으로 우회
-- **finishing-a-development-branch는 정석이지만 스킵 가능**: 자동 push/PR을 원치 않으면 직접 `gh pr create` + `gh pr merge`로 처리
-
 ## 권장 적용 시나리오
 
 요약: **다단계 + 다영역 작업에 가장 강력**, 단일 파일 수정엔 일반 슬래시 커맨드가 빠르다.
