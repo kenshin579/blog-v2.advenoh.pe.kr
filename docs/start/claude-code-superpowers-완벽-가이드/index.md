@@ -188,3 +188,168 @@ flowchart LR
 ```
 
 specs/plans는 PR에 함께 포함되어 영구 레퍼런스가 된다. 작업의 의도와 단계가 코드 옆에 기록되므로, 6개월 후 다시 봤을 때도 "왜 이렇게 했지"를 추적하기 쉽다.
+
+# 5. 사례: Todo 웹앱 처음부터 PR까지 (Echo + React)
+
+이 장은 본 가이드의 핵심이다. `tutorials-go` 저장소의 `ai/superpowers/todo/`에 학습용 Todo 웹앱을 brainstorm부터 PR/머지까지 만든 실제 흐름을 단계별로 따라간다. 결과 PR은 [#701](https://github.com/kenshin579/tutorials-go/pull/701)이다.
+
+전체 흐름을 미리 펼쳐 두면:
+
+```mermaid
+flowchart LR
+    S0[brainstorm 시작] --> S1[spec 작성]
+    S1 --> S2[plan 11 phase로 분해]
+    S2 --> S3[Phase 0~10 구현]
+    S3 --> S4[MCP playwright e2e]
+    S4 --> S5[PR + 머지]
+```
+
+각 단계가 어떤 명령으로 시작됐고 어떤 산출물을 남겼는지 본다.
+
+## 5.1 Brainstorming — spec 작성까지
+
+`/superpowers:brainstorming` 한 줄로 시작한다. 인자로 자연어 아이디어를 넘긴다.
+
+```
+/superpowers:brainstorming todo web application 샘플 코드를 작성하고 싶다.
+- stack: react, golang 1.25, inmemory
+- 샘플 코드는 여기에 작성하고 싶다. /Users/user/src/workspace_blog3/tutorials-go/ai/superpowers
+참고: 주목적은 superpowers 를 사용법을 익혀 보려고 하는 것이다
+```
+
+skill은 곧바로 컨텍스트(go.mod, sibling 디렉토리, 기존 컨벤션)를 점검한 뒤 1문항씩 다중선택을 제시한다. 실제 받은 질문을 발췌하면:
+
+| # | 질문 | 옵션 |
+|---|---|---|
+| 1 | 기능 범위 | A 미니멀 / B 기본 / C 확장 |
+| 2 | 백엔드 프레임워크 | A net/http / B chi / C gin or echo |
+| 3 | Go 모듈 구조 | A 루트 모듈 / B sub-module / C 다운그레이드 |
+| 4 | 프론트엔드 스택 | Vite + React + TS or JS |
+| 5 | BE/FE 통합 방식 | A 분리 + Vite proxy / B CORS / C 정적 서빙 |
+| 6 | 테스트 커버리지 | A BE 풀 + FE 스모크 / B 둘 다 풀 / C BE만 |
+| 7 | 필터/정렬 위치 | A 서버 사이드 / B 클라이언트 |
+
+각 질문엔 추천(A/B/C 중 하나)이 함께 표시되고 trade-off 설명이 붙는다. 7문항을 통과하면 9개 섹션짜리 spec.md(`2026-04-30-todo-app-design.md`, 600+ 줄)가 자동 생성되고, self-review로 모호성이 인라인 보강된 뒤 사용자 검토 게이트가 열린다.
+
+승인하면 자동으로 다음 skill이 호출된다.
+
+## 5.2 Writing-plans — plan 11 phase 분해
+
+`superpowers:writing-plans`가 spec을 읽고 task 단위 plan을 만든다. Todo 사례에선 다음 11단계로 분해됐다.
+
+| Phase | 내용 | TDD 적용 |
+|---|---|---|
+| Pre-flight | 피처 브랜치 + spec/plan 커밋 | — |
+| 0 | 디렉토리/Makefile/.gitignore + 백엔드 main.go 스텁 + Vite 셋업 | — |
+| 1 | 도메인 모델 (Priority/Todo/Validate) | ✅ |
+| 2.1 | Store CRUD + 동시성 검증 | ✅ |
+| 2.2 | Store List 필터/정렬 | ✅ |
+| 3.1~3.3 | Handler Create/Delete/List/Update + writeError | ✅ |
+| 4 | Echo 서버 통합 + httptest | ✅ |
+| 5 | FE 인프라 (types/api/MSW) | — |
+| 6 | useTodos hook | ✅ |
+| 7 | TodoForm/FilterBar/TodoItem/TodoList | smoke |
+| 8 | App 통합 + e2e | ✅ |
+| 9 | README + 수동 검증 | — |
+| 10 | code-review skill 호출 + PR 생성 | — |
+
+각 phase는 1 commit 단위, 평균 5-10분 작업. plan은 약 3500줄 분량으로 모든 step의 코드/명령/예상 출력을 명시했다.
+
+## 5.3 Subagent-driven-development — 25 commits, 두 단계 리뷰
+
+본 사이클의 심장이다. 매 phase마다 다음 흐름이 반복된다.
+
+```mermaid
+flowchart LR
+    P[task 시작] --> I[implementer subagent]
+    I --> S[spec compliance reviewer]
+    S --> Q[code quality reviewer]
+    Q --> N[다음 task]
+```
+
+세 subagent 모두 같은 task에 대해 독립 컨텍스트로 동작한다. 실제 사례에서 이 구조가 critical 이슈를 잡아준 두 사례가 있었다.
+
+**사례 ① — Phase 1 한국어 길이 검증 (TDD reviewer가 잡음)**
+
+도메인 모델의 `NewTodo.Validate()`에서 title 길이를 `len()`으로 체크하고 있었는데, code quality reviewer가 다음을 지적했다.
+
+> `todo.go:60` — Title length uses `len()` (bytes), not runes. 한글 100자 제목은 300바이트라 거부됨. 한글 콘텐츠가 first-class concern인 본 프로젝트에선 버그.
+
+implementer를 다시 호출해 `utf8.RuneCountInString` + 한글 boundary 테스트(200자 valid / 201자 invalid)를 추가했다.
+
+**사례 ② — Phase 10 DueDate pointer aliasing (final reviewer가 잡음)**
+
+전체 브랜치 최종 리뷰에서 다음이 발견됐다.
+
+> `store.go:39, 82` — `Add`/`Update`가 caller의 `*time.Time` 포인터를 그대로 저장. 패키지 GoDoc은 "callers cannot mutate stored state through returned references"를 약속하는데, 이 약속이 깨진다.
+
+defensive copy(`copyTimePointer` 헬퍼)를 추가하고 회귀 테스트(`TestStore_Add_DueDateNotAliased`, `TestStore_Update_DueDateNotAliased`)를 같이 넣었다.
+
+대표 commit 흐름을 발췌하면:
+
+| Phase | Commit | 비고 |
+|---|---|---|
+| Pre-flight | `[feat/todo-app] docs: spec과 implementation plan 추가` | feat/todo-app 브랜치 시작 |
+| 0.1 | `chore: 프로젝트 스켈레톤 (README, Makefile)` | — |
+| 1 | `feat: 도메인 모델 (Priority, Todo, NewTodo, Patch, Validate)` | TDD Red→Green |
+| 1 fixup | `fix: 제목 길이를 byte가 아닌 rune 단위로 카운트 (한글 지원)` | reviewer 코멘트 반영 |
+| 2.1 | `feat: in-memory Store CRUD (Add/Get/Update/Delete)` | sync.RWMutex |
+| 4 | `feat: Echo 서버 통합 (라우팅/미들웨어/CORS) + httptest 통합 테스트` | 백엔드 완성 |
+| 6 | `feat: useTodos hook (useReducer + create/update/remove + 자동 refetch)` | FE 핵심 |
+| 8 | `feat: App 조립 + 통합 시나리오 테스트 (MSW 풀 라운드트립)` | FE 통합 |
+| 10 fixup | `fix: Store가 DueDate 포인터를 방어적 복사하여 외부 mutation 차단` | final reviewer 코멘트 |
+
+총 25 commits이 feat/todo-app 브랜치에 쌓였다.
+
+## 5.4 MCP Playwright로 e2e 자동화
+
+수동 e2e 검증을 자동화하기 위해 `@playwright/test`를 도입했다. 이 부분은 별도 phase가 아니라 후속 PR로 분리됐는데, 흥미로운 단계가 있다.
+
+먼저 [Claude Code MCP 추천 가이드](/articles/claude-code-mcp-추천-가이드)에 소개된 Playwright MCP로 **실제 브라우저를 띄워 9개 시나리오를 라이브 테스트**했다.
+
+```
+mcp__plugin_k_playwright__playwright_navigate http://localhost:5173
+→ "할 일이 없습니다." 표시 확인
+mcp__plugin_k_playwright__playwright_fill input[aria-label="제목"] "우유 사기"
+mcp__plugin_k_playwright__playwright_click button[type="submit"]
+→ 항목 등장 확인
+... (체크박스 토글, 필터, 인라인 편집, 삭제, 에러 배너)
+```
+
+라이브 검증이 끝나면 같은 시나리오를 `e2e/todo.spec.ts`에 영속화한다. `playwright.config.ts`의 `webServer`가 BE+FE를 자동 기동/정리하므로 `make test-e2e` 한 줄로 9개 시나리오가 ~5초 안에 회귀 검증된다.
+
+이 과정에서 발견한 함정 하나: hidden radio + label로 구현한 segmented control은 `getByRole('radio').click()`이 actionable check에 걸려 실패한다. label 요소를 직접 클릭하도록 spec을 조정해야 했다.
+
+```ts
+// 실패하는 패턴
+await page.getByRole('radio', { name: '미완료' }).click()
+
+// 동작하는 패턴
+await page.locator('.filter-bar__segment').filter({ hasText: /^미완료/ }).click()
+```
+
+후기 섹션에서 비슷한 함정을 더 다룬다.
+
+## 5.5 PR 생성과 머지
+
+브랜치 push + PR 생성 + 머지까지 명령 한 줄씩이다.
+
+```bash
+# push
+git push -u origin feat/todo-app
+
+# PR 생성 (CLAUDE.md 정책상 HEREDOC 사용)
+gh pr create --title "feat: superpowers todo app (학습 샘플)" \
+  --body "$(cat <<'EOF'
+## Summary
+- Echo + React + in-memory Todo 웹 애플리케이션 (학습용)
+- superpowers plugin skill 사이클을 풀로 체험
+... (생략)
+EOF
+)" --assignee kenshin579
+
+# 머지
+gh pr merge 701 --merge --delete-branch
+```
+
+결과: [PR #701](https://github.com/kenshin579/tutorials-go/pull/701) 머지 완료, master 통합. 작업 시작부터 머지까지 한 세션 안에서 끝났다.
