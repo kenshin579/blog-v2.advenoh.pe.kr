@@ -356,6 +356,7 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 
 ## 좋았던 점
 
+- **전체 개발 흐름이 자연스럽게 이어진다**: 기존엔 PRD → implementation plan → todo.md를 따로 수동 작성하고 단계마다 마크다운을 리뷰하는 데 시간이 꽤 들었다. superpowers는 brainstorm → spec → plan → 구현 → 리뷰까지 한 흐름으로 묶여 매 단계 산출물이 자연스럽게 다음 단계의 입력이 되고, 작업자가 들이는 문서 작성·검토 비용이 크게 줄었다
 - **컨텍스트 오염이 거의 0**: 한 task가 끝나면 맥락이 implementer subagent와 함께 정리됨 → 큰 PR(25 commits)을 한 세션에서 끝낼 수 있었던 이유
 - **두 단계 리뷰가 critical 이슈 발견**: 한국어 rune count, DueDate pointer aliasing은 컴파일/테스트 통과하는 코드였음에도 spec/quality reviewer가 잡음
 - **회귀 발견 자연스럽게 유도**: FE 테마 작업의 Vitest e2e config 버그를 implementer가 발견 → 별도 fix-up commit
