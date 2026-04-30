@@ -3,12 +3,13 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-04-19
+Updated 2026-04-30
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
 ## Ai
 * [Claude Code Plugin & Hooks 완벽 가이드: 확장 기능 패키징부터 이벤트 자동화까지](https://blog.advenoh.pe.kr/claude-code-plugin-hooks-완벽-가이드/)
+* [Claude Code Superpowers 완벽 가이드: brainstorm부터 PR까지](https://blog.advenoh.pe.kr/claude-code-superpowers-완벽-가이드/)
 * [Claude Code 멀티 계정 전환 가이드: Limit 걸려도 끊김 없이 작업하기](https://blog.advenoh.pe.kr/claude-code-멀티-계정-전환-가이드/)
 * [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](https://blog.advenoh.pe.kr/claude-code-확장-기능-완벽-가이드-command-skill-subagent/)
 * [Claude Code에서 사용하면 좋은 MCP 서버 추천 가이드](https://blog.advenoh.pe.kr/claude-code-mcp-추천-가이드/)
@@ -64,11 +65,11 @@ Updated 2026-04-19
 * [JPA 일대일(1:1) @One-To-One 연관관계](https://blog.advenoh.pe.kr/jpa-일대일-one-to-one-연관관계/)
 * [Liquibase 사용해서 DB 스키마 관리하기](https://blog.advenoh.pe.kr/liquibase-사용해서-db-스키마-관리하기/)
 * [M1 맥북에서 Memongo 실행하기](https://blog.advenoh.pe.kr/m1-맥북에서-memongo-실행하기/)
-* [MQTT v5 완벽 가이드 (1): 개념과 아키텍처 이해하기](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-1-입문과-기본-아키텍처/)
-* [MQTT v5 완벽 가이드 (2): Topic 설계와 메시지 모델](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-2-topic-설계와-메시지-모델/)
-* [MQTT v5 완벽 가이드 (3): QoS, Session, 재연결 전략](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-3-qos-session-재연결-전략/)
-* [MQTT v5 완벽 가이드 (4): 고급 기능과 보안](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-4-고급-기능과-보안/)
-* [MQTT v5 완벽 가이드 (5): Go + Paho 실전 구현과 운영](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영/)
+* [MQTT v5 완벽 가이드 1편: 개념과 아키텍처 이해하기](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-1-입문과-기본-아키텍처/)
+* [MQTT v5 완벽 가이드 2편: Topic 설계와 메시지 모델](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-2-topic-설계와-메시지-모델/)
+* [MQTT v5 완벽 가이드 3편: QoS, Session, 재연결 전략](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-3-qos-session-재연결-전략/)
+* [MQTT v5 완벽 가이드 4편: 고급 기능과 보안](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-4-고급-기능과-보안/)
+* [MQTT v5 완벽 가이드 5편: Go + Paho 실전 구현과 운영](https://blog.advenoh.pe.kr/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영/)
 * [Mongo Script Collection 모음](https://blog.advenoh.pe.kr/mongo-script-collection-모음/)
 * [Mongodb Collection Cloning하는 방법](https://blog.advenoh.pe.kr/mongodb-collection-cloning하는-방법/)
 * [Mongodb 원격 서버에 있는 Collection을 로컬환경 서버로 복사하기](https://blog.advenoh.pe.kr/mongodb-원격-서버에-있는-collection을-로컬환경-서버로-복사하기/)
@@ -101,14 +102,14 @@ Updated 2026-04-19
 * [Go Test Suite (Lifecycle 메서드)](https://blog.advenoh.pe.kr/go-test-suite-lifecycle-메서드/)
 * [Go Wails로 데스크톱 앱 만들기](https://blog.advenoh.pe.kr/go-wails-desktop-app/)
 * [Go pprof 프로파일링으로 성능 문제 진단하기 (Profiling Go Programs with pprof)](https://blog.advenoh.pe.kr/go-pprof-프로파일링으로-성능-문제-진단하기/)
-* [Golang Concurrency (1) - 개요와 Goroutine 기초](https://blog.advenoh.pe.kr/golang-concurrency-1-goroutine-기초/)
-* [Golang Concurrency (2) - Channel 완전 정복](https://blog.advenoh.pe.kr/golang-concurrency-2-channel-완전-정복/)
-* [Golang Concurrency (3) - Select와 Channel 심화 패턴](https://blog.advenoh.pe.kr/golang-concurrency-3-select와-channel-심화/)
-* [Golang Concurrency (4) - sync 패키지 완벽 가이드](https://blog.advenoh.pe.kr/golang-concurrency-4-sync-패키지/)
+* [Golang Concurrency 1편 - 개요와 Goroutine 기초](https://blog.advenoh.pe.kr/golang-concurrency-1-goroutine-기초/)
+* [Golang Concurrency 2편 - Channel 완전 정복](https://blog.advenoh.pe.kr/golang-concurrency-2-channel-완전-정복/)
+* [Golang Concurrency 3편 - Select와 Channel 심화 패턴](https://blog.advenoh.pe.kr/golang-concurrency-3-select와-channel-심화/)
+* [Golang Concurrency 4편 - sync 패키지 완벽 가이드](https://blog.advenoh.pe.kr/golang-concurrency-4-sync-패키지/)
 * [Golang Concurrency 5편 - Context 완벽 가이드](https://blog.advenoh.pe.kr/golang-concurrency-5-context-완벽-가이드/)
-* [Golang Generics (1) - 개요와 기본 문법](https://blog.advenoh.pe.kr/golang-generics-1-개요와-기본-문법/)
-* [Golang Generics (2) - Type Constraint 완벽 이해](https://blog.advenoh.pe.kr/golang-generics-2-type-constraint-완벽-이해/)
-* [Golang Generics (3) - 실전 예제 모음](https://blog.advenoh.pe.kr/golang-generics-3-실전-예제-모음/)
+* [Golang Generics 1편 - 개요와 기본 문법](https://blog.advenoh.pe.kr/golang-generics-1-개요와-기본-문법/)
+* [Golang Generics 2편 - Type Constraint 완벽 이해](https://blog.advenoh.pe.kr/golang-generics-2-type-constraint-완벽-이해/)
+* [Golang Generics 3편 - 실전 예제 모음](https://blog.advenoh.pe.kr/golang-generics-3-실전-예제-모음/)
 * [Golang 기반의 분산 스케줄러 - Asynq에 대해서 알아보자](https://blog.advenoh.pe.kr/golang-기반의-분산-스케줄러-asynq에-대해서-알아보자/)
 * [Go에서 Strategy 패턴 제대로 활용하기](https://blog.advenoh.pe.kr/go에서-strategy-패턴-제대로-활용하기/)
 * [Go에서 삼 도트 (dot) 사용방법 (Three Dots Usage)](https://blog.advenoh.pe.kr/go에서-삼-도트-dot-사용방법-three-dots-usage/)
