@@ -169,11 +169,11 @@ specs/plans는 PR에 함께 포함되어 영구 레퍼런스가 된다. 작업�
 
 ```mermaid
 flowchart LR
-    S0[brainstorm 시작] --> S1[spec 작성]
-    S1 --> S2[plan 11 phase로 분해]
-    S2 --> S3[Phase 0~10 구현]
-    S3 --> S4[MCP playwright e2e]
-    S4 --> S5[PR + 머지]
+    S0["brainstorm 시작"] --> S1["spec 작성"]
+    S1 --> S2["plan 11 phase로 분해"]
+    S2 --> S3["Phase 0-10 구현"]
+    S3 --> S4["MCP playwright e2e"]
+    S4 --> S5["PR / 머지"]
 ```
 
 각 단계가 어떤 명령으로 시작됐고 어떤 산출물을 남겼는지 본다.
@@ -233,10 +233,10 @@ skill은 곧바로 컨텍스트(go.mod, sibling 디렉토리, 기존 컨벤션)�
 
 ```mermaid
 flowchart LR
-    P[task 시작] --> I[implementer subagent]
-    I --> S[spec compliance reviewer]
-    S --> Q[code quality reviewer]
-    Q --> N[다음 task]
+    P["task 시작"] --> I["implementer subagent"]
+    I --> S["spec compliance reviewer"]
+    S --> Q["code quality reviewer"]
+    Q --> N["다음 task"]
 ```
 
 세 subagent 모두 같은 task에 대해 독립 컨텍스트로 동작한다. 실제 사례에서 이 구조가 critical 이슈를 잡아준 두 사례가 있었다.
