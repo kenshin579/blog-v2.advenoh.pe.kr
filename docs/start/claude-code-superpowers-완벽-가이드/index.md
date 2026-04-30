@@ -1,6 +1,6 @@
 ---
 title: "Claude Code Superpowers 완벽 가이드: brainstorm부터 PR까지"
-description: "Claude Code의 superpowers plugin을 사용해 Todo 웹앱을 처음부터 PR까지 만들어본 풀 사이클 가이드. brainstorming, writing-plans, subagent-driven-development, MCP playwright e2e까지 실제 흐름과 후기."
+description: "Claude Code superpowers plugin으로 Todo 웹앱을 brainstorm부터 PR까지 풀 사이클로 만들어본 종합 가이드."
 date: 2026-05-01
 update: 2026-05-01
 tags:
