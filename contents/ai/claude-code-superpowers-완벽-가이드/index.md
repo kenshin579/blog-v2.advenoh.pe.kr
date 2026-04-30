@@ -1,8 +1,8 @@
 ---
 title: "Claude Code Superpowers 완벽 가이드: brainstorm부터 PR까지"
 description: "Claude Code superpowers plugin으로 Todo 웹앱을 brainstorm부터 PR까지 풀 사이클로 만들어본 종합 가이드."
-date: 2026-05-01
-update: 2026-05-01
+date: 2026-04-30
+update: 2026-04-30
 tags:
   - Claude Code
   - Superpowers
