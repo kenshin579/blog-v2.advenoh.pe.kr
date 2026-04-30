@@ -396,14 +396,6 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 
 요약하면: **다단계 + 다영역 작업에 가장 강력**. 단일 파일 수정이라면 그냥 일반 슬래시 커맨드가 빠르다.
 
-## 7.5 미사용한 skill 추천
-
-본 사례에서 일부러 또는 우연히 사용하지 않은 skill들 중 다음 시도를 권한다.
-
-- `superpowers:using-git-worktrees`: 진행 중인 다른 작업을 보호하면서 격리된 워크트리에서 진행. 동시에 여러 PR을 굴릴 때 유용.
-- `superpowers:executing-plans`: subagent-driven의 대안으로 인라인 실행 + plan 체크박스 자동 갱신. 짧은 작업 또는 plan 파일을 진행 추적기로 쓰고 싶을 때.
-- `superpowers:finishing-a-development-branch`: PR/cleanup의 정석 흐름. 본 사례에선 직접 처리했지만 한 번 호출해 옵션 제시를 받아보는 것도 좋다.
-
 # 8. 마무리
 
 Superpowers를 한 사이클 돌려보면 한 가지가 분명해진다. **AI 코딩의 효율은 개별 prompt의 품질이 아니라 워크플로우 구조에 더 크게 영향받는다.** 같은 모델, 같은 코드 작성 능력이라도 brainstorm → plan → impl → review → finish의 흐름을 강제하면 산출물의 일관성과 회귀 안정성이 크게 올라간다.
