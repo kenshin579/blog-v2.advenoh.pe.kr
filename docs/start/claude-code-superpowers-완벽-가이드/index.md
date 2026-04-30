@@ -63,3 +63,75 @@ AI에게 코드를 시키는 방식은 두 극단 사이에서 흔들린다.
 - **세부 통제**: 매 단계 사람이 끼어듦 → 안정적이지만 AI를 쓰는 의미가 줄어듦
 
 Superpowers는 그 사이의 균형점을 강제한다. 사람이 결정해야 하는 지점(brainstorm 질문 답변, spec 검토, plan 검토, 머지 승인)은 명시적으로 사람에게 묻고, 그 사이의 기계적 작업(코드 작성, 테스트 실행, 리뷰 디스패치)은 AI가 일관된 패턴으로 처리한다.
+
+# 3. 핵심 Skill 카탈로그
+
+Superpowers 안에는 여러 skill이 들어 있지만, 풀 사이클을 이루는 핵심은 8개다. 먼저 한 번에 훑은 뒤 각 skill을 한 단락씩 본다.
+
+| Skill | 역할 | 입력 → 출력 | 본문 깊이 |
+|---|---|---|---|
+| brainstorming | 아이디어 → spec | 자연어 → spec.md | 깊게 (5장) |
+| writing-plans | spec → plan | spec.md → plan.md | 깊게 |
+| subagent-driven-development | plan → 코드 (서브에이전트) | plan.md → 커밋 | 깊게 |
+| executing-plans | plan → 코드 (인라인) | plan.md → 커밋 | 짧게 (대안) |
+| requesting-code-review | 코드 → 리뷰 | 브랜치/커밋 → 리뷰 코멘트 | 중간 |
+| test-driven-development | 매 phase TDD 강제 | 명시적 Red→Green | 짧게 |
+| using-git-worktrees | 격리 워크트리 | feature 작업 격리 | 짧게 |
+| finishing-a-development-branch | 마무리 | 작업 완료 → PR/cleanup | 중간 |
+
+## 3.1 brainstorming
+
+`/superpowers:brainstorming`로 호출하는 skill. 자연어로 표현된 아이디어를 받아 1문항씩 다중선택형으로 사용자에게 질문하며 spec.md로 정리한다. 결정한 내용을 `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`에 저장하고 커밋한다.
+
+핵심은 "한 번에 한 질문". 스택, 기능 범위, 라이브러리, 톤 등을 한꺼번에 쏟지 않고 의사결정 트리처럼 진행한다. UI 디자인 같은 시각적 결정에는 visual companion(브라우저 mockup 비교)도 같이 띄울 수 있다.
+
+## 3.2 writing-plans
+
+spec이 완성되면 `superpowers:writing-plans`가 자동 invoke된다. spec을 phase별 task로 분해하고 각 task에 다음 5단계를 명시적으로 적는다.
+
+1. 실패 테스트 작성
+2. 테스트 실패 확인 (Red)
+3. 최소 구현
+4. 테스트 통과 확인 (Green)
+5. 커밋
+
+각 task는 한 commit 단위로, 보통 2-5분 작업이다. plan은 `docs/superpowers/plans/YYYY-MM-DD-<topic>-plan.md`에 저장된다.
+
+## 3.3 subagent-driven-development
+
+plan이 준비되면 두 가지 실행 옵션이 제시된다. **subagent-driven**은 매 task마다 새 subagent를 디스패치해 컨텍스트를 격리한다. 한 task는 다음 흐름을 거친다.
+
+1. **Implementer subagent** — task 지시문을 받아 코드 작성, 테스트, self-review, 커밋
+2. **Spec compliance reviewer subagent** — 구현이 spec과 정확히 일치하는지 검증
+3. **Code quality reviewer subagent** — 코드 품질, 테스트 갭, 함정 검사
+
+세 단계 모두 통과해야 다음 task로 넘어간다. 리뷰가 issue를 발견하면 implementer가 다시 호출되어 fix → 재리뷰. 컨텍스트 오염 없이 한 task에 한 subagent가 책임진다.
+
+## 3.4 executing-plans (대안)
+
+같은 plan을 같은 세션 안에서 인라인으로 실행하는 대안. 매 step마다 plan 파일의 체크박스를 직접 `- [x]`로 갱신해가며 진행한다. subagent 디스패치 비용이 없는 대신 컨텍스트 격리도 없고, 큰 작업에선 컨텍스트 오염이 누적될 수 있다.
+
+선택 기준:
+- subagent-driven: 큰 다단계 작업, 많은 task, 리뷰 사이클의 가치 ↑
+- executing-plans: 짧고 단순한 작업, plan 파일 자체가 진행 추적 역할
+
+## 3.5 requesting-code-review
+
+전체 사이클이 끝나기 전 한 번 더 종합 리뷰를 받는다. 분기 전체 commit을 묶어 spec 준수, 회귀, 함정, 추가 테스트 필요 항목을 점검한다. critical/important/minor로 분류된 코멘트가 돌아온다.
+
+## 3.6 test-driven-development
+
+writing-plans의 task 골격에 이미 TDD가 내장되어 있어 별도 호출은 드물다. 하지만 implementer subagent가 TDD 사이클을 의식적으로 따르도록 가이드한다. Red 단계에서 테스트가 정말로 실패하는지 확인하는 것이 핵심.
+
+## 3.7 using-git-worktrees
+
+큰 작업을 시작하기 전 격리된 워크트리를 만들어 현재 워킹 디렉토리에 영향을 주지 않게 한다. 학습용 단일 사이클에는 자주 생략되지만, 동시에 여러 기능을 진행하는 실전 환경에서는 권장된다.
+
+## 3.8 finishing-a-development-branch
+
+모든 task가 끝난 뒤 마지막에 호출. 다음을 정형화된 옵션으로 제시한다.
+- merge / PR / 별도 브랜치 유지 중 선택
+- 자동 push 정책
+- 브랜치 cleanup
+
+본 글의 사례에서는 이 skill을 명시적으로 호출하지 않고 사용자 글로벌 정책(임의 push 금지)에 따라 직접 `gh pr create` + `gh pr merge`를 실행했다 — 후기 섹션에서 다시 다룬다.
