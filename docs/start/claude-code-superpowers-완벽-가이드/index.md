@@ -356,29 +356,27 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 
 ## 좋았던 점
 
-가장 큰 변화는 **컨텍스트 오염이 거의 사라진다**는 점이다. 한 task가 끝나면 그 맥락이 implementer subagent와 함께 정리되고, 다음 task는 fresh context에서 시작한다. 큰 PR(25 commits)을 한 세션에서 끝낼 수 있었던 이유다. 평소엔 컨텍스트가 부풀어 후반에 헤매는데, 이번엔 phase 10에서도 phase 0과 같은 정밀도로 작업할 수 있었다.
-
-**두 단계 리뷰가 critical 이슈를 잡아낸다.** 5.3에서 본 한국어 rune count, DueDate pointer aliasing은 둘 다 컴파일과 테스트를 통과하는 코드였다. spec compliance reviewer + code quality reviewer가 spec과 코드 사이의 약속을 명시적으로 검증했기에 발견됐다. 보통 PR 리뷰 단계에서 사람 리뷰어가 잡을 종류의 이슈를 self-review 단계로 내리는 효과가 있다. 덤으로 회귀 발견도 자연스럽게 유도된다 — FE 테마 작업의 Phase 4에서 Vitest가 e2e 디렉토리를 picking up하는 config 버그를 implementer가 발견하고 별도 fix-up commit으로 해결한 사례가 있었다.
+- **컨텍스트 오염이 거의 0**: 한 task가 끝나면 맥락이 implementer subagent와 함께 정리됨 → 큰 PR(25 commits)을 한 세션에서 끝낼 수 있었던 이유
+- **두 단계 리뷰가 critical 이슈 발견**: 한국어 rune count, DueDate pointer aliasing은 컴파일/테스트 통과하는 코드였음에도 spec/quality reviewer가 잡음
+- **회귀 발견 자연스럽게 유도**: FE 테마 작업의 Vitest e2e config 버그를 implementer가 발견 → 별도 fix-up commit
+- **PR 리뷰 비용을 self-review 단계로 내림**: 사람 리뷰어가 잡을 종류의 이슈가 사이클 안에서 처리됨
 
 ## 비용과 트레이드오프
 
-**per-task 3회 subagent 디스패치**가 비용의 대부분이다. 작은 task에서는 implementer 1회로 끝낼 수 있는 일을 spec/quality 두 번 더 검토하는 것이 과잉일 때가 있다. 본 사례에서도 단순 transcription(Phase 0의 README/Makefile/.gitignore 작성 같은)은 controller-level diff 검증으로 단축했다. **"풀 사이클을 strict하게 따를지" vs "controller가 selective 적용할지"는 작업 단위마다 판단이 필요하다.**
-
-또 한 가지: **subagent-driven은 plan 파일 체크박스를 자동으로 갱신하지 않는다.** executing-plans는 plan.md를 직접 편집해 `- [x]`로 마킹하지만, subagent-driven은 인-메모리 task list로 추적한다. 결과적으로 plan 파일이 끝까지 `- [ ]`로 남는다. 진행 추적은 git log + task list로 충분하지만, plan 파일을 영구 추적기로 쓰고 싶다면 executing-plans가 더 맞다.
-
-시간 비용 측면에서, 본 사례 PR #701은 25 commits + 두 단계 리뷰 + fixup까지 한 세션 90분 정도 걸렸다. 같은 양을 사람이 직접 짠다면 며칠, AI에게 자율 위임하면 1시간 미만이지만 품질이 통제되지 않는다. superpowers는 그 사이의 합리적 절충점이다.
+- **per-task 3회 subagent 디스패치**: 작은 task엔 과잉. 단순 transcription은 controller-level 처리로 단축 가능
+- **plan 파일 체크박스 자동 갱신 X**: subagent-driven은 인-메모리 task list로 추적, plan.md는 끝까지 `- [ ]` 그대로. plan을 영구 추적기로 쓰고 싶다면 executing-plans가 더 맞음
+- **시간 비용**: PR #701은 한 세션 90분. 사람 직접: 며칠 / AI 자율: 1시간 미만이지만 품질 비통제. superpowers는 그 사이 절충점
 
 ## 함정과 주의
 
-작업 중 마주친 함정 몇 가지를 모아둔다. **subagent에 plan 파일을 직접 읽히지 말 것** — skill 가이드에 명시된 경고이기도 하다. controller가 task 텍스트를 발췌해 prompt에 그대로 넣어 전달하는 게 정석이다. plan을 읽게 하면 다른 phase의 컨텍스트가 섞여 노이즈가 들어간다.
-
-한국어 콘텐츠라면 **길이 검증을 byte가 아닌 rune count로 해야 한다.** Go라면 `utf8.RuneCountInString`, JavaScript라면 spread operator + `length`(`[..."한글"].length === 2`)가 정답이다. spec/code reviewer가 이 패턴을 적극적으로 잡아준다. UI 쪽에서는 hidden radio + CSS-only segmented control이 e2e 셀렉터 함정을 만든다 — `getByRole('radio').click()`이 actionable check에 걸려 실패하므로 label 요소를 직접 클릭하도록 spec을 조정해야 한다.
-
-마지막으로 **finishing-a-development-branch skill은 정석이지만 스킵 가능하다.** 자동 push/PR을 강제하지 않는 사용자 정책이라면 명시적으로 호출하지 않고 직접 `gh pr create` + `gh pr merge`를 쓰면 된다. 본 사례에서도 그렇게 했다. 다만 정석을 한 번 시연받고 싶다면 일부러 호출해보는 것도 학습 가치가 있다.
+- **subagent에 plan 파일을 직접 읽히지 말 것**: controller가 task 텍스트를 발췌해 prompt에 넣어 전달이 정석
+- **한국어 길이는 byte가 아닌 rune count**: Go는 `utf8.RuneCountInString`, JS는 `[..."한글"].length`
+- **hidden radio + segmented control e2e 함정**: `getByRole('radio').click()`이 actionable check에 걸려 실패. label 직접 클릭으로 우회
+- **finishing-a-development-branch는 정석이지만 스킵 가능**: 자동 push/PR을 원치 않으면 직접 `gh pr create` + `gh pr merge`로 처리
 
 ## 권장 적용 시나리오
 
-요약하면 **다단계 + 다영역 작업에 가장 강력**하고, 단일 파일 수정에는 일반 슬래시 커맨드가 빠르다.
+요약: **다단계 + 다영역 작업에 가장 강력**, 단일 파일 수정엔 일반 슬래시 커맨드가 빠르다.
 
 | 적합도 | 작업 유형 | 이유 |
 |---|---|---|
