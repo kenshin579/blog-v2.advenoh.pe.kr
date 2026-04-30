@@ -135,3 +135,56 @@ writing-plans의 task 골격에 이미 TDD가 내장되어 있어 별도 호출�
 - 브랜치 cleanup
 
 본 글의 사례에서는 이 skill을 명시적으로 호출하지 않고 사용자 글로벌 정책(임의 push 금지)에 따라 직접 `gh pr create` + `gh pr merge`를 실행했다 — 후기 섹션에서 다시 다룬다.
+
+# 4. 풀 사이클 흐름
+
+핵심 skill들이 어떤 순서로 엮이는지 다이어그램으로 보면 명확하다.
+
+```mermaid
+flowchart LR
+    A[brainstorming] --> B[writing-plans]
+    B --> C[subagent-driven-development]
+    C --> D[requesting-code-review]
+    D --> E[finishing-a-development-branch]
+```
+
+각 화살표는 자동 invoke를 의미한다. brainstorming이 spec 작성을 끝내면 사용자 승인 후 writing-plans를 자동 호출하고, plan이 작성되면 사용자가 실행 방식(subagent-driven 또는 executing-plans)을 고른다. 마지막에 finishing-a-development-branch가 PR/머지 옵션을 제시한다.
+
+## 4.1 사용자 개입 지점
+
+흐름 전체에서 사용자가 결정해야 하는 지점은 다음과 같다.
+
+| 지점 | 무엇 | 자주 받는 질문 |
+|---|---|---|
+| 1. brainstorm 중 | 스택/기능 범위/라이브러리 | "A/B/C 중 무엇으로?" 식 다중선택 |
+| 2. spec 검토 | spec 문서 승인 여부 | "변경할 부분 있는가?" |
+| 3. plan 검토 (선택) | plan 문서 승인 | "곧바로 실행할까?" |
+| 4. 실행 방식 | subagent-driven vs executing-plans | "어느 쪽으로?" |
+| 5. 리뷰 코멘트 반영 | spec/quality 리뷰 issue 처리 | "fixup 진행해도 될까?" |
+| 6. 마무리 | PR / push / 머지 승인 | "지금 push할까?" |
+
+이 6개 지점 외엔 거의 자동이다. 인간 시간이 필요한 지점이 명확해 워크플로우 예측 가능성이 높다.
+
+## 4.2 추적 방식 (subagent-driven vs executing-plans)
+
+진행 추적은 두 곳 중 하나에서 일어난다.
+
+- **subagent-driven**: TaskCreate/TaskUpdate를 통한 인-메모리 task list. plan 파일의 `- [ ]` 체크박스는 갱신되지 않는다.
+- **executing-plans**: plan 파일을 직접 편집해 `- [x]`로 마킹. plan 파일 자체가 진행 추적기.
+
+같은 결과지만 산출물에 차이가 있다. 본 글의 사례는 subagent-driven을 썼기 때문에 plan 파일이 끝까지 `- [ ]` 그대로 남았다 — 후기 섹션에서 다시 본다.
+
+## 4.3 디렉토리 구조
+
+작업 결과는 다음 형태로 정리된다.
+
+```
+프로젝트/
+├── docs/superpowers/
+│   ├── specs/YYYY-MM-DD-<topic>-design.md   # brainstorming 산출물
+│   └── plans/YYYY-MM-DD-<topic>-plan.md     # writing-plans 산출물
+├── (실제 코드)
+└── (테스트)
+```
+
+specs/plans는 PR에 함께 포함되어 영구 레퍼런스가 된다. 작업의 의도와 단계가 코드 옆에 기록되므로, 6개월 후 다시 봤을 때도 "왜 이렇게 했지"를 추적하기 쉽다.
