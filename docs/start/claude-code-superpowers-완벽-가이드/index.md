@@ -458,3 +458,30 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 - `superpowers:using-git-worktrees`: 진행 중인 다른 작업을 보호하면서 격리된 워크트리에서 진행. 동시에 여러 PR을 굴릴 때 유용.
 - `superpowers:executing-plans`: subagent-driven의 대안으로 인라인 실행 + plan 체크박스 자동 갱신. 짧은 작업 또는 plan 파일을 진행 추적기로 쓰고 싶을 때.
 - `superpowers:finishing-a-development-branch`: PR/cleanup의 정석 흐름. 본 사례에선 직접 처리했지만 한 번 호출해 옵션 제시를 받아보는 것도 좋다.
+
+# 8. 마무리
+
+Superpowers를 한 사이클 돌려보면 한 가지가 분명해진다. **AI 코딩의 효율은 개별 prompt의 품질이 아니라 워크플로우 구조에 더 크게 영향받는다.** 같은 모델, 같은 코드 작성 능력이라도 brainstorm → plan → impl → review → finish의 흐름을 강제하면 산출물의 일관성과 회귀 안정성이 크게 올라간다.
+
+핵심 takeaway 세 줄:
+
+1. **다단계 작업에 강력하다.** Domain + API + UI를 한 번에 만드는 시나리오가 sweet spot. 한 줄 fix엔 과하다.
+2. **두 단계 리뷰가 보이지 않던 이슈를 잡는다.** 컴파일/테스트가 통과해도 spec과 코드 사이 약속이 깨질 수 있고, reviewer가 그걸 검증한다.
+3. **학습/온보딩 자료로 매우 좋다.** 사이클 자체가 재현 가능한 형태로 spec/plan에 남는다.
+
+다음에 시도해 볼 만한 것:
+
+- `using-git-worktrees`로 다중 작업 격리
+- `executing-plans`로 인라인 실행 (plan 체크박스 자동 갱신)
+- `finishing-a-development-branch` skill을 정식으로 호출해 PR/cleanup 옵션 제시 받기
+
+이 세 가지는 본 사례에서 빠진 부분이라 후속 글에서 따로 다루거나, 직접 시도해본 분들의 경험을 공유받고 싶다.
+
+# 9. 참고
+
+- [Anthropic Claude Code 공식 문서](https://docs.claude.com/en/docs/claude-code)
+- [Claude Code Plugin Marketplace 안내](https://www.anthropic.com/engineering/claude-code-plugins)
+- 본 사례 PR: [tutorials-go #701 (Todo 풀 구현)](https://github.com/kenshin579/tutorials-go/pull/701), [#702 (FE 테마 리디자인)](https://github.com/kenshin579/tutorials-go/pull/702)
+- [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/articles/claude-code-확장-기능-완벽-가이드-command-skill-subagent)
+- [Claude Code Plugin Hooks 완벽 가이드](/articles/claude-code-plugin-hooks-완벽-가이드)
+- [Claude Code MCP 추천 가이드](/articles/claude-code-mcp-추천-가이드)
