@@ -334,7 +334,6 @@ Claude Code에서 marketplace를 통해 설치한다.
 
 ## 6.3 권장 사전 준비
 
-- **feature 브랜치에서 시작**: 사전에 `git checkout -b feat/<name>`을 해 두면 skill이 master/main에 직접 커밋하지 않고 흐름도 매끄럽다.
 - **CLAUDE.md 정책 명시**: push/PR 자동화 정책을 CLAUDE.md에 적어두면 skill이 이를 존중한다 (예: "DO NOT push without explicit consent").
 - **코드 컨벤션 룰**: `.claude/rules/*.md`에 코드 스타일/테스트 컨벤션을 적어두면 reviewer subagent가 이를 기준으로 점검한다 (예: `gofmt`, `testify/assert`, `GoDoc` 등).
 
