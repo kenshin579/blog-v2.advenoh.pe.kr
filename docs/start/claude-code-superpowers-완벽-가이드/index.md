@@ -355,35 +355,31 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 
 가이드성 정보는 여기까지. 이 섹션은 "직접 한 사이클 돌려본 사람의 관찰"이다. 톤이 약간 informal하더라도 양해 바란다.
 
-## 7.1 좋았던 점
+## 좋았던 점
 
-**phase 분리로 컨텍스트 오염이 거의 0**. 한 task가 끝나면 그 task의 맥락이 implementer subagent와 함께 정리된다. 다음 task는 fresh context에서 시작. 큰 PR(25 commits)을 한 세션에서 끝낼 수 있었던 이유다. 평소엔 컨텍스트가 부풀어 후반에 헤매는데, 이번엔 phase 10에서도 phase 0과 같은 정밀도로 작업할 수 있었다.
+가장 큰 변화는 **컨텍스트 오염이 거의 사라진다**는 점이다. 한 task가 끝나면 그 맥락이 implementer subagent와 함께 정리되고, 다음 task는 fresh context에서 시작한다. 큰 PR(25 commits)을 한 세션에서 끝낼 수 있었던 이유다. 평소엔 컨텍스트가 부풀어 후반에 헤매는데, 이번엔 phase 10에서도 phase 0과 같은 정밀도로 작업할 수 있었다.
 
-**두 단계 리뷰가 critical 이슈를 잡았다**. 5.3에서 본 한국어 rune count, DueDate pointer aliasing은 둘 다 컴파일도 통과하고 테스트도 통과하는 코드였다. spec compliance reviewer + code quality reviewer가 spec과 코드 사이의 약속을 명시적으로 검증했기에 발견된 것. 이런 종류의 이슈는 보통 PR 리뷰 단계에서 사람 리뷰어가 잡는데, 그 비용을 self-review로 내리는 효과가 있다.
+**두 단계 리뷰가 critical 이슈를 잡아낸다.** 5.3에서 본 한국어 rune count, DueDate pointer aliasing은 둘 다 컴파일과 테스트를 통과하는 코드였다. spec compliance reviewer + code quality reviewer가 spec과 코드 사이의 약속을 명시적으로 검증했기에 발견됐다. 보통 PR 리뷰 단계에서 사람 리뷰어가 잡을 종류의 이슈를 self-review 단계로 내리는 효과가 있다. 덤으로 회귀 발견도 자연스럽게 유도된다 — FE 테마 작업의 Phase 4에서 Vitest가 e2e 디렉토리를 picking up하는 config 버그를 implementer가 발견하고 별도 fix-up commit으로 해결한 사례가 있었다.
 
-**회귀 발견을 자연스럽게 유도**. FE 테마 작업의 Phase 4에서 Vitest가 e2e 디렉토리를 picking up하는 config 버그를 implementer가 발견하고 별도 fix-up commit으로 해결했다. 만약 strict하게 phase task만 했다면 그냥 넘어갔을 가능성이 높다. spec/quality 리뷰가 "여기 뭔가 이상한데?"를 평가하도록 하는 구조가 회귀 갭 발견 효과를 만든다.
-
-**MCP playwright와 결합하면 시각 회귀까지 자동화**. 라이브 브라우저로 한 번 검증하고 같은 시나리오를 spec 파일로 영속화하는 흐름이 자연스러웠다. `make test-e2e` 한 줄로 회귀 검증되는 구조가 빨리 만들어진다.
-
-## 7.2 비용 / 트레이드오프
+## 비용과 트레이드오프
 
 **per-task 3회 subagent 디스패치**가 비용의 대부분이다. 작은 task에서는 implementer 1회로 끝낼 수 있는 일을 spec/quality 두 번 더 검토하는 것이 과잉일 때가 있다. 본 사례에서도 단순 transcription(Phase 0의 README/Makefile/.gitignore 작성 같은)은 controller-level diff 검증으로 단축했다. **"풀 사이클을 strict하게 따를지" vs "controller가 selective 적용할지"는 작업 단위마다 판단이 필요하다.**
 
-**plan 파일 체크박스가 자동 갱신되지 않음 (subagent-driven의 한계)**. executing-plans는 plan.md를 직접 편집해 `- [x]`로 마킹하지만, subagent-driven은 인-메모리 task list로 추적한다. 결과적으로 plan 파일이 끝까지 `- [ ]`로 남는다. 진행 추적은 git log + task list로 충분하지만, plan 파일을 영구 진행 추적기로 쓰고 싶다면 executing-plans가 더 맞다.
+또 한 가지: **subagent-driven은 plan 파일 체크박스를 자동으로 갱신하지 않는다.** executing-plans는 plan.md를 직접 편집해 `- [x]`로 마킹하지만, subagent-driven은 인-메모리 task list로 추적한다. 결과적으로 plan 파일이 끝까지 `- [ ]`로 남는다. 진행 추적은 git log + task list로 충분하지만, plan 파일을 영구 추적기로 쓰고 싶다면 executing-plans가 더 맞다.
 
-**시간 비용**: 본 사례 PR #701은 25 commits + 두 단계 리뷰 + fixup까지 한 세션 90분 정도 걸렸다. 같은 양을 사람이 직접 짠다면 며칠. AI 자율로 시킨다면 1시간 미만이지만 결과 품질이 통제되지 않는다. superpowers는 그 사이의 합리적 절충점이다.
+시간 비용 측면에서, 본 사례 PR #701은 25 commits + 두 단계 리뷰 + fixup까지 한 세션 90분 정도 걸렸다. 같은 양을 사람이 직접 짠다면 며칠, AI에게 자율 위임하면 1시간 미만이지만 품질이 통제되지 않는다. superpowers는 그 사이의 합리적 절충점이다.
 
-## 7.3 함정 / 주의
+## 함정과 주의
 
-**subagent에 plan 파일을 직접 읽히지 말 것.** skill 가이드에 명시된 경고이기도 하다. controller가 task 텍스트를 발췌해 prompt에 그대로 넣어 전달하는 게 정석. plan을 읽게 하면 다른 phase의 컨텍스트가 섞여 노이즈가 들어간다.
+작업 중 마주친 함정 몇 가지를 모아둔다. **subagent에 plan 파일을 직접 읽히지 말 것** — skill 가이드에 명시된 경고이기도 하다. controller가 task 텍스트를 발췌해 prompt에 그대로 넣어 전달하는 게 정석이다. plan을 읽게 하면 다른 phase의 컨텍스트가 섞여 노이즈가 들어간다.
 
-**한국어 길이는 byte가 아닌 rune count**. 위 사례에서 발견한 함정. Go라면 `utf8.RuneCountInString`, JavaScript라면 spread operator + `length`(`[..."한글"].length === 2`)가 정답이다. spec/code reviewer가 이 패턴을 적극적으로 잡아준다.
+한국어 콘텐츠라면 **길이 검증을 byte가 아닌 rune count로 해야 한다.** Go라면 `utf8.RuneCountInString`, JavaScript라면 spread operator + `length`(`[..."한글"].length === 2`)가 정답이다. spec/code reviewer가 이 패턴을 적극적으로 잡아준다. UI 쪽에서는 hidden radio + CSS-only segmented control이 e2e 셀렉터 함정을 만든다 — `getByRole('radio').click()`이 actionable check에 걸려 실패하므로 label 요소를 직접 클릭하도록 spec을 조정해야 한다.
 
-**hidden radio + CSS-only segmented control은 e2e 셀렉터 함정**. `getByRole('radio').click()`이 actionable check에 걸려 실패한다. label 요소를 직접 클릭하도록 spec을 조정해야 한다. 시각이 깔끔한 만큼 테스트 셀렉터 비용이 든다.
+마지막으로 **finishing-a-development-branch skill은 정석이지만 스킵 가능하다.** 자동 push/PR을 강제하지 않는 사용자 정책이라면 명시적으로 호출하지 않고 직접 `gh pr create` + `gh pr merge`를 쓰면 된다. 본 사례에서도 그렇게 했다. 다만 정석을 한 번 시연받고 싶다면 일부러 호출해보는 것도 학습 가치가 있다.
 
-**finishing-a-development-branch skill은 정석이지만 스킵 가능**. 자동 push/PR을 강제하지 않는 사용자 정책이라면 명시적으로 호출하지 않고 직접 `gh pr create` + `gh pr merge`를 쓰면 된다. 본 사례에서도 그렇게 했다. 다만 정석을 한 번 시연받고 싶다면 일부러 호출해보는 것도 학습 가치가 있다.
+## 권장 적용 시나리오
 
-## 7.4 권장 적용 시나리오
+요약하면 **다단계 + 다영역 작업에 가장 강력**하고, 단일 파일 수정에는 일반 슬래시 커맨드가 빠르다.
 
 | 적합도 | 작업 유형 | 이유 |
 |---|---|---|
@@ -393,8 +389,6 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 | 🟡 보통 | 한두 파일짜리 작은 변경 | 디스패치 비용이 가치 대비 큼 — controller-level 처리 충분 |
 | ❌ 부적합 | 한 줄 fix, 단순 typo | 형식주의 비용만 발생 |
 | ❌ 부적합 | 깊은 디버깅 (디버거 step-through) | superpowers는 디버깅 스킬과 결합되긴 하지만, 사이클 골격 자체가 디버깅엔 어울리지 않음 |
-
-요약하면: **다단계 + 다영역 작업에 가장 강력**. 단일 파일 수정이라면 그냥 일반 슬래시 커맨드가 빠르다.
 
 # 8. 마무리
 
