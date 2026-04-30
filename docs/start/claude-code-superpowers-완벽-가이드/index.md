@@ -362,9 +362,8 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 
 ## 비용과 트레이드오프
 
-- **per-task 3회 subagent 디스패치**: 작은 task엔 과잉. 단순 transcription은 controller-level 처리로 단축 가능
+- **토큰 사용량이 빠르게 늘어난다**: 매 task마다 implementer + spec/quality reviewer 3회 디스패치가 누적되어 소모가 크다. Claude Max 100x 플랜에서도 한 사이클 도중에 rate limit이 걸리는 경험을 했다
 - **plan 파일 체크박스 자동 갱신 X**: subagent-driven은 인-메모리 task list로 추적, plan.md는 끝까지 `- [ ]` 그대로. plan을 영구 추적기로 쓰고 싶다면 executing-plans가 더 맞음
-- **시간 비용**: PR #701은 한 세션 90분. 사람 직접: 며칠 / AI 자율: 1시간 미만이지만 품질 비통제. superpowers는 그 사이 절충점
 
 ## 함정과 주의
 
