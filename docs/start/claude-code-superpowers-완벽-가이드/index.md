@@ -353,3 +353,55 @@ gh pr merge 701 --merge --delete-branch
 ```
 
 결과: [PR #701](https://github.com/kenshin579/tutorials-go/pull/701) 머지 완료, master 통합. 작업 시작부터 머지까지 한 세션 안에서 끝났다.
+
+# 6. 시작하기
+
+처음 superpowers를 도입할 때 필요한 절차는 짧다.
+
+## 6.1 Plugin 설치
+
+Claude Code에서 marketplace를 통해 설치한다.
+
+```bash
+/plugin install superpowers@anthropic
+```
+
+(정확한 명령은 [Anthropic Plugin Marketplace 페이지](https://www.anthropic.com/engineering/claude-code-plugins)에서 확인. 시점에 따라 채널/이름이 다를 수 있음.)
+
+설치 후 새 세션에서 `/superpowers:`로 시작하는 슬래시 커맨드들이 보이면 정상이다.
+
+## 6.2 첫 사이클 시작
+
+```bash
+/superpowers:brainstorming <자연어로 아이디어 한두 줄>
+```
+
+이후엔 다음 흐름을 그대로 따라가면 된다.
+
+1. 다중선택 7-10개 답변
+2. 자동 생성된 spec.md 검토 (1-2회 수정 요청 가능)
+3. 자동 호출되는 writing-plans 실행
+4. 생성된 plan.md 검토
+5. 실행 방식 선택 (subagent-driven 권장)
+6. 구현 자동 진행 (가끔 막히면 컨텍스트 추가 입력)
+7. 최종 리뷰 코멘트 반영
+8. PR 생성 (사용자 승인 후)
+
+## 6.3 권장 사전 준비
+
+- **feature 브랜치에서 시작**: skill이 master/main에 직접 커밋하지 않도록 강제하지만, 사전에 `git checkout -b feat/<name>`을 해 두면 흐름이 더 매끄럽다.
+- **CLAUDE.md 정책 명시**: 자동 push/PR 정책을 CLAUDE.md에 적어두면 skill이 이를 존중한다 (예: "DO NOT push without explicit consent").
+- **코드 컨벤션 룰**: `.claude/rules/*.md`에 코드 스타일/테스트 컨벤션을 적어두면 reviewer subagent가 이를 기준으로 점검한다. 본 사례에선 `gofmt`/`testify-assert`/`gofmt`/`GoDoc` 컨벤션 파일이 있어 일관성 유지가 자동화됐다.
+
+## 6.4 디렉토리 구조 (재확인)
+
+```
+프로젝트/
+├── docs/superpowers/
+│   ├── specs/   # brainstorming 산출물
+│   └── plans/   # writing-plans 산출물
+├── 코드/
+└── 테스트/
+```
+
+specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 후 다시 봤을 때 "왜 이런 구조로 했지"의 답이 그 자리에 있다.
