@@ -198,3 +198,31 @@ description: "You MUST use this before any creative work - creating features, bu
 | Anti-pattern 명시 섹션 | "This Is Too Simple To Need A Design" 같은 흔한 회피 패턴을 미리 차단 | `brainstorming` |
 
 이들은 각각 본편 5개 패턴(특히 Red Flags, HARD-GATE, Skill hand-off)의 변주로 볼 수 있다. 핵심 메커니즘이 같으므로 본편 5개를 이해하면 자연스럽게 따라온다.
+
+# 5. 5가지 패턴이 4개 skill에 어떻게 분포되는가
+
+| 패턴 | brainstorming | writing-plans | executing-plans | verification |
+|---|:---:|:---:|:---:|:---:|
+| HARD-GATE | ◉ (대표) | ○ | ○ | ◉ (Iron Law) |
+| Graphviz Flowchart | ◉ (대표) | - | ○ | - |
+| Red Flags 테이블 | - | - | - | ○ |
+| Frontmatter description | ◉ | ◉ | ◉ | ◉ (모두) |
+| Skill hand-off 명시 | ◉ (대표) | ◉ | ◉ | - |
+
+(◉ 핵심적으로 사용 / ○ 부분적 사용 / - 미사용)
+
+`brainstorming`은 5개 패턴 중 4개의 대표 사례 역할을 한다. 다른 skill들은 패턴의 *변주*에 가깝다. skill을 처음 작성한다면 `brainstorming` 하나를 좀 더 깊이 읽어보는 것만으로도 패턴 다섯 개를 모두 학습할 수 있다.
+
+# 6. 마무리 — 관통 원리와 5줄 체크리스트
+
+5개 패턴은 모두 같은 방향을 가리킨다 — LLM에게 *What*이 아니라 *How not to fail*을 명시하는 것. 일반 프롬프트가 "이렇게 해"라면 skill은 "이런 식으로 우회하지 마"의 모음이다. HARD-GATE는 행동을, Red Flags는 합리화를, Graphviz는 분기 모호성을, Frontmatter description은 호출 누락을, Skill hand-off는 종료 후 분기를 차단한다. 차단 대상은 다르지만 작동 방식은 동일하다.
+
+자기 skill을 만든다면 다음 5줄 체크리스트가 출발점이 된다.
+
+1. 절대 하면 안 되는 행동 1개 → `<HARD-GATE>` 블록
+2. 분기 3개 이상의 흐름 → graphviz 또는 표 (종착점은 별도 마커)
+3. 사용자/LLM이 빠질 합리화 3가지 → Red Flags 표 한 행씩
+4. `description`은 "언제 자동으로 켜져야 하는가" 문장으로 (트리거 동사 3~5개)
+5. skill 끝마다 다음 skill을 단일하게 지정하거나 "끝"을 명시 (부정 절 포함)
+
+> 다음에 다룰 만한 주제: 이 패턴들이 *왜* 이렇게 설계되었는지 — 즉 LLM의 어떤 알려진 약점들과 매칭되는지의 설계 철학. 이번 글은 구조 해부에 한정했다.
