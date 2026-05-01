@@ -258,3 +258,33 @@ description: "You MUST use this before any creative work - creating features, bu
 그렇다면 *왜* 매번 같은 패턴이 반복되는가? 이건 본문에서 다룬 5가지 패턴의 합성 효과다. Section 3.2의 Graphviz Flowchart가 "지금 어느 노드에 있고 다음 노드는 무엇인가"를 격자처럼 명시하고, Section 3.1의 HARD-GATE가 "design 승인 전 코드 작성 금지"로 단계 건너뛰기를 차단한다. 거기에 brainstorming skill의 ## Checklist 섹션은 6개 항목을 나열하고 "각 항목마다 task를 만들고 순서대로 완료하라"고 강제한다. 셋이 같이 작동하므로 매 세션이 동일한 모양으로 진행된다.
 
 요약하면 "단계별로 잘 물어보는" 행동은 model의 능력이 아니라 `brainstorming/SKILL.md` 한 파일에 들어 있는 명시적 규칙(한 번에 한 질문 + 다중 선택 + 추천) + 본문에서 분석한 패턴 3개(Graphviz · HARD-GATE · Checklist 강제)의 합성 결과다. 같은 파일을 다른 질문으로 바꾸어 만들면 다른 흐름의 skill이 된다.
+
+## Q. visual-companion 기능이 UI 확정·설계 다이어그램·DB schema를 시각적으로 보여줘서 편했다. 어떻게 구현되어 있고 어떻게 동작하나?
+
+`brainstorming` skill 폴더 안에 `visual-companion.md` 가이드와 `scripts/` 디렉토리가 함께 들어 있다. `scripts/`에는 `start-server.sh`, `stop-server.sh`, `server.cjs`(Node.js HTTP 서버), `frame-template.html`(자동 wrapping용 골격), `helper.js`(클라이언트 사이드)가 있다. 별도 외부 서비스나 GUI 앱 없이 로컬에서 전부 돌아간다.
+
+핵심 메커니즘은 **디렉토리 watch + content fragment auto-wrapping**이다.
+
+> "The server watches a directory for HTML files and serves the newest one to the browser. You write HTML content to `screen_dir`, the user sees it in their browser and can click to select options. Selections are recorded to `state_dir/events` that you read on your next turn."
+> — `skills/brainstorming/visual-companion.md`
+
+LLM은 HTML 조각(`<h2>`, `<div class="options">`, `<div class="mockup">` 같은 fragment)만 쓰면 서버가 `frame-template.html`로 자동 감싼다. CSS 테마, 헤더, 선택 인디케이터, 클릭 핸들러는 모두 서버가 주입하므로 LLM이 `<html>`이나 `<style>`을 신경 쓸 필요가 없다.
+
+동작 루프는 다음 4단계로 정해져 있다.
+
+1. LLM이 `screen_dir`에 새 HTML 파일을 쓴다 (semantic 파일명, 재사용 금지).
+2. 서버는 mtime 기준 가장 새로운 파일을 자동으로 브라우저에 서빙한다.
+3. 사용자가 옵션을 클릭하면 클라이언트 `helper.js`가 `state_dir/events`에 한 줄짜리 JSON으로 기록한다.
+   ```jsonl
+   {"type":"click","choice":"b","text":"Two Column","timestamp":1706000101}
+   ```
+4. LLM은 다음 turn에서 events 파일을 읽어 사용자의 클릭 이력을 구조화된 형태로 받는다. 터미널 메시지가 1차 피드백, events는 보조 신호다.
+
+시각 vs 터미널 결정은 *매 질문마다* 따로 한다. visual-companion.md에 명시된 판단 기준은 한 줄이다.
+
+> "Decide per-question, not per-session. The test: **would the user understand this better by seeing it than reading it?**"
+> — `skills/brainstorming/visual-companion.md`
+
+UI 목업 · architecture diagram · DB schema 같이 *콘텐츠 자체가 시각적*인 경우만 브라우저로 가고, 요구사항 명확화 · 트레이드오프 비교 · 개념적 A/B/C 같은 질문은 터미널에 머문다. UI 주제라고 해서 무조건 브라우저로 보내지 않는 점이 핵심이다.
+
+요약하면 visual-companion은 **로컬 HTTP 서버 + 디렉토리 watch + JSONL events + frame-template 자동 감싸기** 네 가지 단순한 메커니즘의 조합이다. LLM이 HTML 조각을 쓰고 사용자가 클릭하는 양방향 채널을 markdown skill 한 폴더 안에 packaging한 게 핵심 설계 결정이다.
