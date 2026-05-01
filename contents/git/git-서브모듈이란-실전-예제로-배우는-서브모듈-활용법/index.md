@@ -1,8 +1,8 @@
 ---
 title: "Git 서브모듈이란? 실전 예제로 배우는 서브모듈 활용법"
 description: "Git 서브모듈이란? 실전 예제로 배우는 서브모듈 활용법"
-date: 2025-04-03
-update: 2025-04-03
+date: 2026-05-01
+update: 2026-05-01
 tags:
   - git
   - git submodule
