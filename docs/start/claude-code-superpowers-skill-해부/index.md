@@ -44,11 +44,13 @@ skills/
 
 ```mermaid
 flowchart LR
-    A[brainstorming] -->|아이디어 → spec| B[writing-plans]
-    B -->|spec → plan| C[executing-plans]
-    C -->|plan → 코드| D[verification]
-    D --> E((완료))
+    A[brainstorming] --> B[writing-plans]
+    B --> C[executing-plans]
+    C --> D[verification]
+    D --> E[완료]
 ```
+
+각 화살표는 산출물 변환을 뜻한다: 아이디어 → spec → plan → 코드 → 완료 검증.
 
 **`brainstorming` — 아이디어를 spec으로.** frontmatter 한 줄이 이 skill의 정체다.
 
