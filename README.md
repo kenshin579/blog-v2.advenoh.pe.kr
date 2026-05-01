@@ -80,7 +80,7 @@ Updated 2026-04-30
 * [관계형 데이터베이스 설계 및 구축](https://blog.advenoh.pe.kr/관계형-데이터베이스-설계-및-구축/)
 * [관계형 데이터베이스에서 조인(join)이란?](https://blog.advenoh.pe.kr/관계형-데이터베이스에서-조인-join이란/)
 * [데이터베이스의 키 종류](https://blog.advenoh.pe.kr/데이터베이스의-키-종류/)
-* [맥에서 Kubernetes? Kind로 쉽고 빠르게 클러스터 구성하기](https://blog.advenoh.pe.kr/맥에서 kubernetes kind로 쉽고 빠르게 클러스터 구성하기/)
+* [맥에서 Kubernetes? Kind로 쉽고 빠르게 클러스터 구성하기](https://blog.advenoh.pe.kr/맥에서-kubernetes-kind로-쉽고-빠르게-클러스터-구성하기/)
 
 ## Devops
 * [Maven + JaCoCo + Coveralls + Travis CI : 자바 프로젝트 Coverage 생성하는 방법](https://blog.advenoh.pe.kr/maven-jacoco-coveralls-travis-ci-자바-프로젝트-coverage-생성하는-방법/)
@@ -91,7 +91,7 @@ Updated 2026-04-30
 * [Git Rebase로 병합하기](https://blog.advenoh.pe.kr/git-rebase로-병합하기/)
 * [Git Reset으로 커밋된 내용 다시 되돌리기 (using GitKraken)](https://blog.advenoh.pe.kr/git-reset으로-커밋된-내용-다시-되돌리기-using-gitkraken/)
 * [Git 브랜치 여러 개 한번에 삭제하기](https://blog.advenoh.pe.kr/git-브랜치-여러개-한번에-삭제하기/)
-* [Git 서브모듈이란? 실전 예제로 배우는 서브모듈 활용법](https://blog.advenoh.pe.kr/git 서브모듈이란 실전 예제로 배우는 서브모듈 활용법/)
+* [Git 서브모듈이란? 실전 예제로 배우는 서브모듈 활용법](https://blog.advenoh.pe.kr/git-서브모듈이란-실전-예제로-배우는-서브모듈-활용법/)
 * [Git에서 불필요한 로컬 브랜치 깔끔하게 삭제하는 방법](https://blog.advenoh.pe.kr/git에서-불필요한-로컬-브랜치-깔끔하게-삭제하는-방법/)
 * [Q&A : Git 관련 질문 모음](https://blog.advenoh.pe.kr/qa-git-관련-질문-모음/)
 
