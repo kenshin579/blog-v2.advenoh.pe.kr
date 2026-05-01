@@ -40,7 +40,15 @@ skills/
 └── ... (총 15개)
 ```
 
-각 skill은 `SKILL.md` 파일 한 장이 본체다. 본 글에서는 이 중 워크플로우 본축을 이루는 4개 skill을 따라가며, 같은 패턴이 어떻게 반복적으로 나타나는지 본다.
+각 skill은 `SKILL.md` 파일 한 장이 본체다. 본 글에서는 이 중 워크플로우 본축을 이루는 4개 skill을 따라가며, 같은 패턴이 어떻게 반복적으로 나타나는지 본다. 4개 skill은 다음과 같은 직선 chain을 이룬다.
+
+```mermaid
+flowchart LR
+    A[brainstorming] -->|아이디어 → spec| B[writing-plans]
+    B -->|spec → plan| C[executing-plans]
+    C -->|plan → 코드| D[verification]
+    D --> E((완료))
+```
 
 **`brainstorming` — 아이디어를 spec으로.** frontmatter 한 줄이 이 skill의 정체다.
 
