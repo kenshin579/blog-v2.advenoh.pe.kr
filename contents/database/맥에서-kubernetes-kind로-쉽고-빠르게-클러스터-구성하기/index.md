@@ -1,8 +1,8 @@
 ---
 title: "맥에서 Kubernetes? Kind로 쉽고 빠르게 클러스터 구성하기"
 description: "맥에서 Kubernetes? Kind로 쉽고 빠르게 클러스터 구성하기"
-date: 2025-04-05
-update: 2025-04-05
+date: 2026-05-01
+update: 2026-05-01
 tags:
   - kind
   - k8s
