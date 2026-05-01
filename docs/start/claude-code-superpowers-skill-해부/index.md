@@ -172,3 +172,29 @@ description: "You MUST use this before any creative work - creating features, bu
 해결하는 LLM 약점: skill을 언제 호출해야 하는지가 모호하면 호출되지 않는다. "이 skill은 디자인을 도와줍니다"라고 쓰면 너무 추상적이라 트리거되지 않는다. 반면 "creating features, building components, adding functionality, or modifying behavior"처럼 *동사 시리즈*로 명시하면 사용자 입력의 동사와 직접 매칭된다. `verification-before-completion`의 description도 같은 패턴이다 — "Use when about to claim work is complete, fixed, or passing".
 
 **응용 포인트**: skill 작성 시 description은 "무엇을 하는가(WHAT)"가 아니라 "언제 자동으로 켜져야 하는가(WHEN)"의 문장으로 써라. 트리거 동사를 3~5개 나열하는 것이 가장 안정적이다.
+
+## 3.5 패턴 5: Skill hand-off 명시 — 결정적 체이닝
+
+`brainstorming`은 끝부분에서 다음 skill을 단일하게 지정한다.
+
+> "**The terminal state is invoking writing-plans.** Do NOT invoke frontend-design, mcp-builder, or any other implementation skill. The ONLY skill you invoke after brainstorming is writing-plans."
+> — `skills/brainstorming/SKILL.md`
+
+여기서 흥미로운 건 *부정 절*이다. "writing-plans를 호출하라"만으로 충분할 것 같지만, 실제로는 "frontend-design, mcp-builder, or any other implementation skill을 호출하지 마라"가 함께 쓰여 있다. 이는 LLM의 추론 특성을 정확히 노린 것이다.
+
+해결하는 LLM 약점: skill이 끝나면 LLM은 "다음에 무엇을 할까"를 추론한다. 추론은 비결정적이다 — frontmatter description이 매칭되는 어떤 다른 skill로 분기할 수 있다. 명시적 허용(writing-plans)과 명시적 차단(any other implementation skill)을 함께 박으면 비결정성이 제거된다. 워크플로우가 그래프가 아니라 *체인*이 된다.
+
+**응용 포인트**: skill 끝마다 두 가지 중 하나를 명시하라 — (a) "다음 skill X를 호출하라, 다른 어떤 skill도 호출하지 마라", 또는 (b) "여기서 끝, 추가 skill 호출 금지". 모호한 종료는 비결정적 분기를 만든다.
+
+# 4. 짚고 가는 보조 패턴 4가지
+
+본편 5개 외에도 반복적으로 등장하는 보조 패턴이 있다. 모두 5개 패턴의 변주다.
+
+| 패턴 | 한 줄 설명 | 어디에 등장 |
+|---|---|---|
+| Checklist → TaskCreate 강제 매핑 | "체크리스트 항목 하나당 task 하나 만들어라"로 작업 누락 방지 | `using-superpowers`, `brainstorming` |
+| 어조 계층 (`IMPORTANT` < `EXTREMELY-IMPORTANT` < `HARD-GATE`) | 강제력 단계를 마커 두께로 시각화 | 거의 모든 skill |
+| Self-review + User Review 이중 게이트 | LLM 자체 검토 + 사용자 검토를 반드시 둘 다 거치게 함 | `brainstorming`, `writing-plans` |
+| Anti-pattern 명시 섹션 | "This Is Too Simple To Need A Design" 같은 흔한 회피 패턴을 미리 차단 | `brainstorming` |
+
+이들은 각각 본편 5개 패턴(특히 Red Flags, HARD-GATE, Skill hand-off)의 변주로 볼 수 있다. 핵심 메커니즘이 같으므로 본편 5개를 이해하면 자연스럽게 따라온다.
