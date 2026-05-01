@@ -288,3 +288,29 @@ LLM은 HTML 조각(`<h2>`, `<div class="options">`, `<div class="mockup">` 같�
 UI 목업 · architecture diagram · DB schema 같이 *콘텐츠 자체가 시각적*인 경우만 브라우저로 가고, 요구사항 명확화 · 트레이드오프 비교 · 개념적 A/B/C 같은 질문은 터미널에 머문다. UI 주제라고 해서 무조건 브라우저로 보내지 않는 점이 핵심이다.
 
 요약하면 visual-companion은 **로컬 HTTP 서버 + 디렉토리 watch + JSONL events + frame-template 자동 감싸기** 네 가지 단순한 메커니즘의 조합이다. LLM이 HTML 조각을 쓰고 사용자가 클릭하는 양방향 채널을 markdown skill 한 폴더 안에 packaging한 게 핵심 설계 결정이다.
+
+## Q. PRD/IMPL/TODO를 직접 생성하고 prompt로 지시할 때와 Superpowers로 할 때 사용 토큰 차이가 많이 나는데, 왜 그런가?
+
+같은 산출물을 만들더라도 Superpowers 경로는 **skill 본문 텍스트**, **chain 길이**, **turn 수 증가**, **검증 부하** 네 가지가 동시에 누적되기 때문이다. 직접 prompt로 한 번에 끝나는 일이 Superpowers에서는 4개 skill을 거치며 분할된다.
+
+**1. Skill markdown 본문이 매 호출마다 input 토큰으로 들어간다.**
+
+skill을 호출하면 `SKILL.md` 전체가 컨텍스트에 추가된다. 본문에서 분석한 패턴들이 직접적으로 토큰 비중을 차지한다 — Section 3.1의 `<HARD-GATE>` 블록, Section 3.2의 graphviz `digraph` 코드, Section 3.3의 Red Flags 테이블, Section 3.5의 hand-off 부정 절. 자연어로는 "design 승인 전 코드 금지" 한 줄이면 될 것을 명시적 마커와 표와 그래프로 풀어 쓴다. brainstorming · writing-plans · executing-plans · verification 네 개가 chain으로 호출되면 이 본문이 **4번 누적**된다.
+
+**2. 단계별 진행이 turn 수를 늘린다.**
+
+직접 지시할 때는 "이런 PRD/IMPL/TODO를 만들어줘"라고 한 번 던지면 LLM이 한 답변에 끝낸다. brainstorming은 Section 3.2의 graphviz가 강제하는 흐름대로 *한 번에 한 질문*만 던진다. 사용자가 5번 답하면 5 turn이 누적되고, 매 turn마다 이전 conversation 전체가 input 토큰으로 다시 들어간다. writing-plans가 plan을 step 단위로 분해하는 것도 같은 효과를 낸다.
+
+**3. 산출물을 파일로 저장하고 다음 단계에서 다시 읽는다.**
+
+brainstorming은 spec을 `docs/superpowers/specs/...`에 저장하고, writing-plans는 그 spec을 다시 읽어 plan을 작성한다. executing-plans는 plan을 다시 읽어 코드를 짠다. 같은 내용이 *생성 → 파일 쓰기 → 다음 단계에서 다시 읽기*로 최소 두 번 컨텍스트에 등장한다. 직접 prompt 방식에서는 conversation history 안에 한 번만 있으면 된다.
+
+**4. 검증 명령 실행이 output을 컨텍스트에 추가한다.**
+
+verification-before-completion은 Section 2.4의 "Evidence before claims" 원칙대로 빌드/테스트/lint 명령을 실제로 돌리고 stdout을 받는다. 빌드 로그·테스트 출력이 길수록 토큰이 늘어난다. 직접 prompt에서는 "테스트 돌려봤어?"라고 묻지 않으면 그냥 넘어간다.
+
+**5. TaskCreate · self-review가 추가 round를 만든다.**
+
+Section 4의 "Checklist → TaskCreate 강제 매핑"으로 체크리스트 항목 하나당 task가 생성되고, "Self-review + User Review 이중 게이트"로 LLM이 자기 산출물을 한 번 더 검토한다. 둘 다 추가 tool call · 추가 출력이고 input 토큰 누적에 기여한다.
+
+**그래서 그 토큰은 낭비인가?** 본문에서 강조한 것처럼 skill의 목적은 *능력 부여*가 아니라 *자기-합리화 차단*이다. 토큰이 많이 드는 이유와 동작이 안정적인 이유는 같다 — *한 번의 답*을 *여러 게이트로 분할*해서 각 단계에서 우회를 차단하기 때문이다. 같은 품질을 직접 prompt로 받으려면 사용자가 게이트를 매 turn 수동으로 끼워 넣어야 한다. 빠른 단발성 작업은 직접 prompt가, 누락 없이 마쳐야 하는 다단계 작업은 Superpowers가 비용 효율이 좋은 이유다.
