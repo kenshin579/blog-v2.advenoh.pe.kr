@@ -236,3 +236,25 @@ description: "You MUST use this before any creative work - creating features, bu
 5. skill 끝마다 다음 skill을 단일하게 지정하거나 "끝"을 명시 (부정 절 포함)
 
 > 다음에 다룰 만한 주제: 이 패턴들이 *왜* 이렇게 설계되었는지 — 즉 LLM의 어떤 알려진 약점들과 매칭되는지의 설계 철학. 이번 글은 구조 해부에 한정했다.
+
+# 7. FAQ
+
+## Q. Superpowers를 쓰다 보면 결정 사항을 단계별로 잘 묻고 추천도 해주는데, 이 흐름은 어디에 어떻게 정의되어 있나?
+
+`brainstorming` skill의 `SKILL.md` 안에 직접 정의되어 있다. 두 부분이 핵심이다.
+
+**한 번에 한 질문, 다중 선택 선호**:
+
+> "Ask questions one at a time to refine the idea. Prefer multiple choice questions when possible, but open-ended is fine too. Only one question per message — if a topic needs more exploration, break it into multiple questions."
+> — `skills/brainstorming/SKILL.md`
+
+**선택지를 던질 때의 추천 규칙**:
+
+> "Propose 2-3 different approaches with trade-offs ... Present options conversationally with your recommendation and reasoning. Lead with your recommended option and explain why."
+> — `skills/brainstorming/SKILL.md`
+
+즉 LLM이 "어떻게 가시겠어요?"라고 물으면서 동시에 "저는 A를 추천합니다"라고 한 줄을 더 붙이는 건 우연이 아니라 skill에 명시된 행동 규칙이다. "한 번에 한 질문"도 마찬가지로 LLM이 알아서 친절한 게 아니라 본문에 명시된 강제다.
+
+그렇다면 *왜* 매번 같은 패턴이 반복되는가? 이건 본문에서 다룬 5가지 패턴의 합성 효과다. Section 3.2의 Graphviz Flowchart가 "지금 어느 노드에 있고 다음 노드는 무엇인가"를 격자처럼 명시하고, Section 3.1의 HARD-GATE가 "design 승인 전 코드 작성 금지"로 단계 건너뛰기를 차단한다. 거기에 brainstorming skill의 ## Checklist 섹션은 6개 항목을 나열하고 "각 항목마다 task를 만들고 순서대로 완료하라"고 강제한다. 셋이 같이 작동하므로 매 세션이 동일한 모양으로 진행된다.
+
+요약하면 "단계별로 잘 물어보는" 행동은 model의 능력이 아니라 `brainstorming/SKILL.md` 한 파일에 들어 있는 명시적 규칙(한 번에 한 질문 + 다중 선택 + 추천) + 본문에서 분석한 패턴 3개(Graphviz · HARD-GATE · Checklist 강제)의 합성 결과다. 같은 파일을 다른 질문으로 바꾸어 만들면 다른 흐름의 skill이 된다.
