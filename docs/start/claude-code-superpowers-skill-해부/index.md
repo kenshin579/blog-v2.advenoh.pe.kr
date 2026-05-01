@@ -52,33 +52,43 @@ flowchart LR
 
 각 화살표는 산출물 변환을 뜻한다: 아이디어 → spec → plan → 코드 → 완료 검증.
 
-**`brainstorming` — 아이디어를 spec으로.** frontmatter 한 줄이 이 skill의 정체다.
+## 2.1 brainstorming — 아이디어를 spec으로
+
+frontmatter 한 줄이 이 skill의 정체다.
 
 > "You MUST use this before any creative work — creating features, building components, adding functionality, or modifying behavior."
 > — `skills/brainstorming/SKILL.md`
 
 호출되면 한 번에 한 질문씩 사용자에게 던지면서 의사결정 트리를 따라간다. 끝에는 검증된 spec을 `docs/superpowers/specs/YYYY-MM-DD-<topic>-design.md`로 저장하고 commit한다. 핵심은 한 마디로 "승인 없이는 코드 한 줄도 못 쓴다"는 강제다.
 
-**`writing-plans` — spec을 실행 가능한 plan으로.** spec이 *무엇을 만들지*를 정의한다면, plan은 *어떻게 만들지*를 step 단위로 분해한다. skill의 표현을 그대로 옮기면:
+## 2.2 writing-plans — spec을 실행 가능한 plan으로
+
+spec이 *무엇을 만들지*를 정의한다면, plan은 *어떻게 만들지*를 step 단위로 분해한다. skill의 표현을 그대로 옮기면:
 
 > "Write comprehensive implementation plans assuming the engineer has zero context for our codebase and questionable taste."
 > — `skills/writing-plans/SKILL.md`
 
 각 task는 2~5분짜리 step으로 쪼개지고, 모든 step에는 정확한 파일 경로/명령어/예상 결과가 들어간다. plan을 읽는 주체가 LLM이든 신입 개발자든 동일하게 따라갈 수 있도록 placeholder를 금지한다.
 
-**`executing-plans` — plan을 코드로.** plan을 받아 task 단위로 실행한다. 시작 선언이 명시되어 있다.
+## 2.3 executing-plans — plan을 코드로
+
+plan을 받아 task 단위로 실행한다. 시작 선언이 명시되어 있다.
 
 > "Announce at start: 'I'm using the executing-plans skill to implement this plan.'"
 > — `skills/executing-plans/SKILL.md`
 
 이 한 줄이 의외로 중요하다. LLM이 "지금 어떤 모드로 일하는가"를 출력 첫 줄에 박아두면, 후속 컨텍스트에서 모드 이탈이 줄어든다. subagent 환경이 가능하면 `subagent-driven-development`를 권장하지만, 인라인 실행도 가능한 fallback이다.
 
-**`verification-before-completion` — "다 됐다"고 말하기 전.** 마지막 게이트다. skill의 시작 선언이 분명하다.
+## 2.4 verification-before-completion — "다 됐다"고 말하기 전
+
+마지막 게이트다. skill의 시작 선언이 분명하다.
 
 > "Claiming work is complete without verification is dishonesty, not efficiency. **Core principle:** Evidence before claims, always."
 > — `skills/verification-before-completion/SKILL.md`
 
 LLM은 "다 됐습니다"라고 자신 있게 말하고서 실제로는 빌드를 안 돌려본 경우가 흔하다. 이 skill은 "이번 메시지에서 검증 명령을 실행하지 않았다면 통과 주장을 할 수 없다"는 Iron Law로 그 함정을 닫는다.
+
+## 2.5 공통점은 무엇인가
 
 4개 skill을 나란히 놓고 보면 공통점이 보인다. 모두 *무엇을 해라*보다 *무엇을 하지 마라*가 더 큰 비중을 차지한다. brainstorming은 "승인 전 코드 작성 금지", writing-plans는 "placeholder 금지", verification은 "검증 없이 완료 주장 금지". skill은 LLM의 *능력 부여*가 아니라 *합리화 차단*에 무게를 둔다.
 
