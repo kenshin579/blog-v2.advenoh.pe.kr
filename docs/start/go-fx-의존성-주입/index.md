@@ -334,6 +334,70 @@ func NewDBService(params DBParams) *DBService {
 }
 ```
 
+### 2.7.2 fx.Group으로 동일 인터페이스 여러 구현체 모으기
+
+`name:` 태그는 동일 타입을 **개별** 식별할 때 쓴다. 하지만 동일 인터페이스의 여러 구현체를 한꺼번에 주입받고 싶다면 — 예를 들어 모든 Notifier에게 알림을 발송하는 경우 — `name:`으로는 부족하다. 각 구현체에 다른 이름을 붙이고 수신측에서 일일이 받아야 하기 때문이다.
+
+`group:` 태그는 이 문제를 해결한다. 같은 그룹에 등록된 구현체들이 슬라이스로 한꺼번에 주입된다.
+
+```go
+// fx_test.go
+type Notifier interface {
+    Send(msg string) string
+}
+
+type EmailNotifier struct{}
+func (e *EmailNotifier) Send(msg string) string { return "email:" + msg }
+
+type SlackNotifier struct{}
+func (s *SlackNotifier) Send(msg string) string { return "slack:" + msg }
+
+type SMSNotifier struct{}
+func (s *SMSNotifier) Send(msg string) string { return "sms:" + msg }
+```
+
+`fx.Annotate()`와 `fx.ResultTags()`로 각 생성자를 같은 그룹에 등록한다.
+
+```go
+// fx_test.go
+fx.Provide(
+    fx.Annotate(func() Notifier { return &EmailNotifier{} },
+        fx.ResultTags(`group:"notifiers"`)),
+    fx.Annotate(func() Notifier { return &SlackNotifier{} },
+        fx.ResultTags(`group:"notifiers"`)),
+    fx.Annotate(func() Notifier { return &SMSNotifier{} },
+        fx.ResultTags(`group:"notifiers"`)),
+    NewNotifierService,
+)
+```
+
+수신 측은 `fx.In` 구조체에 `group:` 태그가 붙은 슬라이스 필드로 받는다.
+
+```go
+// fx_test.go
+type NotifierParams struct {
+    fx.In
+    Notifiers []Notifier `group:"notifiers"`
+}
+
+type NotifierService struct {
+    notifiers []Notifier
+}
+
+func NewNotifierService(p NotifierParams) *NotifierService {
+    return &NotifierService{notifiers: p.Notifiers}
+}
+```
+
+여러 외부 서비스 클라이언트를 단일 인터페이스 슬라이스로 모으는 패턴이 대표적인 실전 활용 예다. 새 구현체가 추가되어도 수신 측 코드는 변경되지 않는다.
+
+`name:` vs `group:` 차이를 정리하면:
+
+| 패턴 | 용도 | 수신 측 |
+|------|------|---------|
+| `name:"X"` | 동일 타입을 **개별** 식별 | 단일 필드 |
+| `group:"Y"` | 동일 타입(또는 인터페이스)을 **모음** | 슬라이스 필드 |
+
 ## 2.8 테스트에서의 fx
 
 ### 2.8.1 fxtest.New
