@@ -13,6 +13,9 @@ tags:
   - fx.Module
   - fx.Decorate
   - fxtest
+  - fx.Group
+  - fx.Private
+  - fx.Populate
 ---
 
 # 1. 들어가며
@@ -580,6 +583,9 @@ app := fx.New(
 - **fx.Decorate**: 기존 의존성을 래핑하여 로깅/캐싱 추가
 - **고급 패턴**: Annotate + Named로 동일 타입 여러 인스턴스 관리
 - **테스트**: fxtest.New + fx.Replace로 Mock 주입
+- **fx.Group**: 동일 인터페이스 여러 구현체를 슬라이스로 모아 주입
+- **fx.Private**: Module 내부 의존성을 외부에 노출하지 않는 캡슐화
+- **fx.Populate**: 테스트에서 fx 컨테이너 내부 인스턴스를 외부 변수로 추출
 
 fx는 수동 DI의 복잡도를 해결하면서도, 리플렉션 기반이기 때문에 컴파일 타임 타입 안전성은 다소 포기한다. 하지만 런타임 에러 메시지가 충분히 상세하고, 실전 프로젝트에서의 생산성 향상이 이를 상쇄한다.
 
@@ -596,3 +602,6 @@ fx는 수동 DI의 복잡도를 해결하면서도, 리플렉션 기반이기 �
 - [fx.Module 도입 (v1.17)](https://github.com/uber-go/fx/releases/tag/v1.17.0)
 - [fx.Decorate 도입 (v1.18)](https://github.com/uber-go/fx/releases/tag/v1.18.0)
 - [Go Dependency Injection - uber/fx](https://pkg.go.dev/go.uber.org/fx)
+- [Value Groups (fx Docs)](https://uber-go.github.io/fx/value-groups/)
+- [fx.Populate API](https://pkg.go.dev/go.uber.org/fx#Populate)
+- [fx.Private 도입 (v1.20)](https://github.com/uber-go/fx/releases/tag/v1.20.0)
