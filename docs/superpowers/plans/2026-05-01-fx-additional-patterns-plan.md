@@ -965,8 +965,8 @@ Edit으로 §4의 마지막 링크 줄 다음에 다음 줄을 삽입:
 ```
 - [Go Dependency Injection - uber/fx](https://pkg.go.dev/go.uber.org/fx)
 - [Value Groups (fx Docs)](https://uber-go.github.io/fx/value-groups/)
-- [fx.Populate API](https://pkg.go.dev/go.uber.org/fx#Populate)
 - [fx.Private 도입 (v1.20)](https://github.com/uber-go/fx/releases/tag/v1.20.0)
+- [fx.Populate API](https://pkg.go.dev/go.uber.org/fx#Populate)
 ```
 
 > **주의**: 위 fx.Private 도입 버전(`v1.20.0`)은 Task 0 Step 2에서 확인한 정확한 버전 태그로 교체. 만약 다른 버전이라면 그 버전의 GitHub release URL로 교체.

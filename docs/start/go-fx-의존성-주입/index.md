@@ -603,5 +603,5 @@ fx는 수동 DI의 복잡도를 해결하면서도, 리플렉션 기반이기 �
 - [fx.Decorate 도입 (v1.18)](https://github.com/uber-go/fx/releases/tag/v1.18.0)
 - [Go Dependency Injection - uber/fx](https://pkg.go.dev/go.uber.org/fx)
 - [Value Groups (fx Docs)](https://uber-go.github.io/fx/value-groups/)
-- [fx.Populate API](https://pkg.go.dev/go.uber.org/fx#Populate)
 - [fx.Private 도입 (v1.20)](https://github.com/uber-go/fx/releases/tag/v1.20.0)
+- [fx.Populate API](https://pkg.go.dev/go.uber.org/fx#Populate)
