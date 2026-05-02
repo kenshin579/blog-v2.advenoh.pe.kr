@@ -736,7 +736,7 @@ PrivateModule := fx.Module("private",
 )
 ```
 
-`*internalDB`는 `PrivateModule` 안의 `newModuleService`만 주입받을 수 있다. Module 외부에서 `*internalDB`를 직접 요청하면 fx는 의존성 그래프 구성 시점에 에러를 반환한다(`fx.Populate`는 §2.8.3에서 자세히 다룬다).
+`*internalDB`는 `PrivateModule` 안의 `newModuleService`만 주입받을 수 있다. Module 외부에서 `*internalDB`를 직접 요청하면 fx는 의존성 그래프 구성 시점에 에러를 반환한다(`fx.Populate`는 §2.8.3에서 다룬다).
 
 ```go
 // fx_test.go
@@ -833,11 +833,11 @@ NNN:## 2.9 의존성 그래프 시각화
 ```go
 // fx_test.go
 // 방식 1: fx.Invoke 클로저로 캡처 (앞서 사용한 방식)
-var svc *UserService
-app := fxtest.New(t,
+var svc1 *UserService
+app1 := fxtest.New(t,
     fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
     fx.Invoke(func(s *UserService) {
-        svc = s
+        svc1 = s
     }),
 )
 
