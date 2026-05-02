@@ -389,12 +389,12 @@ func newModuleService(db *internalDB) *ModuleService {
 
 func TestFx_Private(t *testing.T) {
 	// PrivateModule:
-	//   - 첫 번째 fx.Provide()에 fx.Private을 함께 넣어 *internalDB를 Module 내부 전용으로
+	//   - 첫 번째 fx.Provide()에 fx.Private을 마지막 인자로 넣어 *internalDB를 Module 내부 전용으로
 	//   - 두 번째 fx.Provide()는 일반 노출. *ModuleService는 외부에서 추출 가능
 	PrivateModule := fx.Module("private",
 		fx.Provide(
-			fx.Private,
 			newInternalDB,
+			fx.Private,
 		),
 		fx.Provide(newModuleService),
 	)
@@ -416,7 +416,10 @@ func TestFx_Private(t *testing.T) {
 		fx.Populate(&leaked),
 		fx.NopLogger, // 에러를 stdout으로 출력하지 않음
 	)
-	assert.Error(t, leakApp.Err(), "internalDB는 Module 외부에서 보이지 않아야 한다")
+	err := leakApp.Err()
+	assert.Error(t, err, "internalDB는 Module 외부에서 보이지 않아야 한다")
+	assert.Contains(t, err.Error(), "*main.internalDB",
+		"에러 메시지에 외부 추출이 막힌 타입이 명시되어야 한다")
 }
 ```
 
@@ -726,8 +729,8 @@ func newModuleService(db *internalDB) *ModuleService {
 
 PrivateModule := fx.Module("private",
     fx.Provide(
-        fx.Private,        // 같은 fx.Provide() 그룹 전체를 Module 내부 전용으로
         newInternalDB,
+        fx.Private,        // 같은 fx.Provide() 그룹 전체를 Module 내부 전용으로
     ),
     fx.Provide(newModuleService), // ModuleService는 외부 노출
 )

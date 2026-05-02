@@ -169,8 +169,8 @@ func newModuleService(db *internalDB) *ModuleService {
 func TestFx_Private(t *testing.T) {
     PrivateModule := fx.Module("private",
         fx.Provide(
-            fx.Private,        // 같은 Provide 그룹의 Provide는 Module 내부 전용
             newInternalDB,
+            fx.Private,        // 같은 Provide 그룹의 Provide는 Module 내부 전용
         ),
         fx.Provide(newModuleService), // ModuleService는 외부 노출
     )
