@@ -694,7 +694,7 @@ NNN:## 2.8 ...
 
 - [ ] **Step 2: Task 0 Step 2에서 확인한 fx.Private 도입 버전을 메모**
 
-Task 0 Step 2의 `go doc` 결과에서 fx.Private 도입 버전을 확인했다. 일반적으로 fx.Private는 v1.20.0에서 도입되었다. 정확한 버전 번호를 다음 본문의 "버전 노트"에 반영한다.
+Task 0 Step 2의 `go doc` 결과에서 fx.Private 도입 버전을 확인했다. 일반적으로 fx.Private은 v1.20.0에서 도입되었다. 정확한 버전 번호를 다음 본문의 "버전 노트"에 반영한다.
 
 만약 Task 0에서 명확한 버전 정보를 못 얻었다면, https://github.com/uber-go/fx/releases 페이지를 직접 확인 (또는 `git log --all --grep="Private"`로 fx 저장소 검색).
 
@@ -750,7 +750,7 @@ leakApp := fx.New(
 // leakApp.Err() != nil
 ```
 
-> **fx.Private는 v1.20.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
+> **fx.Private은 v1.20.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
 
 ````
 

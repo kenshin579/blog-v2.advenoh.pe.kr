@@ -445,7 +445,7 @@ leakApp := fx.New(
 // leakApp.Err() != nil
 ```
 
-> **fx.Private는 v1.20.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
+> **fx.Private은 v1.20.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
 
 ## 2.8 테스트에서의 fx
 
