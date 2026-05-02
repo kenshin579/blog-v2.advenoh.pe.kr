@@ -398,6 +398,55 @@ func NewNotifierService(p NotifierParams) *NotifierService {
 | `name:"X"` | 동일 타입을 **개별** 식별 | 단일 필드 |
 | `group:"Y"` | 동일 타입(또는 인터페이스)을 **모음** | 슬라이스 필드 |
 
+### 2.7.3 fx.Private로 Module 캡슐화
+
+`fx.Module()`로 도메인을 분리해도 모든 `fx.Provide()`는 기본적으로 전역에 노출된다. Module 내부 전용으로만 쓰고 싶은 의존성은 `fx.Private`으로 막을 수 있다. 데이터베이스 핸들이나 외부 API 클라이언트 같은 인프라 의존성을 다른 Module이 우연히 같은 인스턴스를 공유하는 걸 막을 때 유용하다.
+
+`fx.Private`은 같은 `fx.Provide()` 호출 안에 다른 생성자와 함께 넣으면 그 그룹 전체를 Module-private으로 만든다.
+
+```go
+// fx_test.go
+type internalDB struct {
+    name string
+}
+
+func newInternalDB() *internalDB {
+    return &internalDB{name: "private-db"}
+}
+
+type ModuleService struct {
+    db *internalDB
+}
+
+func newModuleService(db *internalDB) *ModuleService {
+    return &ModuleService{db: db}
+}
+
+PrivateModule := fx.Module("private",
+    fx.Provide(
+        newInternalDB,
+        fx.Private,        // 같은 fx.Provide() 그룹 전체를 Module 내부 전용으로
+    ),
+    fx.Provide(newModuleService), // ModuleService는 외부 노출
+)
+```
+
+`*internalDB`는 `PrivateModule` 안의 `newModuleService`만 주입받을 수 있다. Module 외부에서 `*internalDB`를 직접 요청하면 fx는 의존성 그래프 구성 시점에 에러를 반환한다(`fx.Populate`는 §2.8.3에서 자세히 다룬다).
+
+```go
+// fx_test.go
+// 외부에서 *internalDB 직접 추출 시도 → fx.New가 에러 반환
+var leaked *internalDB
+leakApp := fx.New(
+    PrivateModule,
+    fx.Populate(&leaked),
+    fx.NopLogger,
+)
+// leakApp.Err() != nil
+```
+
+> **fx.Private는 v1.20.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
+
 ## 2.8 테스트에서의 fx
 
 ### 2.8.1 fxtest.New
