@@ -488,6 +488,50 @@ app := fxtest.New(t,
 
 `fx.As(new(UserRepository))`는 `*mockUserRepo`를 `UserRepository` 인터페이스로 타입 변환하여 등록한다.
 
+### 2.8.3 fx.Populate로 인스턴스 추출
+
+지금까지는 `fx.Invoke(func(s *Svc) { svc = s })` 형태로 외부 변수에 인스턴스를 캡처했다. `fx.Populate`는 같은 일을 더 간결하게 한다.
+
+```go
+// fx_test.go
+// 방식 1: fx.Invoke 클로저로 캡처 (앞서 사용한 방식)
+var svc *UserService
+app := fxtest.New(t,
+    fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
+    fx.Invoke(func(s *UserService) {
+        svc = s
+    }),
+)
+
+// 방식 2: fx.Populate로 직접 추출
+var svc2 *UserService
+app2 := fxtest.New(t,
+    fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
+    fx.Populate(&svc2),
+)
+```
+
+여러 인스턴스를 한꺼번에 추출할 때 차이가 더 두드러진다.
+
+```go
+// fx_test.go
+var (
+    svc    *UserService
+    logger Logger
+)
+app := fxtest.New(t,
+    fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
+    fx.Populate(&svc, &logger),
+)
+```
+
+선택 가이드는 단순하다.
+
+| 상황 | 권장 |
+|------|------|
+| 인스턴스를 외부 변수로 꺼내는 게 목적 | `fx.Populate` |
+| 추출 후 함수 호출이나 추가 검증을 같은 시점에 수행 | `fx.Invoke` |
+
 ## 2.9 의존성 그래프 시각화
 
 Clean Architecture 프로젝트에서 fx가 구성하는 의존성 그래프를 시각화하면 다음과 같다.
