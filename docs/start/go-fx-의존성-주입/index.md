@@ -13,6 +13,9 @@ tags:
   - fx.Module
   - fx.Decorate
   - fxtest
+  - fx.Group
+  - fx.Private
+  - fx.Populate
 ---
 
 # 1. 들어가며
@@ -334,6 +337,119 @@ func NewDBService(params DBParams) *DBService {
 }
 ```
 
+### 2.7.2 fx.Group으로 동일 인터페이스 여러 구현체 모으기
+
+`name:` 태그는 동일 타입을 **개별** 식별할 때 쓴다. 하지만 동일 인터페이스의 여러 구현체를 한꺼번에 주입받고 싶다면 — 예를 들어 모든 Notifier에게 알림을 발송하는 경우 — `name:`으로는 부족하다. 각 구현체에 다른 이름을 붙이고 수신 측에서 일일이 받아야 하기 때문이다.
+
+`group:` 태그는 이 문제를 해결한다. 같은 그룹에 등록된 구현체들이 슬라이스로 한꺼번에 주입된다.
+
+```go
+// fx_test.go
+type Notifier interface {
+    Send(msg string) string
+}
+
+type EmailNotifier struct{}
+func (e *EmailNotifier) Send(msg string) string { return "email:" + msg }
+
+type SlackNotifier struct{}
+func (s *SlackNotifier) Send(msg string) string { return "slack:" + msg }
+
+type SMSNotifier struct{}
+func (s *SMSNotifier) Send(msg string) string { return "sms:" + msg }
+```
+
+`fx.Annotate()`와 `fx.ResultTags()`로 각 생성자를 같은 그룹에 등록한다.
+
+```go
+// fx_test.go
+fx.Provide(
+    fx.Annotate(func() Notifier { return &EmailNotifier{} },
+        fx.ResultTags(`group:"notifiers"`)),
+    fx.Annotate(func() Notifier { return &SlackNotifier{} },
+        fx.ResultTags(`group:"notifiers"`)),
+    fx.Annotate(func() Notifier { return &SMSNotifier{} },
+        fx.ResultTags(`group:"notifiers"`)),
+    NewNotifierService,
+)
+```
+
+수신 측은 `fx.In` 구조체에 `group:` 태그가 붙은 슬라이스 필드로 받는다.
+
+```go
+// fx_test.go
+type NotifierParams struct {
+    fx.In
+    Notifiers []Notifier `group:"notifiers"`
+}
+
+type NotifierService struct {
+    notifiers []Notifier
+}
+
+func NewNotifierService(p NotifierParams) *NotifierService {
+    return &NotifierService{notifiers: p.Notifiers}
+}
+```
+
+여러 외부 서비스 클라이언트를 단일 인터페이스 슬라이스로 모으는 패턴이 대표적인 실전 활용 예다. 새 구현체가 추가되어도 수신 측 코드는 변경되지 않는다.
+
+`name:` vs `group:` 차이를 정리하면:
+
+| 패턴 | 용도 | 수신 측 |
+|------|------|---------|
+| `name:"X"` | 동일 타입을 **개별** 식별 | 단일 필드 |
+| `group:"Y"` | 동일 타입(또는 인터페이스)을 **모음** | 슬라이스 필드 |
+
+### 2.7.3 fx.Private로 Module 캡슐화
+
+`fx.Module()`로 도메인을 분리해도 모든 `fx.Provide()`는 기본적으로 전역에 노출된다. Module 내부 전용으로만 쓰고 싶은 의존성은 `fx.Private`으로 막을 수 있다. 데이터베이스 핸들이나 외부 API 클라이언트 같은 인프라 의존성을 다른 Module이 우연히 같은 인스턴스를 공유하는 걸 막을 때 유용하다.
+
+`fx.Private`은 같은 `fx.Provide()` 호출 안에 다른 생성자와 함께 넣으면 그 그룹 전체를 Module-private으로 만든다.
+
+```go
+// fx_test.go
+type internalDB struct {
+    name string
+}
+
+func newInternalDB() *internalDB {
+    return &internalDB{name: "private-db"}
+}
+
+type ModuleService struct {
+    db *internalDB
+}
+
+func newModuleService(db *internalDB) *ModuleService {
+    return &ModuleService{db: db}
+}
+
+PrivateModule := fx.Module("private",
+    fx.Provide(
+        newInternalDB,
+        fx.Private,        // 같은 fx.Provide() 그룹 전체를 Module 내부 전용으로
+    ),
+    fx.Provide(newModuleService), // ModuleService는 외부 노출
+)
+```
+
+`*internalDB`는 `PrivateModule` 안의 `newModuleService`만 주입받을 수 있다. Module 외부에서 `*internalDB`를 직접 요청하면 fx는 의존성 그래프 구성 시점에 에러를 반환한다(`fx.Populate`는 §2.8.3에서 다룬다).
+
+```go
+// fx_test.go
+// 외부에서 *internalDB 직접 추출 시도 → fx.New가 에러 반환
+var leaked *internalDB
+leakApp := fx.New(
+    PrivateModule,
+    fx.Populate(&leaked),
+    fx.NopLogger,
+)
+// leakApp.Err() != nil
+```
+
+> **fx.Private은 v1.20.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
+
 ## 2.8 테스트에서의 fx
 
 ### 2.8.1 fxtest.New
@@ -374,6 +490,50 @@ app := fxtest.New(t,
 ```
 
 `fx.As(new(UserRepository))`는 `*mockUserRepo`를 `UserRepository` 인터페이스로 타입 변환하여 등록한다.
+
+### 2.8.3 fx.Populate로 인스턴스 추출
+
+지금까지는 `fx.Invoke(func(s *Svc) { svc = s })` 형태로 외부 변수에 인스턴스를 캡처했다. `fx.Populate`는 같은 일을 더 간결하게 한다.
+
+```go
+// fx_test.go
+// 방식 1: fx.Invoke 클로저로 캡처 (앞서 사용한 방식)
+var svc1 *UserService
+app1 := fxtest.New(t,
+    fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
+    fx.Invoke(func(s *UserService) {
+        svc1 = s
+    }),
+)
+
+// 방식 2: fx.Populate로 직접 추출
+var svc2 *UserService
+app2 := fxtest.New(t,
+    fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
+    fx.Populate(&svc2),
+)
+```
+
+여러 인스턴스를 한꺼번에 추출할 때 차이가 더 두드러진다.
+
+```go
+// fx_test.go
+var (
+    svc    *UserService
+    logger Logger
+)
+app := fxtest.New(t,
+    fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
+    fx.Populate(&svc, &logger),
+)
+```
+
+선택 가이드는 단순하다.
+
+| 상황 | 권장 |
+|------|------|
+| 인스턴스를 외부 변수로 꺼내는 게 목적 | `fx.Populate` |
+| 추출 후 함수 호출이나 추가 검증을 같은 시점에 수행 | `fx.Invoke` |
 
 ## 2.9 의존성 그래프 시각화
 
@@ -423,6 +583,9 @@ app := fx.New(
 - **fx.Decorate**: 기존 의존성을 래핑하여 로깅/캐싱 추가
 - **고급 패턴**: Annotate + Named로 동일 타입 여러 인스턴스 관리
 - **테스트**: fxtest.New + fx.Replace로 Mock 주입
+- **fx.Group**: 동일 인터페이스 여러 구현체를 슬라이스로 모아 주입
+- **fx.Private**: Module 내부 의존성을 외부에 노출하지 않는 캡슐화
+- **fx.Populate**: 테스트에서 fx 컨테이너 내부 인스턴스를 외부 변수로 추출
 
 fx는 수동 DI의 복잡도를 해결하면서도, 리플렉션 기반이기 때문에 컴파일 타임 타입 안전성은 다소 포기한다. 하지만 런타임 에러 메시지가 충분히 상세하고, 실전 프로젝트에서의 생산성 향상이 이를 상쇄한다.
 
@@ -439,3 +602,6 @@ fx는 수동 DI의 복잡도를 해결하면서도, 리플렉션 기반이기 �
 - [fx.Module 도입 (v1.17)](https://github.com/uber-go/fx/releases/tag/v1.17.0)
 - [fx.Decorate 도입 (v1.18)](https://github.com/uber-go/fx/releases/tag/v1.18.0)
 - [Go Dependency Injection - uber/fx](https://pkg.go.dev/go.uber.org/fx)
+- [Value Groups (fx Docs)](https://uber-go.github.io/fx/value-groups/)
+- [fx.Private 도입 (v1.20)](https://github.com/uber-go/fx/releases/tag/v1.20.0)
+- [fx.Populate API](https://pkg.go.dev/go.uber.org/fx#Populate)
