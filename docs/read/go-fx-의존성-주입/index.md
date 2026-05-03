@@ -22,7 +22,14 @@ tags:
 
 Go 애플리케이션이 커지면 의존성 조립이 복잡해진다. `main()`에서 생성자를 하나하나 호출하고, 매개변수 순서를 맞추고, 수명주기를 직접 관리해야 한다. uber/fx는 이 문제를 해결하는 Go용 DI(Dependency Injection) 프레임워크다.
 
-이 글에서는 이전 글([Go Clean Architecture]())의 프로젝트에 fx가 어떻게 적용되는지를 중심으로, 기본 개념부터 fx.Module, fx.Decorate 등 고급 패턴, 그리고 fxtest를 활용한 테스트 전략까지 다룬다.
+이 글에서는 이전 글([Go Clean Architecture]())의 프로젝트에 fx가 어떻게 적용되는지를 중심으로 다룬다. 다루는 범위는 다음과 같다.
+
+- 기본 API: `fx.Provide`, `fx.Invoke`, `fx.Supply`, `fx.New`
+- 수명주기 관리: `fx.Lifecycle` (OnStart/OnStop)
+- 그룹화·확장 패턴: `fx.Module`, `fx.Decorate`
+- 동일 타입 다중 인스턴스: `fx.Annotate` + `name:` / `group:` 태그 (`fx.Group`)
+- Module 캡슐화: `fx.Private`
+- 테스트 전략: `fxtest.New`, `fx.Replace`, `fx.Populate`
 
 # 2. uber/fx로 의존성 주입 구현하기
 
