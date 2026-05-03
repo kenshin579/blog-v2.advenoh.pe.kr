@@ -1,5 +1,5 @@
 ---
-title: "uber/fx로 의존성 주입 구현하기: Clean Architecture와 함께하는 실전 DI"
+title: "uber/fx로 의존성 주입 구현하기"
 description: "uber/fx를 사용하여 Go 애플리케이션의 의존성을 자동으로 연결하고 수명주기를 관리하는 방법을 다룬다. fx.Module, fx.Decorate, fx.Annotate 등 고급 패턴과 테스트 전략까지 실전 예제로 설명한다."
 date: 2026-03-04
 update: 2026-03-04
@@ -9,7 +9,6 @@ tags:
   - uber/fx
   - Dependency Injection
   - DI
-  - Clean Architecture
   - fx.Module
   - fx.Decorate
   - fxtest
@@ -22,7 +21,7 @@ tags:
 
 Go 애플리케이션이 커지면 의존성 조립이 복잡해진다. `main()`에서 생성자를 하나하나 호출하고, 매개변수 순서를 맞추고, 수명주기를 직접 관리해야 한다. uber/fx는 이 문제를 해결하는 Go용 DI(Dependency Injection) 프레임워크다.
 
-이 글에서는 이전 글([Go Clean Architecture]())의 프로젝트에 fx가 어떻게 적용되는지를 중심으로 다룬다. 다루는 범위는 다음과 같다.
+이 글에서 다루는 범위는 다음과 같다.
 
 - 기본 API: `fx.Provide`, `fx.Invoke`, `fx.Supply`, `fx.New`
 - 수명주기 관리: `fx.Lifecycle` (OnStart/OnStop)
@@ -31,11 +30,11 @@ Go 애플리케이션이 커지면 의존성 조립이 복잡해진다. `main()`
 - Module 캡슐화: `fx.Private`
 - 테스트 전략: `fxtest.New`, `fx.Replace`, `fx.Populate`
 
-# 2. uber/fx로 의존성 주입 구현하기
+# 2. fx 기초
 
 ## 2.1 Go에서 DI가 필요한 이유
 
-Clean Architecture에서는 레이어 간 의존성이 많다. 예를 들어 Article API를 구성하려면 다음 의존성을 순서대로 조립해야 한다.
+레이어가 분리된 실전 프로젝트에서는 의존성이 많다. 예를 들어 Article API를 구성하려면 다음 의존성을 순서대로 조립해야 한다.
 
 ```go
 // 수동 DI: main()에서 직접 조립
@@ -68,10 +67,10 @@ fx의 핵심 API는 4가지다.
 
 | API | 역할 | 설명 |
 |-----|------|------|
-| `fx.Provide()` | 생성자 등록 | 반환 타입을 기준으로 의존성 그래프에 등록 |
-| `fx.Invoke()` | 부수 효과 실행 | 서버 시작 등 실행이 필요한 함수 호출 |
-| `fx.Supply()` | 값 직접 제공 | 이미 생성된 인스턴스를 그대로 등록 |
-| `fx.New()` | 앱 생성 | 위 요소들을 조합하여 앱 컨테이너 생성 |
+| `fx.Provide()` | lazy 등록 | 반환 타입을 기준으로 의존성 그래프에 등록 (필요할 때 호출) |
+| `fx.Invoke()` | eager 실행 | 앱 시작 시 즉시 호출되는 부수 효과 (서버 시작, 라우터 등록 등) |
+| `fx.Supply()` | 값 등록 | 이미 생성된 인스턴스를 생성자 없이 그대로 등록 |
+| `fx.New()` | 컨테이너 생성 | 위 요소들을 조합하여 앱 컨테이너 생성 |
 
 `fx.Provide()`에 등록된 생성자는 즉시 실행되지 않는다. 다른 곳에서 해당 타입이 필요할 때 **lazy**하게 생성된다.
 
@@ -116,7 +115,7 @@ app := fxtest.New(t,
 )
 ```
 
-## 2.3 Clean Architecture에서의 fx 적용
+## 2.3 실전 프로젝트에 fx 적용
 
 수동 DI 코드를 fx로 변환하면 다음과 같다.
 
@@ -214,7 +213,11 @@ func TestFx_Lifecycle(t *testing.T) {
 }
 ```
 
-## 2.5 fx.Module 패턴
+# 3. 확장 패턴
+
+fx.Module부터 fx.Private까지, fx 기초 위에 쌓이는 확장 도구들을 살펴본다.
+
+## 3.1 fx.Module 패턴
 
 `fx.Module()`은 관련 의존성을 도메인별로 그룹화한다. 앱이 커질수록 `fx.Provide()`에 생성자가 한꺼번에 나열되면 가독성이 떨어진다. Module로 분리하면 관심사가 명확해진다.
 
@@ -259,7 +262,7 @@ app := fx.New(
 
 > **fx.Module은 v1.17.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Options()`로 유사한 그룹화가 가능하지만, 모듈 이름과 스코프 격리는 지원하지 않는다.
 
-## 2.6 fx.Decorate 패턴
+## 3.2 fx.Decorate 패턴
 
 `fx.Decorate()`는 기존 의존성을 래핑하여 동작을 추가한다. 데코레이터 패턴과 동일한 개념으로, 로깅, 캐싱, 메트릭 수집 등에 활용된다.
 
@@ -293,9 +296,7 @@ app := fxtest.New(t,
 
 > **fx.Decorate는 v1.18.0+부터 사용 가능**하다.
 
-## 2.7 고급 패턴
-
-### 2.7.1 fx.Annotate + Named 의존성
+## 3.3 fx.Annotate + Named 의존성
 
 동일 타입의 여러 인스턴스를 구분해야 할 때 `fx.Annotate()`와 `name` 태그를 사용한다. 예를 들어 Read/Write DB를 분리하는 경우다.
 
@@ -344,7 +345,7 @@ func NewDBService(params DBParams) *DBService {
 }
 ```
 
-### 2.7.2 fx.Group으로 동일 인터페이스 여러 구현체 모으기
+## 3.4 fx.Group으로 동일 인터페이스 여러 구현체 모으기
 
 `name:` 태그는 동일 타입을 **개별** 식별할 때 쓴다. 하지만 동일 인터페이스의 여러 구현체를 한꺼번에 주입받고 싶다면 — 예를 들어 모든 Notifier에게 알림을 발송하는 경우 — `name:`으로는 부족하다. 각 구현체에 다른 이름을 붙이고 수신 측에서 일일이 받아야 하기 때문이다.
 
@@ -408,7 +409,7 @@ func NewNotifierService(p NotifierParams) *NotifierService {
 | `name:"X"` | 동일 타입을 **개별** 식별 | 단일 필드 |
 | `group:"Y"` | 동일 타입(또는 인터페이스)을 **모음** | 슬라이스 필드 |
 
-### 2.7.3 fx.Private로 Module 캡슐화
+## 3.5 fx.Private로 Module 캡슐화
 
 `fx.Module()`로 도메인을 분리해도 모든 `fx.Provide()`는 기본적으로 전역에 노출된다. Module 내부 전용으로만 쓰고 싶은 의존성은 `fx.Private`으로 막을 수 있다. 데이터베이스 핸들이나 외부 API 클라이언트 같은 인프라 의존성을 다른 Module이 우연히 같은 인스턴스를 공유하는 걸 막을 때 유용하다.
 
@@ -457,9 +458,11 @@ leakApp := fx.New(
 
 > **fx.Private은 v1.20.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
 
-## 2.8 테스트에서의 fx
+# 4. 테스트 전략
 
-### 2.8.1 fxtest.New
+fx로 구성한 앱은 `fxtest` 패키지로 테스트한다. mock 주입과 인스턴스 추출까지 살펴본다.
+
+## 4.1 fxtest.New
 
 `fxtest.New()`는 테스트 전용 앱을 생성한다. 테스트 실패 시 자동으로 정리되고, fx 로그가 테스트 출력에 포함된다.
 
@@ -473,7 +476,7 @@ defer app.RequireStop()
 app.RequireStart()
 ```
 
-### 2.8.2 fx.Replace로 Mock 주입
+## 4.2 fx.Replace로 Mock 주입
 
 `fx.Replace()`는 기존 Provide를 완전히 교체한다. 테스트에서 실제 구현 대신 Mock을 주입할 때 유용하다.
 
@@ -498,7 +501,7 @@ app := fxtest.New(t,
 
 `fx.As(new(UserRepository))`는 `*mockUserRepo`를 `UserRepository` 인터페이스로 타입 변환하여 등록한다.
 
-### 2.8.3 fx.Populate로 인스턴스 추출
+## 4.3 fx.Populate로 인스턴스 추출
 
 지금까지는 `fx.Invoke(func(s *Svc) { svc = s })` 형태로 외부 변수에 인스턴스를 캡처했다. `fx.Populate`는 같은 일을 더 간결하게 한다.
 
@@ -542,9 +545,13 @@ app := fxtest.New(t,
 | 인스턴스를 외부 변수로 꺼내는 게 목적 | `fx.Populate` |
 | 추출 후 함수 호출이나 추가 검증을 같은 시점에 수행 | `fx.Invoke` |
 
-## 2.9 의존성 그래프 시각화
+# 5. 마무리
 
-Clean Architecture 프로젝트에서 fx가 구성하는 의존성 그래프를 시각화하면 다음과 같다.
+지금까지 살펴본 내용을 의존성 그래프로 정리하고, 실전 팁과 함께 마무리한다.
+
+## 5.1 의존성 그래프 시각화
+
+실전 프로젝트에서 fx가 구성하는 의존성 그래프를 시각화하면 다음과 같다.
 
 ```mermaid
 graph TD
@@ -561,7 +568,7 @@ graph TD
 
 fx는 이 그래프를 생성자의 매개변수와 반환 타입만으로 자동 구성한다. 순환 의존성이 있으면 앱 시작 시 명확한 에러 메시지를 출력한다.
 
-## 2.10 실전 팁
+## 5.2 실전 팁
 
 **순환 의존성 디버깅**: fx는 순환 의존성을 감지하면 상세한 에러 메시지를 출력한다. 기본 로거를 사용하면 의존성 해결 과정을 추적할 수 있다.
 
@@ -579,12 +586,11 @@ app := fx.New(
 - `fx.Provide()`: 나중에 쓸 수 있도록 등록만 (lazy)
 - `fx.Invoke()`: 즉시 실행이 필요한 부수 효과 (서버 시작, 라우터 등록)
 
-# 3. 마무리
+## 5.3 정리
 
 이 글에서는 uber/fx를 활용한 Go 애플리케이션의 의존성 주입 패턴을 살펴봤다.
 
 - **기본 개념**: Provide, Invoke, Supply로 의존성 그래프 구성
-- **Clean Architecture 적용**: 생성자 시그니처만으로 자동 의존성 해결
 - **Lifecycle**: OnStart/OnStop으로 서버 수명주기 관리
 - **fx.Module**: 도메인별 의존성 그룹화로 가독성 향상
 - **fx.Decorate**: 기존 의존성을 래핑하여 로깅/캐싱 추가
@@ -596,12 +602,12 @@ app := fx.New(
 
 fx는 수동 DI의 복잡도를 해결하면서도, 리플렉션 기반이기 때문에 컴파일 타임 타입 안전성은 다소 포기한다. 하지만 런타임 에러 메시지가 충분히 상세하고, 실전 프로젝트에서의 생산성 향상이 이를 상쇄한다.
 
-## 3.1 프로젝트 소스
+## 5.4 프로젝트 소스
 
 전체 소스 코드는 GitHub에서 확인할 수 있다:
 - https://github.com/kenshin579/tutorials-go/tree/master/project-layout/go-clean-arch-v2
 
-# 4. 참고
+# 6. 참고
 
 - [uber/fx 공식 문서](https://uber-go.github.io/fx/)
 - [uber/fx GitHub](https://github.com/uber-go/fx)
