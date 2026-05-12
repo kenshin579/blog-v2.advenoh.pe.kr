@@ -121,6 +121,20 @@
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* ----- Bento design tokens (Light) ----- */
+  --bento-bg: 242 239 234;          /* #F2EFEA */
+  --bento-card: 255 255 255;
+  --bento-ink: 15 15 15;
+  --bento-dim: 107 107 107;
+  --bento-cream: 248 244 237;
+  --bento-accent: 255 91 34;         /* #FF5B22 */
+  --bento-accent-soft: 255 217 201;  /* #FFD9C9 */
+  --bento-sage: 217 228 212;
+  --bento-rose: 245 213 203;
+  --bento-lavender: 224 213 240;
+  --bento-butter: 245 230 168;
+  --bento-hero-dark: 15 15 15;
 }
 
 .dark {
@@ -232,6 +246,20 @@
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* ----- Bento design tokens (Dark) ----- */
+  --bento-bg: 22 21 18;              /* #161512 */
+  --bento-card: 31 29 26;            /* #1F1D1A */
+  --bento-ink: 244 241 234;
+  --bento-dim: 140 133 122;
+  --bento-cream: 38 35 31;
+  --bento-accent: 255 91 34;
+  --bento-accent-soft: 102 51 30;
+  --bento-sage: 58 74 58;
+  --bento-rose: 74 47 47;
+  --bento-lavender: 58 48 80;
+  --bento-butter: 74 66 32;
+  --bento-hero-dark: 11 11 11;
 }
 
 @layer base {
@@ -484,3 +512,21 @@ pre[class*="language-"] {
 .prose pre.mermaid-error {
   @apply border-l-4 border-destructive;
 }
+
+/* ----- Bento utilities ----- */
+.bento-card {
+  border-radius: 24px;
+  background: rgb(var(--bento-card));
+}
+
+.headline-hi {
+  background: rgb(var(--bento-butter));
+  padding: 0 0.15em;
+  border-radius: 4px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
