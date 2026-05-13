@@ -64,10 +64,12 @@ export function CommandK({
   const [docs, setDocs] = useState<SearchDocument[]>([]);
   const [miniSearch, setMiniSearch] = useState<MiniSearch<SearchDocument> | null>(null);
   const [indexLoading, setIndexLoading] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     if (!open || miniSearch || indexLoading) return;
     setIndexLoading(true);
+    setLoadFailed(false);
     fetch('/search-index.json')
       .then((res) => res.json())
       .then((documents: SearchDocument[]) => {
@@ -86,6 +88,7 @@ export function CommandK({
       })
       .catch((err) => {
         console.warn('[CommandK] failed to load search index:', err);
+        setLoadFailed(true);
       })
       .finally(() => setIndexLoading(false));
   }, [open, miniSearch, indexLoading]);
@@ -191,11 +194,11 @@ export function CommandK({
       role="dialog"
       aria-modal="true"
       aria-label="검색"
-      className="fixed inset-0 z-50 flex items-start justify-center bg-bento-ink/50 px-4 pt-[110px] backdrop-blur-sm dark:bg-black/70"
+      className="fixed inset-0 z-50 flex items-start justify-center bg-bento-ink/50 backdrop-blur-sm dark:bg-black/70 sm:px-4 sm:pt-[110px]"
       onClick={onClose}
     >
       <div
-        className="w-full max-w-[760px] overflow-hidden rounded-[14px] bg-bento-card shadow-2xl ring-1 ring-black/5"
+        className="flex h-full w-full flex-col overflow-hidden bg-bento-card shadow-2xl ring-1 ring-black/5 sm:h-auto sm:max-w-[760px] sm:rounded-[14px]"
         onClick={(e) => e.stopPropagation()}
       >
         <div className="flex items-center gap-3 border-b border-bento-ink/10 px-5 py-4 dark:border-white/10">
@@ -208,6 +211,10 @@ export function CommandK({
             placeholder="검색어를 입력하세요"
             autoFocus
             aria-label="검색어"
+            role="combobox"
+            aria-controls="cmdk-listbox"
+            aria-expanded={true}
+            aria-activedescendant={rows.length > 0 ? `cmdk-row-${activeIdx}` : undefined}
             className="flex-1 border-0 bg-transparent font-mono text-base text-bento-ink outline-none placeholder:text-bento-dim"
             style={{ caretColor: 'rgb(var(--bento-accent))' }}
           />
@@ -221,7 +228,12 @@ export function CommandK({
           </button>
         </div>
 
-        <div className="max-h-[480px] overflow-auto py-3">
+        <div
+          role="listbox"
+          id="cmdk-listbox"
+          aria-label="검색 결과"
+          className="flex-1 overflow-auto py-3 sm:max-h-[480px] sm:flex-none"
+        >
           {showEmpty ? (
             <EmptyState
               recentlyViewed={recentlyViewed}
@@ -241,6 +253,11 @@ export function CommandK({
                 setHistory([]);
               }}
             />
+          ) : loadFailed ? (
+            <div className="px-6 py-8 text-center font-mono text-xs text-bento-dim">
+              <div>검색을 일시적으로 사용할 수 없습니다</div>
+              <div className="mt-2 text-[10px]">새로고침 후 다시 시도해주세요</div>
+            </div>
           ) : !miniSearch ? (
             <div className="px-6 py-8 text-center font-mono text-xs text-bento-dim">
               검색 인덱스를 불러오는 중…
@@ -269,7 +286,7 @@ export function CommandK({
         </div>
 
         <div className="flex items-center justify-between border-t border-bento-ink/10 bg-bento-cream px-5 py-2.5 font-mono text-[11px] text-bento-dim dark:border-white/10 dark:bg-bento-card">
-          <div className="flex gap-4">
+          <div className="hidden gap-4 sm:flex">
             <FooterKey keys={['↑', '↓']}>navigate</FooterKey>
             <FooterKey keys={['↵']}>open</FooterKey>
             <FooterKey keys={['esc']}>close</FooterKey>
@@ -319,6 +336,7 @@ function EmptyState({
                 title={r.title}
                 meta={r.category}
                 trailing={r.date}
+                id={`cmdk-row-${rowIdx}`}
               />
             );
           })}
@@ -337,6 +355,7 @@ function EmptyState({
               q={p.q}
               meta={`${p.n} searches`}
               onPick={() => onPickPopular(p.q)}
+              id={`cmdk-row-${rowIdx}`}
             />
           );
         })}
@@ -367,6 +386,7 @@ function EmptyState({
                 q={q}
                 muted
                 onPick={() => onPickHistory(q)}
+                id={`cmdk-row-${rowIdx}`}
               />
             );
           })}
@@ -419,6 +439,7 @@ function SearchResults({
                 meta={r.category}
                 trailing={r.date}
                 onSelect={() => onActivateArticle(r)}
+                id={`cmdk-row-${rowIdx}`}
               />
             );
           })}
@@ -440,6 +461,7 @@ function SearchResults({
                 meta={`${r.count} posts`}
                 trailing=""
                 onSelect={() => onActivateTag(r)}
+                id={`cmdk-row-${rowIdx}`}
               />
             );
           })}
@@ -485,6 +507,7 @@ function RowLink({
   meta,
   trailing,
   onSelect,
+  id,
 }: {
   href: string;
   active: boolean;
@@ -493,11 +516,15 @@ function RowLink({
   meta: string;
   trailing: string;
   onSelect?: () => void;
+  id?: string;
 }) {
   return (
     <Link
       href={href}
       onClick={onSelect}
+      id={id}
+      role="option"
+      aria-selected={active}
       className={[
         'flex items-center gap-3 border-l-2 px-6 py-2 no-underline',
         active
@@ -548,6 +575,7 @@ function RowQuery({
   meta,
   muted,
   onPick,
+  id,
 }: {
   active: boolean;
   num?: string;
@@ -556,11 +584,15 @@ function RowQuery({
   meta?: string;
   muted?: boolean;
   onPick: () => void;
+  id?: string;
 }) {
   return (
     <button
       type="button"
       onClick={onPick}
+      id={id}
+      role="option"
+      aria-selected={active}
       className={[
         'flex w-full items-center gap-3 border-l-2 px-6 py-2 text-left',
         active
