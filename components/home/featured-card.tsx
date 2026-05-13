@@ -6,10 +6,10 @@ type Props = {
   category: string;
   date: string;
   excerpt?: string;
-  tags?: string[];
+  readTime?: number;
 };
 
-export function FeaturedCard({ href, title, category, date, excerpt, tags }: Props) {
+export function FeaturedCard({ href, title, category, date, excerpt, readTime }: Props) {
   return (
     <Link
       href={href}
@@ -21,13 +21,19 @@ export function FeaturedCard({ href, title, category, date, excerpt, tags }: Pro
         style={{ background: 'radial-gradient(circle, rgb(var(--bento-accent)) 0%, transparent 70%)' }}
       />
       <div className="relative">
-        <div className="mb-6 flex flex-wrap gap-2">
-          <span className="rounded-full bg-bento-accent px-3 py-1 text-[11px] font-semibold uppercase tracking-wider">
+        <div className="mb-6 flex flex-wrap items-center gap-2 text-[11px] text-white/70">
+          <span className="rounded-full bg-bento-accent px-3 py-1 font-semibold uppercase tracking-wider text-white">
             ★ Featured
           </span>
-          <span className="rounded-full bg-white/10 px-3 py-1 text-[11px] capitalize">
-            {category}
-          </span>
+          <span className="capitalize">{category}</span>
+          <span aria-hidden="true">·</span>
+          <span>{date}</span>
+          {readTime !== undefined && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span>{readTime} min read</span>
+            </>
+          )}
         </div>
         <h2 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl">
           {title}
@@ -38,23 +44,8 @@ export function FeaturedCard({ href, title, category, date, excerpt, tags }: Pro
           </p>
         )}
       </div>
-      <div className="relative flex flex-wrap items-end justify-between gap-4 text-xs text-white/70">
-        <div className="flex flex-wrap items-center gap-2">
-          {tags && tags.length > 0 && (
-            <div className="flex flex-wrap gap-1.5">
-              {tags.slice(0, 3).map((t) => (
-                <span
-                  key={t}
-                  className="rounded-full bg-white/10 px-2 py-0.5 text-[10px] text-white/85"
-                >
-                  #{t}
-                </span>
-              ))}
-            </div>
-          )}
-          <span className="text-white/60">{date}</span>
-        </div>
-        <span className="inline-flex items-center gap-1.5 rounded-full bg-bento-accent px-4 py-2 text-[13px] font-semibold text-white">
+      <div className="relative flex justify-end">
+        <span className="inline-flex items-center gap-1.5 rounded-full bg-bento-accent px-5 py-2.5 text-[13px] font-semibold text-white">
           Read article
           <span aria-hidden="true">→</span>
         </span>
