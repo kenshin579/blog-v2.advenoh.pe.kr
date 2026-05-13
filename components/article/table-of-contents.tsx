@@ -46,17 +46,27 @@ export function TableOfContents({ items, collapsible = false }: TableOfContentsP
   }, [items]);
 
   const list = (
-    <ul className="flex flex-col gap-2">
+    <ul className="flex flex-col border-l border-bento-ink/15 dark:border-white/15">
       {items.map((item) => {
         const active = item.id === activeId;
         return (
-          <li key={item.id} style={{ paddingLeft: `${(item.level - 2) * 0.75}rem` }}>
+          <li
+            key={item.id}
+            style={{ paddingLeft: `${(item.level - 2) * 0.75 + 0.75}rem` }}
+            className={
+              active
+                ? '-ml-px border-l-2 border-bento-accent'
+                : ''
+            }
+          >
             <a
               href={`#${item.id}`}
               onClick={() => handleClick(item.id)}
               className={[
-                'block py-1 text-[13px] no-underline transition',
-                active ? 'font-semibold text-bento-accent' : 'text-bento-ink hover:text-bento-accent',
+                'block py-1.5 text-[13px] no-underline transition',
+                active
+                  ? 'font-semibold text-bento-accent'
+                  : 'text-bento-dim hover:text-bento-ink',
               ].join(' ')}
             >
               {item.text}
@@ -71,7 +81,7 @@ export function TableOfContents({ items, collapsible = false }: TableOfContentsP
     return (
       <details className="rounded-card-lg border border-bento-ink/10 bg-bento-card dark:border-white/10">
         <summary className="cursor-pointer px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-bento-dim">
-          목차 · {items.length}
+          Contents · {items.length}
         </summary>
         <div className="px-4 pb-4">{list}</div>
       </details>
@@ -80,7 +90,7 @@ export function TableOfContents({ items, collapsible = false }: TableOfContentsP
 
   return (
     <div className="rounded-card-lg border border-bento-ink/10 bg-bento-card p-5 dark:border-white/10">
-      <div className="mb-3 text-[10px] uppercase tracking-wider text-bento-dim">목차</div>
+      <div className="mb-3 text-[10px] uppercase tracking-wider text-bento-dim">Contents</div>
       {list}
     </div>
   );

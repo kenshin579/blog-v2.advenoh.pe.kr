@@ -15,6 +15,9 @@ import { HeroCard } from '@/components/article/hero-card';
 import { PrevNext } from '@/components/article/prev-next';
 import { RelatedCards } from '@/components/article/related-cards';
 import { RecordView } from '@/components/article/record-view';
+import { ReadingProgress } from '@/components/article/reading-progress';
+import { Breadcrumb } from '@/components/breadcrumb';
+import { seriesSlug, categorySlug } from '@/lib/url';
 
 interface ArticlePageProps {
   params: Promise<{
@@ -94,6 +97,24 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
     }
   }
 
+  const breadcrumbItems = manifestArticle?.series
+    ? [
+        { label: 'Home', href: '/' },
+        { label: 'Series', href: '/series' },
+        {
+          label: manifestArticle.series,
+          href: `/series/${encodeURIComponent(seriesSlug(manifestArticle.series))}`,
+        },
+      ]
+    : [
+        { label: 'Home', href: '/' },
+        { label: 'Posts', href: '/posts' },
+        {
+          label: category,
+          href: `/category/${encodeURIComponent(categorySlug(category))}`,
+        },
+      ];
+
   return (
     <main className="min-h-screen bg-bento-bg pb-20">
       <RecordView
@@ -103,6 +124,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         date={article.frontmatter.date}
       />
 
+      <Breadcrumb items={breadcrumbItems} />
+
       <HeroCard
         category={category}
         title={article.frontmatter.title}
@@ -111,6 +134,8 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         readingTime={readingTime}
         series={manifestArticle?.series}
         seriesOrder={manifestArticle?.seriesOrder}
+        totalEpisodes={seriesEpisodes.length || undefined}
+        tags={manifestArticle?.tags}
       />
 
       {/* Body + sticky TOC (desktop) / collapsible TOC (mobile) */}
@@ -128,8 +153,9 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
           {toc.length > 0 && (
             <aside className="hidden md:block">
-              <div className="sticky top-24 max-h-[calc(100vh-6rem)] overflow-y-auto">
+              <div className="sticky top-24 flex max-h-[calc(100vh-6rem)] flex-col gap-4 overflow-y-auto">
                 <TableOfContents items={toc} />
+                <ReadingProgress />
               </div>
             </aside>
           )}
