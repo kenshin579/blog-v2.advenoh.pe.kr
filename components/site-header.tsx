@@ -22,6 +22,8 @@ const NAV = [
   { name: 'Tags', href: '/tags' },
 ] as const;
 
+const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg';
+
 function isActive(pathname: string, href: string): boolean {
   if (href === '/') return pathname === '/';
   return pathname === href || pathname.startsWith(href + '/');
@@ -30,10 +32,10 @@ function isActive(pathname: string, href: string): boolean {
 export function SiteHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme, setTheme } = useTheme();
   const pathname = usePathname();
 
-  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
+  const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 
   return (
     <>
@@ -42,8 +44,8 @@ export function SiteHeader() {
           {/* Logo + wordmark */}
           <Link
             href="/"
-            className="flex items-center gap-3 no-underline text-bento-ink"
-            aria-label="Frank's IT Blog 홈"
+            className={`flex items-center gap-3 no-underline text-bento-ink ${FOCUS_RING}`}
+            aria-label="frank.blog 홈"
           >
             <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-bento-accent text-base font-bold text-white">
               F
@@ -70,6 +72,7 @@ export function SiteHeader() {
                     active
                       ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink'
                       : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white',
+                    FOCUS_RING,
                   ].join(' ')}
                 >
                   {n.name}
@@ -85,9 +88,9 @@ export function SiteHeader() {
               type="button"
               onClick={() => setSearchOpen(true)}
               aria-label="검색 열기"
-              className="hidden items-center gap-2.5 rounded-full bg-bento-ink/[0.06] px-3.5 py-2 text-[13px] text-bento-dim transition hover:bg-bento-ink/10 md:flex dark:bg-white/10 dark:hover:bg-white/15"
+              className={`hidden items-center gap-2.5 rounded-full bg-bento-ink/[0.06] px-3.5 py-2 text-[13px] text-bento-dim transition hover:bg-bento-ink/10 md:flex dark:bg-white/10 dark:hover:bg-white/15 ${FOCUS_RING}`}
             >
-              <Search className="h-3.5 w-3.5" />
+              <Search aria-hidden="true" className="h-3.5 w-3.5" />
               <span>Search</span>
               <kbd className="rounded border border-bento-ink/10 bg-bento-card px-1.5 py-0 font-mono text-[10px] font-semibold text-bento-ink dark:border-white/10">
                 ⌘K
@@ -101,7 +104,7 @@ export function SiteHeader() {
               aria-label="검색 열기"
               className="md:hidden"
             >
-              <Search className="h-5 w-5" />
+              <Search aria-hidden="true" className="h-5 w-5" />
             </Button>
 
             {/* Theme toggle */}
@@ -110,18 +113,18 @@ export function SiteHeader() {
               variant="ghost"
               size="icon"
               onClick={toggleTheme}
-              aria-label="테마 전환"
+              aria-label="테마 변경"
               className="rounded-full bg-bento-ink/[0.06] text-bento-ink hover:bg-bento-ink/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
             >
-              <Sun className="h-4 w-4 dark:hidden" />
-              <Moon className="hidden h-4 w-4 dark:block" />
+              <Sun aria-hidden="true" className="h-4 w-4 dark:hidden" />
+              <Moon aria-hidden="true" className="hidden h-4 w-4 dark:block" />
             </Button>
 
             {/* RSS — desktop pill, mobile icon */}
             <Link
               href="/rss.xml"
               aria-label="RSS 피드"
-              className="hidden rounded-full bg-bento-ink px-4 py-2 text-[13px] font-medium text-white no-underline md:inline-block dark:bg-white dark:text-bento-ink"
+              className={`hidden rounded-full bg-bento-ink px-4 py-2 text-[13px] font-medium text-white no-underline md:inline-block dark:bg-white dark:text-bento-ink ${FOCUS_RING}`}
             >
               RSS
             </Link>
@@ -133,7 +136,7 @@ export function SiteHeader() {
               className="md:hidden"
             >
               <Link href="/rss.xml" aria-label="RSS 피드">
-                <Rss className="h-5 w-5" />
+                <Rss aria-hidden="true" className="h-5 w-5" />
               </Link>
             </Button>
 
@@ -147,7 +150,7 @@ export function SiteHeader() {
                   aria-label="메뉴 열기"
                   className="md:hidden"
                 >
-                  <Menu className="h-5 w-5" />
+                  <Menu aria-hidden="true" className="h-5 w-5" />
                 </Button>
               </SheetTrigger>
               <SheetContent side="right" className="w-72 bg-bento-bg">
@@ -168,6 +171,7 @@ export function SiteHeader() {
                           active
                             ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink'
                             : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white',
+                          FOCUS_RING,
                         ].join(' ')}
                       >
                         {n.name}
