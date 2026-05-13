@@ -22,20 +22,32 @@ export function SeriesSpotlightCard({ seriesName, seriesHref, episodes }: Props)
         <span className="text-[11px] uppercase tracking-[0.1em] opacity-60">Series</span>
       </div>
       <h3 className="mt-2 text-xl font-bold tracking-tighter md:text-2xl">{seriesName}</h3>
-      <ul className="mt-auto flex flex-col gap-1 pt-6">
-        {episodes.map((ep, i) => (
-          <li
-            key={ep.slug}
-            className={`flex items-center gap-3 py-1.5 ${i > 0 ? 'border-t border-bento-ink/10' : ''}`}
-          >
-            <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-bento-ink/10 text-[10px] font-bold text-bento-dim">
-              {ep.num}
-            </span>
-            <span className="line-clamp-1 text-[13px] text-bento-ink">
-              {ep.title}
-            </span>
-          </li>
-        ))}
+      <ul className="mt-auto flex flex-col gap-2 pt-6">
+        {episodes.map((ep, i) => {
+          const active = i < 2;
+          return (
+            <li key={ep.slug} className="flex items-center gap-3">
+              <span
+                className={[
+                  'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold',
+                  active
+                    ? 'bg-bento-ink text-white'
+                    : 'bg-bento-ink/10 text-bento-ink/40',
+                ].join(' ')}
+              >
+                {ep.num}
+              </span>
+              <span
+                className={[
+                  'line-clamp-1 text-[13px]',
+                  active ? 'text-bento-ink' : 'text-bento-ink/40',
+                ].join(' ')}
+              >
+                {ep.title}
+              </span>
+            </li>
+          );
+        })}
       </ul>
     </Link>
   );
