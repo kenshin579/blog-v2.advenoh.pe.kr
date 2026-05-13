@@ -14,6 +14,7 @@
     "copy:images": "tsx scripts/copy-images.ts"
   },
   "dependencies": {
+    "@fontsource/pretendard": "^5.2.5",
     "@hookform/resolvers": "^3.10.0",
     "@jridgewell/trace-mapping": "^0.3.25",
     "@radix-ui/react-accordion": "^1.2.4",
