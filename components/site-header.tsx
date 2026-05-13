@@ -2,70 +2,181 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { Search, Tag } from 'lucide-react';
+import { usePathname } from 'next/navigation';
+import { Search, Rss, Menu, Sun, Moon } from 'lucide-react';
+import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
-import { ThemeToggle } from '@/components/theme-toggle';
+import {
+  Sheet,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 import { SearchDialog } from '@/components/search-dialog';
-import { SocialLinks } from '@/components/social-links';
+
+const NAV = [
+  { name: 'Home', href: '/' },
+  { name: 'Posts', href: '/posts' },
+  { name: 'Series', href: '/series' },
+  { name: 'Tags', href: '/tags' },
+] as const;
+
+function isActive(pathname: string, href: string): boolean {
+  if (href === '/') return pathname === '/';
+  return pathname === href || pathname.startsWith(href + '/');
+}
 
 export function SiteHeader() {
   const [searchOpen, setSearchOpen] = useState(false);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const pathname = usePathname();
+
+  const toggleTheme = () => setTheme(theme === 'dark' ? 'light' : 'dark');
 
   return (
     <>
-      <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container px-4 flex h-14 items-center justify-between">
-          <div className="flex items-center gap-6">
-            <Link href="/" className="font-bold text-xl">
-              Frank's IT Blog
-            </Link>
-            <nav className="hidden md:flex items-center gap-4">
-              <Link
-                href="/"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                홈
-              </Link>
-              <Link
-                href="/series"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                시리즈
-              </Link>
-              <Link
-                href="/tags"
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-              >
-                <Tag className="h-4 w-4" />
-                태그
-              </Link>
-            </nav>
-          </div>
+      <header className="sticky top-0 z-50 w-full bg-bento-bg/95 backdrop-blur supports-[backdrop-filter]:bg-bento-bg/60">
+        <div className="mx-auto flex max-w-canvas items-center justify-between gap-4 px-6 py-4 md:px-10">
+          {/* Logo + wordmark */}
+          <Link
+            href="/"
+            className="flex items-center gap-3 no-underline text-bento-ink"
+            aria-label="Frank's IT Blog 홈"
+          >
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-bento-accent text-base font-bold text-white">
+              F
+            </span>
+            <span className="text-base font-semibold">
+              frank<span className="text-bento-dim">.blog</span>
+            </span>
+          </Link>
 
+          {/* Desktop pill nav */}
+          <nav
+            aria-label="주요 메뉴"
+            className="hidden gap-1 rounded-full bg-bento-ink/[0.06] p-1 dark:bg-white/10 md:flex"
+          >
+            {NAV.map((n) => {
+              const active = isActive(pathname, n.href);
+              return (
+                <Link
+                  key={n.name}
+                  href={n.href}
+                  aria-current={active ? 'page' : undefined}
+                  className={[
+                    'rounded-full px-4 py-1.5 text-[13px] font-medium no-underline transition',
+                    active
+                      ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink'
+                      : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white',
+                  ].join(' ')}
+                >
+                  {n.name}
+                </Link>
+              );
+            })}
+          </nav>
+
+          {/* Right cluster */}
           <div className="flex items-center gap-2">
-            <SocialLinks />
-            <ThemeToggle />
-            <Button
-              variant="outline"
-              size="sm"
+            {/* Search trigger — desktop full button, mobile icon only */}
+            <button
+              type="button"
               onClick={() => setSearchOpen(true)}
-              className="hidden md:flex items-center gap-2"
+              aria-label="검색 열기"
+              className="hidden items-center gap-2.5 rounded-full bg-bento-ink/[0.06] px-3.5 py-2 text-[13px] text-bento-dim transition hover:bg-bento-ink/10 md:flex dark:bg-white/10 dark:hover:bg-white/15"
             >
-              <Search className="h-4 w-4" />
-              <span className="text-sm text-muted-foreground">검색</span>
-              <kbd className="hidden lg:inline-block px-2 py-0.5 text-xs bg-muted rounded">
+              <Search className="h-3.5 w-3.5" />
+              <span>Search</span>
+              <kbd className="rounded border border-bento-ink/10 bg-bento-card px-1.5 py-0 font-mono text-[10px] font-semibold text-bento-ink dark:border-white/10">
                 ⌘K
               </kbd>
-            </Button>
+            </button>
             <Button
+              type="button"
               variant="ghost"
               size="icon"
               onClick={() => setSearchOpen(true)}
+              aria-label="검색 열기"
               className="md:hidden"
-              aria-label="검색"
             >
               <Search className="h-5 w-5" />
             </Button>
+
+            {/* Theme toggle */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              aria-label="테마 전환"
+              className="rounded-full bg-bento-ink/[0.06] text-bento-ink hover:bg-bento-ink/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15"
+            >
+              <Sun className="h-4 w-4 dark:hidden" />
+              <Moon className="hidden h-4 w-4 dark:block" />
+            </Button>
+
+            {/* RSS — desktop pill, mobile icon */}
+            <Link
+              href="/rss.xml"
+              aria-label="RSS 피드"
+              className="hidden rounded-full bg-bento-ink px-4 py-2 text-[13px] font-medium text-white no-underline md:inline-block dark:bg-white dark:text-bento-ink"
+            >
+              RSS
+            </Link>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              asChild
+              className="md:hidden"
+            >
+              <Link href="/rss.xml" aria-label="RSS 피드">
+                <Rss className="h-5 w-5" />
+              </Link>
+            </Button>
+
+            {/* Mobile hamburger */}
+            <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+              <SheetTrigger asChild>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  aria-label="메뉴 열기"
+                  className="md:hidden"
+                >
+                  <Menu className="h-5 w-5" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-72 bg-bento-bg">
+                <SheetHeader>
+                  <SheetTitle className="text-left text-bento-ink">메뉴</SheetTitle>
+                </SheetHeader>
+                <nav aria-label="모바일 메뉴" className="mt-6 flex flex-col gap-1">
+                  {NAV.map((n) => {
+                    const active = isActive(pathname, n.href);
+                    return (
+                      <Link
+                        key={n.name}
+                        href={n.href}
+                        onClick={() => setMobileNavOpen(false)}
+                        aria-current={active ? 'page' : undefined}
+                        className={[
+                          'rounded-card-sm px-4 py-3 text-base font-medium no-underline transition',
+                          active
+                            ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink'
+                            : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white',
+                        ].join(' ')}
+                      >
+                        {n.name}
+                      </Link>
+                    );
+                  })}
+                </nav>
+              </SheetContent>
+            </Sheet>
           </div>
         </div>
       </header>
