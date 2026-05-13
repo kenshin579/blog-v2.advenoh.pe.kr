@@ -1,5 +1,6 @@
 import { getAllArticles, getArticlesBySeries, getArticleTitleFromSlug } from '@/lib/articles';
 import { formatDate } from '@/lib/utils';
+import { seriesSlug } from '@/lib/url';
 import { Headline } from '@/components/home/headline';
 import { FeaturedCard } from '@/components/home/featured-card';
 import { SeriesSpotlightCard } from '@/components/home/series-spotlight-card';
@@ -13,10 +14,6 @@ export const metadata = {
 };
 
 const RECENT_TONES = ['sage', 'butter', 'rose', 'cream'] as const;
-
-function seriesSlug(name: string): string {
-  return name.toLowerCase().replace(/\s+/g, '-');
-}
 
 export default async function HomePage() {
   const articles = await getAllArticles();

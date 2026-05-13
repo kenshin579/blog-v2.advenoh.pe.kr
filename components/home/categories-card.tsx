@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { categorySlug } from '@/lib/url';
 
 type CategoryEntry = {
   name: string;
@@ -17,7 +18,7 @@ export function CategoriesCard({ categories }: Props) {
         {categories.map((c) => (
           <Link
             key={c.name}
-            href={`/category/${encodeURIComponent(c.name.toLowerCase())}`}
+            href={`/category/${encodeURIComponent(categorySlug(c.name))}`}
             className="inline-flex items-center gap-2 rounded-full bg-bento-card px-3.5 py-2 text-[13px] text-bento-ink no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-cream"
           >
             <span className="capitalize">{c.name}</span>
