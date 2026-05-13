@@ -19,7 +19,8 @@ export async function generateStaticParams() {
     if (!a.tags) continue;
     for (const t of a.tags) tags.add(t);
   }
-  return Array.from(tags).map((tag) => ({ name: encodeURIComponent(tag) }));
+  // Pass RAW tag names — Next.js handles URL encoding for filesystem paths.
+  return Array.from(tags).map((tag) => ({ name: tag }));
 }
 
 export async function generateMetadata({ params }: PageProps) {
