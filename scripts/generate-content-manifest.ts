@@ -70,7 +70,7 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
           category,
           title: data.title || articleDir,
           date: data.date || new Date().toISOString(),
-          excerpt: data.excerpt,
+          excerpt: data.description ?? data.excerpt,
           tags: data.tags || [],
           series: data.series,
           seriesOrder: data.seriesOrder,

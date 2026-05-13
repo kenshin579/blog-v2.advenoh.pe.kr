@@ -21,21 +21,21 @@ export function FeaturedCard({ href, title, category, date, excerpt, readTime, t
         className="absolute -right-32 -top-32 h-96 w-96 rounded-full opacity-50"
         style={{ background: 'radial-gradient(circle, rgb(var(--bento-accent)) 0%, transparent 70%)' }}
       />
+      <div className="relative flex flex-wrap items-center gap-2 text-[11px] text-white/70">
+        <span className="rounded-full bg-bento-accent px-3 py-1 font-semibold uppercase tracking-wider text-white">
+          ★ Featured
+        </span>
+        <span className="capitalize">{category}</span>
+        <span aria-hidden="true">·</span>
+        <span>{date}</span>
+        {readTime !== undefined && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span>{readTime} min read</span>
+          </>
+        )}
+      </div>
       <div className="relative">
-        <div className="mb-6 flex flex-wrap items-center gap-2 text-[11px] text-white/70">
-          <span className="rounded-full bg-bento-accent px-3 py-1 font-semibold uppercase tracking-wider text-white">
-            ★ Featured
-          </span>
-          <span className="capitalize">{category}</span>
-          <span aria-hidden="true">·</span>
-          <span>{date}</span>
-          {readTime !== undefined && (
-            <>
-              <span aria-hidden="true">·</span>
-              <span>{readTime} min read</span>
-            </>
-          )}
-        </div>
         <h2 className="text-3xl font-bold leading-tight tracking-tighter md:text-4xl">
           {title}
         </h2>
