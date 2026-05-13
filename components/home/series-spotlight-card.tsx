@@ -16,14 +16,13 @@ export function SeriesSpotlightCard({ seriesName, seriesHref, episodes }: Props)
   return (
     <Link
       href={seriesHref}
-      className="col-span-12 flex flex-col rounded-card-xl bg-bento-lavender p-6 text-bento-ink no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg md:col-span-5 md:p-7"
+      className="col-span-12 flex flex-col rounded-card-xl bg-bento-lavender p-6 text-bento-ink no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg md:col-span-4 md:p-7"
     >
-      <div className="mb-3 flex items-center justify-between">
-        <span className="text-[11px] uppercase tracking-[0.1em] opacity-60">Active Series</span>
-        <span className="text-xs text-bento-dim">{episodes.length}편</span>
+      <div className="mb-3">
+        <span className="text-[11px] uppercase tracking-[0.1em] opacity-60">Series</span>
       </div>
-      <h3 className="mb-4 text-xl font-bold tracking-tighter md:text-2xl">{seriesName}</h3>
-      <ul className="flex flex-col gap-1">
+      <h3 className="mt-2 text-xl font-bold tracking-tighter md:text-2xl">{seriesName}</h3>
+      <ul className="mt-auto flex flex-col gap-1 pt-6">
         {episodes.map((ep, i) => (
           <li
             key={ep.slug}

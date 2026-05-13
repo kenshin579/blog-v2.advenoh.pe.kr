@@ -16,7 +16,7 @@ const FOCUS_RING =
 
 export function CategoriesCard({ categories, totalCount }: Props) {
   return (
-    <div className="col-span-12 flex flex-col rounded-card-xl bg-bento-sage p-6 md:col-span-5 md:p-7">
+    <div className="col-span-12 flex flex-col rounded-card-xl bg-bento-sage p-6 md:col-span-4 md:p-7">
       <div className="text-[10px] uppercase tracking-[0.1em] text-bento-ink/60">Topics</div>
       <h3 className="mt-2 text-2xl font-bold leading-tight tracking-tighter text-bento-ink md:text-3xl">
         {totalCount}편을<br />

@@ -134,6 +134,10 @@ export default async function HomePage() {
           ]}
         />
 
+        {categories.length > 0 && (
+          <CategoriesCard categories={categories} totalCount={totalCount} />
+        )}
+
         {spotlightName && (
           <SeriesSpotlightCard
             seriesName={spotlightName}
@@ -150,10 +154,6 @@ export default async function HomePage() {
               date: formatDate(a.date),
             }))}
           />
-        )}
-
-        {categories.length > 0 && (
-          <CategoriesCard categories={categories} totalCount={totalCount} />
         )}
 
         <ActivityHeatmap

@@ -9,7 +9,7 @@ type Props = {
 
 export function StatsCard({ stats }: Props) {
   return (
-    <div className="col-span-12 grid grid-cols-3 gap-4 rounded-card-xl bg-bento-cream p-6 md:col-span-5 md:p-7">
+    <div className="col-span-12 grid grid-cols-3 gap-4 rounded-card-xl bg-bento-cream p-6 md:col-span-4 md:p-7">
       {stats.map((s) => (
         <div key={s.label}>
           <div className="text-4xl font-bold leading-none tracking-tightest text-bento-ink md:text-5xl">
