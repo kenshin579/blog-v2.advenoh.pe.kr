@@ -5,6 +5,7 @@ import {
   getArticleTitleFromSlug,
 } from '@/lib/articles';
 import { PostsList } from '@/components/posts/posts-list';
+import { Breadcrumb } from '@/components/breadcrumb';
 
 interface PageProps {
   params: Promise<{ name: string }>;
@@ -52,6 +53,13 @@ export default async function TagDetailPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-bento-bg pb-20">
+      <Breadcrumb
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Tags', href: '/tags' },
+          { label: `#${decoded}` },
+        ]}
+      />
       <header className="mx-auto max-w-canvas px-6 pt-8 md:px-10">
         <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-bento-dim">
           Tag

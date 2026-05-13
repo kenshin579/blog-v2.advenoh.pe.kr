@@ -6,6 +6,7 @@ import {
   getArticleTitleFromSlug,
 } from '@/lib/articles';
 import { formatDate } from '@/lib/utils';
+import { Breadcrumb } from '@/components/breadcrumb';
 
 interface PageProps {
   params: Promise<{ name: string }>;
@@ -62,6 +63,13 @@ export default async function CategoryPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-bento-bg pb-20">
+      <Breadcrumb
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Posts', href: '/posts' },
+          { label: matchedCategory },
+        ]}
+      />
       <header className="mx-auto max-w-canvas px-6 pt-8 md:px-10">
         <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-bento-dim">
           Category

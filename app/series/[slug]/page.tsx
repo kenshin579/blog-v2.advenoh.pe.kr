@@ -7,6 +7,7 @@ import {
 } from '@/lib/articles';
 import { seriesSlug } from '@/lib/url';
 import { formatDate } from '@/lib/utils';
+import { Breadcrumb } from '@/components/breadcrumb';
 
 interface PageProps {
   params: Promise<{ slug: string }>;
@@ -54,6 +55,13 @@ export default async function SeriesDetailPage({ params }: PageProps) {
 
   return (
     <main className="min-h-screen bg-bento-bg pb-20">
+      <Breadcrumb
+        items={[
+          { label: 'Home', href: '/' },
+          { label: 'Series', href: '/series' },
+          { label: matched },
+        ]}
+      />
       <section className="mx-auto max-w-canvas px-6 pt-4 md:px-10">
         <div className="rounded-card-xl bg-bento-lavender p-6 text-bento-ink md:p-10">
           <p className="text-[11px] font-medium uppercase tracking-[0.12em] opacity-60">
