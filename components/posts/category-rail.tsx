@@ -82,7 +82,7 @@ function CategoryItem({
         'flex items-center justify-between rounded-card-sm px-3 py-2 text-sm no-underline transition',
         FOCUS_RING,
         active
-          ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink'
+          ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-bg'
           : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white dark:hover:bg-white/10',
       ].join(' ')}
     >
@@ -114,7 +114,7 @@ function CategoryChip({
         'inline-flex flex-shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-[13px] no-underline transition',
         FOCUS_RING,
         active
-          ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink'
+          ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-bg'
           : 'bg-bento-ink/[0.06] text-bento-ink hover:bg-bento-ink/10 dark:bg-white/10 dark:text-white dark:hover:bg-white/15',
       ].join(' ')}
     >

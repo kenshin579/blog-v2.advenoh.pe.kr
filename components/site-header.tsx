@@ -70,7 +70,7 @@ export function SiteHeader() {
                   className={[
                     'rounded-full px-4 py-1.5 text-[13px] font-medium no-underline transition',
                     active
-                      ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink'
+                      ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-bg'
                       : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white',
                     FOCUS_RING,
                   ].join(' ')}
@@ -124,7 +124,7 @@ export function SiteHeader() {
             <Link
               href="/rss.xml"
               aria-label="RSS 피드"
-              className={`hidden rounded-full bg-bento-ink px-4 py-2 text-[13px] font-medium text-white no-underline md:inline-block dark:bg-white dark:text-bento-ink ${FOCUS_RING}`}
+              className={`hidden rounded-full bg-bento-ink px-4 py-2 text-[13px] font-medium text-white no-underline md:inline-block dark:bg-white dark:text-bento-bg ${FOCUS_RING}`}
             >
               RSS
             </Link>
@@ -169,7 +169,7 @@ export function SiteHeader() {
                         className={[
                           'rounded-card-sm px-4 py-3 text-base font-medium no-underline transition',
                           active
-                            ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-ink'
+                            ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-bg'
                             : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white',
                           FOCUS_RING,
                         ].join(' ')}
