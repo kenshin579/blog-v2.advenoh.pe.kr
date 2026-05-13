@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>IT Blog — Bento Theme</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #1A1815; }
+  body { font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif; }
+  *, *::before, *::after { box-sizing: border-box; }
+  button { font-family: inherit; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="bento-tokens.jsx"></script>
+<script type="text/babel" src="data.jsx"></script>
+<script type="text/babel" src="theme-bento.jsx"></script>
+<script type="text/babel" src="theme-bento-article.jsx"></script>
+<script type="text/babel" src="theme-bento-list.jsx"></script>
+<script type="text/babel" src="theme-bento-tags.jsx"></script>
+<script type="text/babel" src="theme-bento-mobile.jsx"></script>
+
+<script type="text/babel">
+  const { DesignCanvas, DCSection, DCArtboard, BentoTokensProvider,
+    TweaksPanel, TweakSection, TweakSlider, TweakToggle, TweakRadio, useTweaks } = window;
+
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accent": "green",
+    "dark": false
+  }/*EDITMODE-END*/;
+
+  function App() {
+    const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+    return (
+      <BentoTokensProvider tweaks={{...t, radius: 24, fontScale: 1}}>
+        <DesignCanvas
+          title="IT Blog — Bento Grid"
+          subtitle="데스탁 + 모바일. 4개 페이지의 반응형 쌍."
+          initialZoom={0.4}
+        >
+        <DCSection
+          id="home"
+          title="Home"
+          description="178편의 진입점. 데스탁 12-col bento → 모바일 단일 컬럼 stack. Featured·Series·Biweekly 우선순위 유지."
+        >
+          <DCArtboard
+            id="bento-home"
+            label="Desktop — 1440 × 1700"
+            width={1440}
+            height={1700}
+          >
+            <window.ThemeBento />
+          </DCArtboard>
+          <DCArtboard
+            id="bento-home-mobile"
+            label="Mobile — 390 × 2400"
+            width={390}
+            height={2400}
+          >
+            <window.MobileHome />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="article"
+          title="Article"
+          description="글 본문. 데스탁은 720px 본문 + 우측 sticky TOC, 모바일은 collapsible TOC + 상단 progress bar."
+        >
+          <DCArtboard
+            id="bento-article"
+            label="Desktop — 1440 × 3200"
+            width={1440}
+            height={3200}
+          >
+            <window.ArticlePage />
+          </DCArtboard>
+          <DCArtboard
+            id="bento-article-mobile"
+            label="Mobile — 390 × 2600"
+            width={390}
+            height={2600}
+          >
+            <window.MobileArticle />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="category"
+          title="Category"
+          description="한 카테고리(Cloud)의 모든 글. 데스탁은 hero 옆 사이드바 + 12-col bento, 모바일은 hero 알래 horizontal-scroll 필터 + 세로 카드 리스트."
+        >
+          <DCArtboard
+            id="bento-category"
+            label="Desktop — 1440 × 1850"
+            width={1440}
+            height={1850}
+          >
+            <window.CategoryPage />
+          </DCArtboard>
+          <DCArtboard
+            id="bento-category-mobile"
+            label="Mobile — 390 × 2300"
+            width={390}
+            height={2300}
+          >
+            <window.MobileCategory />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="tags"
+          title="Tags"
+          description="태그 인덱스 + 태그별 상세. 인덱스는 weighted cloud + A–Z 그리드, 상세는 카테고리 breakdown + 관련 태그."
+        >
+          <DCArtboard
+            id="bento-tags-index"
+            label="Tags index — 1440 × 1900"
+            width={1440}
+            height={1900}
+          >
+            <window.TagsIndexPage />
+          </DCArtboard>
+          <DCArtboard
+            id="bento-tag-detail"
+            label="Tag detail (#kubernetes) — 1440 × 1850"
+            width={1440}
+            height={1850}
+          >
+            <window.TagDetailPage />
+          </DCArtboard>
+        </DCSection>
+
+        <DCSection
+          id="series"
+          title="Series"
+          description="시리즈의 진행도와 편별 목록. 데스탁은 hero 옆 원형 다이얼, 모바일은 hero 하단에 가로도 다이얼 인라인 배치."
+        >
+          <DCArtboard
+            id="bento-series"
+            label="Desktop — 1440 × 2000"
+            width={1440}
+            height={2000}
+          >
+            <window.SeriesPage />
+          </DCArtboard>
+          <DCArtboard
+            id="bento-series-mobile"
+            label="Mobile — 390 × 2200"
+            width={390}
+            height={2200}
+          >
+            <window.MobileSeries />
+          </DCArtboard>
+        </DCSection>
+      </DesignCanvas>
+
+        <TweaksPanel>
+          <TweakSection label="Theme" />
+          <TweakRadio
+            label="Accent"
+            value={t.accent}
+            options={["orange", "blue", "green", "violet", "magenta"]}
+            onChange={(v) => setTweak('accent', v)}
+          />
+          <TweakToggle
+            label="Dark mode"
+            value={t.dark}
+            onChange={(v) => setTweak('dark', v)}
+          />
+        </TweaksPanel>
+      </BentoTokensProvider>
+    );
+  }
+
+  const root = ReactDOM.createRoot(document.getElementById('root'));
+  root.render(<App />);
+</script>
+
+</body>
+</html>

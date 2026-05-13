@@ -50,6 +50,7 @@
     "client.old",
     "server.old",
     "dist",
-    "out"
+    "out",
+    "docs/design/**"
   ]
 }
