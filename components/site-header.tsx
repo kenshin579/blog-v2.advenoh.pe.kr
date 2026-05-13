@@ -13,7 +13,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
-import { SearchDialog } from '@/components/search-dialog';
+import { CommandK } from '@/components/command-k';
 
 const NAV = [
   { name: 'Home', href: '/' },
@@ -185,7 +185,7 @@ export function SiteHeader() {
         </div>
       </header>
 
-      <SearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
+      <CommandK open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   );
 }
