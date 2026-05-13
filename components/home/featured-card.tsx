@@ -7,9 +7,10 @@ type Props = {
   date: string;
   excerpt?: string;
   readTime?: number;
+  tags?: string[];
 };
 
-export function FeaturedCard({ href, title, category, date, excerpt, readTime }: Props) {
+export function FeaturedCard({ href, title, category, date, excerpt, readTime, tags }: Props) {
   return (
     <Link
       href={href}
@@ -44,7 +45,21 @@ export function FeaturedCard({ href, title, category, date, excerpt, readTime }:
           </p>
         )}
       </div>
-      <div className="relative flex justify-end">
+      <div className="relative flex flex-wrap items-end justify-between gap-3">
+        {tags && tags.length > 0 ? (
+          <div className="flex flex-wrap items-center gap-2">
+            {tags.slice(0, 3).map((tag) => (
+              <span
+                key={tag}
+                className="inline-flex items-center rounded-full bg-white/10 px-3.5 py-1.5 text-[12px] text-white/80"
+              >
+                {tag}
+              </span>
+            ))}
+          </div>
+        ) : (
+          <span aria-hidden="true" />
+        )}
         <span className="inline-flex items-center gap-1.5 rounded-full bg-bento-accent px-5 py-2.5 text-[13px] font-semibold text-white">
           Read article
           <span aria-hidden="true">→</span>

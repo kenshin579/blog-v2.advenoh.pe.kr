@@ -123,6 +123,7 @@ export default async function HomePage() {
             date={formatDate(featured.date)}
             excerpt={featured.excerpt}
             readTime={featured.readTime}
+            tags={featured.tags}
           />
         )}
 
