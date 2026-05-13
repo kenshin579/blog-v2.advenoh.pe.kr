@@ -9,6 +9,8 @@ import { CategoriesCard } from '@/components/home/categories-card';
 import { RecentCard } from '@/components/home/recent-card';
 import { StatsCard } from '@/components/home/stats-card';
 import { ActivityHeatmap } from '@/components/home/activity-heatmap';
+import { QuoteCard } from '@/components/home/quote-card';
+import { WideLatestList } from '@/components/home/wide-latest-list';
 
 export const metadata = {
   title: "Frank's IT Blog",
@@ -83,6 +85,7 @@ export default async function HomePage() {
   const featured = articles[0];
   const latest = articles.slice(1, 5);
   const recent = articles.slice(5, 9);
+  const wideLatest = articles.slice(9, 13);
 
   const featuredSeriesArticle = articles.find((a) => a.series);
   let spotlightEpisodes: Array<{ num: number; title: string; slug: string }> = [];
@@ -119,7 +122,7 @@ export default async function HomePage() {
             category={featured.category}
             date={formatDate(featured.date)}
             excerpt={featured.excerpt}
-            tags={featured.tags}
+            readTime={featured.readTime}
           />
         )}
 
@@ -166,9 +169,33 @@ export default async function HomePage() {
             href={`/${encodeURIComponent(getArticleTitleFromSlug(a.slug))}`}
             title={a.title}
             category={a.category}
+            date={formatDate(a.date)}
+            readTime={a.readTime}
             tone={RECENT_TONES[i % RECENT_TONES.length]}
           />
         ))}
+
+        {wideLatest.length > 0 && (
+          <WideLatestList
+            items={wideLatest.map((a) => ({
+              slug: getArticleTitleFromSlug(a.slug),
+              title: a.title,
+              category: a.category,
+              date: a.date,
+              readTime: a.readTime,
+            }))}
+            totalCount={totalCount}
+          />
+        )}
+
+        <QuoteCard
+          lines={[
+            '잘 정리된 노트는',
+            '미래의 나에게 보내는',
+            '가장 좋은 선물.',
+          ]}
+          attribution="— writing principle"
+        />
       </section>
     </main>
   );
