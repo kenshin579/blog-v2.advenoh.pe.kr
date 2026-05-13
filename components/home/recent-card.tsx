@@ -30,7 +30,7 @@ export function RecentCard({ href, title, category, tone }: Props) {
           {title}
         </h4>
       </div>
-      <div className="mt-3 text-[10px] text-bento-dim" aria-hidden="true">&#8594;</div>
+      <div className="mt-3 text-[10px] text-bento-dim" aria-hidden="true">→</div>
     </Link>
   );
 }

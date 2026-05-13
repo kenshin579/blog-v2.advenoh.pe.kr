@@ -32,14 +32,11 @@ export default async function HomePage() {
   if (featuredSeriesArticle?.series) {
     spotlightName = featuredSeriesArticle.series;
     const eps = await getArticlesBySeries(spotlightName);
-    spotlightEpisodes = eps
-      .slice()
-      .sort((a, b) => (a.seriesOrder ?? 0) - (b.seriesOrder ?? 0))
-      .map((a, i) => ({
-        num: a.seriesOrder ?? i + 1,
-        title: a.title,
-        slug: getArticleTitleFromSlug(a.slug),
-      }));
+    spotlightEpisodes = eps.map((a, i) => ({
+      num: a.seriesOrder ?? i + 1,
+      title: a.title,
+      slug: getArticleTitleFromSlug(a.slug),
+    }));
   }
 
   const categoryCounts = new Map<string, number>();

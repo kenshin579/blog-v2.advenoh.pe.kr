@@ -39,7 +39,7 @@ export function FeaturedCard({ href, title, category, date, excerpt }: Props) {
       </div>
       <div className="relative flex items-end justify-between text-xs text-white/70">
         <span>{date}</span>
-        <span aria-hidden="true">&#8594;</span>
+        <span aria-hidden="true">→</span>
       </div>
     </Link>
   );
