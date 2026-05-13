@@ -19,10 +19,15 @@ export default {
         "card-xl": "32px",
       },
       maxWidth: {
+        // NOTE: This overrides the `max-w-prose` *utility* only (Tailwind default 65ch → 720px).
+        // The `.prose` *element* width set by @tailwindcss/typography (max-width: 65ch in
+        // generated CSS) is unaffected — those are two different selectors. Article body
+        // wrappers in sub-project #5 will set `max-w-prose` explicitly.
         prose: "720px",
         canvas: "1280px",
       },
       letterSpacing: {
+        tighter: "-0.025em",  // override Tailwind built-in (-0.05em) to match Bento spec
         tightest: "-0.04em",
       },
       colors: {
