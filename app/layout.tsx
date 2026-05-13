@@ -5,11 +5,15 @@ import { ThemeProvider } from '@/components/theme-provider';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { ChatButton } from '@/components/chat/ChatButton';
-import '@fontsource/pretendard/400.css';
-import '@fontsource/pretendard/500.css';
-import '@fontsource/pretendard/600.css';
-import '@fontsource/pretendard/700.css';
+import localFont from 'next/font/local';
 import { Instrument_Serif, JetBrains_Mono } from 'next/font/google';
+
+const pretendard = localFont({
+  src: './fonts/PretendardVariable.woff2',
+  variable: '--font-pretendard',
+  display: 'swap',
+  weight: '45 920',
+});
 
 const instrumentSerif = Instrument_Serif({
   subsets: ['latin'],
@@ -21,6 +25,7 @@ const instrumentSerif = Instrument_Serif({
 
 const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
+  weight: ['400', '700'],
   variable: '--font-jetbrains',
   display: 'swap',
 });
@@ -100,7 +105,7 @@ export default function RootLayout({
         }}
       />
 
-      <body className={`${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
+      <body className={`${pretendard.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

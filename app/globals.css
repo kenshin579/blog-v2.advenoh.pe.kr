@@ -77,7 +77,7 @@
   --chart-4: 35 91% 60%;
   --chart-5: 340 82% 52%;
 
-  --font-sans: 'Pretendard', Inter, system-ui, -apple-system, sans-serif;
+  --font-sans: var(--font-pretendard), Inter, system-ui, -apple-system, sans-serif;
   --font-serif: var(--font-instrument), Georgia, serif;
   --font-mono: var(--font-jetbrains), 'JetBrains Mono', 'Fira Code', Menlo, monospace;
   --radius: .5rem; /* 8px */
