@@ -1,4 +1,3 @@
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 import { getArticleTitleFromSlug } from '@/lib/articles';
 
@@ -20,55 +19,47 @@ interface SeriesNavigationProps {
   currentSlug: string;
 }
 
-/**
- * 시리즈 네비게이션 컴포넌트
- * 같은 시리즈의 모든 아티클을 표시하고 현재 아티클을 강조
- */
+const FOCUS_RING =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg';
+
 export function SeriesNavigation({
   seriesName,
   articles,
-  currentSlug
+  currentSlug,
 }: SeriesNavigationProps) {
   return (
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle className="text-lg flex items-center gap-2">
-          <span>📚</span>
-          <span>시리즈: {seriesName}</span>
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <ol className="space-y-2">
+    <section className="mx-auto mt-12 max-w-prose px-6 md:px-0">
+      <div className="rounded-card-lg border border-bento-ink/10 bg-bento-card p-6 dark:border-white/10">
+        <div className="mb-3 text-[10px] uppercase tracking-wider text-bento-dim">
+          Series · {seriesName}
+        </div>
+        <ul className="flex flex-col gap-1">
           {articles.map((article, index) => {
             const isCurrent = article.slug === currentSlug;
             const articleTitle = getArticleTitleFromSlug(article.slug);
-
             return (
-              <li key={article.slug} className="flex items-start gap-2">
-                <span className="text-muted-foreground min-w-[1.5rem]">
-                  {index + 1}.
-                </span>
-                {isCurrent ? (
-                  <span
-                    className="font-bold flex items-center gap-2"
-                    aria-current="page"
-                  >
-                    <span>{article.title}</span>
-                    <span>←</span>
+              <li key={article.slug}>
+                <Link
+                  href={`/${encodeURIComponent(articleTitle)}`}
+                  aria-current={isCurrent ? 'page' : undefined}
+                  className={[
+                    'flex items-center gap-3 rounded-card-sm p-2.5 no-underline text-bento-ink transition',
+                    isCurrent ? 'bg-bento-lavender' : 'hover:bg-bento-ink/5 dark:hover:bg-white/5',
+                    FOCUS_RING,
+                  ].join(' ')}
+                >
+                  <span className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-bento-ink text-[10px] font-bold text-white">
+                    {isCurrent ? '★' : article.seriesOrder ?? index + 1}
                   </span>
-                ) : (
-                  <Link
-                    href={`/${articleTitle}`}
-                    className="flex-1 hover:text-primary hover:underline"
-                  >
+                  <span className={['text-[13px] leading-snug', isCurrent ? 'font-semibold' : ''].join(' ')}>
                     {article.title}
-                  </Link>
-                )}
+                  </span>
+                </Link>
               </li>
             );
           })}
-        </ol>
-      </CardContent>
-    </Card>
+        </ul>
+      </div>
+    </section>
   );
 }
