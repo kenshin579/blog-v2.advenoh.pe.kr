@@ -12,6 +12,7 @@ interface ManifestArticle {
   series?: string;
   seriesOrder?: number;
   firstImage?: string;
+  readTime?: number;
 }
 
 interface Manifest {

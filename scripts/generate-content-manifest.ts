@@ -12,6 +12,17 @@ interface ArticleMetadata {
   series?: string;
   seriesOrder?: number;
   firstImage?: string;
+  readTime?: number;
+}
+
+/**
+ * 읽기 시간 계산 (분). lib/markdown.ts 의 calculateReadingTime 와 동일 로직.
+ * Script 는 단독 node 프로세스이므로 의존성 최소화 위해 inline.
+ */
+function calculateReadingTime(content: string): number {
+  const wordsPerMinute = 200;
+  const words = content.trim().split(/\s+/).length;
+  return Math.ceil(words / wordsPerMinute);
 }
 
 interface Manifest {
@@ -46,12 +57,12 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
       }
 
       try {
-        const content = fs.readFileSync(indexPath, 'utf-8');
-        const { data } = matter(content);
+        const raw = fs.readFileSync(indexPath, 'utf-8');
+        const { data, content } = matter(raw);
 
         // 첫 번째 이미지 추출 (마크다운 + HTML img 태그)
-        const mdImageMatch = content.match(/!\[([^\]]*)]\(([^)]+)\)/);
-        const htmlImageMatch = content.match(/<img\s[^>]*src=["']([^"']+)["']/);
+        const mdImageMatch = raw.match(/!\[([^\]]*)]\(([^)]+)\)/);
+        const htmlImageMatch = raw.match(/<img\s[^>]*src=["']([^"']+)["']/);
         const firstImage = mdImageMatch ? mdImageMatch[2] : htmlImageMatch ? htmlImageMatch[1] : undefined;
 
         const article: ArticleMetadata = {
@@ -64,6 +75,7 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
           series: data.series,
           seriesOrder: data.seriesOrder,
           firstImage,
+          readTime: calculateReadingTime(content),
         };
 
         articles.push(article);
