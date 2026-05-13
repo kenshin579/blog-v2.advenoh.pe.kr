@@ -10,6 +10,7 @@ import { SeriesNavigation } from '@/components/article/series-navigation';
 import { MermaidRenderer } from '@/components/article/mermaid-renderer';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
+import { RecordView } from '@/components/article/record-view';
 
 interface ArticlePageProps {
   params: Promise<{
@@ -96,6 +97,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-7xl">
+      <RecordView
+        slug={decodedSlug}
+        title={article.frontmatter.title}
+        category={manifestArticle?.category || ''}
+        date={article.frontmatter.date}
+      />
       {/* Article Header */}
       <header className="mb-8">
         <div className="flex items-center gap-2 mb-4">
