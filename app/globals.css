@@ -794,3 +794,8 @@ pre[class*="language-"] {
 .prose-bento pre[class*="language-"] .token.regex,
 .prose-bento pre[class*="language-"] .token.important,
 .prose-bento pre[class*="language-"] .token.variable { color: #F5D5AB; }
+
+/* Bento headline butter underline gradient (from prototype theme-bento.jsx) */
+.headline-underline {
+  background: linear-gradient(180deg, transparent 60%, rgb(var(--bento-butter)) 60%);
+}

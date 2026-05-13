@@ -1,19 +1,26 @@
 type Props = {
   totalCount: number;
+  firstYear: number;
 };
 
-export function Headline({ totalCount }: Props) {
+export function Headline({ totalCount, firstYear }: Props) {
   return (
     <section className="mx-auto max-w-canvas px-6 pb-10 pt-6 md:px-10">
-      <p className="text-[11px] font-medium uppercase tracking-[0.12em] text-bento-dim">
-        Field notes from a working engineer
-      </p>
-      <h1 className="mt-4 text-[56px] font-bold leading-[0.95] tracking-tightest md:text-[88px]">
-        Field notes <span className="headline-hi">from</span> a working engineer.
+      <h1 className="text-[56px] font-bold leading-[0.95] tracking-tightest md:text-[88px]">
+        Field notes <span className="font-serif italic font-normal">from</span>
+        <br />
+        <span className="headline-underline">a working engineer.</span>
       </h1>
-      <p className="mt-6 max-w-2xl text-base leading-relaxed text-bento-dim md:text-lg">
-        Cloud · Java · Go · Database · {totalCount}편 누적.
-      </p>
+      <div className="mt-7 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-bento-dim md:gap-x-4">
+        <span className="inline-flex items-center gap-1.5">
+          <span aria-hidden="true" className="h-1.5 w-1.5 rounded-full bg-bento-accent" />
+          {totalCount} posts published
+        </span>
+        <span aria-hidden="true">—</span>
+        <span>since Jan {firstYear}</span>
+        <span aria-hidden="true">—</span>
+        <span>Cloud · Java · Go · Database</span>
+      </div>
     </section>
   );
 }
