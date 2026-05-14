@@ -19,12 +19,12 @@ export function ReadingProgress() {
   }, []);
 
   return (
-    <div className="rounded-card-lg bg-bento-bg p-4">
-      <div className="flex items-center justify-between text-[12px]">
-        <span className="text-bento-dim">Reading</span>
-        <span className="font-semibold text-bento-ink">{Math.round(progress)}%</span>
+    <div className="rounded-card-lg bg-bento-card p-5 shadow-sm dark:bg-white/5">
+      <div className="flex items-center justify-between">
+        <span className="text-sm text-bento-ink">Reading</span>
+        <span className="text-base font-bold text-bento-ink">{Math.round(progress)}%</span>
       </div>
-      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-bento-ink/10 dark:bg-white/10">
+      <div className="mt-3 h-2 overflow-hidden rounded-full bg-bento-ink/10 dark:bg-white/10">
         <div
           className="h-full rounded-full bg-bento-accent transition-[width] duration-150"
           style={{ width: `${progress}%` }}

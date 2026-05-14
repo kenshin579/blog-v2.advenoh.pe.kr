@@ -49,6 +49,7 @@ export function TableOfContents({ items, collapsible = false }: TableOfContentsP
     <ul className="flex flex-col border-l border-bento-ink/15 dark:border-white/15">
       {items.map((item) => {
         const active = item.id === activeId;
+        const isTopLevel = item.level <= 2;
         return (
           <li
             key={item.id}
@@ -63,10 +64,12 @@ export function TableOfContents({ items, collapsible = false }: TableOfContentsP
               href={`#${item.id}`}
               onClick={() => handleClick(item.id)}
               className={[
-                'block py-1.5 text-[13px] no-underline transition',
+                'block py-2 text-[13px] no-underline transition',
                 active
                   ? 'font-semibold text-bento-accent'
-                  : 'text-bento-dim hover:text-bento-ink',
+                  : isTopLevel
+                    ? 'font-medium text-bento-ink hover:text-bento-accent'
+                    : 'text-bento-dim hover:text-bento-ink',
               ].join(' ')}
             >
               {item.text}
