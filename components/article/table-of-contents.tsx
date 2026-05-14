@@ -79,7 +79,7 @@ export function TableOfContents({ items, collapsible = false }: TableOfContentsP
 
   if (collapsible) {
     return (
-      <details className="rounded-card-lg border border-bento-ink/10 bg-bento-card dark:border-white/10">
+      <details className="rounded-card-lg bg-bento-bg">
         <summary className="cursor-pointer px-4 py-3 text-[11px] font-semibold uppercase tracking-wider text-bento-dim">
           Contents · {items.length}
         </summary>
@@ -89,7 +89,7 @@ export function TableOfContents({ items, collapsible = false }: TableOfContentsP
   }
 
   return (
-    <div className="rounded-card-lg border border-bento-ink/10 bg-bento-card p-5 dark:border-white/10">
+    <div className="rounded-card-lg bg-bento-bg p-5">
       <div className="mb-3 text-[10px] uppercase tracking-wider text-bento-dim">Contents</div>
       {list}
     </div>

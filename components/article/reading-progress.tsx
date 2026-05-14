@@ -19,7 +19,7 @@ export function ReadingProgress() {
   }, []);
 
   return (
-    <div className="rounded-card-lg border border-bento-ink/10 bg-bento-card p-4 dark:border-white/10">
+    <div className="rounded-card-lg bg-bento-bg p-4">
       <div className="flex items-center justify-between text-[12px]">
         <span className="text-bento-dim">Reading</span>
         <span className="font-semibold text-bento-ink">{Math.round(progress)}%</span>

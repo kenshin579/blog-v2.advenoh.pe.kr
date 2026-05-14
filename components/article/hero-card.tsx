@@ -28,19 +28,13 @@ export function HeroCard({
   return (
     <section className="mx-auto max-w-canvas px-6 pt-2 md:px-10">
       <div className="relative overflow-hidden rounded-card-xl bg-bento-hero-dark p-6 text-white md:p-10">
-        <div
-          aria-hidden="true"
-          className="absolute -right-32 top-1/2 h-[460px] w-[460px] -translate-y-1/2 rounded-full opacity-55"
-          style={{ background: 'radial-gradient(circle, rgb(var(--bento-accent)) 0%, transparent 70%)' }}
-        />
-
         <div className="relative">
           <div className="flex flex-wrap items-center gap-2 text-[11px] text-white/70">
             <span className="rounded-full border border-white/20 bg-transparent px-3 py-1 capitalize text-white">
               {category}
             </span>
             {series && (
-              <span className="rounded-full bg-bento-accent px-3 py-1 font-semibold uppercase tracking-wider text-white">
+              <span className="rounded-full bg-white/15 px-3 py-1 font-semibold uppercase tracking-wider text-white">
                 Series · {seriesOrder ?? 1}/{totalEpisodes ?? '?'}
               </span>
             )}
@@ -67,7 +61,7 @@ export function HeroCard({
           )}
 
           <div className="mt-8 flex flex-wrap items-center gap-3">
-            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-bento-accent text-sm font-bold text-white">
+            <span className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10 text-sm font-bold text-white">
               {author.charAt(0)}
             </span>
             <span className="text-sm font-medium text-white">{author}</span>
