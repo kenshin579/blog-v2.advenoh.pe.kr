@@ -46,14 +46,14 @@ export function TableOfContents({ items, collapsible = false }: TableOfContentsP
   }, [items]);
 
   const list = (
-    <ul className="flex flex-col border-l border-bento-ink/15 dark:border-white/15">
+    <ul className="-ml-2 flex flex-col border-l border-bento-ink/15 dark:border-white/15">
       {items.map((item) => {
         const active = item.id === activeId;
         const isTopLevel = item.level <= 2;
         return (
           <li
             key={item.id}
-            style={{ paddingLeft: `${(item.level - 2) * 0.75 + 0.75}rem` }}
+            style={{ paddingLeft: `${(item.level - 2) * 0.75 + 1.25}rem` }}
             className={
               active
                 ? '-ml-px border-l-2 border-bento-accent'
