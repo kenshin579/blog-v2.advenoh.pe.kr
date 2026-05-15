@@ -358,3 +358,119 @@ kubectl apply -f bootstrap/application-set/appset-noti-test.yaml
 ```
 
 `ArgoCD`가 두 chart를 sync하면서 `argocd-noti-receiver`/`argocd-noti-test` namespace를 자동 생성하고 알림 설정도 활성화된다.
+
+## 6. 검증 — 알림이 정말 오는가
+
+설치 직후 `Application` 상태를 확인한다.
+
+```bash
+kubectl get application -n argocd
+# 출력 예시:
+# NAME                          SYNC STATUS   HEALTH STATUS
+# webhook-receiver              Synced        Healthy
+# argocd-notifications-config   Synced        Healthy
+# hello-world-server            Synced        Healthy
+```
+
+별도 터미널에서 webhook-receiver 로그를 tail해둔다. 새 알림이 도착하면 JSON payload가 출력된다.
+
+```bash
+kubectl logs -f deployment/webhook-receiver -n argocd-noti-receiver
+```
+
+이제 4가지 시나리오로 알림 동작을 확인한다.
+
+### 6.1 Cluster Drift — kubectl로 클러스터 직접 변경
+
+```bash
+kubectl scale deployment hello-world-server -n argocd-noti-test --replicas=3
+```
+
+`automated`가 없으므로 `ArgoCD`가 자동 복구하지 않고 `OutOfSync` 상태가 유지된다. ~10초 내 status 변경, ~60초 내 webhook payload 도착.
+
+```json
+{
+  "event": "argocd.out-of-sync",
+  "severity": "info",
+  "application": {
+    "name": "hello-world-server",
+    "namespace": "argocd-noti-test"
+  },
+  "sync": { "status": "OutOfSync", "revision": "abc123..." }
+}
+```
+
+복구하려면 `argocd app sync hello-world-server` 또는 UI에서 Sync 클릭.
+
+### 6.2 Git Drift — git에 변경, 클러스터 미적용
+
+`chart/hello-world-server/values.yaml`의 `replicaCount`를 변경하고 push한 뒤 ArgoCD를 refresh한다.
+
+```bash
+git commit -am "test: bump replicaCount"
+git push
+argocd app get hello-world-server --refresh
+```
+
+이번에도 ~60초 내 동일한 `argocd.out-of-sync` 알림이 도착한다. 다만 payload의 `sync.revision`이 새 커밋 hash로 바뀐다. **`oncePer: app.status.sync.revision`** 덕분에 같은 커밋에 대해서는 한 번만 알림이 온다.
+
+### 6.3 Sync Failed — 잘못된 manifest로 sync 실패
+
+`values.yaml`의 image를 빈 문자열로 만든 뒤 manual sync를 시도하면 sync 작업이 실패한다.
+
+```json
+{
+  "event": "argocd.sync-failed",
+  "severity": "error",
+  "operation": {
+    "phase": "Failed",
+    "message": "...image cannot be empty...",
+    "startedAt": "2026-05-15T...",
+    "finishedAt": "2026-05-15T..."
+  }
+}
+```
+
+template이 `operation` 객체로 실패 원인을 함께 보내주기 때문에 알림만 보고도 원인을 거의 파악할 수 있다.
+
+### 6.4 Health Degraded — Pod가 비정상
+
+이번에는 image tag를 존재하지 않는 값으로 바꾼다. Pod이 `ImagePullBackOff`에 빠지면서 sync는 성공이지만 health는 `Degraded`가 된다.
+
+```json
+{
+  "event": "argocd.health-degraded",
+  "severity": "warning",
+  "health": { "status": "Degraded" },
+  "resources": [
+    {
+      "kind": "Deployment",
+      "name": "hello-world-server",
+      "status": "Degraded",
+      "message": "Failed to pull image..."
+    }
+  ]
+}
+```
+
+`OutOfSync`로는 잡지 못하는 영역(런타임 헬스 저하)을 정확히 보완한다.
+
+### 6.5 Negative test — 다른 namespace는 알림 안 옴
+
+기존 `argocd-test` namespace의 `echo-server`에 똑같이 drift를 유발해도 알림은 오지 않는다. trigger의 `when` 조건이 `destination.namespace == 'argocd-noti-test'`로 필터링하기 때문이다.
+
+```bash
+kubectl scale deployment echo-server -n argocd-test --replicas=3
+# webhook-receiver 로그에 새 출력 없음
+```
+
+### 6.6 Timing 정리
+
+| 단계 | 기본 지연 |
+| --- | --- |
+| Cluster drift 감지 (`application-controller`) | ~10초 |
+| Git polling (repo refresh) | 3분 (또는 `--refresh` 즉시) |
+| Notifications polling | 60초 |
+| 같은 revision 중복 알림 | `oncePer`로 방지 |
+
+요약하면 cluster drift는 보통 10~70초 내, git drift는 manual refresh 시 즉시 알림이 도착한다.
