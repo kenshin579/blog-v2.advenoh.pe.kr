@@ -6,7 +6,7 @@ type Props = {
 export function Headline({ totalCount, firstYear }: Props) {
   return (
     <section className="mx-auto max-w-canvas px-6 pb-10 pt-6 md:px-10">
-      <h1 className="text-[56px] font-bold leading-[0.95] tracking-tightest md:text-[88px]">
+      <h1 className="text-[40px] font-bold leading-[0.95] tracking-tightest md:text-[88px]">
         Field notes <span className="font-serif italic font-normal">from</span>
         <br />
         <span className="headline-underline">a working engineer.</span>

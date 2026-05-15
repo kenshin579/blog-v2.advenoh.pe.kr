@@ -25,7 +25,7 @@ function opacityFor(count: number): number {
 export function ActivityHeatmap({ days, weeks, streakWeeks, peakPerWeek }: Props) {
   return (
     <div className="col-span-12 flex flex-col rounded-card-xl bg-bento-card p-6 md:col-span-4 md:p-7">
-      <div className="text-[10px] uppercase tracking-[0.1em] text-bento-dim">Last 12 months</div>
+      <div className="text-[10px] uppercase tracking-[0.1em] text-bento-dim">Last {weeks} weeks</div>
       <h3 className="mt-2 text-xl font-bold tracking-tighter text-bento-ink md:text-2xl">
         꾸준함의 기록
       </h3>

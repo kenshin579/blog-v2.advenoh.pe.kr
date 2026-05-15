@@ -19,7 +19,7 @@ export const metadata = {
 
 const RECENT_TONES = ['sage', 'butter', 'rose', 'cream'] as const;
 
-const HEATMAP_WEEKS = 26;
+const HEATMAP_WEEKS = 16;
 
 type DayCount = { date: string; count: number };
 

@@ -49,15 +49,15 @@ export function WideLatestList({ items, totalCount }: Props) {
             <Link
               href={`/${encodeURIComponent(a.slug)}`}
               className={[
-                'grid grid-cols-[60px_1fr_80px_50px] items-baseline gap-3 py-3 no-underline text-bento-ink transition hover:bg-bento-ink/[0.02] dark:hover:bg-white/[0.02]',
+                'grid grid-cols-[52px_1fr] items-baseline gap-3 py-3 no-underline text-bento-ink transition hover:bg-bento-ink/[0.02] dark:hover:bg-white/[0.02] md:grid-cols-[60px_1fr_80px_50px]',
                 i > 0 ? 'border-t border-bento-ink/[0.06]' : '',
                 FOCUS_RING,
               ].join(' ')}
             >
               <span className="font-mono text-[12px] text-bento-dim">{shortDate(a.date)}</span>
               <span className="truncate text-[14px] font-medium md:text-[15px]">{a.title}</span>
-              <span className="truncate text-[11px] text-bento-dim capitalize">{a.category}</span>
-              <span className="text-right text-[11px] text-bento-dim">
+              <span className="hidden truncate text-[11px] text-bento-dim capitalize md:block">{a.category}</span>
+              <span className="hidden text-right text-[11px] text-bento-dim md:block">
                 {a.readTime !== undefined ? `${a.readTime}m` : ''}
               </span>
             </Link>
