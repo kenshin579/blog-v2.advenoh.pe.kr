@@ -77,9 +77,9 @@
   --chart-4: 35 91% 60%;
   --chart-5: 340 82% 52%;
 
-  --font-sans: Inter, system-ui, -apple-system, sans-serif;
-  --font-serif: Georgia, serif;
-  --font-mono: 'JetBrains Mono', 'Fira Code', Menlo, monospace;
+  --font-sans: var(--font-pretendard), Inter, system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-instrument), Georgia, serif;
+  --font-mono: var(--font-jetbrains), 'JetBrains Mono', 'Fira Code', Menlo, monospace;
   --radius: .5rem; /* 8px */
   --shadow-2xs: 0px 1px 2px 0px hsl(222 47% 11% / 0.05);
   --shadow-xs: 0px 1px 3px 0px hsl(222 47% 11% / 0.10);
@@ -121,6 +121,20 @@
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* ----- Bento design tokens (Light) ----- */
+  --bento-bg: 242 239 234;          /* #F2EFEA */
+  --bento-card: 255 255 255;
+  --bento-ink: 15 15 15;
+  --bento-dim: 107 107 107;
+  --bento-cream: 248 244 237;
+  --bento-accent: 22 169 104;        /* #16A968 — green */
+  --bento-accent-soft: 205 239 221;  /* #CDEFDD */
+  --bento-sage: 217 228 212;
+  --bento-rose: 245 213 203;
+  --bento-lavender: 224 213 240;
+  --bento-butter: 245 230 168;
+  --bento-hero-dark: 15 15 15;
 }
 
 .dark {
@@ -232,6 +246,20 @@
   /* Fallback for older browsers */
   --destructive-border: hsl(var(--destructive));
   --destructive-border: hsl(from hsl(var(--destructive)) h s calc(l + var(--opaque-button-border-intensity)) / alpha);
+
+  /* ----- Bento design tokens (Dark) ----- */
+  --bento-bg: 22 21 18;              /* #161512 */
+  --bento-card: 31 29 26;            /* #1F1D1A */
+  --bento-ink: 244 241 234;
+  --bento-dim: 140 133 122;
+  --bento-cream: 38 35 31;
+  --bento-accent: 22 169 104;
+  --bento-accent-soft: 22 76 49;
+  --bento-sage: 58 74 58;
+  --bento-rose: 74 47 47;
+  --bento-lavender: 58 48 80;
+  --bento-butter: 74 66 32;
+  --bento-hero-dark: 11 11 11;
 }
 
 @layer base {
@@ -483,4 +511,291 @@ pre[class*="language-"] {
 /* Mermaid 에러 발생 시 원본 코드 블록 스타일 */
 .prose pre.mermaid-error {
   @apply border-l-4 border-destructive;
+}
+
+/* ----- Bento utilities ----- */
+.bento-card {
+  border-radius: 24px;
+  background: rgb(var(--bento-card));
+}
+
+.headline-hi {
+  background: rgb(var(--bento-butter));
+  padding: 0 0.15em;
+  border-radius: 4px;
+  font-family: var(--font-serif), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
+
+/* ========================================================== */
+/* .prose-bento — Article 본문 typography (Bento 스타일)       */
+/* ========================================================== */
+
+.prose-bento {
+  color: rgb(var(--bento-ink));
+  font-size: 17px;
+  line-height: 1.75;
+}
+
+.prose-bento h1 {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  scroll-margin-top: 5rem;
+}
+
+.prose-bento h2 {
+  font-size: 1.875rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  scroll-margin-top: 5rem;
+}
+
+.prose-bento h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 5rem;
+}
+
+.prose-bento h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+  scroll-margin-top: 5rem;
+}
+
+.prose-bento p {
+  margin-bottom: 1.25rem;
+}
+
+.prose-bento a {
+  color: rgb(var(--bento-accent));
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1px;
+}
+
+.prose-bento a:hover {
+  text-decoration-thickness: 2px;
+}
+
+.prose-bento ul,
+.prose-bento ol {
+  margin-bottom: 1.25rem;
+  padding-left: 1.5rem;
+}
+
+.prose-bento ul { list-style-type: disc; }
+.prose-bento ol { list-style-type: decimal; }
+
+.prose-bento li {
+  margin-bottom: 0.5rem;
+}
+
+.prose-bento li::marker {
+  color: rgb(var(--bento-dim));
+}
+
+.prose-bento hr {
+  margin: 2rem 0;
+  border: 0;
+  border-top: 1px solid rgb(var(--bento-ink) / 0.1);
+}
+
+.prose-bento strong {
+  font-weight: 700;
+  color: rgb(var(--bento-ink));
+}
+
+.prose-bento em {
+  font-style: italic;
+}
+
+/* Inline code (not language-*) */
+.prose-bento code:not([class*="language-"]) {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  padding: 0.125em 0.375em;
+  border-radius: 4px;
+  background: rgb(var(--bento-ink) / 0.06);
+  color: rgb(var(--bento-ink));
+}
+
+.dark .prose-bento code:not([class*="language-"]) {
+  background: rgb(255 255 255 / 0.1);
+}
+
+.prose-bento code:not([class*="language-"])::before,
+.prose-bento code:not([class*="language-"])::after {
+  content: none;
+}
+
+/* Tables (GFM) */
+.prose-bento table {
+  width: 100%;
+  margin: 1.5rem 0;
+  border-collapse: collapse;
+  font-size: 0.9375rem;
+}
+
+.prose-bento thead {
+  border-bottom: 2px solid rgb(var(--bento-ink) / 0.15);
+}
+
+.prose-bento th,
+.prose-bento td {
+  padding: 0.5rem 0.75rem;
+  text-align: left;
+}
+
+.prose-bento tbody tr {
+  border-bottom: 1px solid rgb(var(--bento-ink) / 0.06);
+}
+
+/* Blockquote — butter bg + Instrument Serif italic */
+.prose-bento blockquote {
+  margin: 2rem 0;
+  padding: 1.75rem;
+  border-radius: 20px;
+  background: rgb(var(--bento-butter));
+  color: rgb(var(--bento-ink));
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-size: 1.25rem;
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+}
+
+.prose-bento blockquote p {
+  margin: 0;
+}
+
+.prose-bento blockquote p + p {
+  margin-top: 0.75rem;
+}
+
+/* Images */
+.prose-bento img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 12px;
+  margin: 1.5rem 0;
+}
+
+/* ========================================================== */
+/* Article 코드블록 — 다크 카드 + 언어 라벨                     */
+/* ========================================================== */
+
+.prose-bento pre[class*="language-"] {
+  position: relative;
+  margin: 1.5rem 0;
+  padding: 2rem 1.25rem 1.25rem;
+  border-radius: 20px;
+  background: #0F0F0F;
+  color: #E8E6E1;
+  overflow-x: auto;
+  font-family: var(--font-mono);
+  font-size: 0.875rem;
+  line-height: 1.65;
+}
+
+.prose-bento pre[class*="language-"] code {
+  font-family: inherit;
+  font-size: inherit;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+}
+
+/* 언어 라벨 (top-right) */
+.prose-bento pre[class*="language-"]::before {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.875rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: #7A7770;
+  content: 'code';
+}
+
+.prose-bento pre.language-go::before        { content: 'go'; }
+.prose-bento pre.language-java::before      { content: 'java'; }
+.prose-bento pre.language-typescript::before{ content: 'ts'; }
+.prose-bento pre.language-tsx::before       { content: 'tsx'; }
+.prose-bento pre.language-javascript::before{ content: 'js'; }
+.prose-bento pre.language-jsx::before       { content: 'jsx'; }
+.prose-bento pre.language-python::before    { content: 'py'; }
+.prose-bento pre.language-bash::before      { content: 'bash'; }
+.prose-bento pre.language-sh::before        { content: 'sh'; }
+.prose-bento pre.language-yaml::before      { content: 'yaml'; }
+.prose-bento pre.language-yml::before       { content: 'yaml'; }
+.prose-bento pre.language-json::before      { content: 'json'; }
+.prose-bento pre.language-sql::before       { content: 'sql'; }
+.prose-bento pre.language-css::before       { content: 'css'; }
+.prose-bento pre.language-html::before      { content: 'html'; }
+.prose-bento pre.language-dockerfile::before{ content: 'dockerfile'; }
+.prose-bento pre.language-kotlin::before    { content: 'kotlin'; }
+.prose-bento pre.language-rust::before      { content: 'rust'; }
+.prose-bento pre.language-ruby::before      { content: 'ruby'; }
+.prose-bento pre.language-swift::before     { content: 'swift'; }
+.prose-bento pre.language-php::before       { content: 'php'; }
+.prose-bento pre.language-mermaid::before   { content: 'mermaid'; }
+
+/* Prism token colors — adapt to dark background */
+.prose-bento pre[class*="language-"] .token.comment,
+.prose-bento pre[class*="language-"] .token.prolog,
+.prose-bento pre[class*="language-"] .token.doctype,
+.prose-bento pre[class*="language-"] .token.cdata { color: #6B6B6B; }
+
+.prose-bento pre[class*="language-"] .token.punctuation { color: #E8E6E1; }
+
+.prose-bento pre[class*="language-"] .token.property,
+.prose-bento pre[class*="language-"] .token.tag,
+.prose-bento pre[class*="language-"] .token.boolean,
+.prose-bento pre[class*="language-"] .token.number,
+.prose-bento pre[class*="language-"] .token.constant,
+.prose-bento pre[class*="language-"] .token.symbol,
+.prose-bento pre[class*="language-"] .token.deleted { color: #F5AE7A; }
+
+.prose-bento pre[class*="language-"] .token.selector,
+.prose-bento pre[class*="language-"] .token.attr-name,
+.prose-bento pre[class*="language-"] .token.string,
+.prose-bento pre[class*="language-"] .token.char,
+.prose-bento pre[class*="language-"] .token.builtin,
+.prose-bento pre[class*="language-"] .token.inserted { color: #A8D5B0; }
+
+.prose-bento pre[class*="language-"] .token.operator,
+.prose-bento pre[class*="language-"] .token.entity,
+.prose-bento pre[class*="language-"] .token.url,
+.prose-bento pre[class*="language-"] .language-css .token.string,
+.prose-bento pre[class*="language-"] .style .token.string { color: #E8E6E1; }
+
+.prose-bento pre[class*="language-"] .token.atrule,
+.prose-bento pre[class*="language-"] .token.attr-value,
+.prose-bento pre[class*="language-"] .token.keyword { color: #FF8866; }
+
+.prose-bento pre[class*="language-"] .token.function,
+.prose-bento pre[class*="language-"] .token.class-name { color: #C9A8F2; }
+
+.prose-bento pre[class*="language-"] .token.regex,
+.prose-bento pre[class*="language-"] .token.important,
+.prose-bento pre[class*="language-"] .token.variable { color: #F5D5AB; }
+
+/* Bento headline butter underline gradient (from prototype theme-bento.jsx) */
+.headline-underline {
+  background: linear-gradient(180deg, transparent 60%, rgb(var(--bento-butter)) 60%);
 }

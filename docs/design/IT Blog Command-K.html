@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<title>IT Blog — Command-K Search</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap" rel="stylesheet" />
+
+<style>
+  html, body { margin: 0; padding: 0; height: 100%; background: #1A1815; }
+  body { font-family: 'Pretendard Variable', Pretendard, system-ui, sans-serif; }
+  *, *::before, *::after { box-sizing: border-box; }
+  button { font-family: inherit; }
+</style>
+
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+</head>
+<body>
+<div id="root"></div>
+
+<script type="text/babel" src="design-canvas.jsx"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="bento-tokens.jsx"></script>
+<script type="text/babel" src="cmdk-v1.jsx"></script>
+<script type="text/babel" src="cmdk-v2.jsx"></script>
+
+<script type="text/babel">
+  const { DesignCanvas, DCSection, DCArtboard, BentoTokensProvider,
+    TweaksPanel, TweakSection, TweakRadio, TweakToggle, useTweaks,
+    CmdKV1, CmdKV2 } = window;
+
+  const TWEAK_DEFAULTS = /*EDITMODE-BEGIN*/{
+    "accent": "magenta",
+    "dark": false
+  }/*EDITMODE-END*/;
+
+  const ACCENT_OPTIONS = [
+    { value: "orange", label: "Orange" },
+    { value: "blue", label: "Blue" },
+    { value: "green", label: "Green" },
+    { value: "violet", label: "Violet" },
+    { value: "magenta", label: "Magenta" },
+  ];
+
+  function App() {
+    const [t, setTweak] = useTweaks(TWEAK_DEFAULTS);
+    return (
+      <BentoTokensProvider tweaks={{...t, radius: 24, fontScale: 1}}>
+        <DesignCanvas
+          title="IT Blog — Command-K 검색"
+          subtitle="두 가지 결로 비교. ⌘K로 열리는 Spotlight-style 검색 모달."
+          initialZoom={0.45}
+        >
+          <DCSection
+            id="cmdk-options"
+            title="Two directions"
+            description="v1은 Bento 미학(따뜻한 크림, 둥근 카드, pastel tile icons). v2는 모노크롬 미니멀 — 개발자 도구의 결, mono 폰트 위주."
+          >
+            <DCArtboard
+              id="cmdk-v1"
+              label="v1 — Bento warm"
+              width={1280}
+              height={880}
+            >
+              <CmdKV1 />
+            </DCArtboard>
+
+            <DCArtboard
+              id="cmdk-v2"
+              label="v2 — Mono minimal"
+              width={1280}
+              height={880}
+            >
+              <CmdKV2 />
+            </DCArtboard>
+          </DCSection>
+        </DesignCanvas>
+
+        <TweaksPanel title="Tweaks">
+          <TweakSection label="Theme">
+            <TweakRadio
+              label="Accent"
+              value={t.accent}
+              options={ACCENT_OPTIONS}
+              onChange={(v) => setTweak("accent", v)}
+            />
+            <TweakToggle
+              label="Dark mode"
+              checked={t.dark}
+              onChange={(v) => setTweak("dark", v)}
+            />
+          </TweakSection>
+        </TweaksPanel>
+      </BentoTokensProvider>
+    );
+  }
+
+  ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+</script>
+</body>
+</html>

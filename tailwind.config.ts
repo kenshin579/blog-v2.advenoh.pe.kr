@@ -13,6 +13,22 @@ export default {
         lg: ".5625rem", /* 9px */
         md: ".375rem", /* 6px */
         sm: ".1875rem", /* 3px */
+        "card-sm": "12px",
+        "card": "20px",
+        "card-lg": "24px",
+        "card-xl": "32px",
+      },
+      maxWidth: {
+        // NOTE: This overrides the `max-w-prose` *utility* only (Tailwind default 65ch → 720px).
+        // The `.prose` *element* width set by @tailwindcss/typography (max-width: 65ch in
+        // generated CSS) is unaffected — those are two different selectors. Article body
+        // wrappers in sub-project #5 will set `max-w-prose` explicitly.
+        prose: "720px",
+        canvas: "1280px",
+      },
+      letterSpacing: {
+        tighter: "-0.025em",  // override Tailwind built-in (-0.05em) to match Bento spec
+        tightest: "-0.04em",
       },
       colors: {
         // Flat / base colors (regular buttons)
@@ -79,6 +95,19 @@ export default {
           foreground: "hsl(var(--sidebar-accent-foreground) / <alpha-value>)",
           border: "var(--sidebar-accent-border)"
         },
+        // Bento namespace tokens
+        "bento-bg": "rgb(var(--bento-bg) / <alpha-value>)",
+        "bento-card": "rgb(var(--bento-card) / <alpha-value>)",
+        "bento-ink": "rgb(var(--bento-ink) / <alpha-value>)",
+        "bento-dim": "rgb(var(--bento-dim) / <alpha-value>)",
+        "bento-cream": "rgb(var(--bento-cream) / <alpha-value>)",
+        "bento-accent": "rgb(var(--bento-accent) / <alpha-value>)",
+        "bento-accent-soft": "rgb(var(--bento-accent-soft) / <alpha-value>)",
+        "bento-sage": "rgb(var(--bento-sage) / <alpha-value>)",
+        "bento-rose": "rgb(var(--bento-rose) / <alpha-value>)",
+        "bento-lavender": "rgb(var(--bento-lavender) / <alpha-value>)",
+        "bento-butter": "rgb(var(--bento-butter) / <alpha-value>)",
+        "bento-hero-dark": "rgb(var(--bento-hero-dark) / <alpha-value>)",
         status: {
           online: "rgb(34 197 94)",
           away: "rgb(245 158 11)",

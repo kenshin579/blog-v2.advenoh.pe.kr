@@ -1,0 +1,78 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ----- Bento design tokens (Light) ----- */
+:root {
+  /* Surfaces */
+  --bg: 242 239 234;        /* #F2EFEA */
+  --card: 255 255 255;
+  --ink: 15 15 15;
+  --dim: 107 107 107;
+  --cream: 248 244 237;
+
+  /* Accent — orange by default. Override via [data-accent] below. */
+  --accent: 255 91 34;       /* #FF5B22 */
+  --accent-soft: 255 217 201; /* #FFD9C9 */
+
+  /* Pastel tints */
+  --sage: 217 228 212;
+  --rose: 245 213 203;
+  --lavender: 224 213 240;
+  --butter: 245 230 168;
+
+  /* Hero solids */
+  --hero-dark: 15 15 15;
+}
+
+/* Dark mode (next-themes attaches `.dark` to <html>) */
+.dark {
+  --bg: 22 21 18;            /* #161512 */
+  --card: 31 29 26;          /* #1F1D1A */
+  --ink: 244 241 234;
+  --dim: 140 133 122;
+  --cream: 38 35 31;
+
+  --sage: 58 74 58;
+  --rose: 74 47 47;
+  --lavender: 58 48 80;
+  --butter: 74 66 32;
+
+  --hero-dark: 11 11 11;
+}
+
+/* Accent presets — swap by setting data-accent on <html> */
+[data-accent="blue"]    { --accent: 59 91 255;   --accent-soft: 213 222 255; }
+[data-accent="green"]   { --accent: 22 169 104;  --accent-soft: 205 239 221; }
+[data-accent="violet"]  { --accent: 124 58 237;  --accent-soft: 224 213 240; }
+[data-accent="magenta"] { --accent: 233 30 99;   --accent-soft: 248 201 218; }
+
+/* Base */
+html, body { margin: 0; padding: 0; }
+body {
+  background: rgb(var(--bg));
+  color: rgb(var(--ink));
+  font-family: var(--font-pretendard), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Reusable utilities */
+.bento-card {
+  border-radius: 24px;
+  background: rgb(var(--card));
+}
+
+.headline-hi {
+  background: rgb(var(--butter));
+  padding: 0 0.15em;
+  border-radius: 4px;
+  font-family: var(--font-instrument), Georgia, serif;
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Hide scrollbars on filter rails */
+.no-scrollbar::-webkit-scrollbar { display: none; }
+.no-scrollbar { scrollbar-width: none; }
