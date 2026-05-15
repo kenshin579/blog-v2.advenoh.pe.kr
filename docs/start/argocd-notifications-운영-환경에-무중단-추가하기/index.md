@@ -474,3 +474,31 @@ kubectl scale deployment echo-server -n argocd-test --replicas=3
 | 같은 revision 중복 알림 | `oncePer`로 방지 |
 
 요약하면 cluster drift는 보통 10~70초 내, git drift는 manual refresh 시 즉시 알림이 도착한다.
+
+## 7. 정리
+
+이번 글에서는 운영 중인 `ArgoCD`에 알림을 무중단으로 추가하는 패턴을 다뤘다. 핵심은 다음과 같다.
+
+- 알림 설정은 `argo-cd Helm release`와 분리해 별도 chart로 관리 → 재배포 위험 없음
+- `ServerSideApply=true`로 기존 ConfigMap의 ownership을 field-level merge로 인수
+- trigger 표현식의 `app.spec.destination.namespace` 필터로 namespace 단위 격리
+- `OutOfSync` 전용 trigger는 카탈로그에 없으므로 커스텀 작성 (`oncePer: app.status.sync.revision` 으로 노이즈 방지)
+- webhook receiver는 별도 namespace로 분리 — 자기 자신이 알림 대상이 되는 것 방지
+- 테스트 대상 `ApplicationSet`은 `automated` 제거 — `OutOfSync` 가 의미 있게 발생
+
+production 적용 시 추가로 고려할 부분도 있다.
+
+- **외부 service 통합**: webhook 대신 Slack/Email/Telegram 등을 쓰려면 `argocd-notifications-secret`에 token을 넣고 service 설정을 바꾸면 된다. chart 구조 그대로 활용 가능.
+- **알림 실패 처리**: `notifications-controller`는 webhook 호출 실패 시 retry하지 않는다. `oncePer`로 중복 알림은 막지만, 같은 revision의 실패는 다음 drift까지 재시도되지 않는다. 중요한 알림은 외부 모니터링과 이중화 권장.
+- **알림 노이즈**: default subscription이라 namespace를 늘릴 때마다 알림 대상이 자연스레 늘어난다. 운영팀과 임계치/주기 합의가 필요하다.
+- **AppProject 단위 subscription**: namespace가 아니라 project 기준으로 묶고 싶다면 `argocd-notifications-cm`에 project별 subscription을 정의하는 것도 옵션이다.
+
+다음 단계로 Slack 연동을 추가하거나, `on-deployed` 같은 긍정 알림(배포 추적)을 보태는 방향으로 확장할 수 있다.
+
+## 참고 자료
+
+- [argocd-charts-sample 레포](https://github.com/kenshin579/argocd-charts-sample)
+- [PR #13 — ArgoCD Notifications 추가](https://github.com/kenshin579/argocd-charts-sample/pull/13)
+- [ArgoCD Notifications 공식 문서](https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/)
+- [ArgoCD Notifications Catalog](https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/catalog/)
+- 시리즈 다른 글: [ArgoCD에서 여러 Application을 GitOps로 관리하기](https://blog.advenoh.pe.kr/article/argocd-여러-application-gitops-관리), [ArgoCD Resource Hooks에 대해서 알아보자](https://blog.advenoh.pe.kr/article/argocd-resource-hooks에-대해서-알아보자)
