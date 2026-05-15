@@ -20,7 +20,7 @@ export const socialLinks: SocialLink[] = [
   },
   {
     name: 'Instagram',
-    url: 'https://www.instagram.com/frank.photosnap',
+    url: 'https://www.instagram.com/frank.photosnap/',
     icon: 'Instagram',
     ariaLabel: 'Instagram 프로필 방문'
   },

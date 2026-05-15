@@ -8,12 +8,12 @@ export const socialLinks = [
   },
   {
     name: 'Instagram',
-    url: 'https://instagram.com/advenoh',
+    url: 'https://www.instagram.com/frank.photosnap/',
     icon: Instagram
   },
   {
     name: 'LinkedIn',
-    url: 'https://linkedin.com/in/advenoh',
+    url: 'https://www.linkedin.com/in/frank-oh-abb80b10/',
     icon: Linkedin
   },
 ];
