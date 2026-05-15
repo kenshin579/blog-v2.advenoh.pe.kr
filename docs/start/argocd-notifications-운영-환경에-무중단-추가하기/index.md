@@ -378,7 +378,7 @@ kubectl get application -n argocd
 kubectl logs -f deployment/webhook-receiver -n argocd-noti-receiver
 ```
 
-이제 4가지 시나리오로 알림 동작을 확인한다.
+이제 4가지 시나리오 + negative test로 알림 동작을 확인한다. 아래 payload는 모두 **주요 필드만 발췌**했고, 실제 출력에는 `timestamp`, `source`, `argocdUrl` 등이 추가로 포함된다.
 
 ### 6.1 Cluster Drift — kubectl로 클러스터 직접 변경
 
@@ -417,6 +417,13 @@ argocd app get hello-world-server --refresh
 ### 6.3 Sync Failed — 잘못된 manifest로 sync 실패
 
 `values.yaml`의 image를 빈 문자열로 만든 뒤 manual sync를 시도하면 sync 작업이 실패한다.
+
+```bash
+# chart/hello-world-server/values.yaml의 image를 빈 문자열로 변경 후 push
+git commit -am "test: empty image to trigger sync failure"
+git push
+argocd app sync hello-world-server
+```
 
 ```json
 {
