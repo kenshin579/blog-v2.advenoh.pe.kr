@@ -272,3 +272,89 @@ data: {}
 이 빈 secret이 필요한 이유는 ConfigMap과 동일하게 **`ServerSideApply`로 ownership을 인수**하기 위함이다. 향후 Slack token이나 Email 비밀번호를 추가할 때 이 secret에 키만 넣으면 된다.
 
 전체 chart 코드는 [GitHub에서 확인](https://github.com/kenshin579/argocd-charts-sample/tree/main/chart/argocd-notifications-config)할 수 있다.
+
+## 5. webhook receiver + 부트스트랩
+
+webhook을 받아서 stdout에 JSON으로 출력해주는 단순한 수신 서버가 필요하다. [`mendhak/http-https-echo`](https://github.com/mendhak/docker-http-https-echo) 이미지를 활용하면 별도 코드 작성 없이 `Deployment` + `Service`만으로 끝난다.
+
+```yaml
+# chart/webhook-receiver/templates/deployment.yaml (발췌)
+spec:
+  containers:
+    - name: webhook-receiver
+      image: "mendhak/http-https-echo:37"
+      # mendhak/http-https-echo 환경변수
+      # - HTTP_PORT: 컨테이너 listen 포트 (Service targetPort와 일치)
+      # - LOG_WITHOUT_NEWLINE=false: 페이로드 사이 개행 유지 → kubectl logs 가독성
+      env:
+        - name: HTTP_PORT
+          value: "8080"
+        - name: LOG_WITHOUT_NEWLINE
+          value: "false"
+      ports:
+        - containerPort: 8080
+```
+
+이 receiver는 의도적으로 **`argocd-noti-receiver`라는 별도 namespace**에 배포한다. 알림 테스트 대상 앱은 `argocd-noti-test` namespace에 있고, trigger 표현식이 `destination.namespace == 'argocd-noti-test'`로 필터링하기 때문에, receiver를 같은 namespace에 두면 receiver Application 자기 자신도 알림 대상이 되어버린다. namespace를 분리해서 책임을 깔끔히 가른다.
+
+이제 부트스트랩을 한 파일로 묶는다. 두 `Application`(receiver chart sync용 + 알림 설정 chart sync용)을 multi-doc YAML로 한 번에 정의한다.
+
+```yaml
+# bootstrap/notifications.yaml
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: webhook-receiver
+  namespace: argocd
+spec:
+  source:
+    repoURL: https://github.com/kenshin579/argocd-charts-sample
+    targetRevision: HEAD
+    path: chart/webhook-receiver
+    helm:
+      valueFiles: [values.yaml]
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd-noti-receiver
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions:
+      - CreateNamespace=true
+---
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd-notifications-config
+  namespace: argocd
+spec:
+  source:
+    repoURL: https://github.com/kenshin579/argocd-charts-sample
+    targetRevision: HEAD
+    path: chart/argocd-notifications-config
+    helm:
+      valueFiles: [values.yaml]
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated: { prune: true, selfHeal: true }
+    syncOptions:
+      # argo-cd Helm chart가 이미 만든 cm/secret의 ownership을 인수
+      - ServerSideApply=true
+```
+
+두 `Application`의 `syncOptions` 차이가 핵심이다.
+- `webhook-receiver` → `CreateNamespace=true` (새 namespace `argocd-noti-receiver` 생성)
+- `argocd-notifications-config` → `ServerSideApply=true` (기존 cm/secret ownership 인수)
+
+테스트 대상 앱(`hello-world-server`)은 별도 `ApplicationSet`으로 배포하는데, `automated`를 의도적으로 제거했다. `automated.selfHeal: true`로 두면 drift가 발생하자마자 `ArgoCD`가 즉시 복구해서 `OutOfSync` 상태가 거의 발생하지 않기 때문이다. 알림을 검증하려면 `OutOfSync` 상태가 어느 정도 유지되어야 한다. ApplicationSet 매니페스트는 [GitHub](https://github.com/kenshin579/argocd-charts-sample/blob/main/bootstrap/application-set/appset-noti-test.yaml)에서 확인할 수 있다.
+
+설치는 두 줄이다.
+
+```bash
+kubectl apply -f bootstrap/notifications.yaml
+kubectl apply -f bootstrap/application-set/appset-noti-test.yaml
+```
+
+`ArgoCD`가 두 chart를 sync하면서 `argocd-noti-receiver`/`argocd-noti-test` namespace를 자동 생성하고 알림 설정도 활성화된다.
