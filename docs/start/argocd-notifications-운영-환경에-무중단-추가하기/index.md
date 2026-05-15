@@ -153,3 +153,122 @@ syncOptions:
 | webhook receiver를 별도 namespace로 격리 | 자기 자신이 알림 대상이 되는 것 방지 + 책임 분리 |
 | `OutOfSync` 알림은 커스텀 trigger 작성 | 카탈로그에 없음 (`on-sync-status-unknown` 만 가장 비슷) |
 | `automated` 제거 (테스트 대상 ApplicationSet) | manual sync 모드로 OutOfSync가 의미 있게 발생하도록 |
+
+## 4. 알림 설정 chart 작성
+
+알림 설정 `Helm chart`의 디렉토리 구조다.
+
+```
+chart/argocd-notifications-config/
+├── Chart.yaml
+├── values.yaml
+└── templates/
+    ├── cm.yaml             # argocd-notifications-cm
+    └── secret.yaml         # argocd-notifications-secret (빈 secret)
+```
+
+`values.yaml`에는 환경에 따라 바뀔 수 있는 3가지 변수만 노출한다.
+
+```yaml
+# webhook receiver의 cluster-internal URL
+webhookUrl: http://webhook-receiver.argocd-noti-receiver.svc.cluster.local
+
+# 알림 trigger에 적용할 destination namespace 필터
+targetNamespace: argocd-noti-test
+
+# template body에 포함되는 ArgoCD UI base URL
+argocdUrl: https://argocd-server.argocd.svc.cluster.local
+```
+
+핵심은 `templates/cm.yaml`의 trigger 정의다. 3개 trigger를 모두 `targetNamespace` 필터로 격리한다.
+
+```yaml
+data:
+  trigger.on-sync-status-out-of-sync: |
+    - when: |
+        app.spec.destination.namespace == '{{ .Values.targetNamespace }}' &&
+        app.status.sync.status == 'OutOfSync'
+      send: [app-out-of-sync]
+      oncePer: app.status.sync.revision
+
+  trigger.on-sync-failed: |
+    - when: |
+        app.spec.destination.namespace == '{{ .Values.targetNamespace }}' &&
+        app.status.operationState.phase in ['Error', 'Failed']
+      send: [app-sync-failed]
+      oncePer: app.status.operationState.startedAt
+
+  trigger.on-health-degraded: |
+    - when: |
+        app.spec.destination.namespace == '{{ .Values.targetNamespace }}' &&
+        app.status.health.status == 'Degraded'
+      send: [app-health-degraded]
+```
+
+여기서 `oncePer` 정책을 trigger마다 다르게 설정했다.
+
+- **OutOfSync**: `revision` 단위로 1회 — 같은 drift 상태가 60초 cycle마다 반복 알림되는 것 방지
+- **Sync Failed**: `startedAt` 단위로 1회 — 같은 sync 시도 중복 알림 방지
+- **Health Degraded**: 별도 `oncePer` 없음 — `Healthy → Degraded` 상태 전이 시점에만 1회
+
+template 중 `app-out-of-sync` 하나만 발췌한다 (나머지 두 template은 동일한 webhook 구조에 강조하는 필드만 다름).
+
+```yaml
+template.app-out-of-sync: |
+  webhook:
+    local-receiver:
+      method: POST
+      body: |
+        {
+          "event": "argocd.out-of-sync",
+          "severity": "info",
+          "timestamp": "{{`{{ (call .time.Now).Format "2006-01-02T15:04:05Z07:00" }}`}}",
+          "application": {
+            "name": "{{`{{.app.metadata.name}}`}}",
+            "namespace": "{{`{{.app.spec.destination.namespace}}`}}"
+          },
+          "sync": {
+            "status": "{{`{{.app.status.sync.status}}`}}",
+            "revision": "{{`{{.app.status.sync.revision}}`}}"
+          },
+          "argocdUrl": "{{ .Values.argocdUrl }}/applications/{{`{{.app.metadata.name}}`}}"
+        }
+```
+
+여기서 `{{`...`}}` 패턴이 자주 나오는 이유가 중요하다. **`Helm template` 안에 `ArgoCD Notifications template`이 중첩**되어 있다. Helm은 `{{ ... }}`를 자기 변수로 해석하지만, 우리는 `{{.app.metadata.name}}` 같은 표현이 그대로 ConfigMap에 들어가서 런타임에 `notifications-controller`가 처리하기를 원한다. backtick으로 감싸면 (`{{`...`}}`) Helm이 그 부분을 그대로 출력한다. 결과적으로 **3개 변수만 Helm이 치환**하고 나머지는 모두 controller가 처리한다.
+
+마지막으로 service와 default subscription이다.
+
+```yaml
+service.webhook.local-receiver: |
+  url: {{ .Values.webhookUrl }}
+  headers:
+  - name: Content-Type
+    value: application/json
+
+subscriptions: |
+  - recipients:
+    - webhook:local-receiver
+    triggers:
+    - on-sync-status-out-of-sync
+    - on-sync-failed
+    - on-health-degraded
+```
+
+`subscriptions`는 **default subscription**이라 모든 `Application`이 자동으로 구독한다. 다른 namespace의 Application도 구독은 하지만 위 trigger의 `when` 조건이 false라서 알림이 가지 않는다. 즉 **trigger 표현식이 namespace 필터링을 담당**하는 구조다.
+
+`secret.yaml`은 거의 비어 있다.
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: argocd-notifications-secret
+  namespace: argocd
+type: Opaque
+data: {}
+```
+
+이 빈 secret이 필요한 이유는 ConfigMap과 동일하게 **`ServerSideApply`로 ownership을 인수**하기 위함이다. 향후 Slack token이나 Email 비밀번호를 추가할 때 이 secret에 키만 넣으면 된다.
+
+전체 chart 코드는 [GitHub에서 확인](https://github.com/kenshin579/argocd-charts-sample/tree/main/chart/argocd-notifications-config)할 수 있다.
