@@ -31,8 +31,8 @@ export function SeriesSpotlightCard({ seriesName, seriesHref, episodes }: Props)
                 className={[
                   'flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full text-[10px] font-bold',
                   active
-                    ? 'bg-bento-ink text-white'
-                    : 'bg-bento-ink/10 text-bento-ink/40',
+                    ? 'bg-bento-ink text-white dark:text-bento-bg'
+                    : 'bg-bento-ink/10 text-bento-ink/40 dark:bg-bento-ink/20 dark:text-bento-ink/60',
                 ].join(' ')}
               >
                 {ep.num}

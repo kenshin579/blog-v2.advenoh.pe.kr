@@ -85,7 +85,7 @@ export default async function HomePage() {
   const featured = articles[0];
   const latest = articles.slice(1, 5);
   const recent = articles.slice(5, 9);
-  const wideLatest = articles.slice(9, 13);
+  const wideLatest = articles.slice(9, 14);
 
   const featuredSeriesArticle = articles.find((a) => a.series);
   let spotlightEpisodes: Array<{ num: number; title: string; slug: string }> = [];
