@@ -13,6 +13,7 @@ export interface ArticleFrontmatter {
   title: string;
   date: string;
   excerpt?: string;
+  description?: string;
   tags?: string[];
   series?: string;
   seriesOrder?: number;
@@ -66,9 +67,15 @@ export async function parseMarkdown(markdown: string, slug: string): Promise<Art
 
   const firstImage = extractFirstImage(content);
 
+  const frontmatter = data as ArticleFrontmatter;
+  // Normalize description → excerpt (markdown 파일은 description 키 사용, UI는 excerpt 사용)
+  if (!frontmatter.excerpt && frontmatter.description) {
+    frontmatter.excerpt = frontmatter.description;
+  }
+
   return {
     slug,
-    frontmatter: data as ArticleFrontmatter,
+    frontmatter,
     content,
     html,
     firstImage,
