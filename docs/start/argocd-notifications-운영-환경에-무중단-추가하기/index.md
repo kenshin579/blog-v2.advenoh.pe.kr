@@ -58,3 +58,52 @@ flowchart TB
 ```
 
 전체 코드는 [argocd-charts-sample](https://github.com/kenshin579/argocd-charts-sample) 레포의 [PR #13](https://github.com/kenshin579/argocd-charts-sample/pull/13)에서 확인할 수 있다.
+
+## 2. ArgoCD Notifications 개념
+
+`ArgoCD Notifications`는 별도의 `notifications-controller` Pod이 `Application` 리소스를 60초마다 polling하면서 미리 정의한 조건에 맞으면 외부로 알림을 보내는 구조다. 다음 4가지 빌딩 블록으로 동작한다.
+
+| 빌딩 블록 | 역할 |
+| --- | --- |
+| **Trigger** | 언제 알림을 보낼지 — `expr-lang` 표현식으로 `Application` 상태를 평가 |
+| **Template** | 무엇을 보낼지 — webhook body, Slack message body 등 |
+| **Service** | 어디로 보낼지 — webhook URL, Slack token 등 |
+| **Subscription** | 누가 받을지 — `Application` annotation 또는 `argocd-notifications-cm`의 default subscription |
+
+기본적으로 [Notifications Catalog](https://argo-cd.readthedocs.io/en/stable/operator-manual/notifications/catalog/)에 다음과 같은 trigger가 미리 정의되어 있다.
+
+| Trigger | 발생 조건 |
+| --- | --- |
+| `on-sync-succeeded` | Sync 작업 성공 |
+| `on-sync-failed` | Sync 작업 실패 (manifest 오류, RBAC 등) |
+| `on-sync-running` | Sync 시작 |
+| `on-sync-status-unknown` | Sync 상태 판정 불가 |
+| `on-deployed` | 성공 sync + Healthy 진입 |
+| `on-health-degraded` | Pod 비정상 (CrashLoopBackOff, ImagePullBackOff 등) |
+| `on-created` / `on-deleted` | Application CR 생성/삭제 |
+
+여기서 한 가지 중요한 사실: **`OutOfSync` 전용 trigger는 카탈로그에 없다.** 가장 비슷한 게 `on-sync-status-unknown` 정도라서, drift 알림이 필요하면 직접 trigger를 작성해야 한다.
+
+알림이 발생하는 흐름을 정리하면 다음과 같다.
+
+```mermaid
+sequenceDiagram
+  participant Dev as Developer
+  participant K8s as Cluster
+  participant AC as application-controller
+  participant NC as notifications-controller
+  participant WR as webhook-receiver
+
+  Dev->>K8s: kubectl scale --replicas=3
+  K8s-->>AC: Deployment changed
+  AC->>AC: status → OutOfSync
+  Note over NC: 60s polling
+  NC->>AC: list Applications
+  NC->>NC: trigger 매칭 (ns 필터 + sync.status)
+  NC->>WR: POST JSON payload
+  WR->>WR: stdout JSON 출력
+  Dev->>WR: kubectl logs -f
+  WR-->>Dev: payload 확인
+```
+
+여기서 한 가지 더 주목할 점은 polling 주기다. `notifications-controller`는 60초마다 한 번씩 `Application` 상태를 본다. 즉 알림은 항상 **이벤트 발생 후 ~60초 이내**에 도착한다. 더 자주 보고 싶다면 controller 옵션 변경이 필요하다.
