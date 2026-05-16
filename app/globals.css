@@ -453,20 +453,20 @@ pre[class*="language-"] {
   text-decoration: underline;
 }
 
-/* 인라인 코드 스타일 (backtick으로 감싼 텍스트) */
-.prose code:not([class*="language-"]) {
+/* 인라인 코드 스타일 (backtick으로 감싼 텍스트, pre 바깥만) */
+.prose :not(pre) > code:not([class*="language-"]) {
   @apply font-mono text-sm px-1.5 py-0.5 rounded;
   background-color: hsl(var(--muted));
   color: hsl(var(--foreground));
 }
 
 /* Tailwind Typography가 추가하는 backtick 문자 제거 */
-.prose code:not([class*="language-"])::before,
-.prose code:not([class*="language-"])::after {
+.prose :not(pre) > code:not([class*="language-"])::before,
+.prose :not(pre) > code:not([class*="language-"])::after {
   content: none;
 }
 
-/* 코드 블록 안의 인라인 코드는 별도 배경 없음 */
+/* 코드 블록 안의 코드는 배경/패딩 제거 (pre 스타일 상속) */
 .prose pre code {
   @apply p-0 bg-transparent;
 }
@@ -631,8 +631,8 @@ pre[class*="language-"] {
   font-style: italic;
 }
 
-/* Inline code (not language-*) */
-.prose-bento code:not([class*="language-"]) {
+/* Inline code (pre 바깥의 인라인 code만) */
+.prose-bento :not(pre) > code:not([class*="language-"]) {
   font-family: var(--font-mono);
   font-size: 0.875em;
   padding: 0.125em 0.375em;
@@ -641,12 +641,12 @@ pre[class*="language-"] {
   color: rgb(var(--bento-ink));
 }
 
-.dark .prose-bento code:not([class*="language-"]) {
+.dark .prose-bento :not(pre) > code:not([class*="language-"]) {
   background: rgb(255 255 255 / 0.1);
 }
 
-.prose-bento code:not([class*="language-"])::before,
-.prose-bento code:not([class*="language-"])::after {
+.prose-bento :not(pre) > code:not([class*="language-"])::before,
+.prose-bento :not(pre) > code:not([class*="language-"])::after {
   content: none;
 }
 
@@ -706,7 +706,7 @@ pre[class*="language-"] {
 /* Article 코드블록 — 다크 카드 + 언어 라벨                     */
 /* ========================================================== */
 
-.prose-bento pre[class*="language-"] {
+.prose-bento pre {
   position: relative;
   margin: 1.5rem 0;
   padding: 2rem 1.25rem 1.25rem;
@@ -719,7 +719,7 @@ pre[class*="language-"] {
   line-height: 1.65;
 }
 
-.prose-bento pre[class*="language-"] code {
+.prose-bento pre code {
   font-family: inherit;
   font-size: inherit;
   background: transparent;
@@ -728,7 +728,7 @@ pre[class*="language-"] {
 }
 
 /* 언어 라벨 (top-right) */
-.prose-bento pre[class*="language-"]::before {
+.prose-bento pre::before {
   position: absolute;
   top: 0.5rem;
   right: 0.875rem;
@@ -737,7 +737,7 @@ pre[class*="language-"] {
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: #7A7770;
-  content: 'code';
+  content: 'text';
 }
 
 .prose-bento pre.language-go::before        { content: 'go'; }
