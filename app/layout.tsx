@@ -60,7 +60,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="ko" suppressHydrationWarning>
+    <html lang="ko" suppressHydrationWarning className={`${pretendard.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
       {/* JSON-LD WebSite Schema */}
       <Script
         id="website-schema"
@@ -105,7 +105,7 @@ export default function RootLayout({
         }}
       />
 
-      <body className={`${pretendard.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable}`}>
+      <body>
         <ThemeProvider
           attribute="class"
           defaultTheme="system"

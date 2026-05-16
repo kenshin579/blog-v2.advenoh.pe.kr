@@ -543,8 +543,8 @@ pre[class*="language-"] {
 
 .prose-bento h1 {
   font-size: 2.25rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-weight: 900;
+  letter-spacing: -0.035em;
   margin-top: 2rem;
   margin-bottom: 1rem;
   scroll-margin-top: 5rem;
@@ -552,8 +552,8 @@ pre[class*="language-"] {
 
 .prose-bento h2 {
   font-size: 1.875rem;
-  font-weight: 700;
-  letter-spacing: -0.025em;
+  font-weight: 900;
+  letter-spacing: -0.035em;
   margin-top: 2.5rem;
   margin-bottom: 0.75rem;
   scroll-margin-top: 5rem;
@@ -561,8 +561,8 @@ pre[class*="language-"] {
 
 .prose-bento h3 {
   font-size: 1.5rem;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+  font-weight: 800;
+  letter-spacing: -0.03em;
   margin-top: 2rem;
   margin-bottom: 0.5rem;
   scroll-margin-top: 5rem;
@@ -570,7 +570,8 @@ pre[class*="language-"] {
 
 .prose-bento h4 {
   font-size: 1.25rem;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   margin-top: 1.5rem;
   margin-bottom: 0.5rem;
   scroll-margin-top: 5rem;
