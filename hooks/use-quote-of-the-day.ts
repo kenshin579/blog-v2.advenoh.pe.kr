@@ -32,10 +32,11 @@ export function useQuoteOfTheDay(fallback: QuoteViewData): QuoteViewData {
         if (cancelled || !q) return;
         // 방어적 처리: 응답은 검증 없이 캐스팅된 JSON이라 타입상 string이어도
         // 런타임에 null/undefined가 올 수 있다고 가정한다.
+        const content = (q.content ?? '').trim();
         const author = (q.author ?? '').trim();
         const id = (q.id ?? '').trim();
         setData({
-          content: q.content,
+          content: content || fallback.content,
           attribution: author ? `— ${author}` : fallback.attribution,
           href: id ? quoteDetailUrl(id) : undefined,
         });

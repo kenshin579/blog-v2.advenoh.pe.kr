@@ -9,12 +9,15 @@ export const INSPIRE_ME_BASE_URL = 'https://inspire-me.advenoh.pe.kr';
  * widget API의 quote 응답 형태.
  * (backend/pkg/widget/handler.go:281-298의 widgetQuoteResponse 기준,
  *  본 클라이언트에서 사용하는 필드만 정의)
+ *
+ * 응답은 런타임 검증 없이 캐스팅되므로, 백엔드 변경/오작동에 대비해
+ * 모든 필드를 optional로 정의한다. 소비자는 각 필드의 부재를 안전하게 처리해야 한다.
  */
 export type InspireMeWidgetQuote = {
-  id: string;
-  content: string;
-  author: string;
-  language: string;
+  id?: string;
+  content?: string;
+  author?: string;
+  language?: string;
   topics?: string[];
   tags?: string[];
 };

@@ -9,7 +9,7 @@ const BASE_CLASSES =
   'col-span-12 flex min-h-[260px] flex-col justify-between rounded-card-xl bg-bento-hero-dark p-7 text-white md:col-span-4 md:min-h-[260px] md:p-8';
 
 const LINK_CLASSES =
-  'transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bento-accent';
+  'cursor-pointer transition-opacity hover:opacity-90 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-bento-accent';
 
 export function QuoteCard({ content, attribution, href }: Props) {
   const body = (
