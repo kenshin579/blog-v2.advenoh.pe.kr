@@ -190,11 +190,7 @@ export default async function HomePage() {
         )}
 
         <QuoteCard
-          lines={[
-            '잘 정리된 노트는',
-            '미래의 나에게 보내는',
-            '가장 좋은 선물.',
-          ]}
+          content="잘 정리된 노트는 미래의 나에게 보내는 가장 좋은 선물."
           attribution="— writing principle"
         />
       </section>
