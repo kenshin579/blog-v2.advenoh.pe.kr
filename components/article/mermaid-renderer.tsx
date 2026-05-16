@@ -13,9 +13,9 @@ export function MermaidRenderer({ html }: MermaidRendererProps) {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
-    if (!containerRef.current) return;
+    const container = containerRef.current;
+    if (!container) return;
 
-    // Mermaid 초기화
     mermaid.initialize({
       startOnLoad: false,
       theme: resolvedTheme === 'dark' ? 'dark' : 'default',
@@ -23,33 +23,53 @@ export function MermaidRenderer({ html }: MermaidRendererProps) {
       fontFamily: 'inherit',
     });
 
-    // language-mermaid 코드 블록 찾기
-    const codeBlocks = containerRef.current.querySelectorAll(
-      'code.language-mermaid'
-    );
+    // mermaid 코드를 먼저 수집한다.
+    const sources = Array.from(
+      container.querySelectorAll<HTMLElement>('code.language-mermaid')
+    )
+      .map((code) => code.textContent || '')
+      .filter((code) => code.trim());
 
-    codeBlocks.forEach(async (codeBlock, index) => {
-      const pre = codeBlock.parentElement;
-      if (!pre || pre.tagName !== 'PRE') return;
+    if (sources.length === 0) return;
 
-      const code = codeBlock.textContent || '';
-      if (!code.trim()) return;
+    let cancelled = false;
 
-      try {
-        const id = `mermaid-diagram-${index}-${Date.now()}`;
-        const { svg } = await mermaid.render(id, code);
+    (async () => {
+      // 모든 mermaid 렌더링을 병렬로 실행한 뒤 SVG 결과만 모은다.
+      const results = await Promise.all(
+        sources.map(async (code, index) => {
+          try {
+            const id = `mermaid-diagram-${index}-${Date.now()}`;
+            const { svg } = await mermaid.render(id, code);
+            return svg;
+          } catch (error) {
+            console.error('Mermaid 렌더링 실패:', error);
+            return null;
+          }
+        })
+      );
+      if (cancelled) return;
 
-        // pre 요소를 mermaid 다이어그램으로 교체
+      // await가 끝난 뒤 React가 dangerouslySetInnerHTML을 재적용했을 수 있으므로
+      // pre 요소를 다시 조회하여 동기적으로 교체한다.
+      const pres = container.querySelectorAll<HTMLElement>('pre.language-mermaid');
+      results.forEach((svg, index) => {
+        const pre = pres[index];
+        if (!pre || !document.contains(pre)) return;
+        if (!svg) {
+          pre.classList.add('mermaid-error');
+          return;
+        }
         const wrapper = document.createElement('div');
         wrapper.className = 'mermaid-diagram';
         wrapper.innerHTML = svg;
         pre.replaceWith(wrapper);
-      } catch (error) {
-        console.error('Mermaid 렌더링 실패:', error);
-        // 에러 시 원본 코드 블록 유지하고 에러 표시
-        pre.classList.add('mermaid-error');
-      }
-    });
+      });
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, [html, resolvedTheme]);
 
   return (
