@@ -9,7 +9,8 @@ import { CategoriesCard } from '@/components/home/categories-card';
 import { RecentCard } from '@/components/home/recent-card';
 import { StatsCard } from '@/components/home/stats-card';
 import { ActivityHeatmap } from '@/components/home/activity-heatmap';
-import { QuoteCard } from '@/components/home/quote-card';
+import { QuoteSection } from '@/components/home/quote-section';
+import type { QuoteViewData } from '@/hooks/use-quote-of-the-day';
 import { WideLatestList } from '@/components/home/wide-latest-list';
 
 export const metadata = {
@@ -18,6 +19,11 @@ export const metadata = {
 };
 
 const RECENT_TONES = ['sage', 'butter', 'rose', 'cream'] as const;
+
+const QOTD_FALLBACK: QuoteViewData = {
+  content: '잘 정리된 노트는 미래의 나에게 보내는 가장 좋은 선물.',
+  attribution: '— writing principle',
+};
 
 const HEATMAP_WEEKS = 16;
 
@@ -189,14 +195,7 @@ export default async function HomePage() {
           />
         )}
 
-        <QuoteCard
-          lines={[
-            '잘 정리된 노트는',
-            '미래의 나에게 보내는',
-            '가장 좋은 선물.',
-          ]}
-          attribution="— writing principle"
-        />
+        <QuoteSection fallback={QOTD_FALLBACK} />
       </section>
     </main>
   );
