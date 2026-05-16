@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { getAllArticles } from '@/lib/articles';
 import { Breadcrumb } from '@/components/breadcrumb';
+import { TagsBentoGrid, type TagEntry } from '@/components/tags-bento-grid';
 
 export const metadata = {
   title: "Tags | Frank's IT Blog",
@@ -13,82 +14,152 @@ const FOCUS_RING =
 export default async function TagsPage() {
   const all = await getAllArticles();
 
-  // Aggregate tag counts (raw, case-sensitive)
-  const counts = new Map<string, number>();
+  // tag별 count + 관련 카테고리 + 최근 사용일 집계
+  type Agg = { count: number; categories: Map<string, number>; lastUsed: string };
+  const agg = new Map<string, Agg>();
+
   for (const a of all) {
     if (!a.tags) continue;
     for (const t of a.tags) {
-      counts.set(t, (counts.get(t) ?? 0) + 1);
+      const existing = agg.get(t) ?? { count: 0, categories: new Map(), lastUsed: '' };
+      existing.count += 1;
+      existing.categories.set(a.category, (existing.categories.get(a.category) ?? 0) + 1);
+      if (a.date > existing.lastUsed) existing.lastUsed = a.date;
+      agg.set(t, existing);
     }
   }
 
-  const entries = Array.from(counts.entries())
-    .map(([tag, count]) => ({ tag, count }))
-    .sort((a, b) => a.tag.localeCompare(b.tag, 'ko'));
+  const entries: TagEntry[] = Array.from(agg.entries()).map(([tag, v]) => ({
+    tag,
+    count: v.count,
+    categories: Array.from(v.categories.entries())
+      .sort((x, y) => y[1] - x[1])
+      .map(([cat]) => cat),
+    lastUsed: v.lastUsed,
+  }));
 
-  const maxCount = entries.reduce((acc, e) => Math.max(acc, e.count), 0);
+  const totalUses = entries.reduce((s, e) => s + e.count, 0);
+  const byCount = [...entries].sort(
+    (a, b) => b.count - a.count || a.tag.localeCompare(b.tag, 'ko'),
+  );
+  const top5 = byCount.slice(0, 5);
+  const heroCloud = byCount.slice(0, 24);
 
   return (
     <main className="min-h-screen bg-bento-bg pb-20">
-      <Breadcrumb
-        items={[
-          { label: 'Home', href: '/' },
-          { label: 'Tags' },
-        ]}
-      />
+      <Breadcrumb items={[{ label: 'Home', href: '/' }, { label: 'Tags' }]} />
 
-      {/* Hero */}
+      {/* Hero — two columns */}
       <section className="mx-auto max-w-canvas px-6 md:px-10">
-        <div className="relative overflow-hidden rounded-card-xl bg-bento-hero-dark p-8 text-white md:p-12">
-          <div
-            aria-hidden="true"
-            className="absolute -right-32 -top-32 h-[420px] w-[420px] rounded-full opacity-55"
-            style={{ background: 'radial-gradient(circle, rgb(var(--bento-accent)) 0%, transparent 70%)' }}
-          />
-          <div className="relative">
-            <p className="text-[12px] uppercase tracking-[0.12em] text-white/70">All tags</p>
-            <div className="my-4 text-[56px] font-bold leading-[0.95] tracking-tightest md:text-[88px]">
-              #{entries.length}
-              <span className="text-white/40"> tags</span>
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[2fr_1fr]">
+          {/* Left: dark hero with inline tag cloud */}
+          <div className="relative overflow-hidden rounded-card-xl bg-bento-hero-dark p-8 text-white md:p-12">
+            <div
+              aria-hidden="true"
+              className="absolute -right-32 -top-32 h-[420px] w-[420px] rounded-full opacity-55"
+              style={{
+                background:
+                  'radial-gradient(circle, rgb(var(--bento-accent)) 0%, transparent 70%)',
+              }}
+            />
+            <div className="relative">
+              <p className="text-[12px] uppercase tracking-[0.12em] text-white/70">
+                Index
+              </p>
+              <h1 className="my-4 text-[56px] font-bold leading-[0.95] tracking-tightest md:text-[88px]">
+                Tags.
+              </h1>
+              <p className="max-w-lg text-base leading-relaxed text-white/75 md:text-lg">
+                카테고리를 가로지르는 주제들. 같은 #{top5[0]?.tag ?? 'tag'} 태그라도 여러
+                카테고리에 걸쳐 발견됩니다.
+              </p>
+
+              {heroCloud.length > 0 && (
+                <div className="mt-8 flex flex-wrap gap-x-3 gap-y-2 leading-tight">
+                  {heroCloud.map((e, i) => {
+                    const size =
+                      i < 3
+                        ? 'text-[36px] font-extrabold text-white md:text-[44px]'
+                        : i < 7
+                          ? 'text-[24px] font-bold text-white/85 md:text-[28px]'
+                          : 'text-[16px] font-medium text-white/55 md:text-[18px]';
+                    return (
+                      <Link
+                        key={e.tag}
+                        href={`/tags/${encodeURIComponent(e.tag)}`}
+                        className={[
+                          'no-underline tracking-tight transition hover:text-white',
+                          size,
+                          FOCUS_RING,
+                        ].join(' ')}
+                      >
+                        #{e.tag}
+                      </Link>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-            <p className="max-w-lg text-base leading-relaxed text-white/75 md:text-lg">
-              {all.length}편의 글을 가로지르는 주제어. 클릭해서 관련된 모든 글을 모아보세요.
-            </p>
+          </div>
+
+          {/* Right: stats + top 5 */}
+          <div className="flex flex-col gap-4">
+            <div className="rounded-card-xl bg-bento-butter p-7 text-bento-ink">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-bento-ink/60">
+                At a glance
+              </p>
+              <div className="mt-4 grid grid-cols-2 gap-4">
+                <div>
+                  <div className="text-4xl font-extrabold leading-none md:text-[44px]">
+                    {entries.length}
+                  </div>
+                  <div className="mt-1 text-[12px] text-bento-ink/70">전체 태그</div>
+                </div>
+                <div>
+                  <div className="text-4xl font-extrabold leading-none md:text-[44px]">
+                    {totalUses}
+                  </div>
+                  <div className="mt-1 text-[12px] text-bento-ink/70">총 사용 횟수</div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex-1 rounded-card-xl bg-bento-card p-6 text-bento-ink">
+              <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-bento-ink/60">
+                Top 5 — Most written
+              </p>
+              <ol className="mt-4 space-y-2.5">
+                {top5.map((e, i) => (
+                  <li key={e.tag}>
+                    <Link
+                      href={`/tags/${encodeURIComponent(e.tag)}`}
+                      className={[
+                        'flex items-center justify-between gap-3 rounded-card-sm px-2 py-1.5 no-underline transition hover:bg-bento-ink/5',
+                        FOCUS_RING,
+                      ].join(' ')}
+                    >
+                      <span className="flex items-center gap-3">
+                        <span className="inline-flex h-5 w-5 items-center justify-center rounded-full bg-bento-ink text-[10px] font-bold text-white">
+                          {i + 1}
+                        </span>
+                        <span className="text-[14px] font-medium text-bento-ink">
+                          #{e.tag}
+                        </span>
+                      </span>
+                      <span className="font-mono text-[11px] text-bento-dim">
+                        {e.count}편
+                      </span>
+                    </Link>
+                  </li>
+                ))}
+              </ol>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Tag cloud (chips, 3-tier sizes) */}
-      {entries.length > 0 && (
-        <section className="mx-auto mt-8 max-w-canvas px-6 md:px-10">
-          <div className="flex flex-wrap gap-2 rounded-card-xl bg-bento-card p-6 md:p-8">
-            {entries.map((e) => {
-              const weight = maxCount > 0 ? e.count / maxCount : 0;
-              const sizeClass =
-                weight > 0.66
-                  ? 'text-2xl font-semibold'
-                  : weight > 0.33
-                    ? 'text-lg font-medium'
-                    : 'text-sm';
-              return (
-                <Link
-                  key={e.tag}
-                  href={`/tags/${encodeURIComponent(e.tag)}`}
-                  className={[
-                    'inline-flex items-baseline gap-1.5 rounded-full bg-bento-ink/[0.05] px-4 py-2 text-bento-ink no-underline transition hover:bg-bento-ink/10 dark:bg-white/10 dark:hover:bg-white/15',
-                    sizeClass,
-                    FOCUS_RING,
-                  ].join(' ')}
-                >
-                  <span className="text-bento-accent">#</span>
-                  <span>{e.tag}</span>
-                  <span className="font-mono text-[11px] font-normal text-bento-dim">{e.count}</span>
-                </Link>
-              );
-            })}
-          </div>
-        </section>
-      )}
+      {/* Bento grid (sortable) */}
+      {entries.length > 0 && <TagsBentoGrid entries={entries} />}
     </main>
   );
 }
