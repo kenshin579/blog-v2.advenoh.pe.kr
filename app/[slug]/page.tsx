@@ -138,6 +138,15 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
         tags={manifestArticle?.tags}
       />
 
+      {/* Series nav (only when series article) — 본문 위에 배치하여 시리즈 맥락을 먼저 보여줌 */}
+      {manifestArticle?.series && seriesEpisodes.length > 1 && (
+        <SeriesNavigation
+          seriesName={manifestArticle.series}
+          articles={seriesEpisodes}
+          currentSlug={manifestArticle.slug}
+        />
+      )}
+
       {/* Body + sticky TOC (desktop) / collapsible TOC (mobile) */}
       <section className="mx-auto mt-12 max-w-canvas px-6 md:px-10">
         {toc.length > 0 && (
@@ -161,15 +170,6 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           )}
         </div>
       </section>
-
-      {/* Series nav (only when series article) */}
-      {manifestArticle?.series && seriesEpisodes.length > 1 && (
-        <SeriesNavigation
-          seriesName={manifestArticle.series}
-          articles={seriesEpisodes}
-          currentSlug={manifestArticle.slug}
-        />
-      )}
 
       {/* Prev/Next (only when series article and has prev or next) */}
       {(prev || next) && (
