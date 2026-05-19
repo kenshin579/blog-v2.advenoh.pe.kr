@@ -38,19 +38,19 @@ Go 애플리케이션이 커지면 의존성 조립이 복잡해진다. `main()`
 
 ```go
 // 수동 DI: main()에서 직접 조립
-v := config.New()
-db, _ := database.New(v)
+cfg, _ := config.New()
+db, _ := database.New(cfg)
 
 authorRepo := author.NewMysqlAuthorRepository(db)
 articleRepo := article.NewMysqlArticleRepository(db)
 
-timeout := time.Duration(v.GetInt("context.timeout")) * time.Second
+timeout := time.Duration(cfg.Context.Timeout) * time.Second
 articleUsecase := article.NewArticleUsecase(articleRepo, authorRepo, timeout)
 
 e := NewEcho()
 article.NewArticleHandler(e, articleUsecase)
 
-e.Start(v.GetString("server.address"))
+e.Start(cfg.Server.Address)
 ```
 
 의존성이 늘어날수록 이 코드는 급격히 복잡해진다. 순서를 틀리면 컴파일 에러가 나고, 새로운 서비스를 추가할 때마다 main()을 수정해야 한다.
@@ -123,8 +123,8 @@ app := fxtest.New(t,
 // cmd/main.go
 app := fx.New(
     fx.Provide(
-        config.New,              // *viper.Viper
-        database.New,            // *sql.DB (viper 필요)
+        config.New,              // *config.Config
+        database.New,            // *sql.DB (*config.Config 필요)
         NewEcho,                 // *echo.Echo
         ProvideBasicConfig,      // time.Duration
 
@@ -138,16 +138,16 @@ app := fx.New(
 )
 ```
 
-fx는 각 생성자의 매개변수 타입을 보고 의존성 순서를 자동으로 결정한다. 예를 들어 `database.New(v *viper.Viper)`는 `*viper.Viper`가 필요하므로 `config.New()`가 먼저 호출된다.
+fx는 각 생성자의 매개변수 타입을 보고 의존성 순서를 자동으로 결정한다. 예를 들어 `database.New(cfg *config.Config)`는 `*config.Config`가 필요하므로 `config.New()`가 먼저 호출된다.
 
 각 생성자의 시그니처를 보면 의존성 관계가 명확하다.
 
 ```go
 // pkg/config/config.go
-func New() *viper.Viper { ... }
+func New() (*config.Config, error) { ... }
 
 // pkg/database/db.go
-func New(v *viper.Viper) (*sql.DB, error) { ... }
+func New(cfg *config.Config) (*sql.DB, error) { ... }
 
 // article/usecase.go
 func NewArticleUsecase(
@@ -166,12 +166,12 @@ func NewArticleHandler(e *echo.Echo, us domain.ArticleUsecase) *ArticleHandler {
 
 ```go
 // cmd/main.go
-func registerHooks(lifecycle fx.Lifecycle, e *echo.Echo, v *viper.Viper) {
+func registerHooks(lifecycle fx.Lifecycle, e *echo.Echo, cfg *config.Config) {
     lifecycle.Append(
         fx.Hook{
             OnStart: func(context.Context) error {
                 fmt.Println("Starting server")
-                go e.Start(v.GetString("server.address"))
+                go e.Start(cfg.Server.Address)
                 return nil
             },
             OnStop: func(context.Context) error {
@@ -562,7 +562,8 @@ graph TD
     AuthorRepo --> ArticleUsecase
     ArticleUsecase --> ArticleHandler["NewArticleHandler()"]
     Config --> Echo["NewEcho()"]
-    Echo --> RegisterHooks["registerHooks()"]
+    Config --> RegisterHooks["registerHooks()"]
+    Echo --> RegisterHooks
     ArticleHandler --> RegisterHooks
 ```
 
