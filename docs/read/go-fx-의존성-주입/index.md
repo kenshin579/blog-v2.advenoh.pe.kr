@@ -562,7 +562,8 @@ graph TD
     AuthorRepo --> ArticleUsecase
     ArticleUsecase --> ArticleHandler["NewArticleHandler()"]
     Config --> Echo["NewEcho()"]
-    Echo --> RegisterHooks["registerHooks()"]
+    Config --> RegisterHooks["registerHooks()"]
+    Echo --> RegisterHooks
     ArticleHandler --> RegisterHooks
 ```
 
