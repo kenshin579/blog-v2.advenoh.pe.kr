@@ -62,6 +62,20 @@ tags:
 
 ![Async](image-20240701232131672.png)
 
+전체 흐름을 정리하면, client가 task를 queue에 넣는 **enqueue** 단계와 server(worker)가 queue에서 task를 꺼내 실행하는 **dequeue** 단계로 나눌 수 있다. dequeue는 `asynq` server가 내부적으로 자동 처리하기 때문에 사용자가 직접 호출하는 `Dequeue()` 같은 API는 없다.
+
+```mermaid
+flowchart LR
+    Client["Client (Enqueue)"] -->|task 등록| Queue[("Redis Queue")]
+    Scheduler["Scheduler (Periodic Task)"] -->|task 등록| Queue
+    Queue -->|dequeue| Server["Asynq Server"]
+    Server --> W1["Worker goroutine 1"]
+    Server --> W2["Worker goroutine 2"]
+    Server --> W3["Worker goroutine N"]
+```
+
+> `Client`/`Scheduler`가 enqueue한 task를 `Asynq Server`가 queue에서 꺼내(dequeue) `Concurrency` 설정 수만큼의 worker goroutine에 분배해 처리한다.
+
 ## 2.2 주 기능
 
 제공하는 기능이 많지만, 주로 지금 개발하는 어플리케이션에서 필요하다고 생각되는 것 위주로 정리했다.
@@ -75,7 +89,7 @@ tags:
 - Redis 지원한다
   - redis cluster, sentinel
 - Prometheus 연동을 지원을 해서 queue 에 대한 metrics 를 수집하고 시각화 할 수 있다
-- Web UI, [asynmon](https://github.com/hibiken/asynqmon) 도 지원한다
+- Web UI, [asynqmon](https://github.com/hibiken/asynqmon) 도 지원한다
 - CLI 를 지원해서 queue 정보를 확인할 수 있다
 
 ## 2.3 샘플 코드
@@ -89,9 +103,9 @@ tags:
 
 > 코드가 unit test로 작성이 되어 있어서 testcontainers로 redis 실행할 수 있는데, 귀찮아서 refactoring은 하지 않았다 ^^
 
-### 2.3.1 asynmon UI를 실행하기
+### 2.3.1 asynqmon UI를 실행하기
 
-`asynmon` UI에서 redis에 저장되는 정보를 쉽게 확인할 수 있어서 `asynmon`을 먼저 실행한다.
+`asynqmon` UI에서 redis에 저장되는 정보를 쉽게 확인할 수 있어서 `asynqmon`을 먼저 실행한다.
 
 ```bash
 > git clone <https://github.com/hibiken/asynqmon>
@@ -103,7 +117,44 @@ http://localhost:8080로 접속하면 아래와 같이 확인이 뜬다.
 
 ![Asynmon Web](image-20240701232207951.png)
 
-### 2.3.1 한번만 실행하는 경우
+### 2.3.2 Task와 Handler 정의
+
+`asynq`에서 task는 **type**(어떤 작업인지 구분하는 문자열)과 **payload**(처리에 필요한 데이터를 직렬화한 바이트)로 구성된다. `asynq.NewTask()`로 task를 생성하고, type별로 어떻게 처리할지는 handler 함수로 정의한다.
+
+```go
+// A list of task types.
+const (
+	TypeWelcomeEmail  = "email:welcome"
+	TypeReminderEmail = "email:reminder"
+)
+
+type EmailTaskPayload struct {
+	UserID int
+}
+
+// task 생성: type + payload(JSON 직렬화)
+func NewWelcomeEmailTask(id int) (*asynq.Task, error) {
+	payload, err := json.Marshal(EmailTaskPayload{UserID: id})
+	if err != nil {
+		return nil, err
+	}
+	return asynq.NewTask(TypeWelcomeEmail, payload), nil
+}
+
+// handler: payload를 역직렬화해서 실제 작업을 처리한다
+func HandleWelcomeEmailTask(ctx context.Context, t *asynq.Task) error {
+	var p EmailTaskPayload
+	if err := json.Unmarshal(t.Payload(), &p); err != nil {
+		return err
+	}
+	log.Printf(" [*] Send Welcome Email to User %d", p.UserID)
+	return nil
+}
+```
+
+> handler가 `nil`을 반환하면 task는 성공으로 처리되고, `error`를 반환하면 실패로 간주되어 자동으로 **재시도** 된다. 재시도 동작은 [2.3.4 재시도와 실패 처리](#234-재시도와-실패-처리)에서 다룬다.
+
+### 2.3.3 한번만 실행하는 경우
 
 아래 코드는 실제로는 task를 실행시키지는 않고 단순히 task를 redis에 저장하는 역할을 한다. `Enqueue()`로 task를 등록할 때, 여러 옵션을 줄 수 있는데, 자주 사용하는 옵션만 언급하고 넘어간다.
 
@@ -158,9 +209,9 @@ func Test_Async_Client(t *testing.T) {
 
 ![Asynmon Web - Queues](image-20240701232305079.png)
 
-Task가 등록만 되어서 실제로 task를 실행하려면 `asynq` 서버를 실행시켜야 한다.
+위 코드는 enqueue까지만 수행한 상태라, queue에 쌓인 task를 실제로 꺼내(dequeue) 실행하려면 `asynq` 서버를 실행시켜야 한다. `asynq.NewServer`로 server를 만들고 `ServeMux`에 task type별 handler를 등록한 뒤 `srv.Run(mux)`를 호출하면, server가 queue에서 task를 dequeue 해 `Concurrency` 수만큼의 worker goroutine에 분배해 처리한다.
 
-```bash
+```go
 func Test_Workers2a(t *testing.T) {
 	srv := asynq.NewServer(
 		asynq.RedisClientOpt{Addr: "localhost:6379"},
@@ -180,11 +231,39 @@ func Test_Workers2a(t *testing.T) {
 
 실행이 잘되었는지는 `asynqmon`에서 쉽게 확인할 수 있다.
 
-> `Rentention` 옵션으로 task가 등록이 되어 Completed 란에서 실행 결과를 확인할 수 있다.
+> `Retention` 옵션으로 task가 등록이 되어 Completed 란에서 실행 결과를 확인할 수 있다.
 
 ![Asynmon Web - Schedulers](image-20240701232319135.png)
 
-### 2.3.2 주기적인 작업 실행
+### 2.3.4 재시도와 실패 처리
+
+분산 스케줄러로 asynq를 추천하는 이유 중 하나는 실패한 작업에 대한 재시도를 기본으로 지원한다는 점이다. 동작 방식은 다음과 같다.
+
+- handler가 `error`를 반환하면 해당 task는 실패로 간주되어 자동으로 **재시도** 된다.
+- 기본 재시도 횟수(`MaxRetry`)는 **25회**이며, 재시도 간격은 점점 늘어나는 **지수 백오프(exponential backoff)** 가 적용된다.
+- enqueue 시 `asynq.MaxRetry(n)` 옵션으로 횟수를 조정할 수 있다.
+- 재시도를 모두 소진하면 task는 **archived queue**(dead queue)로 이동하며, `asynqmon`의 `Archived` 탭에서 실패한 task를 확인할 수 있다.
+- 잘못된 입력처럼 재시도해도 성공할 수 없는 영구적 오류라면, handler에서 `asynq.SkipRetry`를 반환해 즉시 archived queue로 보낼 수 있다.
+
+```go
+// enqueue 시 최대 재시도 횟수 지정 (기본값 25)
+client.Enqueue(task, asynq.MaxRetry(3))
+
+// handler에서 재시도가 무의미한 오류는 SkipRetry로 즉시 중단
+func HandleWelcomeEmailTask(ctx context.Context, t *asynq.Task) error {
+	var p EmailTaskPayload
+	if err := json.Unmarshal(t.Payload(), &p); err != nil {
+		// payload 파싱 실패는 재시도해도 동일하게 실패하므로 skip
+		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
+	}
+	log.Printf(" [*] Send Welcome Email to User %d", p.UserID)
+	return nil
+}
+```
+
+> 재시도와 결과 보관(`Retention`)을 함께 사용하면, 성공/실패 task의 처리 이력을 `asynqmon`에서 추적할 수 있어 운영 시 유용하다.
+
+### 2.3.5 주기적인 작업 실행
 
 주기적으로 실행하려면, `asynq.NewScheduler`로`asynq.Scheduler`객체를 생성하고 `Register()` 메서드로 task를 등록하면 된다. 주기적인 작업 Task 등록 시점은 서버를 시작하는 시점에 등록하면 된다. 하지만, 분산 환경에서 여러 서버에서 스케줄러를 실행하는 경우에는 중복으로 등록되어 의도와 달리 여러 번 실행하게 되는 이슈가 있다.
 
@@ -252,7 +331,7 @@ func Test_Periodic_Tasks(t *testing.T) {
 
 같은 Task가 여러 번 등록이 되더라도 한 번만 실행하는 해결책은 `asynq` Github Issue에 제시된 해결책이 있어서 적용해 보았다.
 
-### 중복 실행을 방지하는 위한 해결책
+### 2.3.6 중복 실행을 방지하기 위한 해결책
 
 1.`asynq.TaskID`, `asynq.Retention` 이 두 옵션을 사용한다
    - 실험 결과 주기가 일정하지 않다. 2초로 실행하라고 했는데, 3,4초에 실행되는 이슈가 있었다
@@ -278,7 +357,7 @@ func Test_Periodic_Tasks(t *testing.T) {
 
 분산 환경을 고려하지 않는다면 Golang library에서도 쓸만한 스케줄러가 있지만, Production 환경에서는 분산 스케줄러를 고려를 해야 해서 그런 경우에는 asynq 사용을 추천해 본다.
 
-> 포스팅에서 작성한 코드는 [여기서](https://github.com/kenshin579/tutorials-go/tree/master/asynq) 확인할 수 있다.
+> 포스팅에서 작성한 코드는 [여기서](https://github.com/kenshin579/tutorials-go/tree/master/scheduler/asynq) 확인할 수 있다.
 
 # 4. 참고
 
