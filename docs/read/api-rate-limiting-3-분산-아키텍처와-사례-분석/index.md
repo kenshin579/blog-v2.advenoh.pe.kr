@@ -11,7 +11,7 @@ tags:
 series: "API Rate Limiting"
 ---
 
-이 글은 API Rate Limiting 시리즈의 마지막 편이다. [1편](/article/api-rate-limiting-guide)에서는 Rate Limiting의 개념과 주요 알고리즘(Token Bucket, Sliding Window 등)을 다뤘고, [2편](/article/rate-limiting-go-redis)에서는 Go와 Redis를 활용한 실제 구현을 살펴봤다. 이번 편에서는 한 발 더 나아가, **분산 환경에서 Rate Limiting을 안정적으로 운영하기 위한 아키텍처와 실제 서비스들의 사례**를 분석한다.
+이 글은 API Rate Limiting 시리즈의 마지막 편이다. [1편](/article/api-rate-limiting-1-개념과-알고리즘)에서는 Rate Limiting의 개념과 주요 알고리즘(Token Bucket, Sliding Window 등)을 다뤘고, [2편](/article/api-rate-limiting-2-go-redis-실전-예제)에서는 Go와 Redis를 활용한 실제 구현을 살펴봤다. 이번 편에서는 한 발 더 나아가, **분산 환경에서 Rate Limiting을 안정적으로 운영하기 위한 아키텍처와 실제 서비스들의 사례**를 분석한다.
 
 단일 서버에서는 잘 동작하던 Rate Limiter가 서버가 여러 대로 늘어나면 예상치 못한 문제를 일으킨다. Race Condition, 노드 간 카운터 불일치, Redis 장애 시 대응 등 분산 환경 고유의 도전 과제를 하나씩 풀어보자.
 
