@@ -82,7 +82,7 @@ flowchart TB
 | `on-health-degraded` | Pod 비정상 (CrashLoopBackOff, ImagePullBackOff 등) |
 | `on-created` / `on-deleted` | Application CR 생성/삭제 |
 
-여기서 한 가지 중요한 사실: **`OutOfSync` 전용 trigger는 카탈로그에 없다.** 가장 비슷한 게 `on-sync-status-unknown` 정도라서, drift 알림이 필요하면 직접 trigger를 작성해야 한다.
+여기서 한 가지 중요한 사실: **`OutOfSync` 전용 trigger는 카탈로그에 미리 정의되어 있지 않다.** 그렇다고 `OutOfSync` 알림을 받을 수 없는 건 아니다. 카탈로그는 미리 만들어둔 편의용 trigger 모음일 뿐이고, drift 알림이 필요하면 아래처럼 `app.status.sync.status == 'OutOfSync'` 조건의 custom trigger를 직접 작성하면 된다. 카탈로그의 `on-sync-status-unknown`은 이름은 비슷하지만 sync 상태 **판정 불가(`Unknown`)** 케이스(예: repo 접근 실패로 status 계산 자체가 안 되는 경우)라서 의미가 다르므로 대체재가 될 수 없다.
 
 알림이 발생하는 흐름을 정리하면 다음과 같다.
 
@@ -151,10 +151,14 @@ syncOptions:
 | 알림 설정을 별도 Helm chart로 분리 | 운영 중인 `ArgoCD` 재배포 없이 적용 |
 | `ServerSideApply=true` syncOption | 기존 ConfigMap의 ownership을 field-level merge로 인수 |
 | webhook receiver를 별도 namespace로 격리 | 자기 자신이 알림 대상이 되는 것 방지 + 책임 분리 |
-| `OutOfSync` 알림은 커스텀 trigger 작성 | 카탈로그에 없음 (`on-sync-status-unknown` 만 가장 비슷) |
+| `OutOfSync` 알림은 커스텀 trigger 작성 | 카탈로그에 미리 정의된 trigger가 없음 (`on-sync-status-unknown`은 `Unknown` 상태용이라 의미가 다름) |
 | `automated` 제거 (테스트 대상 ApplicationSet) | manual sync 모드로 OutOfSync가 의미 있게 발생하도록 |
 
-## 4. 알림 설정 chart 작성
+## 4. 설정 — chart 작성
+
+알림을 추가하려면 두 개의 `Helm chart`를 작성한다. 알림 설정을 담는 chart와, webhook을 받아주는 receiver chart다. 이 섹션에서 두 chart를 작성하고, 다음 섹션에서 클러스터에 적용한다.
+
+### 4.1 알림 설정 chart
 
 알림 설정 `Helm chart`의 디렉토리 구조다.
 
@@ -273,7 +277,7 @@ data: {}
 
 전체 chart 코드는 [GitHub에서 확인](https://github.com/kenshin579/argocd-charts-sample/tree/main/chart/argocd-notifications-config)할 수 있다.
 
-## 5. webhook receiver + 부트스트랩
+### 4.2 webhook receiver chart
 
 webhook을 받아서 stdout에 JSON으로 출력해주는 단순한 수신 서버가 필요하다. [`mendhak/http-https-echo`](https://github.com/mendhak/docker-http-https-echo) 이미지를 활용하면 별도 코드 작성 없이 `Deployment` + `Service`만으로 끝난다.
 
@@ -297,7 +301,30 @@ spec:
 
 이 receiver는 의도적으로 **`argocd-noti-receiver`라는 별도 namespace**에 배포한다. 알림 테스트 대상 앱은 `argocd-noti-test` namespace에 있고, trigger 표현식이 `destination.namespace == 'argocd-noti-test'`로 필터링하기 때문에, receiver를 같은 namespace에 두면 receiver Application 자기 자신도 알림 대상이 되어버린다. namespace를 분리해서 책임을 깔끔히 가른다.
 
-이제 부트스트랩을 한 파일로 묶는다. 두 `Application`(receiver chart sync용 + 알림 설정 chart sync용)을 multi-doc YAML로 한 번에 정의한다.
+## 5. 적용 — 클러스터에 배포
+
+### 5.1 전제 조건 — 로컬에 ArgoCD 띄우기
+
+이 글은 **ArgoCD가 이미 실행 중인 클러스터**를 전제로 한다. 로컬에서 따라 하려면 먼저 k8s 클러스터와 ArgoCD가 필요하다. 아직 환경이 없다면 아래 순서로 준비하면 된다.
+
+1. **로컬 k8s 클러스터** — Kind나 minikube로 띄운다. 자세한 방법은 [맥에서 Kubernetes? Kind로 쉽고 빠르게 클러스터 구성하기](/article/맥에서-kubernetes-kind로-쉽고-빠르게-클러스터-구성하기) 참고.
+2. **ArgoCD 설치** — namespace 생성 후 공식 manifest로 설치하고 `port-forward`로 접속한다. 설치/CLI 사용법은 [Argo CD](/article/argo-cd) 글에 정리되어 있다.
+
+```bash
+# 1. ArgoCD 설치
+kubectl create namespace argocd
+kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+
+# 2. 모든 컴포넌트가 Ready 될 때까지 대기
+kubectl wait --for=condition=available --timeout=300s -n argocd deploy --all
+
+# 3. UI 접속 (https://localhost:8080)
+kubectl port-forward svc/argocd-server -n argocd 8080:443
+```
+
+### 5.2 부트스트랩 적용
+
+앞서 작성한 두 chart를 `ArgoCD Application`으로 클러스터에 sync한다. 두 `Application`(receiver chart sync용 + 알림 설정 chart sync용)을 multi-doc YAML로 한 번에 정의한다.
 
 ```yaml
 # bootstrap/notifications.yaml
@@ -350,7 +377,7 @@ spec:
 
 테스트 대상 앱(`hello-world-server`)은 별도 `ApplicationSet`으로 배포하는데, `automated`를 의도적으로 제거했다. `automated.selfHeal: true`로 두면 drift가 발생하자마자 `ArgoCD`가 즉시 복구해서 `OutOfSync` 상태가 거의 발생하지 않기 때문이다. 알림을 검증하려면 `OutOfSync` 상태가 어느 정도 유지되어야 한다. ApplicationSet 매니페스트는 [GitHub](https://github.com/kenshin579/argocd-charts-sample/blob/main/bootstrap/application-set/appset-noti-test.yaml)에서 확인할 수 있다.
 
-설치는 두 줄이다.
+5.1에서 준비한 ArgoCD 위에서, 부트스트랩 적용은 두 줄이다.
 
 ```bash
 kubectl apply -f bootstrap/notifications.yaml
