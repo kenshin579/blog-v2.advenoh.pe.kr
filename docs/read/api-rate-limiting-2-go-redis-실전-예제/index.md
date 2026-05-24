@@ -13,7 +13,7 @@ series: "API Rate Limiting"
 
 ## 1. 소개
 
-[이전 포스트](/rate-limiting-concepts)에서는 Rate Limiting의 개념과 4가지 대표 알고리즘(Fixed Window, Sliding Window, Token Bucket, Leaky Bucket)의 원리를 살펴보았습니다. 이번 포스트에서는 이론을 넘어 **Go와 Redis를 사용하여 4가지 알고리즘을 직접 구현**합니다.
+[이전 포스트](/article/api-rate-limiting-1-개념과-알고리즘)에서는 Rate Limiting의 개념과 4가지 대표 알고리즘(Fixed Window, Sliding Window, Token Bucket, Leaky Bucket)의 원리를 살펴보았습니다. 이번 포스트에서는 이론을 넘어 **Go와 Redis를 사용하여 4가지 알고리즘을 직접 구현**합니다.
 
 이번 포스트에서 다루는 내용은 다음과 같습니다.
 
