@@ -1,8 +1,8 @@
 ---
 title: "uber/fx로 의존성 주입 구현하기"
 description: "uber/fx를 사용하여 Go 애플리케이션의 의존성을 자동으로 연결하고 수명주기를 관리하는 방법을 다룬다. fx.Module, fx.Decorate, fx.Annotate 등 고급 패턴과 테스트 전략까지 실전 예제로 설명한다."
-date: 2026-03-04
-update: 2026-03-04
+date: 2026-05-24
+update: 2026-05-24
 tags:
   - Go
   - Golang
