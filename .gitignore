@@ -16,7 +16,9 @@ out/
 # Old architecture (moved for reference)
 client.old/
 server.old/
-tsconfig*
+
+# TypeScript incremental build info
+*.tsbuildinfo
 
 # Python
 __pycache__/
