@@ -9,11 +9,11 @@ draft: false
 
 동시성 프로그래밍에서 가장 까다로운 부분 중 하나가 에러 처리다. 순차 코드에서는 `if err != nil`로 간단히 처리하지만, goroutine이 여러 개 동시에 실행되는 환경에서는 에러 수집, 전파, 취소 전략이 달라져야 한다.
 
-## 서론 - 동시성 환경에서 에러 처리가 어려운 이유
+## 1. 서론 - 동시성 환경에서 에러 처리가 어려운 이유
 
 <img src="cover.png" alt="cover" width="75%" />
 
-### goroutine의 에러는 자동으로 전파되지 않는다
+### 1.1 goroutine의 에러는 자동으로 전파되지 않는다
 
 일반적인 함수 호출에서는 에러를 반환값으로 받을 수 있다. 하지만 goroutine은 독립적으로 실행되므로 호출자에게 에러가 자동으로 전달되지 않는다.
 
@@ -28,7 +28,7 @@ go func() {
 }()
 ```
 
-### panic은 해당 goroutine에서만 recover 가능하다
+### 1.2 panic은 해당 goroutine에서만 recover 가능하다
 
 goroutine 안에서 발생한 panic은 해당 goroutine 내에서만 `recover`할 수 있다. 다른 goroutine에서 recover하는 것은 불가능하며, 처리되지 않은 panic은 프로그램 전체를 종료시킨다.
 
@@ -47,11 +47,11 @@ go func() {
 
 이러한 이유로 동시성 환경에서는 **명시적인 에러 전달 메커니즘**이 필요하다. Go에서는 channel, errgroup, errors.Join 등을 활용한 패턴이 널리 사용된다.
 
-## Error Channel 패턴
+## 2. Error Channel 패턴
 
 가장 기본적인 방법은 channel을 통해 에러와 결과를 함께 전달하는 것이다.
 
-### Result struct로 결과와 에러 함께 전달
+### 2.1 Result struct로 결과와 에러 함께 전달
 
 결과 값과 에러를 하나의 struct에 담아 channel로 보내는 패턴이다. 각 goroutine이 독립적으로 결과를 반환하고, 호출자가 이를 수집한다.
 
@@ -63,14 +63,15 @@ type Result struct {
 }
 ```
 
-### 여러 worker의 결과 수집
+### 2.2 여러 worker의 결과 수집
 
 각 worker가 자신만의 결과 channel을 반환하고, 호출자가 모든 channel에서 결과를 수집하는 패턴이다.
 
 ```go
 func TestErrorChannel(t *testing.T) {
+    // 각 worker는 자신만의 channel을 반환 → 호출자가 결과를 개별적으로 수집
     work := func(id int) <-chan Result {
-        ch := make(chan Result, 1)
+        ch := make(chan Result, 1) // buffer 1: 결과 송신 후 worker 즉시 종료 가능
         go func() {
             defer close(ch)
             if id%2 == 0 {
@@ -105,11 +106,11 @@ func TestErrorChannel(t *testing.T) {
 
 이 패턴의 장점은 각 worker의 결과와 에러를 **개별적으로** 처리할 수 있다는 것이다. 일부 worker가 실패하더라도 성공한 결과를 활용할 수 있다.
 
-## errors.Join으로 여러 에러 수집
+## 3. errors.Join으로 여러 에러 수집
 
 Go 1.20에서 도입된 `errors.Join`을 사용하면 여러 에러를 하나의 에러로 합칠 수 있다.
 
-### 기본 사용법
+### 3.1 기본 사용법
 
 ```go
 func TestMultiError(t *testing.T) {
@@ -121,6 +122,7 @@ func TestMultiError(t *testing.T) {
         }
     }
 
+    // errors.Join은 nil 에러를 자동 필터링 → 모두 nil이면 nil 반환
     combined := errors.Join(errs...)
 
     assert.Error(t, combined)
@@ -131,7 +133,7 @@ func TestMultiError(t *testing.T) {
 
 `errors.Join`은 nil이 아닌 에러들만 합쳐서 하나의 에러로 반환한다. 모든 에러가 nil이면 nil을 반환한다.
 
-### errors.Join의 특징
+### 3.2 errors.Join의 특징
 
 - 합쳐진 에러의 `Error()` 메서드는 각 에러를 줄바꿈으로 구분하여 반환한다
 - `errors.Is`와 `errors.As`로 개별 에러를 검사할 수 있다
@@ -150,11 +152,11 @@ mu.Unlock()
 combined := errors.Join(errs...)
 ```
 
-## errgroup 패턴
+## 4. errgroup 패턴
 
 `golang.org/x/sync/errgroup` 패키지는 goroutine 그룹의 에러 관리를 위한 표준 도구다. WaitGroup + 에러 처리를 하나로 합친 것이라 보면 된다.
 
-### 기본 사용법
+### 4.1 기본 사용법
 
 `errgroup.Group`은 여러 goroutine을 실행하고, 그 중 하나라도 에러를 반환하면 `Wait()`에서 첫 번째 에러를 반환한다.
 
@@ -162,6 +164,7 @@ combined := errors.Join(errs...)
 func TestErrgroupBasic(t *testing.T) {
     g := new(errgroup.Group)
 
+    // g.Go: 내부적으로 wg.Add(1) + goroutine 실행 + 에러 저장까지 자동 처리
     g.Go(func() error {
         return nil // 성공
     })
@@ -170,13 +173,13 @@ func TestErrgroupBasic(t *testing.T) {
         return fmt.Errorf("task failed")
     })
 
-    err := g.Wait() // 첫 번째 에러 반환
+    err := g.Wait() // 모든 goroutine 완료 대기 + 첫 번째 non-nil 에러 반환
     assert.Error(t, err)
     assert.Contains(t, err.Error(), "task failed")
 }
 ```
 
-### 모든 작업 성공 시
+### 4.2 모든 작업 성공 시
 
 모든 goroutine이 nil을 반환하면 `Wait()`도 nil을 반환한다. 결과 수집은 공유 변수를 통해 할 수 있다.
 
@@ -184,6 +187,7 @@ func TestErrgroupBasic(t *testing.T) {
 func TestErrgroupAllSuccess(t *testing.T) {
     g := new(errgroup.Group)
 
+    // 각 goroutine이 서로 다른 인덱스에만 쓰므로 mutex 없이 안전 (race 없음)
     results := make([]int, 5)
     for i := range 5 {
         g.Go(func() error {
@@ -198,12 +202,13 @@ func TestErrgroupAllSuccess(t *testing.T) {
 }
 ```
 
-### errgroup.WithContext - 첫 에러 시 전체 취소
+### 4.3 errgroup.WithContext - 첫 에러 시 전체 취소
 
 `errgroup.WithContext`를 사용하면 첫 번째 에러가 발생했을 때 context가 취소되어 나머지 goroutine에 **취소 신호**를 전파할 수 있다.
 
 ```go
 func TestErrgroupWithContext(t *testing.T) {
+    // WithContext: 첫 에러 반환 시 ctx 자동 cancel → 다른 goroutine에 취소 신호 전파
     g, ctx := errgroup.WithContext(context.Background())
 
     g.Go(func() error {
@@ -211,10 +216,11 @@ func TestErrgroupWithContext(t *testing.T) {
     })
 
     g.Go(func() error {
-        <-ctx.Done() // 첫 번째 에러로 context가 취소됨
+        <-ctx.Done() // 위 goroutine의 에러로 ctx가 취소되어 깨어남
         return ctx.Err()
     })
 
+    // Wait는 g.Go에 등록된 함수가 반환한 첫 번째 non-nil 에러를 돌려준다
     err := g.Wait()
     assert.Error(t, err)
     assert.Contains(t, err.Error(), "first error")
@@ -223,14 +229,15 @@ func TestErrgroupWithContext(t *testing.T) {
 
 이 패턴은 **하나라도 실패하면 나머지를 중단**해야 하는 경우에 유용하다. 예를 들어, 여러 API를 동시에 호출하되 하나가 실패하면 나머지를 취소하는 시나리오에 적합하다.
 
-### SetLimit로 동시성 제한
+### 4.4 SetLimit로 동시성 제한
 
 `SetLimit`을 사용하면 동시에 실행되는 goroutine 수를 제한할 수 있다. 세마포어처럼 동작하여 리소스 사용량을 제어한다.
 
 ```go
 func TestErrgroupSetLimit(t *testing.T) {
     g := new(errgroup.Group)
-    g.SetLimit(3) // 최대 3개 goroutine 동시 실행
+    // 내부적으로 buffered channel 기반 세마포어 → 슬롯이 빌 때까지 g.Go가 블로킹
+    g.SetLimit(3)
 
     results := make([]int, 10)
     for i := range 10 {
@@ -247,7 +254,7 @@ func TestErrgroupSetLimit(t *testing.T) {
 
 `SetLimit`은 내부적으로 buffered channel을 사용하여 동시 실행 수를 제한한다. `g.Go`가 호출될 때 제한에 도달하면 slot이 빌 때까지 blocking된다.
 
-## 패턴 비교 및 선택 가이드
+## 5. 패턴 비교 및 선택 가이드
 
 | 패턴 | 주 용도 | 에러 수집 방식 | 취소 전파 |
 |------|--------|--------------|----------|
@@ -255,7 +262,7 @@ func TestErrgroupSetLimit(t *testing.T) {
 | errgroup | goroutine 그룹 관리 | 첫 번째 에러만 반환 | WithContext로 지원 |
 | errors.Join | 다중 에러 결합 | 모든 에러를 하나로 합침 | 해당 없음 |
 
-### 언제 어떤 패턴을 사용할까
+### 5.1 언제 어떤 패턴을 사용할까
 
 **Error Channel을 사용하는 경우**:
 - 각 goroutine의 결과와 에러를 **개별적으로** 처리해야 할 때
@@ -272,9 +279,9 @@ func TestErrgroupSetLimit(t *testing.T) {
 - 유효성 검증처럼 모든 에러를 수집해야 할 때
 - 동시성과 무관하게 다중 에러를 결합할 때
 
-## 모범 사례
+## 6. 모범 사례
 
-### goroutine에서 recover 사용
+### 6.1 goroutine에서 recover 사용
 
 goroutine 안에서 panic이 발생하면 프로그램 전체가 종료될 수 있다. 외부 입력을 처리하거나 예측 불가능한 코드를 실행하는 goroutine에는 반드시 recover를 넣어야 한다.
 
@@ -295,6 +302,7 @@ errgroup과 함께 사용할 때는 panic을 에러로 변환하는 wrapper를 �
 
 ```go
 func safeGo(g *errgroup.Group, fn func() error) {
+    // named return value err가 핵심: defer에서 err를 수정하여 panic을 에러로 변환
     g.Go(func() (err error) {
         defer func() {
             if r := recover(); r != nil {
@@ -306,12 +314,13 @@ func safeGo(g *errgroup.Group, fn func() error) {
 }
 ```
 
-### timeout과 에러 처리 조합
+### 6.2 timeout과 에러 처리 조합
 
 실무에서는 timeout과 에러 처리를 함께 사용하는 경우가 많다. `errgroup.WithContext`와 `context.WithTimeout`을 조합하면 시간 제한이 있는 병렬 작업을 안전하게 처리할 수 있다.
 
 ```go
 func fetchAllWithTimeout(urls []string, timeout time.Duration) error {
+    // 3중 취소 조건이 동시에 작동: timeout / 첫 에러(WithContext) / 명시적 cancel()
     ctx, cancel := context.WithTimeout(context.Background(), timeout)
     defer cancel()
 
@@ -319,6 +328,7 @@ func fetchAllWithTimeout(urls []string, timeout time.Duration) error {
 
     for _, url := range urls {
         g.Go(func() error {
+            // ctx를 요청에 전달 → ctx 취소 시 HTTP 요청도 즉시 중단됨
             req, err := http.NewRequestWithContext(ctx, "GET", url, nil)
             if err != nil {
                 return err
@@ -346,7 +356,7 @@ func fetchAllWithTimeout(urls []string, timeout time.Duration) error {
 - 첫 번째 에러에 의한 취소 (errgroup.WithContext)
 - `cancel()` 호출에 의한 명시적 취소
 
-## 정리
+## 7. 정리
 
 | 패턴 | 핵심 | 사용 시점 |
 |------|------|----------|
@@ -361,7 +371,7 @@ func fetchAllWithTimeout(urls []string, timeout time.Duration) error {
 
 > 예제 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/concurrency/errhandling)에서 확인할 수 있다.
 
-## 참고
+## 8. 참고
 
 - [errgroup 패키지 문서](https://pkg.go.dev/golang.org/x/sync/errgroup)
 - [errors.Join 문서](https://pkg.go.dev/errors#Join)
