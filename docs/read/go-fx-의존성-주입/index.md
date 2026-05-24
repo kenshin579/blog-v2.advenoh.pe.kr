@@ -63,14 +63,26 @@ go get go.uber.org/fx
 
 ## 2.2 fx 기본 개념
 
-fx의 핵심 API는 4가지다.
+본격적으로 들어가기 전에, 이 글에서 다루는 fx 메서드를 한눈에 정리한다. fx는 메서드가 많아 매번 헷갈리기 쉬우므로, 아래 표를 지도 삼아 읽으면 좋다. 분류 순서는 글의 진행 순서(기초 → 확장 → 테스트)와 일치한다.
 
-| API | 역할 | 설명 |
-|-----|------|------|
-| `fx.Provide()` | lazy 등록 | 반환 타입을 기준으로 의존성 그래프에 등록 (필요할 때 호출) |
-| `fx.Invoke()` | eager 실행 | 앱 시작 시 즉시 호출되는 부수 효과 (서버 시작, 라우터 등록 등) |
-| `fx.Supply()` | 값 등록 | 이미 생성된 인스턴스를 생성자 없이 그대로 등록 |
-| `fx.New()` | 컨테이너 생성 | 위 요소들을 조합하여 앱 컨테이너 생성 |
+| 메서드 | 분류 | 역할 | 도입 버전 |
+|--------|------|------|-----------|
+| `fx.New` | 기초 | 앱 컨테이너 생성 | — |
+| `fx.Provide` | 기초 | lazy 등록 (반환 타입 기준 그래프 등록) | — |
+| `fx.Invoke` | 기초 | eager 실행 (서버 시작·라우터 등록 등 부수 효과) | — |
+| `fx.Supply` | 기초 | 생성자 없이 값 직접 등록 | — |
+| `fx.Lifecycle` | 수명주기 | OnStart/OnStop 훅으로 시작·종료 관리 | — |
+| `fx.Module` | 확장 | 도메인별 의존성 그룹화 | v1.17+ |
+| `fx.Decorate` | 확장 | 기존 의존성 래핑 (로깅·캐싱·메트릭) | v1.18+ |
+| `fx.Annotate` | 확장 | 생성자에 메타데이터 부여 (name/group/As) | — |
+| `fx.ResultTags` + `name:` | 확장 | 동일 타입을 개별 식별 | — |
+| `group:` 태그 | 확장 | 동일 인터페이스 구현체를 슬라이스로 모음 | — |
+| `fx.Private` | 확장 | Module 내부 의존성 캡슐화 | v1.20+ |
+| `fxtest.New` | 테스트 | 테스트 전용 앱 생성 | — |
+| `fx.Replace` | 테스트 | 기존 Provide를 Mock으로 교체 | — |
+| `fx.Populate` | 테스트 | 컨테이너 내부 인스턴스를 외부 변수로 추출 | — |
+
+이후 섹션에서 각 메서드를 실전 예제로 하나씩 다룬다. 우선 가장 기초가 되는 `fx.Provide`, `fx.Invoke`, `fx.Supply`, `fx.New`부터 살펴보자.
 
 `fx.Provide()`에 등록된 생성자는 즉시 실행되지 않는다. 다른 곳에서 해당 타입이 필요할 때 **lazy**하게 생성된다.
 
@@ -80,11 +92,13 @@ func TestFx_Provide_Invoke(t *testing.T) {
     var svc *UserService
 
     app := fxtest.New(t,
+        // fx.Provide: 생성자를 등록만 한다. 즉시 실행되지 않고, 의존성으로 필요해질 때 lazy하게 호출된다.
         fx.Provide(
             NewLogger,       // Logger 인터페이스 반환
             NewMysqlUserRepo, // UserRepository 인터페이스 반환 (Logger 필요)
             NewUserService,   // *UserService 반환 (UserRepository 필요)
         ),
+        // fx.Invoke: 앱 시작 시 즉시 실행되는 부수 효과. 여기서는 조립된 UserService를 외부 변수로 꺼낸다.
         fx.Invoke(func(s *UserService) {
             svc = s
         }),
@@ -160,6 +174,50 @@ func NewArticleUsecase(
 func NewArticleHandler(e *echo.Echo, us domain.ArticleUsecase) *ArticleHandler { ... }
 ```
 
+`fx.Provide()`에는 위처럼 미리 정의한 생성자뿐 아니라 **익명 함수**도 그대로 등록할 수 있다. 간단한 변환 로직은 별도 생성자 파일을 만들 필요 없이 인라인으로 처리하면 편하다. 위의 `ProvideBasicConfig`를 익명 함수로 풀어 쓰면 다음과 같다.
+
+```go
+// cmd/main.go
+app := fx.New(
+    fx.Provide(
+        config.New,
+        database.New,
+        NewEcho,
+
+        // 익명 함수도 생성자로 등록 가능 — 매개변수·반환 타입만 맞으면 된다
+        func(cfg *config.Config) time.Duration {
+            return time.Duration(cfg.Context.Timeout) * time.Second
+        },
+
+        article.NewArticleHandler,
+        article.NewArticleUsecase,
+        article.NewMysqlArticleRepository,
+        author.NewMysqlAuthorRepository,
+    ),
+    fx.Invoke(registerHooks),
+)
+```
+
+fx는 named 생성자와 똑같이 익명 함수의 매개변수(`*config.Config`)와 반환 타입(`time.Duration`)을 분석해 의존성 그래프에 연결한다. 함수 형태만 다를 뿐, fx 입장에서는 동일한 생성자다.
+
+이렇게 등록한 생성자들로 fx가 구성하는 의존성 그래프를 시각화하면 다음과 같다.
+
+```mermaid
+graph TD
+    Config["config.New()"] --> Database["database.New()"]
+    Database --> ArticleRepo["NewMysqlArticleRepository()"]
+    Database --> AuthorRepo["NewMysqlAuthorRepository()"]
+    ArticleRepo --> ArticleUsecase["NewArticleUsecase()"]
+    AuthorRepo --> ArticleUsecase
+    ArticleUsecase --> ArticleHandler["NewArticleHandler()"]
+    Config --> Echo["NewEcho()"]
+    Config --> RegisterHooks["registerHooks()"]
+    Echo --> RegisterHooks
+    ArticleHandler --> RegisterHooks
+```
+
+fx는 이 그래프를 생성자의 매개변수와 반환 타입만으로 자동 구성한다. 순환 의존성이 있으면 앱 시작 시 명확한 에러 메시지를 출력한다.
+
 ## 2.4 Lifecycle 관리
 
 `fx.Lifecycle`은 앱의 시작과 종료를 관리한다. `OnStart`에서 서버를 시작하고, `OnStop`에서 Graceful Shutdown을 처리한다.
@@ -183,7 +241,13 @@ func registerHooks(lifecycle fx.Lifecycle, e *echo.Echo, cfg *config.Config) {
 }
 ```
 
-`registerHooks`는 `fx.Invoke()`로 등록한다. `fx.Invoke()`는 앱 시작 시 즉시 호출되는 함수로, 주로 Lifecycle 등록이나 라우터 설정에 사용된다.
+`registerHooks`는 `fx.Invoke()`로 등록한다. 한 가지 주의할 점은 **실행 시점**이다. `fx.Invoke`(그리고 이를 내부적으로 사용하는 `fx.Populate`)는 `app.Start()`가 아니라 **`fx.New()` 호출 시점**에 즉시 실행된다. 따라서 위 `registerHooks`는 `fx.New()` 단계에서 호출되어 `Lifecycle`에 OnStart/OnStop 훅을 *등록*만 하고, 실제 서버 기동(`OnStart` 본문)은 이후 `app.Start(ctx)` 시점에 트리거된다. `fx.Lifecycle`이 이런 2단계 구조를 가지는 이유다 — Invoke로 일찍 훅을 등록해두고, 훅 본문 실행은 `Start`까지 미루는 것.
+
+| 단계 | 시점 | 실행되는 것 |
+|------|------|------------|
+| 1 | `fx.New()` / `fxtest.New()` | `fx.Invoke` 함수 본문 (= `fx.Populate`도 여기서 채워짐), Lifecycle 훅 *등록* |
+| 2 | `app.Start(ctx)` | 등록된 `OnStart` 훅 실행 (서버 기동 등) |
+| 3 | `app.Stop(ctx)` | 등록된 `OnStop` 훅 실행 (Graceful Shutdown) |
 
 ```go
 // fx_test.go
@@ -505,6 +569,17 @@ app := fxtest.New(t,
 
 지금까지는 `fx.Invoke(func(s *Svc) { svc = s })` 형태로 외부 변수에 인스턴스를 캡처했다. `fx.Populate`는 같은 일을 더 간결하게 한다.
 
+사실 `fx.Populate`는 내부적으로 `fx.Invoke`로 구현된 편의 함수다. `fx.Populate(&svc)`는 "주입받은 값을 `svc`에 대입하는 `fx.Invoke`"를 자동으로 생성하는 것과 같다. 즉 둘의 본질은 동일하다. 차이는 **목적**에 있다. `fx.Invoke`는 꺼낸 의존성으로 무언가를 *실행*하는 게 목적이라 클로저 본문에서 호출·검증 등 무엇이든 할 수 있고(추출은 그중 하나일 뿐), `fx.Populate`는 *추출 자체*가 목적이라 클로저가 군더더기일 때 이를 생략한 형태다.
+
+두 메서드를 비교하면 다음과 같다.
+
+| 구분 | `fx.Invoke` | `fx.Populate` |
+|------|-------------|---------------|
+| 본질 | 함수를 **실행**한다 | 변수에 값을 **채운다** |
+| 넘기는 것 | 함수(클로저) | 포인터 |
+| 본문 | 있음 — 대입·호출·검증 등 무엇이든 | 없음 — 추출만 |
+| 추출 | 클로저 안에서 `svc = s`로 부수적으로 가능 | 그 자체가 유일한 목적 |
+
 ```go
 // fx_test.go
 // 방식 1: fx.Invoke 클로저로 캡처 (앞서 사용한 방식)
@@ -547,66 +622,28 @@ app := fxtest.New(t,
 
 # 5. 마무리
 
-지금까지 살펴본 내용을 의존성 그래프로 정리하고, 실전 팁과 함께 마무리한다.
+fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 되는지 정리하면 다음과 같다.
 
-## 5.1 의존성 그래프 시각화
+| 하고 싶은 일 | 메서드 | 선택 팁 |
+|------------|--------|--------|
+| 의존성을 그래프에 등록 (나중에 lazy 생성) | `fx.Provide` | 즉시 실행 아님 — 필요할 때 호출 |
+| 앱 시작 시 즉시 실행 (서버 기동·라우터 등록) | `fx.Invoke` | `Provide`와 헷갈리면 "부수 효과면 Invoke" |
+| 이미 만든 값·설정을 생성자 없이 주입 | `fx.Supply` | 상수·구성값에 적합 |
+| 시작/종료 훅 관리 (Graceful Shutdown) | `fx.Lifecycle` | `Invoke` 안에서 `Append`로 등록 |
+| 도메인별로 의존성 묶기 | `fx.Module` | 커진 `Provide` 목록을 분리 |
+| 기존 의존성에 로깅·캐싱 덧입히기 | `fx.Decorate` | 원본 코드 수정 없이 래핑 |
+| 동일 타입을 **개별** 식별 (read/write DB) | `fx.Annotate` + `name:` | 수신 측은 단일 필드 |
+| 동일 인터페이스 구현체를 **모아서** 주입 | `group:` 태그 | 수신 측은 슬라이스 필드 |
+| Module 내부 의존성을 외부에 숨기기 | `fx.Private` | 인프라 핸들 격리 |
+| 테스트에서 실제 구현 대신 Mock | `fx.Replace` | `fx.As`로 인터페이스 매칭 |
+| 테스트에서 컨테이너 내부 인스턴스 꺼내기 | `fx.Populate` | 검증까지 같이 하면 `fx.Invoke` |
 
-실전 프로젝트에서 fx가 구성하는 의존성 그래프를 시각화하면 다음과 같다.
+한 가지만 기억하자. 모든 의존성을 fx로 관리할 필요는 없다. 단순한 값 객체나 유틸리티는 직접 생성하는 편이 명확하고, fx는 **수명주기 관리가 필요한 컴포넌트**(DB 연결·HTTP 서버·외부 클라이언트)에 집중할 때 가장 빛난다. 리플렉션 기반이라 컴파일 타임 타입 안전성은 일부 포기하지만, 상세한 런타임 에러 메시지와 실전 생산성이 이를 충분히 상쇄한다.
 
-```mermaid
-graph TD
-    Config["config.New()"] --> Database["database.New()"]
-    Database --> ArticleRepo["NewMysqlArticleRepository()"]
-    Database --> AuthorRepo["NewMysqlAuthorRepository()"]
-    ArticleRepo --> ArticleUsecase["NewArticleUsecase()"]
-    AuthorRepo --> ArticleUsecase
-    ArticleUsecase --> ArticleHandler["NewArticleHandler()"]
-    Config --> Echo["NewEcho()"]
-    Config --> RegisterHooks["registerHooks()"]
-    Echo --> RegisterHooks
-    ArticleHandler --> RegisterHooks
-```
+전체 소스는 다음 두 곳에서 확인할 수 있다.
 
-fx는 이 그래프를 생성자의 매개변수와 반환 타입만으로 자동 구성한다. 순환 의존성이 있으면 앱 시작 시 명확한 에러 메시지를 출력한다.
-
-## 5.2 실전 팁
-
-**순환 의존성 디버깅**: fx는 순환 의존성을 감지하면 상세한 에러 메시지를 출력한다. 기본 로거를 사용하면 의존성 해결 과정을 추적할 수 있다.
-
-```go
-// 디버깅용: fx 로그 활성화 (기본)
-app := fx.New(
-    fx.Provide(...),
-    // fx.NopLogger, // 로그를 끄고 싶을 때만 사용
-)
-```
-
-**과도한 DI 주의**: 모든 의존성을 fx로 관리할 필요는 없다. 단순한 유틸리티 함수나 값 객체는 직접 생성하는 것이 더 명확하다. fx는 **수명주기 관리가 필요한 컴포넌트**(DB 연결, HTTP 서버, 외부 클라이언트 등)에 집중하는 것이 좋다.
-
-**fx.Provide vs fx.Invoke 구분**:
-- `fx.Provide()`: 나중에 쓸 수 있도록 등록만 (lazy)
-- `fx.Invoke()`: 즉시 실행이 필요한 부수 효과 (서버 시작, 라우터 등록)
-
-## 5.3 정리
-
-이 글에서는 uber/fx를 활용한 Go 애플리케이션의 의존성 주입 패턴을 살펴봤다.
-
-- **기본 개념**: Provide, Invoke, Supply로 의존성 그래프 구성
-- **Lifecycle**: OnStart/OnStop으로 서버 수명주기 관리
-- **fx.Module**: 도메인별 의존성 그룹화로 가독성 향상
-- **fx.Decorate**: 기존 의존성을 래핑하여 로깅/캐싱 추가
-- **고급 패턴**: Annotate + Named로 동일 타입 여러 인스턴스 관리
-- **테스트**: fxtest.New + fx.Replace로 Mock 주입
-- **fx.Group**: 동일 인터페이스 여러 구현체를 슬라이스로 모아 주입
-- **fx.Private**: Module 내부 의존성을 외부에 노출하지 않는 캡슐화
-- **fx.Populate**: 테스트에서 fx 컨테이너 내부 인스턴스를 외부 변수로 추출
-
-fx는 수동 DI의 복잡도를 해결하면서도, 리플렉션 기반이기 때문에 컴파일 타임 타입 안전성은 다소 포기한다. 하지만 런타임 에러 메시지가 충분히 상세하고, 실전 프로젝트에서의 생산성 향상이 이를 상쇄한다.
-
-## 5.4 프로젝트 소스
-
-전체 소스 코드는 GitHub에서 확인할 수 있다:
-- https://github.com/kenshin579/tutorials-go/tree/master/project-layout/go-clean-arch-v2
+- 메서드별 학습 예제 (본문 `// fx_test.go` 코드): [golang/third-party/fx](https://github.com/kenshin579/tutorials-go/tree/master/golang/third-party/fx)
+- 실전 적용 예시 (Clean Architecture + fx, `// cmd/main.go` 코드): [project-layout/go-clean-arch-v2](https://github.com/kenshin579/tutorials-go/tree/master/project-layout/go-clean-arch-v2)
 
 # 6. 참고
 
