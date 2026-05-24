@@ -13,7 +13,7 @@ draft: false
 > - [동시성 웹 크롤러](https://github.com/kenshin579/tutorials-go/tree/master/golang/concurrency/project/crawler)
 > - [Graceful Shutdown](https://github.com/kenshin579/tutorials-go/tree/master/golang/concurrency/project/shutdown)
 
-## 서론 - 배운 것을 실전에 적용하기
+## 1. 서론 - 배운 것을 실전에 적용하기
 
 <img src="cover.png" alt="cover" width="75%" />
 
@@ -24,11 +24,11 @@ draft: false
 - **동시성 웹 크롤러**: 여러 URL을 동시에 크롤링하면서 rate limiting, 중복 방지, 취소 처리를 모두 구현한다
 - **Graceful Shutdown**: HTTP 서버가 종료 신호를 받았을 때 진행 중인 요청을 안전하게 완료하고 종료하는 패턴을 구현한다
 
-## 실전 프로젝트 1: 동시성 웹 크롤러
+## 2. 실전 프로젝트 1: 동시성 웹 크롤러
 
 웹 크롤러는 동시성 프로그래밍의 대표적인 활용 사례다. 여러 URL을 동시에 요청하면 성능이 크게 향상되지만, 그만큼 제어해야 할 것도 많다. 동시 요청 수 제한, 중복 URL 방지, rate limiting, 전체 크롤링 취소 등을 모두 고려해야 한다.
 
-### 설계: Crawler 구조체와 Result
+### 2.1 설계: Crawler 구조체와 Result
 
 먼저 크롤링 결과를 담을 `Result` struct와 크롤러 자체인 `Crawler` struct를 정의한다.
 
@@ -77,7 +77,7 @@ func NewCrawler(maxWorkers int, rateLimit time.Duration) *Crawler {
 }
 ```
 
-### 핵심 동시성 패턴 활용
+### 2.2 핵심 동시성 패턴 활용
 
 `Crawl` 메서드는 이 시리즈에서 다뤘던 여러 동시성 패턴을 하나로 조합한다.
 
@@ -124,7 +124,7 @@ func (c *Crawler) Crawl(ctx context.Context, urls []string) []Result {
 
 이 코드에서 사용된 동시성 패턴을 하나씩 살펴보자.
 
-#### context.WithCancel로 전체 크롤링 취소
+#### 2.2.1 context.WithCancel로 전체 크롤링 취소
 
 `Crawl` 메서드는 `context.Context`를 첫 번째 파라미터로 받는다. 호출자가 `context.WithTimeout`이나 `context.WithCancel`로 생성한 context를 전달하면, 크롤링 도중 언제든 취소할 수 있다.
 
@@ -139,7 +139,7 @@ case <-ticker.C:
 
 `ctx.Done()` channel이 닫히면 더 이상 새 URL을 크롤링하지 않는다. 이미 실행 중인 goroutine도 `fetch` 메서드 내부에서 `http.NewRequestWithContext(ctx, ...)`를 사용하므로, context가 취소되면 진행 중인 HTTP 요청도 중단된다.
 
-#### Semaphore (buffered channel)로 동시 worker 수 제한
+#### 2.2.2 Semaphore (buffered channel)로 동시 worker 수 제한
 
 `maxWorkers` 크기의 buffered channel이 semaphore 역할을 한다.
 
@@ -155,7 +155,7 @@ defer func() { <-sem }()
 
 이렇게 하면 동시에 실행되는 goroutine 수가 `maxWorkers`를 초과하지 않는다. 6편에서 다뤘던 Semaphore 패턴의 실전 적용이다.
 
-#### time.Ticker로 Rate Limiting
+#### 2.2.3 time.Ticker로 Rate Limiting
 
 외부 서버에 너무 빠르게 요청을 보내면 IP가 차단될 수 있다. `time.Ticker`로 요청 간 최소 간격을 보장한다.
 
@@ -168,7 +168,7 @@ case <-ticker.C:
     // rate limit 간격만큼 대기 후 다음 요청 진행
 ```
 
-#### sync.Map으로 방문한 URL 관리 (중복 방지)
+#### 2.2.4 sync.Map으로 방문한 URL 관리 (중복 방지)
 
 여러 goroutine이 동시에 URL을 처리하므로, 방문 여부를 확인하는 자료구조도 동시성 안전해야 한다. `sync.Map`의 `LoadOrStore`는 원자적으로 "확인 후 저장"을 수행한다.
 
@@ -180,7 +180,7 @@ if _, loaded := c.visited.LoadOrStore(u, true); loaded {
 
 일반 `map`에 `Mutex`를 걸어도 되지만, 읽기가 많고 키 집합이 안정적인 경우 `sync.Map`이 더 효율적이다.
 
-#### sync.Mutex로 결과 수집 보호
+#### 2.2.5 sync.Mutex로 결과 수집 보호
 
 여러 goroutine이 동시에 `results` 슬라이스에 append하면 race condition이 발생한다. `sync.Mutex`로 보호한다.
 
@@ -190,7 +190,7 @@ c.results = append(c.results, result)
 c.resultsMu.Unlock()
 ```
 
-### fetch 메서드와 HTML 파싱
+### 2.3 fetch 메서드와 HTML 파싱
 
 개별 URL을 가져오는 `fetch` 메서드는 context를 HTTP 요청에 전달하여 취소를 지원한다.
 
@@ -248,11 +248,11 @@ func extractLinks(html string) []string {
 }
 ```
 
-### 테스트: httptest.NewServer로 테스트 서버 구성
+### 2.4 테스트: httptest.NewServer로 테스트 서버 구성
 
 외부 서버에 의존하지 않고 크롤러를 테스트하려면 `httptest.NewServer`를 사용한다. 이전 편에서 다뤘던 httptest 패턴의 실전 적용이다.
 
-#### 기본 크롤링 테스트
+#### 2.4.1 기본 크롤링 테스트
 
 3개 페이지를 가진 테스트 서버를 구성하고 모두 크롤링되는지 확인한다.
 
@@ -293,7 +293,7 @@ func TestCrawlerBasic(t *testing.T) {
 }
 ```
 
-#### 취소 테스트
+#### 2.4.2 취소 테스트
 
 `context.WithTimeout`으로 50ms timeout을 설정하고, 각 요청이 100ms 걸리는 느린 서버에 크롤링을 시도한다. timeout으로 인해 일부 요청만 처리되거나 에러가 발생해야 한다.
 
@@ -329,7 +329,7 @@ func TestCrawlerWithCancel(t *testing.T) {
 }
 ```
 
-#### 중복 URL 테스트
+#### 2.4.3 중복 URL 테스트
 
 같은 URL을 3번 전달해도 실제 HTTP 요청은 1번만 발생해야 한다.
 
@@ -357,7 +357,7 @@ func TestCrawlerDuplicateURL(t *testing.T) {
 }
 ```
 
-#### 링크 추출 테스트
+#### 2.4.4 링크 추출 테스트
 
 HTML에서 `https://`로 시작하는 절대 경로 링크만 추출되는지 확인한다. 상대 경로(`/relative`)는 추출되지 않아야 한다.
 
@@ -385,7 +385,7 @@ func TestCrawlerLinkExtraction(t *testing.T) {
 }
 ```
 
-### 크롤러 동시성 패턴 요약
+### 2.5 크롤러 동시성 패턴 요약
 
 ```mermaid
 graph TD
@@ -403,11 +403,11 @@ graph TD
     end
 ```
 
-## 실전 프로젝트 2: Graceful Shutdown
+## 3. 실전 프로젝트 2: Graceful Shutdown
 
 프로덕션 서버에서 배포나 재시작이 발생할 때, 서버를 즉시 종료하면 진행 중인 요청이 실패한다. Graceful Shutdown은 **새 요청은 거부하되, 진행 중인 요청은 완료될 때까지 기다린 후 종료**하는 패턴이다.
 
-### HTTP 서버의 Graceful Shutdown이 필요한 이유
+### 3.1 HTTP 서버의 Graceful Shutdown이 필요한 이유
 
 서버 종료 시 발생할 수 있는 문제를 생각해보자.
 
@@ -425,7 +425,7 @@ graph TD
     D --> E["5. 서버 종료 완료"]
 ```
 
-### Server 구조체 설계
+### 3.2 Server 구조체 설계
 
 ```go
 type Server struct {
@@ -462,7 +462,7 @@ func NewServer(addr string) *Server {
 
 `/slow` 핸들러는 2초 걸리는 요청을 시뮬레이션한다. Graceful Shutdown이 제대로 동작하면, shutdown 시점에 `/slow` 요청이 진행 중이더라도 2초가 지나 응답이 완료된 후에 서버가 종료된다.
 
-### http.Server.Shutdown() 동작 방식
+### 3.3 http.Server.Shutdown() 동작 방식
 
 Go 표준 라이브러리의 `http.Server`는 `Shutdown` 메서드를 제공한다. 이 메서드의 동작 방식은 다음과 같다.
 
@@ -483,7 +483,7 @@ func (s *Server) Shutdown(ctx context.Context) error {
 
 `Serve`는 `http.ErrServerClosed`를 반환하면 정상 종료된 것이다. 이 에러를 별도로 처리해야 한다.
 
-### signal.NotifyContext 패턴
+### 3.4 signal.NotifyContext 패턴
 
 실제 프로덕션에서는 OS 시그널(SIGTERM, SIGINT)을 받아 graceful shutdown을 트리거한다. Go 1.16부터 `signal.NotifyContext`를 사용하면 시그널과 context를 깔끔하게 연결할 수 있다.
 
@@ -523,7 +523,7 @@ func main() {
 - `<-ctx.Done()`으로 시그널을 기다린다
 - shutdown에도 별도 timeout을 설정하여 무한 대기를 방지한다
 
-### 테스트: 기본 Graceful Shutdown
+### 3.5 테스트: 기본 Graceful Shutdown
 
 ```go
 func TestGracefulShutdown(t *testing.T) {
@@ -558,7 +558,7 @@ func TestGracefulShutdown(t *testing.T) {
 
 `net.Listen("tcp", "127.0.0.1:0")`으로 랜덤 포트를 사용하여 테스트 간 포트 충돌을 방지한다.
 
-### 테스트: 진행 중인 요청 완료 후 종료
+### 3.6 테스트: 진행 중인 요청 완료 후 종료
 
 Graceful Shutdown의 핵심은 진행 중인 요청이 완료된 후에 서버가 종료되는 것이다.
 
@@ -615,7 +615,7 @@ func TestGracefulShutdownWithPendingRequests(t *testing.T) {
 
 shutdown timeout(5초)이 요청 처리 시간(2초)보다 길기 때문에, 진행 중이던 `/slow` 요청이 정상적으로 완료된 후 서버가 종료된다.
 
-### 테스트: Shutdown Timeout 초과 시 강제 종료
+### 3.7 테스트: Shutdown Timeout 초과 시 강제 종료
 
 shutdown timeout이 너무 짧으면 진행 중인 요청을 기다리지 못하고 `context deadline exceeded` 에러가 발생한다.
 
@@ -654,7 +654,7 @@ func TestShutdownTimeout(t *testing.T) {
 
 이 테스트는 `/slow` 요청이 2초 걸리는데 shutdown timeout이 100ms이므로, `Shutdown`이 `context.DeadlineExceeded` 에러를 반환한다.
 
-### 테스트: Signal 패턴 시뮬레이션
+### 3.8 테스트: Signal 패턴 시뮬레이션
 
 실제 OS 시그널 대신 `context.WithCancel`로 시그널 수신을 시뮬레이션한다.
 
@@ -706,11 +706,11 @@ func TestSignalPattern(t *testing.T) {
 
 이 테스트의 핵심은 `cancel()` 호출이 실제 프로덕션 환경의 SIGTERM 수신과 동일한 흐름을 트리거한다는 것이다. `ctx.Done()` channel이 닫히면 별도 goroutine에서 `Shutdown`을 호출하고, `serverDone` channel로 서버 종료 완료를 확인한다.
 
-## Best Practices 정리
+## 4. Best Practices 정리
 
 이 시리즈에서 다뤘던 내용을 바탕으로, Go 동시성 프로그래밍의 핵심 Best Practices를 정리한다.
 
-### Goroutine: 생성한 곳에서 lifecycle 관리
+### 4.1 Goroutine: 생성한 곳에서 lifecycle 관리
 
 goroutine을 시작하면 반드시 종료 조건도 함께 설계해야 한다. "fire and forget" 방식은 goroutine 누수의 주요 원인이다.
 
@@ -735,7 +735,7 @@ go func() {
 }()
 ```
 
-### Channel: 생산자가 close, 소비자는 close 금지
+### 4.2 Channel: 생산자가 close, 소비자는 close 금지
 
 channel을 close하는 책임은 항상 **데이터를 보내는 쪽(생산자)**에 있다. 소비자가 channel을 close하면 생산자가 closed channel에 write하여 panic이 발생한다.
 
@@ -758,7 +758,7 @@ for v := range producer() {
 }
 ```
 
-### Context: 함수 첫 번째 파라미터, cancel은 반드시 defer 호출
+### 4.3 Context: 함수 첫 번째 파라미터, cancel은 반드시 defer 호출
 
 Go 공식 컨벤션에 따라 context는 함수의 첫 번째 파라미터로 전달하고, struct에 저장하지 않는다. 파생 context의 cancel 함수는 반드시 호출해야 리소스가 정리된다.
 
@@ -779,7 +779,7 @@ func FetchData(ctx context.Context, url string) ([]byte, error) {
 }
 ```
 
-### Sync: 필요한 최소 범위만 lock
+### 4.4 Sync: 필요한 최소 범위만 lock
 
 Mutex의 lock 범위는 가능한 한 좁게 유지한다. 넓은 범위의 lock은 동시성 성능을 저하시킨다.
 
@@ -799,7 +799,7 @@ mu.Unlock()
 
 읽기가 쓰기보다 훨씬 많은 경우 `sync.RWMutex`를 사용하면 읽기 작업의 동시성을 유지할 수 있다.
 
-### Error: goroutine 에러는 channel 또는 errgroup으로 전달
+### 4.5 Error: goroutine 에러는 channel 또는 errgroup으로 전달
 
 goroutine 안에서 발생한 에러는 자동으로 전파되지 않는다. 명시적으로 channel이나 errgroup을 사용해야 한다.
 
@@ -819,7 +819,7 @@ if err := g.Wait(); err != nil {
 }
 ```
 
-### Testing: 항상 -race 플래그 사용
+### 4.6 Testing: 항상 -race 플래그 사용
 
 동시성 코드는 반드시 race detector와 함께 테스트해야 한다. race condition은 일반 테스트에서는 발견되지 않을 수 있다.
 
@@ -831,7 +831,7 @@ go test -race ./...
 go test -race -count=1 ./...
 ```
 
-### Best Practices 요약 표
+### 4.7 Best Practices 요약 표
 
 | 영역 | Best Practice | 안티패턴 |
 |------|--------------|---------|
@@ -842,7 +842,7 @@ go test -race -count=1 ./...
 | error | channel/errgroup으로 전달 | log.Println 후 무시 |
 | testing | -race 플래그 필수 | race detector 없이 테스트 |
 
-## 시리즈 요약
+## 5. 시리즈 요약
 
 전체 시리즈에서 다룬 내용을 한눈에 정리한다.
 
@@ -859,7 +859,7 @@ go test -race -count=1 ./...
 | 9편 | 성능 최적화 | pprof, trace, sync.Pool, atomic, 벤치마크 |
 | 10편 | 실전 프로젝트와 Best Practices | 웹 크롤러, Graceful Shutdown, 종합 정리 |
 
-## 정리
+## 6. 정리
 
 이 시리즈를 통해 Go 동시성 프로그래밍의 기초부터 실전까지 살펴봤다. 마지막으로 핵심을 요약하면 다음과 같다.
 
@@ -869,7 +869,7 @@ go test -race -count=1 ./...
 - **패턴을 알면 복잡도가 낮아진다.** Worker Pool, Pipeline, Semaphore 등 검증된 패턴을 활용한다.
 - **테스트와 도구를 적극 활용한다.** race detector, pprof, trace는 동시성 버그를 찾는 데 필수다.
 
-## 참고 자료
+## 7. 참고 자료
 
 - [Effective Go - Concurrency](https://go.dev/doc/effective_go#concurrency)
 - [Go Concurrency Patterns](https://go.dev/talks/2012/concurrency.slide)
