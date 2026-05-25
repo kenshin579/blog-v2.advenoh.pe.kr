@@ -80,34 +80,28 @@ tmux의 거의 모든 단축키는 **prefix 키를 먼저 누른 뒤** 다음 �
 
 ## 세션
 
-```text
-- 새 세션 시작(이름 지정): tmux new -s my-project
-- 세션에서 빠져나오기(detach): prefix d   (세션은 계속 살아있음)
-- 세션 목록 보기: tmux ls
-- 세션에 다시 붙기(attach): tmux attach -t my-project
-- 세션 종료: tmux kill-session -t my-project
-```
+- 새 세션 시작(이름 지정): `tmux new -s my-project`
+- 세션에서 빠져나오기(detach): `prefix d` (세션은 계속 살아있음)
+- 세션 목록 보기: `tmux ls`
+- 세션에 다시 붙기(attach): `tmux attach -t my-project`
+- 세션 종료: `tmux kill-session -t my-project`
 
 여기서 핵심은 `prefix d`(detach)와 `tmux attach -t`(다시 붙기)다. detach해도 세션 안의 작업은 백그라운드에서 계속 돌아간다.
 
 ## 윈도우
 
-```text
-- 새 윈도우: prefix c
-- 다음 / 이전 윈도우: prefix n / prefix p
-- 번호로 이동: prefix 0 ~ prefix 9
-- 윈도우 이름 변경: prefix ,
-```
+- 새 윈도우: `prefix c`
+- 다음 / 이전 윈도우: `prefix n` / `prefix p`
+- 번호로 이동: `prefix 0` ~ `prefix 9`
+- 윈도우 이름 변경: `prefix ,`
 
 ## 페인
 
-```text
-- 좌우 분할: prefix %
-- 상하 분할: prefix "
-- 페인 간 이동: prefix 방향키
-- 페인 크기 조절: prefix Ctrl+방향키
-- 현재 페인 닫기: prefix x   (확인 후 y)
-```
+- 좌우 분할: `prefix %`
+- 상하 분할: `prefix "`
+- 페인 간 이동: `prefix 방향키`
+- 페인 크기 조절: `prefix Ctrl+방향키`
+- 현재 페인 닫기: `prefix x` (확인 후 y)
 
 ## 핵심 단축키 치트시트
 
