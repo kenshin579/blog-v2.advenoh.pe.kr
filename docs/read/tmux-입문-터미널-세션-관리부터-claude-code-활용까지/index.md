@@ -38,6 +38,21 @@ tmux는 **t**erminal **mux**(multiplexer), 즉 "터미널 멀티플렉서"의 �
 
 # 3. 설치 (macOS)
 
+macOS에서는 Homebrew로 한 줄이면 끝난다.
+
+```bash
+brew install tmux
+```
+
+설치가 끝나면 버전을 확인해 본다.
+
+```bash
+tmux -V
+# tmux 3.5a  (예시)
+```
+
+버전 문자열이 출력되면 준비 완료다. 이제 터미널에서 `tmux`라고 입력하면 첫 세션이 시작된다.
+
 # 4. 핵심 개념: Session, Window, Pane
 
 # 5. 기본 사용법
