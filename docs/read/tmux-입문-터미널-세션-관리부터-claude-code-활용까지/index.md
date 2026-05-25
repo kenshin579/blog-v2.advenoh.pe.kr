@@ -222,3 +222,24 @@ echo "붙으려면: tmux attach -t <세션이름>"
 Claude Code에는 여러 세션을 자동으로 띄워 협업시키는 공식 `Agent Teams` 기능도 실험적으로 제공된다(`tmux -CC` 컨트롤 모드를 활용한다). 더 깊이 들어가고 싶다면 [공식 문서](https://code.claude.com/docs/en/agent-teams)를 참고하자.
 
 # 8. 마치며
+
+tmux의 진짜 가치는 한 줄로 정리된다. **닫아도 사라지지 않는 작업 공간.** 화면 분할도 편하지만, 결국 가장 큰 변화는 "작업이 날아갈까 봐 터미널을 못 닫던" 상태에서 벗어나는 것이다.
+
+처음부터 모든 단축키를 외울 필요는 없다. 아래 다섯 개부터 손에 익히면 된다.
+
+- 새 세션: `tmux new -s 이름`
+- 빠져나오기: `prefix d`
+- 다시 붙기: `tmux attach -t 이름`
+- 새 윈도우: `prefix c`
+- 좌우 분할: `prefix %`
+
+특히 `prefix d`(detach)와 `tmux attach`(다시 붙기)부터 익혀보길 권한다. 이 두 개만 손에 붙어도 터미널을 대하는 방식이 달라진다. 그다음 Claude Code 같은 장시간 작업에 얹어 쓰면, 왜 다시 tmux를 찾게 되는지 금방 체감할 것이다.
+
+## 참고
+
+- [tmux + Claude Code: The Perfect Terminal Workflow](https://willness.dev/blog/tmux-claude-code-workflow)
+- [Using tmux with Claude Code](https://hboon.com/using-tmux-with-claude-code/)
+- [How to Run Claude Code with tmux on a VPS](https://codeongrass.com/blog/how-to-run-claude-code-with-tmux/)
+- [Seamless Claude Code Handoff: SSH From Your Phone With tmux](https://elliotbonneville.com/phone-to-mac-persistent-terminal/)
+- [Claude Code Multi-Agent tmux Setup](https://www.dariuszparys.com/claude-code-multi-agent-tmux-setup/)
+- [Claude Code 공식 Agent Teams 문서](https://code.claude.com/docs/en/agent-teams)
