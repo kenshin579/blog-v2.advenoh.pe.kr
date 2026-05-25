@@ -229,10 +229,6 @@ echo "접속: tmux attach -t <세션명>"
 
 > 주의: 같은 repo를 여러 Session에서 동시에 열어 Claude가 같은 파일을 동시에 고치면 충돌할 수 있다. 병렬 작업은 폴더를 나누거나 `git worktree`로 분리하는 것이 안전하다.
 
-## 참고 — 공식 Agent Teams
-
-Claude Code에는 여러 Session을 띄워 협업시키는 공식 `Agent Teams` 기능도 있다. 아직 실험적 기능이라 기본은 꺼져 있고 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` 설정으로 켜야 한다. 이때 각 teammate를 **tmux 분할 Pane(split pane)** 으로 띄워 한눈에 볼 수 있는데(iTerm2에서는 `tmux -CC` 진입을 권장한다), 결국 여기서도 tmux가 바탕이 된다. 더 깊이 들어가고 싶다면 [공식 문서](https://code.claude.com/docs/en/agent-teams)를 참고하자.
-
 # 8. 마치며
 
 tmux의 진짜 가치는 한 줄로 정리된다. **닫아도 사라지지 않는 작업 공간.** 화면 분할도 편하지만, 결국 가장 큰 변화는 "작업이 날아갈까 봐 터미널을 못 닫던" 상태에서 벗어나는 것이다.
@@ -247,11 +243,10 @@ tmux의 진짜 가치는 한 줄로 정리된다. **닫아도 사라지지 않�
 
 특히 `Ctrl+b d`(detach)와 `tmux attach`(다시 붙기)부터 익혀보길 권한다. 이 두 개만 손에 붙어도 터미널을 대하는 방식이 달라진다. 그다음 Claude Code 같은 장시간 작업에 얹어 쓰면, 왜 다시 tmux를 찾게 되는지 금방 체감할 것이다.
 
-## 참고
+# 9. 참고
 
 - [tmux + Claude Code: The Perfect Terminal Workflow](https://willness.dev/blog/tmux-claude-code-workflow)
 - [Using tmux with Claude Code](https://hboon.com/using-tmux-with-claude-code/)
 - [How to Run Claude Code with tmux on a VPS](https://codeongrass.com/blog/how-to-run-claude-code-with-tmux/)
 - [Seamless Claude Code Handoff: SSH From Your Phone With tmux](https://elliotbonneville.com/phone-to-mac-persistent-terminal/)
 - [Claude Code Multi-Agent tmux Setup](https://www.dariuszparys.com/claude-code-multi-agent-tmux-setup/)
-- [Claude Code 공식 Agent Teams 문서](https://code.claude.com/docs/en/agent-teams)
