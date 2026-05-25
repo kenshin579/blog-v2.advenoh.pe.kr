@@ -153,4 +153,72 @@ bind r source-file ~/.tmux.conf \; display "Reloaded!"
 
 # 7. Claude Code와 함께 쓰기
 
+여기까지가 tmux 기본기다. 이제 처음에 말했던, 내가 tmux를 다시 자주 쓰게 된 이유로 돌아와 보자. Claude Code와 tmux는 궁합이 꽤 좋다. 이유는 두 가지다.
+
+- **장시간 자율 작업이 detach로 살아남는다.** Claude Code에 긴 작업을 맡겨두고 `prefix d`로 빠져나오면, 터미널을 닫아도 작업은 계속 돌아간다.
+- **한 화면에서 병렬로 일할 수 있다.** Claude Code와 dev server, 로그를 페인으로 나눠 동시에 보면 작업 흐름이 끊기지 않는다.
+
+## 패턴 A — 한 화면 레이아웃
+
+윈도우 하나를 페인으로 나눠, 왼쪽에는 Claude Code를, 오른쪽 위에는 개발 서버를, 오른쪽 아래에는 로그나 테스트를 띄우는 구성이다. 만드는 순서는 이렇다.
+
+1. 세션을 시작하고 왼쪽 페인에서 `claude`를 실행한다.
+2. `prefix %`로 좌우 분할 → 오른쪽 페인이 생긴다.
+3. 오른쪽 페인에서 `prefix "`로 상하 분할 → 위/아래 페인이 생긴다.
+4. 오른쪽 위에서 `npm run dev`, 오른쪽 아래에서 로그나 테스트를 돌린다.
+
+이렇게 하면 한 화면에서 Claude의 작업, 서버 출력, 로그를 동시에 지켜볼 수 있다.
+
+## 패턴 B — 지속성 & 원격
+
+detach의 진가가 발휘되는 패턴이다.
+
+- `tmux new -s claude-feature`로 세션을 만들고 그 안에서 `claude`를 실행한다.
+- 긴 작업을 시킨 뒤 `prefix d`로 detach한다. → 노트북을 닫거나 SSH가 끊겨도 작업은 계속된다.
+- 나중에 `tmux attach -t claude-feature`로 다시 붙으면 대화 기록과 출력이 그대로 남아있다.
+- 원격 서버(VPS)에 띄워두면 사무실, 집, 심지어 폰에서 SSH로 붙어 이어서 작업할 수 있다.
+
+## 패턴 C — 멀티 프로젝트 헬퍼 스크립트
+
+여러 프로젝트를 다룰 때는 세션을 프로젝트별로 미리 띄워두면 편하다. 아래 스크립트는 정의해 둔 프로젝트마다 tmux 세션을 만들고(이미 있으면 재사용), 해당 디렉토리에서 시작한다. `PROJECTS` 목록만 본인 환경에 맞게 바꿔 쓰면 된다.
+
+```bash
+#!/usr/bin/env bash
+# bin/claude_tmux_sessions.sh
+# 미리 정의한 프로젝트마다 tmux 세션을 만들고(이미 있으면 재사용) 해당 디렉토리에서 시작한다.
+set -euo pipefail
+
+# "세션이름:프로젝트경로" 목록 — 본인 환경에 맞게 수정
+PROJECTS=(
+  "blog:$HOME/src/blog-v2.advenoh.pe.kr"
+  "chatbot:$HOME/src/ai-chatbot.advenoh.pe.kr"
+  "inspireme:$HOME/src/inspireme.advenoh.pe.kr"
+)
+
+for entry in "${PROJECTS[@]}"; do
+  name="${entry%%:*}"
+  path="${entry#*:}"
+
+  if tmux has-session -t "$name" 2>/dev/null; then
+    echo "이미 있음, 재사용: $name"
+  else
+    echo "세션 생성: $name ($path)"
+    tmux new-session -d -s "$name" -c "$path"
+    # 필요하면 각 세션에서 바로 claude 실행:
+    # tmux send-keys -t "$name" "claude" C-m
+  fi
+done
+
+echo
+tmux ls
+echo
+echo "붙으려면: tmux attach -t <세션이름>"
+```
+
+> 주의: 같은 repo에 Claude 인스턴스 두 개가 동시에 파일을 쓰면 충돌할 수 있다. 병렬 작업은 작업별로 디렉토리를 나누거나 `git worktree`로 분리하는 것이 안전하다.
+
+## 참고 — 공식 Agent Teams
+
+Claude Code에는 여러 세션을 자동으로 띄워 협업시키는 공식 `Agent Teams` 기능도 실험적으로 제공된다(`tmux -CC` 컨트롤 모드를 활용한다). 더 깊이 들어가고 싶다면 [공식 문서](https://code.claude.com/docs/en/agent-teams)를 참고하자.
+
 # 8. 마치며
