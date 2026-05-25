@@ -73,34 +73,66 @@ tmux의 거의 모든 단축키는 **`Ctrl+b`를 먼저 누른 뒤** 다음 키�
 
 ## 5.1 Session
 
-Session은 작업 공간 전체를 담는 단위다. 보통 프로젝트 하나에 Session 하나를 만들어 두고, 일이 끝나면 detach로 빠져나왔다가 나중에 다시 attach해서 이어 간다. 자주 쓰는 명령은 다음과 같다.
+Session은 작업 공간 전체를 담는 단위다. 보통 프로젝트 하나에 Session 하나를 만들어 두고, 일이 끝나면 detach로 빠져나왔다가 나중에 다시 attach해서 이어 간다. 가장 자주 쓰는 건 이 세 가지다.
 
 - 새 Session 시작(이름 지정): `tmux new -s my-project`
 - Session에서 빠져나오기(detach): `Ctrl+b d` (Session은 계속 살아있음)
-- Session 목록 보기: `tmux ls`
 - Session에 다시 붙기(attach): `tmux attach -t my-project`
-- Session 종료: `tmux kill-session -t my-project`
 
-여기서 핵심은 `Ctrl+b d`(detach)와 `tmux attach -t`(다시 붙기)다. detach해도 Session 안의 작업은 백그라운드에서 계속 돌아간다.
+detach해도 Session 안의 작업은 백그라운드에서 계속 돌아간다. 이 detach/attach가 tmux의 핵심이다. 나머지 Session 관련 명령은 다음과 같다.
+
+| 동작 | 명령 / 단축키 |
+|------|---------------|
+| 새 Session 시작 | `tmux new -s 이름` |
+| detach (빠져나오기) | `Ctrl+b d` |
+| attach (다시 붙기) | `tmux attach -t 이름` |
+| 가장 최근 Session에 붙기 | `tmux a` |
+| Session 목록 보기 | `tmux ls` |
+| Session 목록에서 골라 전환 | `Ctrl+b s` |
+| Session 이름 변경 | `Ctrl+b $` |
+| Session 종료 | `tmux kill-session -t 이름` |
 
 ## 5.2 Window
 
-Window는 Session 안의 "탭"이다. 작업 성격별로 Window를 나눠 두면(예: 하나는 편집용, 하나는 서버용) 번갈아 보기 편하다. Window 관련 단축키는 다음과 같다.
+Window는 Session 안의 "탭"이다. 작업 성격별로 Window를 나눠 두면(예: 하나는 편집용, 하나는 서버용) 번갈아 보기 편하다. 자주 쓰는 건 새 Window 만들기와 이동이다.
 
 - 새 Window: `Ctrl+b c`
 - 다음 / 이전 Window: `Ctrl+b n` / `Ctrl+b p`
 - 번호로 이동: `Ctrl+b 0` ~ `Ctrl+b 9`
-- Window 이름 변경: `Ctrl+b ,`
+
+나머지 Window 관련 단축키는 다음과 같다.
+
+| 동작 | 단축키 |
+|------|--------|
+| 새 Window | `Ctrl+b c` |
+| 다음 / 이전 Window | `Ctrl+b n` / `Ctrl+b p` |
+| 번호로 이동 | `Ctrl+b 0` ~ `Ctrl+b 9` |
+| 직전에 보던 Window로 토글 | `Ctrl+b l` |
+| Window 목록에서 골라 이동 | `Ctrl+b w` |
+| Window 이름 변경 | `Ctrl+b ,` |
+| 현재 Window 닫기 | `Ctrl+b &` (확인 후 y) |
 
 ## 5.3 Pane
 
-Pane은 Window를 좌우·상하로 쪼갠 분할 화면이다. 한 화면에서 코드, 로그, 서버 출력을 동시에 보고 싶을 때 쓴다. Pane 관련 단축키는 다음과 같다.
+Pane은 Window를 좌우·상하로 쪼갠 분할 화면이다. 한 화면에서 코드, 로그, 서버 출력을 동시에 보고 싶을 때 쓴다. 자주 쓰는 건 분할과 이동이다.
 
 - 좌우 분할: `Ctrl+b %`
 - 상하 분할: `Ctrl+b "`
 - Pane 간 이동: `Ctrl+b 방향키`
-- Pane 크기 조절: `Ctrl+b Ctrl+방향키`
-- 현재 Pane 닫기: `Ctrl+b x` (확인 후 y)
+
+나머지 Pane 관련 단축키는 다음과 같다.
+
+| 동작 | 단축키 |
+|------|--------|
+| 좌우 분할 | `Ctrl+b %` |
+| 상하 분할 | `Ctrl+b "` |
+| Pane 간 이동 | `Ctrl+b 방향키` |
+| 다음 Pane으로 순환 | `Ctrl+b o` |
+| Pane 크기 조절 | `Ctrl+b Ctrl+방향키` |
+| 현재 Pane 전체화면 토글(zoom) | `Ctrl+b z` |
+| Pane 번호 표시 후 선택 | `Ctrl+b q` |
+| 현재 Pane을 새 Window로 분리 | `Ctrl+b !` |
+| 현재 Pane 닫기 | `Ctrl+b x` (확인 후 y) |
 
 # 6. .tmux.conf 최소 설정
 
