@@ -61,18 +61,17 @@ tmux를 쓰려면 세 가지 단위를 알아야 한다. 셋은 **Session > Wind
 - **Window**: Session 안의 "탭"이라고 보면 된다. 화면 전체를 차지하며, 여러 Window를 번갈아 가며 본다.
 - **Pane**: Window를 나눈 분할 화면이다. 한 Window 안에 여러 Pane이 동시에 보인다.
 
-여러 프로세스가 tmux를 통해 하나의 Session으로 모이고, Session 하나 안에 Window 여러 개가, Window 하나 안에 Pane 여러 개가 들어가는 구조다. 그림으로 보면 이렇다.
+Session 하나 안에 Window 여러 개가, Window 하나 안에 Pane 여러 개가 들어가는 구조다. 예를 들어 하나의 Window를 세 개의 Pane으로 나누면 이런 모습이다.
 
 ```mermaid
 graph LR
-    P1[Process 1] --> T[tmux]
-    P2[Process 2] --> T
-    P3[Process 3] --> T
-    T -->|Session 1| W1[Window 1]
-    T --> W2[Window 2]
-    W1 --> PA1[Pane 1 : $]
-    W1 --> PA2[Pane 2 : $]
-    W1 --> PA3[Pane 3 : $]
+    subgraph Window["하나의 Window"]
+        P1["Pane 1"]
+        P2["Pane 2"]
+        P3["Pane 3"]
+    end
+    P1 --- P2
+    P1 --- P3
 ```
 
 # 5. 기본 사용법
@@ -157,23 +156,7 @@ bind r source-file ~/.tmux.conf \; display "Reloaded!"
 
 ## 패턴 A — 한 화면 레이아웃
 
-Window 하나를 Pane으로 나눠, 왼쪽에는 Claude Code를, 오른쪽 위에는 개발 서버를, 오른쪽 아래에는 로그나 테스트를 띄우는 구성이다. 배치를 그림으로 보면 이렇다.
-
-```mermaid
-graph LR
-    subgraph WIN["하나의 Window를 3개 Pane으로 분할"]
-        direction LR
-        P1["Pane 1 : claude"]
-        subgraph RIGHT[" "]
-            direction TB
-            P2["Pane 2 : dev server"]
-            P3["Pane 3 : logs / test"]
-        end
-    end
-    P1 ~~~ RIGHT
-```
-
-만드는 순서는 이렇다.
+Window 하나를 Pane으로 나눠, 왼쪽에는 Claude Code를, 오른쪽 위에는 개발 서버를, 오른쪽 아래에는 로그나 테스트를 띄우는 구성이다. 만드는 순서는 이렇다.
 
 1. Session을 시작하고 왼쪽 Pane에서 `claude`를 실행한다.
 2. `prefix %`로 좌우 분할 → 오른쪽 Pane이 생긴다.
