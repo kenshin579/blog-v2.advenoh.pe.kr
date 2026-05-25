@@ -61,15 +61,18 @@ tmux를 쓰려면 세 가지 단위를 알아야 한다. 셋은 **Session > Wind
 - **Window**: Session 안의 "탭"이라고 보면 된다. 화면 전체를 차지하며, 여러 Window를 번갈아 가며 본다.
 - **Pane**: Window를 나눈 분할 화면이다. 한 Window 안에 여러 Pane이 동시에 보인다.
 
-Session 하나 안에 Window 여러 개가 있고, Window 하나 안에 Pane 여러 개가 있는 구조다. 그림으로 보면 이렇다.
+여러 프로세스가 tmux를 통해 하나의 Session으로 모이고, Session 하나 안에 Window 여러 개가, Window 하나 안에 Pane 여러 개가 들어가는 구조다. 그림으로 보면 이렇다.
 
 ```mermaid
-graph TD
-    S[Session: my-project] --> W1[Window 1: editor]
-    S --> W2[Window 2: server]
-    W1 --> P1[Pane: code]
-    W1 --> P2[Pane: logs]
-    W2 --> P3[Pane: dev server]
+graph LR
+    P1[Process 1] --> T[tmux]
+    P2[Process 2] --> T
+    P3[Process 3] --> T
+    T -->|Session 1| W1[Window 1]
+    T --> W2[Window 2]
+    W1 --> PA1[Pane 1 : $]
+    W1 --> PA2[Pane 2 : $]
+    W1 --> PA3[Pane 3 : $]
 ```
 
 # 5. 기본 사용법
