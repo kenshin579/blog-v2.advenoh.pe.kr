@@ -63,6 +63,10 @@ tmux를 쓰려면 세 가지 단위를 알아야 한다. 셋은 **Session > Wind
 
 정리하면 Session 하나 안에 Window 여러 개가 있고, Window 하나 안에 Pane 여러 개가 들어가는 구조다. 브라우저에 비유하면 Window는 "탭", Pane은 한 탭을 좌우·상하로 나눈 "분할 화면"에 해당한다.
 
+실제로 Window 하나를 세 개의 Pane으로 나누면 아래처럼 보인다. 위쪽 Pane 하나와 아래쪽 Pane 두 개가 한 화면에 동시에 떠 있고, 맨 아래 줄이 Window 목록과 상태를 보여주는 상태 표시줄이다.
+
+![tmux Window 하나를 세 개의 Pane으로 분할한 화면](tmux-panes.png)
+
 # 5. 기본 사용법
 
 ## prefix 키부터
