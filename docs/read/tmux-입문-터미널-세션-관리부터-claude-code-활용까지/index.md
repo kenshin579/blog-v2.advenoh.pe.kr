@@ -157,7 +157,23 @@ bind r source-file ~/.tmux.conf \; display "Reloaded!"
 
 ## 패턴 A — 한 화면 레이아웃
 
-Window 하나를 Pane으로 나눠, 왼쪽에는 Claude Code를, 오른쪽 위에는 개발 서버를, 오른쪽 아래에는 로그나 테스트를 띄우는 구성이다. 만드는 순서는 이렇다.
+Window 하나를 Pane으로 나눠, 왼쪽에는 Claude Code를, 오른쪽 위에는 개발 서버를, 오른쪽 아래에는 로그나 테스트를 띄우는 구성이다. 배치를 그림으로 보면 이렇다.
+
+```mermaid
+graph LR
+    subgraph WIN["하나의 Window를 3개 Pane으로 분할"]
+        direction LR
+        P1["Pane 1 : claude"]
+        subgraph RIGHT[" "]
+            direction TB
+            P2["Pane 2 : dev server"]
+            P3["Pane 3 : logs / test"]
+        end
+    end
+    P1 ~~~ RIGHT
+```
+
+만드는 순서는 이렇다.
 
 1. Session을 시작하고 왼쪽 Pane에서 `claude`를 실행한다.
 2. `prefix %`로 좌우 분할 → 오른쪽 Pane이 생긴다.
