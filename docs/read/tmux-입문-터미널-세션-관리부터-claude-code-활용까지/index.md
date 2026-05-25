@@ -55,6 +55,23 @@ tmux -V
 
 # 4. 핵심 개념: Session, Window, Pane
 
+tmux를 쓰려면 세 가지 단위를 알아야 한다. 셋은 **Session > Window > Pane** 순서로 포함 관계를 이룬다.
+
+- **Session(세션)**: tmux의 최상위 작업 공간 단위다. 보통 프로젝트나 작업 하나당 세션 하나를 쓴다. 앞서 말한 detach/attach의 대상이 바로 이 세션이다.
+- **Window(윈도우)**: 세션 안의 "탭"이라고 보면 된다. 화면 전체를 차지하며, 여러 윈도우를 번갈아 가며 본다.
+- **Pane(페인)**: 윈도우를 나눈 분할 화면이다. 한 윈도우 안에 여러 페인이 동시에 보인다.
+
+세션 하나 안에 윈도우 여러 개가 있고, 윈도우 하나 안에 페인 여러 개가 있는 구조다. 그림으로 보면 이렇다.
+
+```mermaid
+graph TD
+    S[Session: my-project] --> W1[Window 1: editor]
+    S --> W2[Window 2: server]
+    W1 --> P1[Pane: code]
+    W1 --> P2[Pane: logs]
+    W2 --> P3[Pane: dev server]
+```
+
 # 5. 기본 사용법
 
 # 6. .tmux.conf 최소 설정
