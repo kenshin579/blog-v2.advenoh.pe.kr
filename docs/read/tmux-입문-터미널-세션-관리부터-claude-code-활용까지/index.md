@@ -128,6 +128,29 @@ tmux의 거의 모든 단축키는 **prefix 키를 먼저 누른 뒤** 다음 �
 
 # 6. .tmux.conf 최소 설정
 
+처음부터 화려하게 꾸밀 필요는 없다. 입문자에게 체감이 큰 네 가지만 `~/.tmux.conf`에 넣어보자.
+
+```bash
+# 1) prefix를 Ctrl+a로 변경 (Ctrl+b가 손에 안 맞으면)
+unbind C-b
+set -g prefix C-a
+bind C-a send-prefix
+
+# 2) 마우스로 페인 선택/크기 조절/스크롤 가능
+set -g mouse on
+
+# 3) 분할 단축키를 직관적으로 ( | 좌우, - 상하 )
+bind | split-window -h
+bind - split-window -v
+
+# 4) 설정 리로드 단축키 (prefix r)
+bind r source-file ~/.tmux.conf \; display "Reloaded!"
+```
+
+저장한 뒤 적용하려면 tmux 안에서 `prefix r`을 누르거나, `tmux kill-server`로 모든 세션을 끄고 다시 시작한다.
+
+참고로 1번 설정에서 prefix를 `Ctrl+a`로 바꾸는 것은 어디까지나 취향에 따른 **선택**이다. 바꾸면 기본 prefix와 달라지므로 헷갈릴 수 있다. 이 글의 나머지 본문에서 쓰는 단축키는 모두 **기본 prefix인 `Ctrl+b`** 기준이라는 점만 기억하자.
+
 # 7. Claude Code와 함께 쓰기
 
 # 8. 마치며
