@@ -166,64 +166,68 @@ bind r source-file ~/.tmux.conf \; display "Reloaded!"
 - **장시간 자율 작업이 detach로 살아남는다.** Claude Code에 긴 작업을 맡겨두고 `Ctrl+b d`로 빠져나오면, 터미널을 닫아도 작업은 계속 돌아간다.
 - **한 화면에서 병렬로 일할 수 있다.** Claude Code와 dev server, 로그를 Pane으로 나눠 동시에 보면 작업 흐름이 끊기지 않는다.
 
-## 패턴 A — 한 화면 레이아웃
+## 폴더마다 Session을 만들고 이름 붙이기
 
-Window 하나를 Pane으로 나눠, 왼쪽에는 Claude Code를, 오른쪽 위에는 개발 서버를, 오른쪽 아래에는 로그나 테스트를 띄우는 구성이다. 만드는 순서는 이렇다.
+여러 프로젝트를 오가며 Claude Code를 쓰다 보면, 프로젝트(폴더)마다 tmux Session을 하나씩 띄워 두는 게 편하다. 여기에 머신을 여러 대(노트북, 데스크톱, 미니 PC 등) 쓴다면 Session 이름이 겹칠 수 있으니, **`<머신>-<폴더>` 규칙**으로 이름을 정해 두면 어디서 붙어도 헷갈리지 않는다. 예를 들어 데스크톱(`m4`)에서 `blog` 폴더를 열면 Session 이름은 `m4-blog`가 된다.
 
-1. Session을 시작하고 왼쪽 Pane에서 `claude`를 실행한다.
-2. `Ctrl+b %`로 좌우 분할 → 오른쪽 Pane이 생긴다.
-3. 오른쪽 Pane에서 `Ctrl+b "`로 상하 분할 → 위/아래 Pane이 생긴다.
-4. 오른쪽 위에서 `npm run dev`, 오른쪽 아래에서 로그나 테스트를 돌린다.
+한 발 더 나아가, 각 Session에서 Claude Code를 띄울 때 같은 이름을 함께 넘겨주면 좋다. `-n <이름>`은 Claude 세션에 이름을 붙여 프롬프트와 resume 피커, 터미널 타이틀에 표시해 주고, `--remote-control <이름>`은 그 이름으로 원격 제어를 켜 준다. 폰이나 다른 PC에서 붙어도 "지금 이게 어느 작업인지"가 이름만으로 분명해진다.
 
-이렇게 하면 한 화면에서 Claude의 작업, 서버 출력, 로그를 동시에 지켜볼 수 있다.
-
-## 패턴 B — 지속성 & 원격
-
-detach의 진가가 발휘되는 패턴이다.
-
-- `tmux new -s claude-feature`로 Session을 만들고 그 안에서 `claude`를 실행한다.
-- 긴 작업을 시킨 뒤 `Ctrl+b d`로 detach한다. → 노트북을 닫거나 SSH가 끊겨도 작업은 계속된다.
-- 나중에 `tmux attach -t claude-feature`로 다시 붙으면 대화 기록과 출력이 그대로 남아있다.
-- 원격 서버(VPS)에 띄워두면 사무실, 집, 심지어 폰에서 SSH로 붙어 이어서 작업할 수 있다.
-
-## 패턴 C — 멀티 프로젝트 헬퍼 스크립트
-
-여러 프로젝트를 다룰 때는 Session을 프로젝트별로 미리 띄워두면 편하다. 아래 스크립트는 정의해 둔 프로젝트마다 tmux Session을 만들고(이미 있으면 재사용), 해당 디렉토리에서 시작한다. `PROJECTS` 목록만 본인 환경에 맞게 바꿔 쓰면 된다.
+아래는 내가 쓰는 스크립트를 단순화한 버전이다. `WORKSPACES`(폴더 목록)와 `VALID_MACHINES`(머신 이름)만 본인 환경에 맞게 바꾸면 된다.
 
 ```bash
 #!/usr/bin/env bash
-# bin/claude_tmux_sessions.sh
-# 미리 정의한 프로젝트마다 tmux Session을 만들고(이미 있으면 재사용) 해당 디렉토리에서 시작한다.
 set -euo pipefail
 
-# "Session이름:프로젝트경로" 목록 — 본인 환경에 맞게 수정
-PROJECTS=(
-  "blog:$HOME/src/blog-v2.advenoh.pe.kr"
-  "chatbot:$HOME/src/ai-chatbot.advenoh.pe.kr"
-  "inspireme:$HOME/src/inspireme.advenoh.pe.kr"
-)
+# ===== 설정 (본인 환경에 맞게 수정) =====
+WORKSPACES=(blog inspireme markora)   # ~/src 아래 폴더 이름들
+VALID_MACHINES=(m1 m4 mini)           # 머신(노트북/데스크톱 등) 이름
+SRC_DIR="${SRC_DIR:-$HOME/src}"
+CLAUDE_CMD="${CLAUDE_CMD:-claude}"
 
-for entry in "${PROJECTS[@]}"; do
-  name="${entry%%:*}"
-  path="${entry#*:}"
+# Session 이름 규칙: <머신>-<폴더>  (폴더의 . : 는 -로 치환)
+session_name() { echo "$1-${2//[.:]/-}"; }
 
-  if tmux has-session -t "$name" 2>/dev/null; then
-    echo "이미 있음, 재사용: $name"
-  else
-    echo "Session 생성: $name ($path)"
-    tmux new-session -d -s "$name" -c "$path"
-    # 필요하면 각 Session에서 바로 claude 실행:
-    # tmux send-keys -t "$name" "claude" C-m
+# Session에서 실행할 명령: Claude에 이름(-n)과 원격 제어 이름(--remote-control)을 부여
+launch_cmd() { echo "$CLAUDE_CMD -n $1 --remote-control $1"; }
+
+create_one() { # <머신> <디렉토리> <폴더>
+  local session; session="$(session_name "$1" "$3")"
+  if tmux has-session -t "$session" 2>/dev/null; then
+    echo "이미 존재, 건너뜀 -> $session"
+    return 0
   fi
-done
+  tmux new-session -d -s "$session" -c "$2" "$(launch_cmd "$session")"
+  echo "생성됨 -> $session ($2)"
+}
 
-echo
+# 사용법: claude_tmux_sessions.sh <머신> [<폴더>]
+#   폴더 생략 시 WORKSPACES 전부, 지정 시 그 폴더 하나만
+machine="${1:?머신 이름이 필요합니다 (예: m4)}"
+folder="${2:-}"
+
+if [[ -n "$folder" ]]; then
+  create_one "$machine" "$SRC_DIR/$folder" "$folder"
+else
+  for f in "${WORKSPACES[@]}"; do
+    [[ -d "$SRC_DIR/$f" ]] && create_one "$machine" "$SRC_DIR/$f" "$f"
+  done
+fi
+
+echo "----- 현재 tmux 세션 -----"
 tmux ls
-echo
-echo "붙으려면: tmux attach -t <Session이름>"
+echo "접속: tmux attach -t <세션명>"
 ```
 
-> 주의: 같은 repo에 Claude 인스턴스 두 개가 동시에 파일을 쓰면 충돌할 수 있다. 병렬 작업은 작업별로 디렉토리를 나누거나 `git worktree`로 분리하는 것이 안전하다.
+쓰는 법은 간단하다.
+
+- 정의한 폴더를 한 번에 전부 띄우기: `claude_tmux_sessions.sh m4`
+- 특정 폴더 하나만 띄우기: `claude_tmux_sessions.sh m4 blog`
+
+그러면 `m4-blog`, `m4-inspireme` 같은 Session이 폴더마다 만들어지고, 각 Session 안에서 Claude Code가 같은 이름으로 떠 있다. 어디서든 `tmux attach -t m4-blog`로 붙어 이어서 작업하면 된다. detach해 두면 노트북을 닫거나 SSH가 끊겨도 작업은 계속 돌아가므로, 원격 서버에 띄워 두고 집·사무실·폰을 오가며 같은 작업을 이어 갈 수도 있다. (실제 스크립트에는 `--kill`로 만든 Session을 한꺼번에 정리하는 기능도 넣어 두었다.)
+
+> 참고: `CLAUDE_CMD`에 `--dangerously-skip-permissions`를 붙이면 권한 확인을 매번 건너뛸 수 있지만, 도구가 확인 없이 명령을 실행하니 신뢰하는 환경에서만 쓰자. 또 `-n`, `--remote-control` 같은 옵션은 Claude Code 버전에 따라 다를 수 있으니 `claude --help`로 확인하면 된다.
+
+> 주의: 같은 repo를 여러 Session에서 동시에 열어 Claude가 같은 파일을 동시에 고치면 충돌할 수 있다. 병렬 작업은 폴더를 나누거나 `git worktree`로 분리하는 것이 안전하다.
 
 ## 참고 — 공식 Agent Teams
 
