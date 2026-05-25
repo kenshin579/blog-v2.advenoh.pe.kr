@@ -147,7 +147,7 @@ bind - split-window -v
 bind r source-file ~/.tmux.conf \; display "Reloaded!"
 ```
 
-저장한 뒤 적용하려면 tmux 안에서 `prefix r`을 누르거나, `tmux kill-server`로 모든 세션을 끄고 다시 시작한다.
+저장한 뒤 적용하려면 tmux 안에서 `prefix r`을 누르면 된다. `tmux kill-server`로 다시 시작하는 방법도 있지만, 이건 **실행 중인 모든 세션이 종료되니** 주의하자. 보통은 `prefix r` 리로드로 충분하다.
 
 참고로 1번 설정에서 prefix를 `Ctrl+a`로 바꾸는 것은 어디까지나 취향에 따른 **선택**이다. 바꾸면 기본 prefix와 달라지므로 헷갈릴 수 있다. 이 글의 나머지 본문에서 쓰는 단축키는 모두 **기본 prefix인 `Ctrl+b`** 기준이라는 점만 기억하자.
 
@@ -219,7 +219,7 @@ echo "붙으려면: tmux attach -t <세션이름>"
 
 ## 참고 — 공식 Agent Teams
 
-Claude Code에는 여러 세션을 자동으로 띄워 협업시키는 공식 `Agent Teams` 기능도 실험적으로 제공된다(`tmux -CC` 컨트롤 모드를 활용한다). 더 깊이 들어가고 싶다면 [공식 문서](https://code.claude.com/docs/en/agent-teams)를 참고하자.
+Claude Code에는 여러 세션을 띄워 협업시키는 공식 `Agent Teams` 기능도 있다. 아직 실험적 기능이라 기본은 꺼져 있고 `CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS` 설정으로 켜야 한다. 이때 각 teammate를 **tmux 분할 페인(split pane)** 으로 띄워 한눈에 볼 수 있는데(iTerm2에서는 `tmux -CC` 진입을 권장한다), 결국 여기서도 tmux가 바탕이 된다. 더 깊이 들어가고 싶다면 [공식 문서](https://code.claude.com/docs/en/agent-teams)를 참고하자.
 
 # 8. 마치며
 
