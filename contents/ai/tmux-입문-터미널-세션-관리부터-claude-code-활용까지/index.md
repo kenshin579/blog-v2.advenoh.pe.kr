@@ -1,8 +1,8 @@
 ---
 title: "tmux 입문: 터미널 세션 관리부터 Claude Code 활용까지"
 description: "터미널 멀티플렉서 tmux의 기본 개념부터 Session·Window·Pane 사용법, 최소 설정, 그리고 Claude Code 세션과 함께 쓰는 활용법까지 입문자 기준으로 정리한다."
-date: 2026-05-25
-update: 2026-05-25
+date: 2026-05-26
+update: 2026-05-26
 tags:
   - tmux
   - terminal
