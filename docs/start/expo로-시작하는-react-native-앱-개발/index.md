@@ -307,3 +307,83 @@ const styles = StyleSheet.create({
 React Native의 레이아웃은 기본이 **Flexbox**입니다. 웹과 달리 `flexDirection`의 기본값이 `column`(세로)이라는 점만 기억하면, 나머지는 익숙한 CSS Flexbox와 거의 같습니다.
 
 여기까지가 메모리상에서 동작하는 Todo 앱입니다. 항목을 추가하고, 탭해서 완료하고, 삭제할 수 있습니다. 전체 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/web/expo-todo-app)에서 확인할 수 있습니다.
+
+# 6. 한 걸음 더: AsyncStorage로 데이터 유지하기
+
+지금 앱은 껐다 켜면 할 일이 모두 사라집니다. 모든 상태가 메모리에만 있기 때문입니다. 기기에 데이터를 저장하려면 **AsyncStorage**(키-값 형태의 비동기 로컬 저장소)를 사용합니다.
+
+여기서 Expo의 진짜 강점이 드러납니다. 네이티브 모듈을 추가할 때 `npm install` 대신 **`npx expo install`**을 사용합니다.
+
+```bash
+npx expo install @react-native-async-storage/async-storage
+```
+
+`expo install`은 현재 프로젝트의 Expo SDK 버전과 **호환되는 버전**을 자동으로 골라 설치해줍니다. 네이티브 모듈은 SDK 버전에 따라 호환성이 민감한데, 이를 Expo가 알아서 맞춰주는 것입니다. 게다가 네이티브 코드를 직접 건드리거나 프로젝트를 eject할 필요도 없습니다.
+
+이제 코드에 두 가지를 추가합니다. (1) 앱이 시작될 때 저장된 목록을 불러오고, (2) 목록이 바뀔 때마다 저장합니다. 둘 다 `useEffect`로 처리합니다.
+
+```tsx
+import { useEffect, useState } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const STORAGE_KEY = '@expo_todo_app/todos';
+
+export default function App() {
+  const [todos, setTodos] = useState<Todo[]>([]);
+  const [text, setText] = useState('');
+  const [loaded, setLoaded] = useState(false);
+
+  // 앱 시작 시 저장된 todo 불러오기
+  useEffect(() => {
+    (async () => {
+      try {
+        const raw = await AsyncStorage.getItem(STORAGE_KEY);
+        if (raw) setTodos(JSON.parse(raw));
+      } catch (e) {
+        console.warn('todo 불러오기 실패', e);
+      } finally {
+        setLoaded(true);
+      }
+    })();
+  }, []);
+
+  // todos가 바뀔 때마다 저장 (최초 로드 완료 후)
+  useEffect(() => {
+    if (!loaded) return;
+    AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(todos)).catch((e) =>
+      console.warn('todo 저장 실패', e),
+    );
+  }, [todos, loaded]);
+
+  // ... 이하 addTodo / toggleTodo / deleteTodo / return 은 그대로
+}
+```
+
+`loaded` 플래그가 있는 이유는, 최초 불러오기가 끝나기 전에 저장 effect가 실행되어 빈 배열로 기존 데이터를 덮어쓰는 것을 막기 위해서입니다.
+
+이제 항목을 추가한 뒤 앱을 완전히 종료했다 다시 열어도 목록이 그대로 유지됩니다.
+
+# 7. 마치며
+
+Expo로 React Native 앱을 시작하는 흐름을 정리하면 다음과 같습니다.
+
+1. `create-expo-app`으로 프로젝트 생성
+2. `expo start`로 Expo Go·시뮬레이터에서 즉시 실행
+3. `App.tsx`에 화면과 로직 작성 (Fast Refresh로 바로 확인)
+4. `View`/`Text`/`TextInput`/`FlatList` 같은 RN 컴포넌트로 UI 구성
+5. `expo install`로 네이티브 모듈(AsyncStorage)을 손쉽게 추가
+
+복잡한 네이티브 설정 없이 React 지식만으로 동작하는 앱을 만들 수 있다는 점이 Expo의 핵심 매력입니다.
+
+다음 단계로 살펴보면 좋은 주제는 다음과 같습니다.
+
+- **Expo Router**: 파일 기반 라우팅으로 여러 화면과 탭 네비게이션 구성
+- **EAS Build**: 클라우드에서 앱을 빌드하고 앱스토어/플레이스토어에 배포
+- 다양한 **Expo SDK**(카메라, 위치, 알림 등) 활용
+
+# 8. 참고
+
+- [Expo 공식 문서](https://docs.expo.dev/)
+- [create-expo-app 문서](https://docs.expo.dev/more/create-expo/)
+- [AsyncStorage 문서](https://react-native-async-storage.github.io/async-storage/)
+- [전체 소스 코드 (GitHub)](https://github.com/kenshin579/tutorials-go/tree/master/web/expo-todo-app)
