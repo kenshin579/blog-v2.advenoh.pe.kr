@@ -2,6 +2,21 @@
 
 from collections import defaultdict
 from datetime import datetime
+from urllib.parse import quote, urlsplit, urlunsplit
+
+
+def _safe_url(url: str) -> str:
+    """마크다운 링크에서 안전하도록 URL의 path/query를 인코딩한다."""
+    parts = urlsplit(url)
+    return urlunsplit(
+        (
+            parts.scheme,
+            parts.netloc,
+            quote(parts.path, safe="/"),
+            quote(parts.query, safe="=&"),
+            parts.fragment,
+        )
+    )
 
 
 def get_series_name(date: datetime) -> str:
@@ -73,7 +88,7 @@ series: "{series_name}"
 
         body += f"\n## {emoji} {category}\n\n"
         for item in items:
-            body += f"- [{item['title']}]({item['url']}) - {item['source_name']}\n"
+            body += f"- [{item['title']}]({_safe_url(item['url'])}) - {item['source_name']}\n"
 
     body += """
 ---
