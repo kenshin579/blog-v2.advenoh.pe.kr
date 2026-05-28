@@ -87,15 +87,11 @@ npx expo start
 
 터미널에는 다음과 비슷한 QR 코드와 키 단축키 메뉴가 표시됩니다. 이 화면이 보이면 개발 서버가 정상적으로 떴다는 뜻입니다.
 
+![`npx expo start` 실행 시 터미널에 표시되는 QR 코드 (예시 이미지 — 실제로는 본인 LAN 주소가 인코딩됩니다)](expo-start-qr.png)
+
+QR 아래에는 다음과 같은 안내와 단축키 메뉴가 함께 표시됩니다.
+
 ```text
-Starting project at /Users/you/.../expo-todo-app
-Starting Metro Bundler
-
- █ ▄▄▄▄▄ █▀█ █▄▀▄▀ █▄▀▄▄▀ █ ▄▄▄▄▄ █
- █ █   █ █▀▀▀█ ▀▄▀ ▀▄▄ ▄ ▀▀ █ █   █ █
- ...
- (QR 코드)
-
 › Metro waiting on exp://192.168.0.10:8081
 › Scan the QR code above with Expo Go (Android) or the Camera app (iOS)
 
@@ -108,6 +104,8 @@ Starting Metro Bundler
 › Press m │ toggle menu
 › Press ? │ show all commands
 ```
+
+`exp://...` 주소는 Metro 번들러가 떠 있는 위치이며, 폰의 [Expo Go](https://expo.dev/go) 앱이 이 주소로 접속해 앱 번들을 받아 실행합니다. iOS는 기본 카메라 앱으로, Android는 Expo Go 안의 스캐너로 위 QR을 찍으면 곧바로 앱이 폰에 뜹니다. 시뮬레이터/에뮬레이터/웹은 각각 `i`/`a`/`w` 키를 누르면 됩니다.
 
 ## iOS 시뮬레이터가 없다면?
 
