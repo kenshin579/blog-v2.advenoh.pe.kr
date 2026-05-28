@@ -85,6 +85,18 @@ npx expo start
 
 실행하면 "Open up App.tsx to start working on your app!"이라는 기본 화면이 보입니다. 여기까지 왔다면 개발 환경 준비는 끝났습니다.
 
+## iOS 시뮬레이터가 없다면?
+
+iOS 시뮬레이터는 **macOS + Xcode**가 있어야만 동작합니다. Xcode가 없거나, Windows/Linux를 쓰거나, 설치가 부담스럽다면 시뮬레이터 없이도 충분히 실행할 수 있습니다.
+
+- **실기기 + Expo Go (가장 추천)**: 폰에 Expo Go 앱을 설치하고 `npx expo start`의 QR 코드를 스캔하면 됩니다. iOS는 기본 카메라 앱으로, Android는 Expo Go 안의 스캐너로 찍습니다. 이때 **PC와 폰이 같은 Wi-Fi**에 있어야 하며, 회사망 등으로 연결이 안 되면 `npx expo start --tunnel`로 우회할 수 있습니다.
+- **웹 브라우저**: `npx expo start --web`(또는 `w` 키)로 아무 설치 없이 바로 확인할 수 있습니다. 우리가 만들 Todo 앱은 웹에서도 동작하며, AsyncStorage가 웹에서는 브라우저 `localStorage`로 처리되어 새로고침 후에도 목록이 유지됩니다. 다만 실제 모바일과 미세한 차이는 있을 수 있습니다.
+- **Android 에뮬레이터**: Android Studio가 있다면 AVD를 만들어 `a` 키로 실행할 수 있습니다.
+
+iOS 시뮬레이터를 꼭 쓰고 싶다면 Mac 앱스토어에서 Xcode를 설치한 뒤, **Xcode → Settings → Components(또는 Platforms)**에서 iOS 시뮬레이터 런타임을 내려받고 `npx expo start`에서 `i` 키를 누르면 됩니다.
+
+> 빠르게 화면만 확인하려면 **웹**, 진짜 모바일 감각이 필요하면 **실기기 + Expo Go**를 추천합니다. iOS 시뮬레이터 설치는 선택 사항입니다.
+
 # 4. 프로젝트 구조 살펴보기
 
 생성된 프로젝트의 핵심 파일만 살펴보겠습니다.
