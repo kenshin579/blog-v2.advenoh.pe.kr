@@ -183,7 +183,11 @@ const deleteTodo = (id: string) => {
 
 화면은 입력창(`TextInput` + 추가 버튼)과 목록(`FlatList`)으로 구성하고, 항목을 탭하면 완료를 토글, "삭제"를 누르면 제거합니다. 전체 JSX와 스타일(`StyleSheet`)은 분량이 있으니 [GitHub 소스](https://github.com/kenshin579/tutorials-go/tree/master/web/expo-todo-app)를 참고하세요. 여기까지면 메모리상에서 동작하는 Todo 앱이 완성됩니다.
 
-![Todo 4개를 추가하고 그중 2개를 완료(✅, 취소선) 처리한 Todo 앱 화면](todo-list-with-items.png)
+| Web | App (Expo Go) |
+|-----|---------------|
+| <img src="todo-list-with-items-web.png" alt="Todo 앱 화면 (Web)" width="300" /> | <img src="todo-list-with-items-app.png" alt="Todo 앱 화면 (Expo Go)" width="300" /> |
+
+Todo 4개를 추가하고 그중 2개를 완료(✅, 취소선) 처리한 결과 — Web과 Expo Go 앱에서 동일하게 동작합니다.
 
 ## 데이터 유지하기 (AsyncStorage)
 
@@ -221,8 +225,6 @@ useEffect(() => {
 ```
 
 `loaded` 플래그가 있는 이유는, 최초 불러오기가 끝나기 전에 저장 effect가 실행되어 빈 배열로 기존 데이터를 덮어쓰는 것을 막기 위해서입니다. 이제 항목을 추가한 뒤 앱을 완전히 종료했다 다시 열어도 목록이 그대로 유지됩니다.
-
-![앱을 새로고침(재시작)한 뒤에도 위와 동일한 화면이 그대로 표시됨 — 4개 항목과 완료 상태가 보존된다는 것이 영속화가 동작한다는 증거](todo-list-with-items.png)
 
 # 6. Expo의 한계와 고려사항
 
