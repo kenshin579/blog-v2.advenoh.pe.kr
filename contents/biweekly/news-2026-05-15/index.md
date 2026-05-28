@@ -45,6 +45,8 @@ series: "Frank's IT News 2026 상반기"
 - [Ruflo - 클로드 코드를 위한 멀티 에이전트 AI 오케스트레이션 플랫폼](https://news.hada.io/topic?id=29480) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [Needle - Gemini Tool Calling을 증류한 2600만 파라미터 모델](https://news.hada.io/topic?id=29466) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [Show GN: Everything Claude Code 스킬 183개를 Gemini CLI &amp; Antigravity로 마이그레이션](https://news.hada.io/topic?id=29465) - GeekNews - 개발/기술/스타트업 뉴스 서비스
+- [Become an AI Engineer | Enrollment Ends Soon](https://blog.bytebytego.com/p/enrollment-ends-soon-become-an-ai) - ByteByteGo Newsletter
+- [누구나 찾아볼 수 있는 중고거래 서버 LLM 릴리즈 노트 도입기](https://medium.com/daangn/%EB%88%84%EA%B5%AC%EB%82%98-%EC%B0%BE%EC%95%84%EB%B3%BC-%EC%88%98-%EC%9E%88%EB%8A%94-%EC%A4%91%EA%B3%A0%EA%B1%B0%EB%9E%98-%EC%84%9C%EB%B2%84-llm-%EB%A6%B4%EB%A6%AC%EC%A6%88-%EB%85%B8%ED%8A%B8-%EB%8F%84%EC%9E%85%EA%B8%B0-93afe203d766?source=rss----4505f82a2dbd---4) - 당근 테크 블로그 - Medium
 
 ## 💻 Development
 
@@ -74,9 +76,7 @@ series: "Frank's IT News 2026 상반기"
 ## 📌 Misc
 
 - [High Performance Rate Limiting at Databricks](https://blog.bytebytego.com/p/high-performance-rate-limiting-at) - ByteByteGo Newsletter
-- [Become an AI Engineer | Enrollment Ends Soon](https://blog.bytebytego.com/p/enrollment-ends-soon-become-an-ai) - ByteByteGo Newsletter
-- [Release Note (2026-04)](https://jbee.io/articles/essay/Release Note (2026-04)) - Jbee.io
-- [누구나 찾아볼 수 있는 중고거래 서버 LLM 릴리즈 노트 도입기](https://medium.com/daangn/%EB%88%84%EA%B5%AC%EB%82%98-%EC%B0%BE%EC%95%84%EB%B3%BC-%EC%88%98-%EC%9E%88%EB%8A%94-%EC%A4%91%EA%B3%A0%EA%B1%B0%EB%9E%98-%EC%84%9C%EB%B2%84-llm-%EB%A6%B4%EB%A6%AC%EC%A6%88-%EB%85%B8%ED%8A%B8-%EB%8F%84%EC%9E%85%EA%B8%B0-93afe203d766?source=rss----4505f82a2dbd---4) - 당근 테크 블로그 - Medium
+- [Release Note (2026-04)](https://jbee.io/articles/essay/Release%20Note%20%282026-04%29) - Jbee.io
 - [무신사 메가스토어 성수: 보이지 않는 기술, 선명해지는 경험](https://techblog.musinsa.com/%EB%AC%B4%EC%8B%A0%EC%82%AC-%EB%A9%94%EA%B0%80%EC%8A%A4%ED%86%A0%EC%96%B4-%EC%84%B1%EC%88%98-%EB%B3%B4%EC%9D%B4%EC%A7%80-%EC%95%8A%EB%8A%94-%EA%B8%B0%EC%88%A0-%EC%84%A0%EB%AA%85%ED%95%B4%EC%A7%80%EB%8A%94-%EA%B2%BD%ED%97%98-a1976d599e83?source=rss----f107b03c406e---4) - MUSINSA techblog — 무신사 테크 블로그 - Medium
 - [아주 천천히 10만 명에 도달하는 것도 멋진 일이니까요](https://jeho.page/essay/2026/05/07/50000-services.html) - K리그 프로그래머
 - [어떤 시대에도 살아남는 기업을 만드는 방법 [유튜브]](https://news.hada.io/topic?id=29517) - GeekNews - 개발/기술/스타트업 뉴스 서비스
