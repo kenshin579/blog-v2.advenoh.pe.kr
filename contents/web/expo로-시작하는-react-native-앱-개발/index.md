@@ -183,7 +183,7 @@ const deleteTodo = (id: string) => {
 
 | Web | App (Expo Go) |
 |-----|---------------|
-| ![Todo 앱 화면 (Web)](todo-list-with-items-web.png) | ![Todo 앱 화면 (Expo Go)](todo-list-with-items-app.png) |
+| <img src="todo-list-with-items-web.png" alt="Todo 앱 화면 (Web)" width="300" /> | <img src="todo-list-with-items-app.png" alt="Todo 앱 화면 (Expo Go)" width="300" /> |
 
 Todo 4개를 추가하고 그중 2개를 완료(✅, 취소선) 처리한 결과 — Web과 Expo Go 앱에서 동일하게 동작합니다.
 
