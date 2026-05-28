@@ -85,6 +85,8 @@ npx expo start
 
 실행하면 "Open up App.tsx to start working on your app!"이라는 기본 화면이 보입니다. 여기까지 왔다면 개발 환경 준비는 끝났습니다.
 
+> 📸 **[스크린샷 TODO]** `expo start` 실행 시 터미널에 나타나는 QR 코드 + 실행 옵션 메뉴, 그리고 시뮬레이터/Expo Go에 뜬 기본 앱 화면.
+
 ## iOS 시뮬레이터가 없다면?
 
 iOS 시뮬레이터는 **macOS + Xcode**가 있어야만 동작합니다. Xcode가 없거나, Windows/Linux를 쓰거나, 설치가 부담스럽다면 시뮬레이터 없이도 충분히 실행할 수 있습니다.
@@ -159,6 +161,8 @@ const deleteTodo = (id: string) => {
 
 화면은 입력창(`TextInput` + 추가 버튼)과 목록(`FlatList`)으로 구성하고, 항목을 탭하면 완료를 토글, "삭제"를 누르면 제거합니다. 전체 JSX와 스타일(`StyleSheet`)은 분량이 있으니 [GitHub 소스](https://github.com/kenshin579/tutorials-go/tree/master/web/expo-todo-app)를 참고하세요. 여기까지면 메모리상에서 동작하는 Todo 앱이 완성됩니다.
 
+> 📸 **[스크린샷 TODO]** 할 일을 몇 개 추가하고 일부를 완료(취소선) 처리한 Todo 앱 화면. 이 글에서 가장 중요한 스크린샷.
+
 ## 데이터 유지하기 (AsyncStorage)
 
 지금 앱은 껐다 켜면 할 일이 모두 사라집니다. 모든 상태가 메모리에만 있기 때문입니다. 기기에 데이터를 저장하려면 **AsyncStorage**(키-값 형태의 비동기 로컬 저장소)를 사용합니다.
@@ -195,6 +199,8 @@ useEffect(() => {
 ```
 
 `loaded` 플래그가 있는 이유는, 최초 불러오기가 끝나기 전에 저장 effect가 실행되어 빈 배열로 기존 데이터를 덮어쓰는 것을 막기 위해서입니다. 이제 항목을 추가한 뒤 앱을 완전히 종료했다 다시 열어도 목록이 그대로 유지됩니다.
+
+> 📸 **[스크린샷 TODO]** (선택) 앱을 종료했다 다시 실행해도 목록이 유지되는 모습. 재시작 전/후 두 장 또는 GIF면 더 좋음.
 
 # 6. Expo의 한계와 고려사항
 
