@@ -5,6 +5,7 @@ import { parseMarkdown, type Article, type ArticleFrontmatter } from './markdown
 interface ManifestArticle {
   slug: string;
   category: string;
+  lang: 'ko' | 'en';
   title: string;
   date: string;
   excerpt?: string;
@@ -43,60 +44,52 @@ async function loadManifest(): Promise<Manifest> {
 /**
  * 모든 아티클 메타데이터 가져오기
  */
-export async function getAllArticles(): Promise<ManifestArticle[]> {
+export async function getAllArticles(lang: 'ko' | 'en' = 'ko'): Promise<ManifestArticle[]> {
   const manifest = await loadManifest();
-  return manifest.articles;
+  return manifest.articles.filter(article => article.lang === lang);
 }
 
 /**
  * 카테고리별 아티클 가져오기
  */
-export async function getArticlesByCategory(category: string): Promise<ManifestArticle[]> {
+export async function getArticlesByCategory(category: string, lang: 'ko' | 'en' = 'ko'): Promise<ManifestArticle[]> {
   const manifest = await loadManifest();
-  return manifest.articles.filter(article => article.category === category);
+  return manifest.articles.filter(a => a.category === category && a.lang === lang);
 }
 
 /**
  * 태그별 아티클 가져오기
  */
-export async function getArticlesByTag(tag: string): Promise<ManifestArticle[]> {
+export async function getArticlesByTag(tag: string, lang: 'ko' | 'en' = 'ko'): Promise<ManifestArticle[]> {
   const manifest = await loadManifest();
-  return manifest.articles.filter(article => article.tags?.includes(tag));
+  return manifest.articles.filter(a => a.tags?.includes(tag) && a.lang === lang);
 }
 
 /**
  * 시리즈별 아티클 가져오기 (시리즈 순서대로 정렬)
  */
-export async function getArticlesBySeries(series: string): Promise<ManifestArticle[]> {
+export async function getArticlesBySeries(series: string, lang: 'ko' | 'en' = 'ko'): Promise<ManifestArticle[]> {
   const manifest = await loadManifest();
   return manifest.articles
-    .filter(article => article.series === series)
-    .sort((a, b) => (a.seriesOrder || 0) - (b.seriesOrder || 0));
+    .filter(a => a.series === series && a.lang === lang)
+    .sort((x, y) => (x.seriesOrder || 0) - (y.seriesOrder || 0));
 }
 
 /**
  * 특정 아티클 가져오기 (전체 콘텐츠 포함)
  */
-export async function getArticle(slug: string): Promise<Article | null> {
-  // 캐시 확인
-  if (articleCache.has(slug)) {
-    return articleCache.get(slug)!;
-  }
-
+export async function getArticle(slug: string, lang: 'ko' | 'en' = 'ko'): Promise<Article | null> {
+  const cacheKey = `${lang}:${slug}`;
+  if (articleCache.has(cacheKey)) return articleCache.get(cacheKey)!;
   try {
-    // contents/{category}/{article-dir}/index.md 경로
-    const filePath = path.join(process.cwd(), 'contents', slug, 'index.md');
+    const fileName = lang === 'en' ? 'index_en.md' : 'index.md';
+    const filePath = path.join(process.cwd(), 'contents', slug, fileName);
     const markdown = await fs.readFile(filePath, 'utf-8');
-
-    // Markdown 파싱
     const article = await parseMarkdown(markdown, slug);
-
-    // 캐시 저장
-    articleCache.set(slug, article);
-
+    articleCache.set(cacheKey, article);
     return article;
   } catch (error) {
-    console.error(`Failed to load article: ${slug}`, error);
+    console.error(`Failed to load article: ${slug} (${lang})`, error);
     return null;
   }
 }
@@ -104,78 +97,54 @@ export async function getArticle(slug: string): Promise<Article | null> {
 /**
  * 모든 카테고리 가져오기
  */
-export async function getAllCategories(): Promise<string[]> {
+export async function getAllCategories(lang: 'ko' | 'en' = 'ko'): Promise<string[]> {
   const manifest = await loadManifest();
-  return manifest.categories;
+  return [...new Set(manifest.articles.filter(a => a.lang === lang).map(a => a.category))].sort();
 }
 
 /**
  * 모든 태그 가져오기
  */
-export async function getAllTags(): Promise<string[]> {
+export async function getAllTags(lang: 'ko' | 'en' = 'ko'): Promise<string[]> {
   const manifest = await loadManifest();
-  return manifest.tags;
+  return [...new Set(manifest.articles.filter(a => a.lang === lang).flatMap(a => a.tags || []))].sort();
 }
 
 /**
  * 모든 시리즈 가져오기
  */
-export async function getAllSeries(): Promise<string[]> {
+export async function getAllSeries(lang: 'ko' | 'en' = 'ko'): Promise<string[]> {
   const manifest = await loadManifest();
-  return manifest.series;
+  return [...new Set(manifest.articles.filter(a => a.lang === lang && a.series).map(a => a.series!))].sort();
 }
 
 /**
  * 관련 아티클 가져오기 (같은 카테고리 or 같은 태그)
  */
-export async function getRelatedArticles(
-  slug: string,
-  limit: number = 5
-): Promise<ManifestArticle[]> {
+export async function getRelatedArticles(slug: string, lang: 'ko' | 'en' = 'ko', limit = 5): Promise<ManifestArticle[]> {
   const manifest = await loadManifest();
-  const currentArticle = manifest.articles.find(a => a.slug === slug);
-
-  if (!currentArticle) {
-    return [];
-  }
-
-  // 같은 카테고리 또는 태그가 겹치는 아티클
-  const related = manifest.articles
-    .filter(article => {
-      if (article.slug === slug) return false;
-
-      // 같은 카테고리
-      if (article.category === currentArticle.category) return true;
-
-      // 태그 겹침
-      const commonTags = article.tags?.filter(tag =>
-        currentArticle.tags?.includes(tag)
-      );
-      return commonTags && commonTags.length > 0;
+  const current = manifest.articles.find(a => a.slug === slug && a.lang === lang);
+  if (!current) return [];
+  return manifest.articles
+    .filter(a => {
+      if (a.lang !== lang) return false;
+      if (a.slug === slug) return false;
+      if (a.category === current.category) return true;
+      const common = a.tags?.filter(t => current.tags?.includes(t));
+      return common && common.length > 0;
     })
     .slice(0, limit);
-
-  return related;
 }
 
 /**
  * 이전/다음 아티클 가져오기
  */
-export async function getAdjacentArticles(slug: string): Promise<{
-  prev: ManifestArticle | null;
-  next: ManifestArticle | null;
-}> {
+export async function getAdjacentArticles(slug: string, lang: 'ko' | 'en' = 'ko'): Promise<{ prev: ManifestArticle | null; next: ManifestArticle | null; }> {
   const manifest = await loadManifest();
-  const currentIndex = manifest.articles.findIndex(a => a.slug === slug);
-
-  if (currentIndex === -1) {
-    return { prev: null, next: null };
-  }
-
-  return {
-    prev: currentIndex > 0 ? manifest.articles[currentIndex - 1] : null,
-    next: currentIndex < manifest.articles.length - 1 ? manifest.articles[currentIndex + 1] : null,
-  };
+  const list = manifest.articles.filter(a => a.lang === lang);
+  const idx = list.findIndex(a => a.slug === slug);
+  if (idx === -1) return { prev: null, next: null };
+  return { prev: idx > 0 ? list[idx - 1] : null, next: idx < list.length - 1 ? list[idx + 1] : null };
 }
 
 /**
@@ -189,26 +158,19 @@ export function getArticleTitleFromSlug(fullSlug: string): string {
 /**
  * Article title로 manifest에서 article 찾기
  */
-export async function findArticleByTitle(title: string): Promise<ManifestArticle | null> {
+export async function findArticleByTitle(title: string, lang: 'ko' | 'en' = 'ko'): Promise<ManifestArticle | null> {
   const manifest = await loadManifest();
-
-  const found = manifest.articles.find(article => {
-    const articleTitle = getArticleTitleFromSlug(article.slug);
-    return articleTitle === title;
-  });
-
+  const found = manifest.articles.find(a => a.lang === lang && getArticleTitleFromSlug(a.slug) === title);
   return found || null;
 }
 
 /**
  * Article title로 전체 article 가져오기 (콘텐츠 포함)
  */
-export async function getArticleByTitle(title: string): Promise<Article | null> {
-  const manifestArticle = await findArticleByTitle(title);
-  if (!manifestArticle) {
-    return null;
-  }
-  return getArticle(manifestArticle.slug);
+export async function getArticleByTitle(title: string, lang: 'ko' | 'en' = 'ko'): Promise<Article | null> {
+  const manifestArticle = await findArticleByTitle(title, lang);
+  if (!manifestArticle) return null;
+  return getArticle(manifestArticle.slug, lang);
 }
 
 /**

@@ -71,7 +71,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   // Related articles (3 cards, Bento tinted)
   const relatedRaw = manifestArticle
-    ? await getRelatedArticles(manifestArticle.slug, 3)
+    ? await getRelatedArticles(manifestArticle.slug, 'ko', 3)
     : [];
   const related = relatedRaw.map((r) => ({
     slug: getArticleTitleFromSlug(r.slug),
