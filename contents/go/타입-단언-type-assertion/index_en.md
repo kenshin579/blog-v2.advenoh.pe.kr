@@ -4,7 +4,6 @@ description: "How type assertion works in Go to check whether an interface holds
 date: 2021-01-16
 update: 2021-01-16
 tags:
-  - go
   - golang
   - type
   - assertion

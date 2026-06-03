@@ -4,7 +4,6 @@ description: "How to implement polymorphism in Go using interfaces and duck typi
 date: 2021-06-06
 update: 2021-06-06
 tags:
-  - go
   - golang
   - duck
   - typing

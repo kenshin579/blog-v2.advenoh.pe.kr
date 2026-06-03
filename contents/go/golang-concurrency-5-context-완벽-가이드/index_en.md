@@ -2,7 +2,7 @@
 title: "Golang Concurrency Part 5 - The Complete Context Guide"
 description: "Covers how to use the Go context package's WithCancel, WithTimeout, WithDeadline, and WithValue, and context propagation patterns"
 date: 2026-04-18
-tags: ["go", "golang", "concurrency", "context", "timeout", "cancel"]
+tags: ["golang", "concurrency", "context", "timeout", "cancel"]
 series: "Golang Concurrency"
 draft: false
 ---

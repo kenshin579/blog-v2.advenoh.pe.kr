@@ -12,7 +12,6 @@ tags:
   - raspbian
   - raspberry pi
   - 라즈베리파이
-  - go
   - golang
   - apt
 ---

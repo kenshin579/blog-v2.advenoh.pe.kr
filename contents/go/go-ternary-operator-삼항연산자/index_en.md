@@ -4,7 +4,6 @@ description: "Why Go has no ternary operator, and how to mimic one with a functi
 date: 2021-05-18
 update: 2021-05-18
 tags:
-  - go
   - golang
   - ternary
   - operator

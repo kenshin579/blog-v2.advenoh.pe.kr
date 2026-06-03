@@ -4,7 +4,6 @@ description: "Go에서의 열거형 상수 (Enums in Go)"
 date: 2020-12-20
 update: 2020-12-20
 tags:
-  - go
   - golang
   - enums
   - iota

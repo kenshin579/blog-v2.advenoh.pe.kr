@@ -4,7 +4,6 @@ description: "타입 스위치 (Type switch)"
 date: 2021-01-16
 update: 2021-01-16
 tags:
-  - go
   - golang
   - type
   - switch

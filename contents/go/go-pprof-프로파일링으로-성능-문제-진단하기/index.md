@@ -4,7 +4,6 @@ description: "Go의 내장 프로파일링 도구 pprof를 활용하여 CPU, 메
 date: 2026-04-09
 update: 2026-04-09
 tags:
-  - go
   - golang
   - pprof
   - profiling

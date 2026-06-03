@@ -4,7 +4,6 @@ description: "How to write getter and setter methods in Go for encapsulation, in
 date: 2021-01-14
 update: 2021-01-14
 tags:
-  - go
   - golang
   - setter
   - getter

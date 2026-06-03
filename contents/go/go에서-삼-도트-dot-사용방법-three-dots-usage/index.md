@@ -4,7 +4,6 @@ description: "Go에서 삼 도트 (dot) 사용방법 (Three Dots Usage)"
 date: 2021-05-08
 update: 2021-05-08
 tags:
-  - go
   - golang
   - dot
   - three

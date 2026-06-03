@@ -4,7 +4,6 @@ description: "How to use uber/fx to automatically wire dependencies in a Go appl
 date: 2026-05-24
 update: 2026-05-24
 tags:
-  - Go
   - Golang
   - uber/fx
   - Dependency Injection

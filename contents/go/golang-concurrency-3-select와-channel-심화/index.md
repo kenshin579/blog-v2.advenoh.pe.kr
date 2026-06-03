@@ -5,7 +5,6 @@ date: 2026-04-08
 update: 2026-04-08
 tags:
   - golang
-  - go
   - concurrency
   - select
   - timeout

@@ -4,7 +4,6 @@ description: "Go 인터페이스를 활용한 Strategy 패턴 구현 방법과 �
 date: 2026-03-01
 update: 2026-03-01
 tags:
-  - go
   - golang
   - design pattern
   - strategy

@@ -4,7 +4,6 @@ description: "Go에서의 다형성 (Polymorphism)"
 date: 2021-06-06
 update: 2021-06-06
 tags:
-  - go
   - golang
   - duck
   - typing

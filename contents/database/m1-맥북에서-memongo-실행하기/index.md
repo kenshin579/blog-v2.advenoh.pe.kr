@@ -8,7 +8,6 @@ tags:
   - mac
   - mongo
   - mongodb
-  - go
   - golang
   - 몽고
   - 맥북
