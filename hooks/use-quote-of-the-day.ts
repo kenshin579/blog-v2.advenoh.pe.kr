@@ -21,13 +21,16 @@ export type QuoteViewData = {
  * - 실패하면 fallback을 그대로 유지하고 콘솔에 warn만 남긴다.
  *   (명언은 데코레이션 요소라 사용자에게 에러를 노출하지 않는다.)
  */
-export function useQuoteOfTheDay(fallback: QuoteViewData): QuoteViewData {
+export function useQuoteOfTheDay(
+  fallback: QuoteViewData,
+  language: 'ko' | 'en' = 'ko',
+): QuoteViewData {
   const [data, setData] = useState<QuoteViewData>(fallback);
 
   useEffect(() => {
     let cancelled = false;
 
-    fetchQuoteOfTheDay('ko')
+    fetchQuoteOfTheDay(language)
       .then((q) => {
         if (cancelled || !q) return;
         // 방어적 처리: 응답은 검증 없이 캐스팅된 JSON이라 타입상 string이어도
@@ -53,7 +56,7 @@ export function useQuoteOfTheDay(fallback: QuoteViewData): QuoteViewData {
     // fallback.attribution만 의존성에 포함. effect 내부에서 fallback.attribution만 참조하기 때문이다.
     // fallback.content는 useState 초기값으로만 쓰이고 effect 본문에서 참조되지 않으므로 의도적으로 제외.
     // (fallback 객체 전체를 dep에 넣으면 호출자가 fallback을 메모이즈하지 않을 경우 무한 재호출 위험.)
-  }, [fallback.attribution]);
+  }, [fallback.attribution, language]);
 
   return data;
 }

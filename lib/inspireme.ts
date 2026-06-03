@@ -31,7 +31,7 @@ export function quoteDetailUrl(id: string): string {
 export async function fetchQuoteOfTheDay(
   language: string = 'ko',
 ): Promise<InspireMeWidgetQuote | null> {
-  const url = `${INSPIRE_ME_BASE_URL}/api/widget/quote-of-the-day?language=${encodeURIComponent(language)}`;
+  const url = `${INSPIRE_ME_BASE_URL}/api/widget/quote-of-the-day?lang=${encodeURIComponent(language)}`;
   const res = await fetch(url);
   if (!res.ok) {
     throw new Error(`QOTD widget API returned ${res.status}`);
