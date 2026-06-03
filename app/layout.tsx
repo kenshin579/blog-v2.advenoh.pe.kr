@@ -2,6 +2,7 @@ import type { Metadata } from 'next';
 import Script from 'next/script';
 import './globals.css';
 import { ThemeProvider } from '@/components/theme-provider';
+import { LangRedirect } from '@/components/lang-redirect';
 import { SiteHeader } from '@/components/site-header';
 import { SiteFooter } from '@/components/site-footer';
 import { ChatButton } from '@/components/chat/ChatButton';
@@ -112,6 +113,7 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <LangRedirect />
           <div className="min-h-screen flex flex-col">
             <SiteHeader />
             <main className="flex-1">{children}</main>
