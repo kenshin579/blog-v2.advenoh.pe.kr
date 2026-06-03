@@ -15,7 +15,7 @@ tags:
   - 고언어
   - interface
   - 인터페이스
-series: "Go 디자인 패턴"
+series: "Go Design Patterns"
 ---
 
 # 1. Overview

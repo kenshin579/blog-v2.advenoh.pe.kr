@@ -37,7 +37,8 @@ description: Use when translating a Korean blog article (contents/{category}/{sl
 | 본문 산문 | 영어로 번역 (자연스러운 기술문서 톤) |
 | frontmatter `title` / `description` | 영어로 번역 |
 | frontmatter `tags` | **그대로 유지** (번역/추가/삭제 안 함 — 검색 일관성) |
-| frontmatter `date` / `update` / `series` / `seriesOrder` | **원본 값 유지** |
+| frontmatter `series` | **영어로 번역** (영어 series 페이지에 그대로 노출됨 — 같은 series는 항상 동일한 영어 이름으로 통일) |
+| frontmatter `date` / `update` / `seriesOrder` | **원본 값 유지** |
 | 섹션 heading | 영어로 번역 (`# 참고` → `# References`, `# 들어가며` → `# Introduction` 등) |
 | 코드 블록의 코드/식별자/문법 | **보존** (변수명·함수명·키워드 변경 금지) |
 | 코드 블록 안의 한글 (주석·한글 문자열·한글 샘플데이터) | **영어로 번역** |
@@ -85,6 +86,7 @@ tags:
 
 - ❌ 코드 식별자/로직을 영어로 바꿔 예제가 깨짐 → ✅ 코드는 보존, 한글 주석만 번역
 - ❌ tags를 영어로 번역 → ✅ 그대로 유지
+- ❌ series를 한국어 원본 그대로 둠 → ✅ 영어로 번역 (같은 series에 속한 글은 모두 동일한 영어 이름으로 통일 — 안 그러면 영어 series 페이지에서 갈라짐)
 - ❌ `index.en.md`로 저장 → ✅ **`index_en.md`** (언더스코어)
 - ❌ 이미지 파일명을 영어로 바꿈 → ✅ 원본 경로 그대로 (이미지 공유)
 - ❌ Mermaid 노드에 `<br/>` 추가 → ✅ 줄바꿈 필요 시 노드 분리/단순화

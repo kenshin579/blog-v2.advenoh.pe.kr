@@ -13,7 +13,7 @@ tags:
   - 슬래시커맨드
   - AI코딩도구
   - 워크플로우자동화
-series: "Claude Code 완벽 가이드"
+series: "Claude Code Complete Guide"
 ---
 
 # 1. Overview

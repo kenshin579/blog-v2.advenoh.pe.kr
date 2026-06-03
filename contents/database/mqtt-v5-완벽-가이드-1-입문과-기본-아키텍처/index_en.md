@@ -17,7 +17,7 @@ tags:
   - 브로커
   - 메시징
   - 로봇
-series: "MQTT v5 완벽 가이드"
+series: "MQTT v5 Complete Guide"
 ---
 
 > As I started using MQTT at work, I put together these study notes to get familiar with the protocol.

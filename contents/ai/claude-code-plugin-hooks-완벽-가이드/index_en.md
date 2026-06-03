@@ -12,7 +12,7 @@ tags:
   - AI코딩도구
   - 워크플로우자동화
   - Anthropic
-series: "Claude Code 완벽 가이드"
+series: "Claude Code Complete Guide"
 ---
 
 # 1. Overview

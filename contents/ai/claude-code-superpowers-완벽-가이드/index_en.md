@@ -17,7 +17,7 @@ tags:
   - TDD
   - 코드리뷰
   - Anthropic
-series: "Claude Code 완벽 가이드"
+series: "Claude Code Complete Guide"
 ---
 
 # 1. Overview

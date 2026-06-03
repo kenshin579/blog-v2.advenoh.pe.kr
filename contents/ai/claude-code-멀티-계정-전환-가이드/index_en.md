@@ -11,7 +11,7 @@ tags:
   - OAuth
   - rate limit
   - 계정 전환
-series: "Claude Code 실전 가이드"
+series: "Claude Code Practical Guide"
 ---
 
 # 1. Overview

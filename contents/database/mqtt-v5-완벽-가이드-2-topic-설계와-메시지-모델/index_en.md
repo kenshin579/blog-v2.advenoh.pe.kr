@@ -15,7 +15,7 @@ tags:
   - 토픽 설계
   - 메시지 브로커
   - 발행구독 패턴
-series: "MQTT v5 완벽 가이드"
+series: "MQTT v5 Complete Guide"
 ---
 
 # 1. Topic Design
