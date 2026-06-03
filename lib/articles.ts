@@ -165,6 +165,14 @@ export async function findArticleByTitle(title: string, lang: 'ko' | 'en' = 'ko'
 }
 
 /**
+ * 특정 slug의 article이 해당 언어로 존재하는지 확인
+ */
+export async function hasArticleVariant(slug: string, lang: 'ko' | 'en'): Promise<boolean> {
+  const manifest = await loadManifest();
+  return manifest.articles.some(a => a.slug === slug && a.lang === lang);
+}
+
+/**
  * Article title로 전체 article 가져오기 (콘텐츠 포함)
  */
 export async function getArticleByTitle(title: string, lang: 'ko' | 'en' = 'ko'): Promise<Article | null> {

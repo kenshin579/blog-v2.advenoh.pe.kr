@@ -6,6 +6,7 @@ import {
   getArticleTitleFromSlug,
   getArticlesBySeries,
   findArticleByTitle,
+  hasArticleVariant,
 } from '@/lib/articles';
 import { extractTOC, calculateReadingTime } from '@/lib/markdown';
 import { MermaidRenderer } from '@/components/article/mermaid-renderer';
@@ -42,14 +43,19 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   const article = await getArticleByTitle(decodedSlug, 'en');
   if (!article) return { title: '게시글을 찾을 수 없습니다' };
 
+  const manifestArticle = await findArticleByTitle(decodedSlug, 'en');
+  const fullSlug = manifestArticle?.slug ?? decodedSlug;
+  const titleSlug = getArticleTitleFromSlug(fullSlug);
+  const hasKo = await hasArticleVariant(fullSlug, 'ko');
+  const languages: Record<string, string> = { en: `/en/${titleSlug}/` };
+  if (hasKo) languages.ko = `/${titleSlug}/`;
+
   return {
-    title: `${article.frontmatter.title} | Frank's IT Blog`,
+    title: article.frontmatter.title,
     description: article.frontmatter.excerpt || article.frontmatter.title,
     alternates: {
-      languages: {
-        ko: `/${decodedSlug}/`,
-        en: `/en/${decodedSlug}/`,
-      },
+      canonical: `/en/${titleSlug}/`,
+      languages,
     },
     openGraph: {
       title: article.frontmatter.title,
