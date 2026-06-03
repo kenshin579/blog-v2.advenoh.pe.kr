@@ -59,6 +59,8 @@ sequenceDiagram
     FE->>U: 프로필 표시
 ```
 
+> 위는 개요이며, 실제 redirect 경로(프론트 vs 백엔드)는 버전별로 다르다 — JWT는 §5.1, 세션은 §6.1 참고.
+
 > 전체 소스 코드는 두 저장소에서 확인할 수 있다.
 > - JWT(무상태) 버전: [web/sns-login-jwt](https://github.com/kenshin579/tutorials-go/tree/master/web/sns-login-jwt)
 > - 세션(서버 상태) 버전: [web/sns-login-session](https://github.com/kenshin579/tutorials-go/tree/master/web/sns-login-session)
@@ -558,9 +560,13 @@ func (h *AuthHandler) HandleCallback(c echo.Context) error {
 | POST | `/api/auth/logout` | 로그아웃 (클라이언트가 토큰 삭제) | 불필요 |
 | GET | `/api/user/me` | 현재 사용자 정보 | 필요 (access 토큰) |
 
+> **"인증" 컬럼의 의미**: 여기서 "인증"은 **access 토큰 미들웨어(`JWTAuth`) 통과 필요 여부**를 뜻한다. `/api/auth/refresh`는 access 미들웨어를 거치지 않으므로 "불필요"지만, 본문에는 유효한 refresh 토큰이 필요하다 — 따라서 "불필요"와 "(refresh 토큰 필요)"는 서로 모순이 아니다.
+
+> **JWT 로그아웃은 클라이언트측이다**: JWT는 서버에 세션 상태가 없으므로, 로그아웃은 클라이언트가 보관한 토큰을 삭제하는 것으로 끝난다(서버측 무효화는 세션 방식의 §6.6 참고).
+
 ## 5.5 프론트엔드 연동
 
-Axios 인터셉터로 **모든 요청에 access 토큰을 자동 첨부**하고, 401 응답 시 refresh 토큰으로 갱신을 시도한다.
+Axios 인터셉터로 **모든 요청에 access 토큰을 자동 첨부**하고, 401 응답 시 refresh 토큰으로 갱신을 시도한다. 다만 localStorage에 저장한 토큰은 XSS에 노출될 수 있다. 비교와 대안(HttpOnly 쿠키)은 §7·§8에서 다룬다.
 
 ```typescript
 // services/authService.ts
@@ -909,7 +915,7 @@ export function useAuth() {
 | 저장 위치 보안 | localStorage(XSS) vs 쿠키 | HttpOnly 쿠키 |
 | 적합 | FE/BE 분리, MSA, 무상태 API | 단일/소규모, 즉시 무효화 중요 |
 
-## 선택 가이드
+## 7.1 선택 가이드
 
 - **세션이 잘 맞는 경우**: 서비스가 단일/소규모이고, "로그아웃하면 즉시 차단", "관리자가 특정 사용자 강제 로그아웃" 같은 **서버측 즉시 무효화**가 중요한 경우. 쿠키(HttpOnly)에 담기므로 토큰을 localStorage에 두는 것보다 XSS 노출 면에서도 다루기 쉽다.
 - **JWT가 잘 맞는 경우**: 여러 서비스/마이크로서비스가 공유 세션 스토어 없이 **수평 확장**해야 하고, 모바일 등 다양한 클라이언트에 무상태 API를 제공하는 경우.
@@ -927,7 +933,7 @@ export function useAuth() {
 - **세션 = 서버측 무효화**: 로그아웃이 세션 행 삭제로 즉시 반영
 - **state 파라미터**: CSRF 공격 방지를 위한 필수 보안 요소
 
-### 프로덕션 환경에서 추가로 고려할 사항
+## 8.1 프로덕션 환경에서 추가로 고려할 사항
 
 | 항목 | 설명 |
 |------|------|
