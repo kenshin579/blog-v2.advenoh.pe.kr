@@ -20,9 +20,10 @@ type CategoryEntry = {
 type Props = {
   articles: Article[];
   categories: CategoryEntry[];
+  basePath?: string;
 };
 
-export function PostsPageClient({ articles, categories }: Props) {
+export function PostsPageClient({ articles, categories, basePath = '' }: Props) {
   const params = useSearchParams();
   const cat = params.get('cat');
   const selectedCategory = cat && cat.trim() ? cat : null;
@@ -38,6 +39,7 @@ export function PostsPageClient({ articles, categories }: Props) {
         categories={categories}
         totalCount={articles.length}
         selectedCategory={selectedCategory}
+        basePath={basePath}
       />
       <div>
         {selectedCategory && (
@@ -45,7 +47,7 @@ export function PostsPageClient({ articles, categories }: Props) {
             <span className="capitalize">{selectedCategory}</span> · {filtered.length}편
           </p>
         )}
-        <PostsList articles={filtered} />
+        <PostsList articles={filtered} basePath={basePath} />
       </div>
     </div>
   );
