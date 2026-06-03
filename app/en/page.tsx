@@ -180,6 +180,7 @@ export default async function EnHomePage() {
           weeks={HEATMAP_WEEKS}
           streakWeeks={streakWeeks}
           peakPerWeek={peakPerWeek}
+          language="en"
         />
 
         {recent.map((a, i) => (
