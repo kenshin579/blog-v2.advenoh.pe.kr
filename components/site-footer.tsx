@@ -2,7 +2,10 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { socialLinks } from '@/config/social';
+import { getLangFromPathname, localizeHref, type Lang } from '@/lib/i18n/lang';
+import { getDictionary } from '@/lib/i18n/dictionaries';
 
 interface Manifest {
   categories: string[];
@@ -10,6 +13,10 @@ interface Manifest {
 
 export function SiteFooter() {
   const [categories, setCategories] = useState<string[]>([]);
+  const pathname = usePathname();
+  const lang: Lang = getLangFromPathname(pathname);
+  const t = getDictionary(lang);
+  const rssHref = lang === 'en' ? '/en/rss.xml' : '/rss.xml';
 
   useEffect(() => {
     fetch('/content-manifest.json')
@@ -30,8 +37,7 @@ export function SiteFooter() {
           <div className="space-y-4">
             <h3 className="text-sm font-semibold">Frank's IT Blog</h3>
             <p className="text-sm text-bento-dim leading-relaxed">
-              기술 블로그, 프로그래밍, 개발 관련<br />
-              지식과 경험을 공유하는 개인 블로그입니다.
+              {t.footer.tagline}
             </p>
             {/* 소셜 링크 */}
             <div className="flex gap-4">
@@ -52,13 +58,13 @@ export function SiteFooter() {
 
           {/* 중앙: 카테고리 */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">카테고리</h3>
+            <h3 className="text-sm font-semibold">{t.footer.categories}</h3>
             <div className="grid grid-cols-3 gap-x-4 gap-y-2">
               {categories.length > 0 ? (
                 categories.map(tag => (
                   <Link
                     key={tag}
-                    href={`/?category=${tag}`}
+                    href={localizeHref(`/?category=${tag}`, lang)}
                     className="text-sm text-bento-dim hover:text-bento-ink hover:underline transition-colors"
                   >
                     {tag}
@@ -72,25 +78,25 @@ export function SiteFooter() {
 
           {/* 오른쪽: 정보 */}
           <div className="space-y-4">
-            <h3 className="text-sm font-semibold">정보</h3>
+            <h3 className="text-sm font-semibold">{t.footer.info}</h3>
             <div className="space-y-2">
               <a
-                href="/rss.xml"
+                href={rssHref}
                 className="block text-sm text-bento-dim hover:text-bento-ink hover:underline transition-colors"
               >
-                RSS
+                {t.footer.rss}
               </a>
               <a
                 href="/sitemap.xml"
                 className="block text-sm text-bento-dim hover:text-bento-ink hover:underline transition-colors"
               >
-                사이트맵
+                {t.footer.sitemap}
               </a>
               <Link
-                href="/series"
+                href={localizeHref('/series', lang)}
                 className="block text-sm text-bento-dim hover:text-bento-ink hover:underline transition-colors"
               >
-                시리즈
+                {t.footer.series}
               </Link>
             </div>
           </div>
