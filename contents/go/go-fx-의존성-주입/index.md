@@ -4,7 +4,6 @@ description: "uber/fx를 사용하여 Go 애플리케이션의 의존성을 자�
 date: 2026-05-24
 update: 2026-05-24
 tags:
-  - Go
   - Golang
   - uber/fx
   - Dependency Injection

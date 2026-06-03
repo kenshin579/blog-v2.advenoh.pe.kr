@@ -4,7 +4,6 @@ description: "How to use Go's built-in profiling tool pprof to diagnose and opti
 date: 2026-04-09
 update: 2026-04-09
 tags:
-  - go
   - golang
   - pprof
   - profiling

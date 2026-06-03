@@ -6,7 +6,6 @@ update: 2026-02-20
 tags:
   - MQTT
   - MQTT v5
-  - Go
   - Golang
   - Paho
   - autopaho

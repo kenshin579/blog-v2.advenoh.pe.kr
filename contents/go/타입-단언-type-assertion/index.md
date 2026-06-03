@@ -4,7 +4,6 @@ description: "타입 단언 (Type Assertion)"
 date: 2021-01-16
 update: 2021-01-16
 tags:
-  - go
   - golang
   - type
   - assertion

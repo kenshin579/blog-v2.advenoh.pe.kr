@@ -4,7 +4,6 @@ description: "How to implement the Strategy pattern using Go interfaces, with pr
 date: 2026-03-01
 update: 2026-03-01
 tags:
-  - go
   - golang
   - design pattern
   - strategy

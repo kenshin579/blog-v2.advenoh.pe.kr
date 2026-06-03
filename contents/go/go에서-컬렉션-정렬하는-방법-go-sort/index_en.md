@@ -4,7 +4,6 @@ description: "Four ways to sort collections in Go: primitive types, a custom com
 date: 2021-05-09
 update: 2021-05-09
 tags:
-  - go
   - golang
   - comparator
   - sort

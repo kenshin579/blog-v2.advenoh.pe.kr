@@ -4,7 +4,6 @@ description: "Go에서의 게터, 세터 메서드 (Getter, Setter in Go)"
 date: 2021-01-14
 update: 2021-01-14
 tags:
-  - go
   - golang
   - setter
   - getter

@@ -5,7 +5,6 @@ date: 2026-04-15
 update: 2026-04-15
 tags:
   - golang
-  - go
   - concurrency
   - sync
   - mutex

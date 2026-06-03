@@ -4,7 +4,6 @@ description: "How to use Go's standard log package: the basic logger, writing to
 date: 2021-01-02
 update: 2021-01-02
 tags:
-  - go
   - golang
   - log
   - logging

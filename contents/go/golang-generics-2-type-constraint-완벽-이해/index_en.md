@@ -5,7 +5,6 @@ date: 2026-03-02
 update: 2026-03-02
 tags:
   - golang
-  - go
   - generics
   - 제네릭
   - constraint

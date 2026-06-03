@@ -4,7 +4,6 @@ description: "How to declare enum-like constants in Go using the iota keyword, w
 date: 2020-12-20
 update: 2020-12-20
 tags:
-  - go
   - golang
   - enums
   - iota

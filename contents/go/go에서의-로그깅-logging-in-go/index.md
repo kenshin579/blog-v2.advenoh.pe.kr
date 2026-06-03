@@ -4,7 +4,6 @@ description: "Go에서의 로그깅 (Logging in Go)"
 date: 2021-01-02
 update: 2021-01-02
 tags:
-  - go
   - golang
   - log
   - logging

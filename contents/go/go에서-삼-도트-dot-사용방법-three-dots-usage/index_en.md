@@ -4,7 +4,6 @@ description: "The four ways the ... (three dots) notation is used in Go: variadi
 date: 2021-05-08
 update: 2021-05-08
 tags:
-  - go
   - golang
   - dot
   - three

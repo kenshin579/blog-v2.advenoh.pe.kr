@@ -4,7 +4,6 @@ description: "Go에서 컬렉션 정렬하는 방법 (Go Sort)"
 date: 2021-05-09
 update: 2021-05-09
 tags:
-  - go
   - golang
   - comparator
   - sort

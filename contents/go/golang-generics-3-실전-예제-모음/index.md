@@ -5,7 +5,6 @@ date: 2026-03-03
 update: 2026-03-03
 tags:
   - golang
-  - go
   - generics
   - 제네릭
   - stack

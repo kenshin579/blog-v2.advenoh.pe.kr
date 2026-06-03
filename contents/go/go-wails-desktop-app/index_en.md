@@ -5,7 +5,6 @@ date: 2026-03-08
 update: 2026-03-08
 tags:
   - golang
-  - go
   - wails
   - desktop
   - react

@@ -5,7 +5,6 @@ date: 2026-03-01
 update: 2026-03-01
 tags:
   - golang
-  - go
   - generics
   - 제네릭
   - type-parameter

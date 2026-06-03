@@ -4,7 +4,6 @@ description: "How a type switch works in Go: running a type assertion and execut
 date: 2021-01-16
 update: 2021-01-16
 tags:
-  - go
   - golang
   - type
   - switch

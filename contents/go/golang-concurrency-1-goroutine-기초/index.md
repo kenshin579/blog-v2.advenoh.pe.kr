@@ -5,7 +5,6 @@ date: 2026-03-07
 update: 2026-03-07
 tags:
   - golang
-  - go
   - concurrency
   - goroutine
   - parallelism

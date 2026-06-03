@@ -5,7 +5,6 @@ date: 2026-03-13
 update: 2026-03-13
 tags:
   - golang
-  - go
   - go1.26
   - new
   - green-tea-gc

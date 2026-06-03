@@ -4,7 +4,6 @@ description: "Go Ternary Operator (삼항연산자)"
 date: 2021-05-18
 update: 2021-05-18
 tags:
-  - go
   - golang
   - ternary
   - operator
