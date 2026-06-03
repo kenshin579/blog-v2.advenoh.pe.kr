@@ -13,6 +13,8 @@ type Props = {
   streakWeeks: number;
   /** 메타: 한 주 최대 발행 수 */
   peakPerWeek: number;
+  /** 표시 언어 (기본 ko) */
+  language?: 'ko' | 'en';
 };
 
 function opacityFor(count: number): number {
@@ -22,12 +24,13 @@ function opacityFor(count: number): number {
   return 1.0;
 }
 
-export function ActivityHeatmap({ days, weeks, streakWeeks, peakPerWeek }: Props) {
+export function ActivityHeatmap({ days, weeks, streakWeeks, peakPerWeek, language = 'ko' }: Props) {
+  const heading = language === 'en' ? 'A Record of Consistency' : '꾸준함의 기록';
   return (
     <div className="col-span-12 flex flex-col rounded-card-xl bg-bento-card p-6 md:col-span-4 md:p-7">
       <div className="text-[10px] uppercase tracking-[0.1em] text-bento-dim">Last {weeks} weeks</div>
       <h3 className="mt-2 text-xl font-bold tracking-tighter text-bento-ink md:text-2xl">
-        꾸준함의 기록
+        {heading}
       </h3>
       <div
         className="mt-6 flex-1 grid gap-1"
@@ -43,7 +46,7 @@ export function ActivityHeatmap({ days, weeks, streakWeeks, peakPerWeek }: Props
             key={d.date}
             className="rounded-[3px] bg-bento-accent"
             style={{ opacity: opacityFor(d.count), minHeight: '8px' }}
-            title={`${d.date}: ${d.count}편`}
+            title={language === 'en' ? `${d.date}: ${d.count}` : `${d.date}: ${d.count}편`}
           />
         ))}
       </div>
