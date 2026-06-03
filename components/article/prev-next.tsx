@@ -8,19 +8,20 @@ type Article = {
 type Props = {
   prev: Article | null;
   next: Article | null;
+  basePath?: string;
 };
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg';
 
-export function PrevNext({ prev, next }: Props) {
+export function PrevNext({ prev, next, basePath = '' }: Props) {
   if (!prev && !next) return null;
 
   return (
     <section className="mx-auto mt-6 grid max-w-prose grid-cols-1 gap-3 px-6 md:grid-cols-2 md:px-0">
       {prev ? (
         <Link
-          href={`/${encodeURIComponent(prev.slug)}`}
+          href={`${basePath}/${encodeURIComponent(prev.slug)}`}
           className={[
             'rounded-card bg-bento-cream p-4 no-underline text-bento-ink transition hover:bg-bento-cream/80',
             FOCUS_RING,
@@ -34,7 +35,7 @@ export function PrevNext({ prev, next }: Props) {
       )}
       {next ? (
         <Link
-          href={`/${encodeURIComponent(next.slug)}`}
+          href={`${basePath}/${encodeURIComponent(next.slug)}`}
           className={[
             'rounded-card bg-bento-ink p-4 no-underline text-white transition hover:bg-bento-ink/90',
             FOCUS_RING,

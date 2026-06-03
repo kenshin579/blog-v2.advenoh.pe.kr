@@ -11,19 +11,20 @@ type Props = {
   categories: CategoryEntry[];
   totalCount: number;
   selectedCategory: string | null;
+  basePath?: string;
 };
 
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg';
 
-export function CategoryRail({ categories, totalCount, selectedCategory }: Props) {
+export function CategoryRail({ categories, totalCount, selectedCategory, basePath = '' }: Props) {
   return (
     <>
       {/* Desktop sticky rail */}
       <aside className="hidden md:block">
         <div className="sticky top-24 flex flex-col gap-1">
           <CategoryItem
-            href="/posts"
+            href={`${basePath}/posts`}
             name="All"
             count={totalCount}
             active={selectedCategory === null}
@@ -31,7 +32,7 @@ export function CategoryRail({ categories, totalCount, selectedCategory }: Props
           {categories.map((c) => (
             <CategoryItem
               key={c.name}
-              href={`/posts?cat=${encodeURIComponent(c.name)}`}
+              href={`${basePath}/posts?cat=${encodeURIComponent(c.name)}`}
               name={c.name}
               count={c.count}
               active={selectedCategory === c.name}
@@ -43,7 +44,7 @@ export function CategoryRail({ categories, totalCount, selectedCategory }: Props
       {/* Mobile horizontal chip rail */}
       <div className="-mx-6 flex gap-2 overflow-x-auto px-6 pb-2 no-scrollbar md:hidden">
         <CategoryChip
-          href="/posts"
+          href={`${basePath}/posts`}
           name="All"
           count={totalCount}
           active={selectedCategory === null}
@@ -51,7 +52,7 @@ export function CategoryRail({ categories, totalCount, selectedCategory }: Props
         {categories.map((c) => (
           <CategoryChip
             key={c.name}
-            href={`/posts?cat=${encodeURIComponent(c.name)}`}
+            href={`${basePath}/posts?cat=${encodeURIComponent(c.name)}`}
             name={c.name}
             count={c.count}
             active={selectedCategory === c.name}

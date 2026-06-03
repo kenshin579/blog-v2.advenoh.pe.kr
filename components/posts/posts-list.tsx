@@ -9,6 +9,7 @@ type Article = {
 
 type Props = {
   articles: Article[];
+  basePath?: string;
 };
 
 const FOCUS_RING =
@@ -25,7 +26,7 @@ function shortDate(iso: string): string {
   return `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function PostsList({ articles }: Props) {
+export function PostsList({ articles, basePath = '' }: Props) {
   if (articles.length === 0) {
     return (
       <div className="py-20 text-center text-sm text-bento-dim">
@@ -53,7 +54,7 @@ export function PostsList({ articles }: Props) {
             {byYear.get(year)!.map((a) => (
               <li key={a.slug}>
                 <Link
-                  href={`/${encodeURIComponent(a.slug)}`}
+                  href={`${basePath}/${encodeURIComponent(a.slug)}`}
                   className={[
                     'group grid grid-cols-[44px_72px_1fr] items-baseline gap-3 rounded-card-sm px-2 py-2.5 no-underline text-bento-ink transition hover:bg-bento-ink/[0.04] dark:hover:bg-white/[0.04]',
                     FOCUS_RING,
