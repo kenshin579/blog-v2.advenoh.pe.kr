@@ -18,7 +18,7 @@ tags:
   - 텔레그램
   - AI에이전트
   - 자동화
-series: "OpenClaw 활용 가이드"
+series: "OpenClaw Guide"
 ---
 # 1. Overview
 

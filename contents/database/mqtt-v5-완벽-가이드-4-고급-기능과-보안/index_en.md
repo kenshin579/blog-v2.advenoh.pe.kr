@@ -17,7 +17,7 @@ tags:
   - 메시지 큐
   - IoT
   - 로드 밸런싱
-series: "MQTT v5 완벽 가이드"
+series: "MQTT v5 Complete Guide"
 ---
 
 # 1. MQTT v5 Advanced Features

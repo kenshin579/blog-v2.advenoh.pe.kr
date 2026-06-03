@@ -17,7 +17,7 @@ tags:
   - 메시지 전달 보장
   - 세션 관리
   - 네트워크 복원
-series: "MQTT v5 완벽 가이드"
+series: "MQTT v5 Complete Guide"
 ---
 
 # 1. Mastering QoS

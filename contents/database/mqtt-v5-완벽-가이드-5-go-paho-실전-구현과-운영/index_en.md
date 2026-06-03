@@ -17,7 +17,7 @@ tags:
   - 실전 구현
   - IoT
   - 메시지 브로커
-series: "MQTT v5 완벽 가이드"
+series: "MQTT v5 Complete Guide"
 ---
 
 # 1. Using Go + Paho (v5)

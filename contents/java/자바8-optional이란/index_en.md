@@ -11,7 +11,7 @@ tags:
   - openjdk
   - 자바
   - 자바8
-series: "자바8"
+series: "Java 8"
 ---
 
 # 1. What Is Optional

@@ -10,7 +10,7 @@ tags:
   - 멀티에이전트
   - 셀프호스팅
   - 챗봇
-series: "OpenClaw 활용 가이드"
+series: "OpenClaw Guide"
 ---
 
 # 1. Overview
