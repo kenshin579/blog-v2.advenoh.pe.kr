@@ -28,7 +28,7 @@ interface ArticlePageProps {
 export const dynamicParams = false;
 
 export async function generateStaticParams() {
-  const articles = await getAllArticles();
+  const articles = await getAllArticles('en');
   return articles.map((article) => ({
     slug: getArticleTitleFromSlug(article.slug),
   }));
@@ -39,12 +39,18 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   if (!resolvedParams.slug) return { title: '게시글을 찾을 수 없습니다' };
 
   const decodedSlug = decodeURIComponent(resolvedParams.slug);
-  const article = await getArticleByTitle(decodedSlug);
+  const article = await getArticleByTitle(decodedSlug, 'en');
   if (!article) return { title: '게시글을 찾을 수 없습니다' };
 
   return {
     title: `${article.frontmatter.title} | Frank's IT Blog`,
     description: article.frontmatter.excerpt || article.frontmatter.title,
+    alternates: {
+      languages: {
+        ko: `/${decodedSlug}/`,
+        en: `/en/${decodedSlug}/`,
+      },
+    },
     openGraph: {
       title: article.frontmatter.title,
       description: article.frontmatter.excerpt,
@@ -60,18 +66,18 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   if (!resolvedParams.slug) notFound();
 
   const decodedSlug = decodeURIComponent(resolvedParams.slug);
-  const article = await getArticleByTitle(decodedSlug);
+  const article = await getArticleByTitle(decodedSlug, 'en');
   if (!article) notFound();
 
   const toc = extractTOC(article.html);
   const readingTime = calculateReadingTime(article.content);
 
-  const manifestArticle = await findArticleByTitle(decodedSlug);
+  const manifestArticle = await findArticleByTitle(decodedSlug, 'en');
   const category = manifestArticle?.category || 'Uncategorized';
 
   // Related articles (3 cards, Bento tinted)
   const relatedRaw = manifestArticle
-    ? await getRelatedArticles(manifestArticle.slug, 'ko', 3)
+    ? await getRelatedArticles(manifestArticle.slug, 'en', 3)
     : [];
   const related = relatedRaw.map((r) => ({
     slug: getArticleTitleFromSlug(r.slug),
@@ -84,7 +90,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
   let prev: { slug: string; title: string } | null = null;
   let next: { slug: string; title: string } | null = null;
   if (manifestArticle?.series) {
-    const eps = await getArticlesBySeries(manifestArticle.series);
+    const eps = await getArticlesBySeries(manifestArticle.series, 'en');
     seriesEpisodes = eps;
     const idx = eps.findIndex((e) => e.slug === manifestArticle.slug);
     if (idx > 0) {
@@ -99,19 +105,19 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
   const breadcrumbItems = manifestArticle?.series
     ? [
-        { label: 'Home', href: '/' },
-        { label: 'Series', href: '/series' },
+        { label: 'Home', href: '/en' },
+        { label: 'Series', href: '/en/series' },
         {
           label: manifestArticle.series,
-          href: `/series/${encodeURIComponent(seriesSlug(manifestArticle.series))}`,
+          href: `/en/series/${encodeURIComponent(seriesSlug(manifestArticle.series))}`,
         },
       ]
     : [
-        { label: 'Home', href: '/' },
-        { label: 'Posts', href: '/posts' },
+        { label: 'Home', href: '/en' },
+        { label: 'Posts', href: '/en/posts' },
         {
           label: category,
-          href: `/category/${encodeURIComponent(categorySlug(category))}`,
+          href: `/en/category/${encodeURIComponent(categorySlug(category))}`,
         },
       ];
 
