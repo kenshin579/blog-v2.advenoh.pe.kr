@@ -8,13 +8,18 @@ Updated 2026-06-03
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
 ## Ai
+* [Claude Code Multi-Account Switching Guide: Keep Working Without Interruption Even When Rate Limited](https://blog.advenoh.pe.kr/claude-code-멀티-계정-전환-가이드/)
 * [Claude Code Plugin & Hooks 완벽 가이드: 확장 기능 패키징부터 이벤트 자동화까지](https://blog.advenoh.pe.kr/claude-code-plugin-hooks-완벽-가이드/)
 * [Claude Code Superpowers 완벽 가이드: brainstorm부터 PR까지](https://blog.advenoh.pe.kr/claude-code-superpowers-완벽-가이드/)
 * [Claude Code 멀티 계정 전환 가이드: Limit 걸려도 끊김 없이 작업하기](https://blog.advenoh.pe.kr/claude-code-멀티-계정-전환-가이드/)
 * [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](https://blog.advenoh.pe.kr/claude-code-확장-기능-완벽-가이드-command-skill-subagent/)
 * [Claude Code에서 사용하면 좋은 MCP 서버 추천 가이드](https://blog.advenoh.pe.kr/claude-code-mcp-추천-가이드/)
+* [Complete Guide to Claude Code Plugins & Hooks: From Packaging Extensions to Event Automation](https://blog.advenoh.pe.kr/claude-code-plugin-hooks-완벽-가이드/)
+* [Complete Guide to Claude Code Superpowers: From Brainstorm to PR](https://blog.advenoh.pe.kr/claude-code-superpowers-완벽-가이드/)
 * [OpenClaw Telegram 멀티 에이전트 구성하기: 하나의 Gateway에서 여러 AI 봇 운영](https://blog.advenoh.pe.kr/openclaw-telegram-멀티-에이전트-구성하기/)
 * [OpenClaw에서 gog로 Google Workspace 연동하기](https://blog.advenoh.pe.kr/openclaw에서-gog로-google-workspace-연동하기/)
+* [Recommended MCP Servers for Claude Code: A Guide](https://blog.advenoh.pe.kr/claude-code-mcp-추천-가이드/)
+* [The Complete Guide to Claude Code Extensions: Command, Skill, Subagent](https://blog.advenoh.pe.kr/claude-code-확장-기능-완벽-가이드-command-skill-subagent/)
 * [tmux 입문: 터미널 세션 관리부터 Claude Code 활용까지](https://blog.advenoh.pe.kr/tmux-입문-터미널-세션-관리부터-claude-code-활용까지/)
 * [맥에서 직접 AI 모델 돌려보자! Ollama로 LLM 서버 구축하기](https://blog.advenoh.pe.kr/맥에서-직접-ai-모델-돌려보자-ollama로-llm-서버-구축하기/)
 
