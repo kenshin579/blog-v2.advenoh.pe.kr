@@ -10,6 +10,8 @@ import { RecentCard } from '@/components/home/recent-card';
 import { StatsCard } from '@/components/home/stats-card';
 import { ActivityHeatmap } from '@/components/home/activity-heatmap';
 import { WideLatestList } from '@/components/home/wide-latest-list';
+import { QuoteSection } from '@/components/home/quote-section';
+import type { QuoteViewData } from '@/hooks/use-quote-of-the-day';
 
 export const metadata = {
   title: "Frank's IT Blog",
@@ -17,6 +19,11 @@ export const metadata = {
 };
 
 const RECENT_TONES = ['sage', 'butter', 'rose', 'cream'] as const;
+
+const QOTD_FALLBACK_EN: QuoteViewData = {
+  content: 'A well-kept note is the best gift to your future self.',
+  attribution: '— writing principle',
+};
 
 const HEATMAP_WEEKS = 16;
 
@@ -201,6 +208,8 @@ export default async function EnHomePage() {
             totalCount={totalCount}
           />
         )}
+
+        <QuoteSection fallback={QOTD_FALLBACK_EN} language="en" />
       </section>
     </main>
   );
