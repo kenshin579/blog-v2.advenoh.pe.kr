@@ -159,7 +159,7 @@ export default async function TagsPage() {
       </section>
 
       {/* Bento grid (sortable) */}
-      {entries.length > 0 && <TagsBentoGrid entries={entries} />}
+      {entries.length > 0 && <TagsBentoGrid entries={entries} basePath="/en" />}
     </main>
   );
 }

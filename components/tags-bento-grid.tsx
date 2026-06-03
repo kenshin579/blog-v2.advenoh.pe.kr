@@ -40,7 +40,13 @@ function tierFor(rank: number): 'xl' | 'lg' | 'md' | 'sm' {
   return 'sm';
 }
 
-export function TagsBentoGrid({ entries }: { entries: TagEntry[] }) {
+export function TagsBentoGrid({
+  entries,
+  basePath = '',
+}: {
+  entries: TagEntry[];
+  basePath?: string;
+}) {
   const [sortMode, setSortMode] = useState<SortMode>('count');
 
   const sorted = useMemo(() => {
@@ -79,12 +85,16 @@ export function TagsBentoGrid({ entries }: { entries: TagEntry[] }) {
         </div>
       </div>
 
-      {useBento ? <BentoLayout sorted={sorted} /> : <FlatLayout sorted={sorted} />}
+      {useBento ? (
+        <BentoLayout sorted={sorted} basePath={basePath} />
+      ) : (
+        <FlatLayout sorted={sorted} basePath={basePath} />
+      )}
     </section>
   );
 }
 
-function BentoLayout({ sorted }: { sorted: TagEntry[] }) {
+function BentoLayout({ sorted, basePath }: { sorted: TagEntry[]; basePath: string }) {
   const xl = sorted.slice(0, 2);
   const lg = sorted.slice(2, 5);
   const md = sorted.slice(5, 11);
@@ -96,7 +106,7 @@ function BentoLayout({ sorted }: { sorted: TagEntry[] }) {
       {xl.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           {xl.map((e, i) => (
-            <TagCard key={e.tag} entry={e} rank={i} tier="xl" />
+            <TagCard key={e.tag} entry={e} rank={i} tier="xl" basePath={basePath} />
           ))}
         </div>
       )}
@@ -104,7 +114,7 @@ function BentoLayout({ sorted }: { sorted: TagEntry[] }) {
       {lg.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {lg.map((e, i) => (
-            <TagCard key={e.tag} entry={e} rank={i + 2} tier="lg" />
+            <TagCard key={e.tag} entry={e} rank={i + 2} tier="lg" basePath={basePath} />
           ))}
         </div>
       )}
@@ -112,7 +122,7 @@ function BentoLayout({ sorted }: { sorted: TagEntry[] }) {
       {md.length > 0 && (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-3">
           {md.map((e, i) => (
-            <TagCard key={e.tag} entry={e} rank={i + 5} tier="md" />
+            <TagCard key={e.tag} entry={e} rank={i + 5} tier="md" basePath={basePath} />
           ))}
         </div>
       )}
@@ -120,7 +130,7 @@ function BentoLayout({ sorted }: { sorted: TagEntry[] }) {
       {sm.length > 0 && (
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-6">
           {sm.map((e, i) => (
-            <TagCard key={e.tag} entry={e} rank={i + 11} tier="sm" />
+            <TagCard key={e.tag} entry={e} rank={i + 11} tier="sm" basePath={basePath} />
           ))}
         </div>
       )}
@@ -128,11 +138,11 @@ function BentoLayout({ sorted }: { sorted: TagEntry[] }) {
   );
 }
 
-function FlatLayout({ sorted }: { sorted: TagEntry[] }) {
+function FlatLayout({ sorted, basePath }: { sorted: TagEntry[]; basePath: string }) {
   return (
     <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
       {sorted.map((e, i) => (
-        <TagCard key={e.tag} entry={e} rank={i} tier="sm" />
+        <TagCard key={e.tag} entry={e} rank={i} tier="sm" basePath={basePath} />
       ))}
     </div>
   );
@@ -142,10 +152,12 @@ function TagCard({
   entry,
   rank,
   tier,
+  basePath,
 }: {
   entry: TagEntry;
   rank: number;
   tier: 'xl' | 'lg' | 'md' | 'sm';
+  basePath: string;
 }) {
   const color = colorFor(rank);
 
@@ -182,7 +194,7 @@ function TagCard({
 
   return (
     <Link
-      href={`/tags/${encodeURIComponent(entry.tag)}`}
+      href={`${basePath}/tags/${encodeURIComponent(entry.tag)}`}
       className={[
         'group flex flex-col justify-between rounded-card no-underline transition hover:-translate-y-0.5 hover:shadow-md',
         color,
