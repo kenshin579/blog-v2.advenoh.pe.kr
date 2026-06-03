@@ -17,6 +17,7 @@ interface SeriesNavigationProps {
   seriesName: string;
   articles: ManifestArticle[];
   currentSlug: string;
+  basePath?: string;
 }
 
 const FOCUS_RING =
@@ -26,6 +27,7 @@ export function SeriesNavigation({
   seriesName,
   articles,
   currentSlug,
+  basePath = '',
 }: SeriesNavigationProps) {
   return (
     <section className="mx-auto mt-12 max-w-prose px-6 md:px-0">
@@ -40,7 +42,7 @@ export function SeriesNavigation({
             return (
               <li key={article.slug}>
                 <Link
-                  href={`/${encodeURIComponent(articleTitle)}`}
+                  href={`${basePath}/${encodeURIComponent(articleTitle)}`}
                   aria-current={isCurrent ? 'page' : undefined}
                   className={[
                     'flex items-center gap-3 rounded-card-sm p-2.5 no-underline text-bento-ink transition',

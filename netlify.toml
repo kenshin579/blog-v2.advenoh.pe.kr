@@ -4,6 +4,13 @@
   ignore = "/bin/bash -c '[[ \"$CONTEXT\" == \"deploy-preview\" ]] && exit 0 || exit 1'"
 
 [[redirects]]
+  from = "/"
+  to = "/en/"
+  status = 302
+  force = false
+  conditions = {Language = ["en"]}
+
+[[redirects]]
   from = "/*"
   to = "/404.html"
   status = 404

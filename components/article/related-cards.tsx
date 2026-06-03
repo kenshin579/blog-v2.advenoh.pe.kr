@@ -16,6 +16,7 @@ type Article = {
 
 type Props = {
   articles: Article[];
+  basePath?: string;
 };
 
 const TONES: Tone[] = ['sage', 'butter', 'rose'];
@@ -23,7 +24,7 @@ const TONES: Tone[] = ['sage', 'butter', 'rose'];
 const FOCUS_RING =
   'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg';
 
-export function RelatedCards({ articles }: Props) {
+export function RelatedCards({ articles, basePath = '' }: Props) {
   if (articles.length === 0) return null;
 
   return (
@@ -35,7 +36,7 @@ export function RelatedCards({ articles }: Props) {
         {articles.slice(0, 3).map((a, i) => (
           <Link
             key={a.slug}
-            href={`/${encodeURIComponent(a.slug)}`}
+            href={`${basePath}/${encodeURIComponent(a.slug)}`}
             className={[
               'flex min-h-[140px] flex-col justify-between rounded-card-lg p-5 text-bento-ink no-underline transition hover:opacity-90 md:min-h-[180px]',
               TONE_BG[TONES[i % TONES.length]],

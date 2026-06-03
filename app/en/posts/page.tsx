@@ -37,7 +37,7 @@ export default async function PostsPage() {
         </header>
 
         <Suspense fallback={<div className="py-20 text-center text-sm text-bento-dim">Loading…</div>}>
-          <PostsPageClient articles={articles} categories={categories} />
+          <PostsPageClient articles={articles} categories={categories} basePath="/en" />
         </Suspense>
       </div>
     </main>

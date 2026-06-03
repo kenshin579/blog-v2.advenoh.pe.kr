@@ -150,6 +150,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
           seriesName={manifestArticle.series}
           articles={seriesEpisodes}
           currentSlug={manifestArticle.slug}
+          basePath="/en"
         />
       )}
 
@@ -180,12 +181,12 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
       {/* Prev/Next (only when series article and has prev or next) */}
       {(prev || next) && (
         <div className="mx-auto max-w-prose px-6 md:px-0">
-          <PrevNext prev={prev} next={next} />
+          <PrevNext prev={prev} next={next} basePath="/en" />
         </div>
       )}
 
       {/* Related cards (all articles) */}
-      <RelatedCards articles={related} />
+      <RelatedCards articles={related} basePath="/en" />
     </main>
   );
 }
