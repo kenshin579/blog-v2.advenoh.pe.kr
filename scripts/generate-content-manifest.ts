@@ -5,6 +5,7 @@ import matter from 'gray-matter';
 interface ArticleMetadata {
   slug: string;
   category: string;
+  lang: 'ko' | 'en';
   title: string;
   date: string;
   excerpt?: string;
@@ -49,38 +50,45 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
       .map(dirent => dirent.name);
 
     for (const articleDir of articleDirs) {
-      const indexPath = path.join(categoryPath, articleDir, 'index.md');
+      const dirPath = path.join(categoryPath, articleDir);
+      const variants: Array<{ lang: 'ko' | 'en'; file: string }> = [
+        { lang: 'ko', file: 'index.md' },
+        { lang: 'en', file: 'index_en.md' },
+      ];
 
-      if (!fs.existsSync(indexPath)) {
+      const koExists = fs.existsSync(path.join(dirPath, 'index.md'));
+      if (!koExists) {
         console.warn(`⚠️  No index.md found in ${category}/${articleDir}`);
-        continue;
       }
 
-      try {
-        const raw = fs.readFileSync(indexPath, 'utf-8');
-        const { data, content } = matter(raw);
+      for (const { lang, file } of variants) {
+        const indexPath = path.join(dirPath, file);
+        if (!fs.existsSync(indexPath)) continue;
 
-        // 첫 번째 이미지 추출 (마크다운 + HTML img 태그)
-        const mdImageMatch = raw.match(/!\[([^\]]*)]\(([^)]+)\)/);
-        const htmlImageMatch = raw.match(/<img\s[^>]*src=["']([^"']+)["']/);
-        const firstImage = mdImageMatch ? mdImageMatch[2] : htmlImageMatch ? htmlImageMatch[1] : undefined;
+        try {
+          const raw = fs.readFileSync(indexPath, 'utf-8');
+          const { data, content } = matter(raw);
 
-        const article: ArticleMetadata = {
-          slug: `${category}/${articleDir}`,
-          category,
-          title: data.title || articleDir,
-          date: data.date || new Date().toISOString(),
-          excerpt: data.description ?? data.excerpt,
-          tags: data.tags || [],
-          series: data.series,
-          seriesOrder: data.seriesOrder,
-          firstImage,
-          readTime: calculateReadingTime(content),
-        };
+          const mdImageMatch = raw.match(/!\[([^\]]*)]\(([^)]+)\)/);
+          const htmlImageMatch = raw.match(/<img\s[^>]*src=["']([^"']+)["']/);
+          const firstImage = mdImageMatch ? mdImageMatch[2] : htmlImageMatch ? htmlImageMatch[1] : undefined;
 
-        articles.push(article);
-      } catch (error) {
-        console.error(`❌ Error processing ${category}/${articleDir}:`, error);
+          articles.push({
+            slug: `${category}/${articleDir}`,
+            category,
+            lang,
+            title: data.title || articleDir,
+            date: data.date || new Date().toISOString(),
+            excerpt: data.description ?? data.excerpt,
+            tags: data.tags || [],
+            series: data.series,
+            seriesOrder: data.seriesOrder,
+            firstImage,
+            readTime: calculateReadingTime(content),
+          });
+        } catch (error) {
+          console.error(`❌ Error processing ${category}/${articleDir} (${file}):`, error);
+        }
       }
     }
   }
