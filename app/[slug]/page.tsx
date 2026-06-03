@@ -43,7 +43,7 @@ export async function generateMetadata({ params }: ArticlePageProps) {
   if (!article) return { title: '게시글을 찾을 수 없습니다' };
 
   return {
-    title: `${article.frontmatter.title} | Frank's IT Blog`,
+    title: article.frontmatter.title,
     description: article.frontmatter.excerpt || article.frontmatter.title,
     openGraph: {
       title: article.frontmatter.title,
