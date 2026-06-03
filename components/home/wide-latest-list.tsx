@@ -11,6 +11,8 @@ type Item = {
 type Props = {
   items: Item[];
   totalCount: number;
+  basePath?: string;
+  heading?: string;
 };
 
 const FOCUS_RING =
@@ -22,7 +24,7 @@ function shortDate(iso: string): string {
   return `${String(d.getMonth() + 1).padStart(2, '0')}.${String(d.getDate()).padStart(2, '0')}`;
 }
 
-export function WideLatestList({ items, totalCount }: Props) {
+export function WideLatestList({ items, totalCount, basePath = '', heading = '이번 달 글' }: Props) {
   if (items.length === 0) return null;
   return (
     <div className="col-span-12 flex flex-col rounded-card-xl bg-bento-card p-6 md:col-span-8 md:p-7">
@@ -30,11 +32,11 @@ export function WideLatestList({ items, totalCount }: Props) {
         <div>
           <div className="text-[10px] uppercase tracking-[0.1em] text-bento-dim">Latest</div>
           <h3 className="mt-1 text-xl font-bold tracking-tighter text-bento-ink md:text-2xl">
-            이번 달 글
+            {heading}
           </h3>
         </div>
         <Link
-          href="/posts"
+          href={`${basePath}/posts`}
           className={[
             'text-[13px] text-bento-dim no-underline transition hover:text-bento-ink',
             FOCUS_RING,
@@ -47,7 +49,7 @@ export function WideLatestList({ items, totalCount }: Props) {
         {items.map((a, i) => (
           <li key={a.slug}>
             <Link
-              href={`/${encodeURIComponent(a.slug)}`}
+              href={`${basePath}/${encodeURIComponent(a.slug)}`}
               className={[
                 'grid grid-cols-[52px_1fr] items-baseline gap-3 py-3 no-underline text-bento-ink transition hover:bg-bento-ink/[0.02] dark:hover:bg-white/[0.02] md:grid-cols-[60px_1fr_80px_50px]',
                 i > 0 ? 'border-t border-bento-ink/[0.06]' : '',
