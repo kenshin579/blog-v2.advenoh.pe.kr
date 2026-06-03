@@ -99,7 +99,7 @@ export default async function HomePage() {
   if (featuredSeriesArticle?.series) {
     spotlightName = featuredSeriesArticle.series;
     const eps = await getArticlesBySeries(spotlightName);
-    spotlightEpisodes = eps.map((a, i) => ({
+    spotlightEpisodes = eps.slice(0, 4).map((a, i) => ({
       num: a.seriesOrder ?? i + 1,
       title: a.title,
       slug: getArticleTitleFromSlug(a.slug),
