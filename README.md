@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-05-28
+Updated 2026-06-03
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -44,7 +44,7 @@ Updated 2026-05-28
 * [Heroku에 Node.js+MongoDB App 배포하기](https://blog.advenoh.pe.kr/heroku에-node-js-mongodb-app-배포하기/)
 * [Ingress NGINX 지원 종료 이후, Gateway API로의 마이그레이션 전략](https://blog.advenoh.pe.kr/ingress-nginx-지원-종료-이후-gateway-api로의-마이그레이션-전략/)
 * [Introducing Jaeger](https://blog.advenoh.pe.kr/jaeger에-대한-소개-en/)
-* [Introducing ksqlDB](https://blog.advenoh.pe.kr/ksqldb-소개-en/)
+* [Introducing ksqlDB](https://blog.advenoh.pe.kr/ksqldb-소개/)
 * [Jaeger에 대한 소개](https://blog.advenoh.pe.kr/jaeger에-대한-소개/)
 * [Kafka CLI Collection](https://blog.advenoh.pe.kr/kafka-cli-명령어-모음-en/)
 * [Kafka CLI 명령어 모음](https://blog.advenoh.pe.kr/kafka-cli-명령어-모음/)
@@ -125,6 +125,7 @@ Updated 2026-05-28
 * [Go에서의 열거형 상수 (Enums in Go)](https://blog.advenoh.pe.kr/go에서의-열거형-상수-enums-in-go/)
 * [Grafana Pyroscope로 Go 애플리케이션 Continuous Profiling 시작하기](https://blog.advenoh.pe.kr/grafana-pyroscope로-go-애플리케이션-continuous-profiling-시작하기/)
 * [JWKS(JSON Web Key Set)이란?](https://blog.advenoh.pe.kr/jwks-json-web-key-set이란/)
+* [Type Conversion in Go](https://blog.advenoh.pe.kr/타입-변환-type-conversion/)
 * [jq - 명령어 JSON 처리기 사용법](https://blog.advenoh.pe.kr/jq-명령어-json-처리기-사용법/)
 * [uber/fx로 시작하는 Go 의존성 주입](https://blog.advenoh.pe.kr/go-fx-의존성-주입/)
 * [타입 단언 (Type Assertion)](https://blog.advenoh.pe.kr/타입-단언-type-assertion/)
