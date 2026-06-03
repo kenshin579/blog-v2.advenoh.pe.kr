@@ -14,12 +14,14 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import { CommandK } from '@/components/command-k';
+import { getLangFromPathname, localizeHref, type Lang } from '@/lib/i18n/lang';
+import { getDictionary } from '@/lib/i18n/dictionaries';
 
 const NAV = [
-  { name: 'Home', href: '/' },
-  { name: 'Posts', href: '/posts' },
-  { name: 'Series', href: '/series' },
-  { name: 'Tags', href: '/tags' },
+  { key: 'home', href: '/' },
+  { key: 'posts', href: '/posts' },
+  { key: 'series', href: '/series' },
+  { key: 'tags', href: '/tags' },
 ] as const;
 
 const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg';
@@ -34,6 +36,11 @@ export function SiteHeader() {
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
   const { resolvedTheme, setTheme } = useTheme();
   const pathname = usePathname();
+  const lang: Lang = getLangFromPathname(pathname);
+  const t = getDictionary(lang);
+
+  const koHref = pathname.replace(/^\/en(?=\/|$)/, '') || '/';
+  const enHref = lang === 'en' ? pathname : (pathname === '/' ? '/en' : `/en${pathname}`);
 
   const toggleTheme = () => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark');
 
@@ -54,7 +61,7 @@ export function SiteHeader() {
         <div className="mx-auto flex max-w-canvas items-center justify-between gap-4 px-6 py-4 md:px-10">
           {/* Logo + wordmark */}
           <Link
-            href="/"
+            href={localizeHref('/', lang)}
             className={`flex items-center gap-3 no-underline text-bento-ink ${FOCUS_RING}`}
             aria-label="frank.blog 홈"
           >
@@ -72,11 +79,12 @@ export function SiteHeader() {
             className="hidden gap-1 rounded-full bg-bento-ink/[0.06] p-1 dark:bg-white/10 md:flex"
           >
             {NAV.map((n) => {
-              const active = isActive(pathname, n.href);
+              const href = localizeHref(n.href, lang);
+              const active = isActive(pathname, href);
               return (
                 <Link
-                  key={n.name}
-                  href={n.href}
+                  key={n.key}
+                  href={href}
                   aria-current={active ? 'page' : undefined}
                   className={[
                     'rounded-full px-4 py-1.5 text-[13px] font-medium no-underline transition',
@@ -86,7 +94,7 @@ export function SiteHeader() {
                     FOCUS_RING,
                   ].join(' ')}
                 >
-                  {n.name}
+                  {t.nav[n.key]}
                 </Link>
               );
             })}
@@ -117,6 +125,38 @@ export function SiteHeader() {
             >
               <Search aria-hidden="true" className="h-5 w-5" />
             </Button>
+
+            {/* Language toggle (desktop) */}
+            <div
+              className="hidden items-center gap-1.5 px-1 text-[13px] md:flex"
+              aria-label="Language"
+            >
+              <Link
+                href={enHref}
+                onClick={() => { try { localStorage.setItem('preferred-lang', 'en'); } catch {} }}
+                aria-current={lang === 'en' ? 'true' : undefined}
+                className={[
+                  'no-underline transition hover:text-bento-ink dark:hover:text-white',
+                  lang === 'en' ? 'font-bold text-bento-ink dark:text-white' : 'text-bento-dim',
+                  FOCUS_RING,
+                ].join(' ')}
+              >
+                EN
+              </Link>
+              <span aria-hidden className="text-bento-dim">│</span>
+              <Link
+                href={koHref}
+                onClick={() => { try { localStorage.setItem('preferred-lang', 'ko'); } catch {} }}
+                aria-current={lang === 'ko' ? 'true' : undefined}
+                className={[
+                  'no-underline transition hover:text-bento-ink dark:hover:text-white',
+                  lang === 'ko' ? 'font-bold text-bento-ink dark:text-white' : 'text-bento-dim',
+                  FOCUS_RING,
+                ].join(' ')}
+              >
+                KR
+              </Link>
+            </div>
 
             {/* Theme toggle */}
             <Button
@@ -170,11 +210,12 @@ export function SiteHeader() {
                 </SheetHeader>
                 <nav aria-label="모바일 메뉴" className="mt-6 flex flex-col gap-1">
                   {NAV.map((n) => {
-                    const active = isActive(pathname, n.href);
+                    const href = localizeHref(n.href, lang);
+                    const active = isActive(pathname, href);
                     return (
                       <Link
-                        key={n.name}
-                        href={n.href}
+                        key={n.key}
+                        href={href}
                         onClick={() => setMobileNavOpen(false)}
                         aria-current={active ? 'page' : undefined}
                         className={[
@@ -185,10 +226,48 @@ export function SiteHeader() {
                           FOCUS_RING,
                         ].join(' ')}
                       >
-                        {n.name}
+                        {t.nav[n.key]}
                       </Link>
                     );
                   })}
+
+                  {/* Language toggle (mobile) */}
+                  <div
+                    className="mt-4 flex items-center gap-1.5 border-t border-bento-ink/10 px-4 pt-4 text-sm dark:border-white/10"
+                    aria-label="Language"
+                  >
+                    <Link
+                      href={enHref}
+                      onClick={() => {
+                        try { localStorage.setItem('preferred-lang', 'en'); } catch {}
+                        setMobileNavOpen(false);
+                      }}
+                      aria-current={lang === 'en' ? 'true' : undefined}
+                      className={[
+                        'no-underline',
+                        lang === 'en' ? 'font-bold text-bento-ink dark:text-white' : 'text-bento-dim',
+                        FOCUS_RING,
+                      ].join(' ')}
+                    >
+                      EN
+                    </Link>
+                    <span aria-hidden className="text-bento-dim">│</span>
+                    <Link
+                      href={koHref}
+                      onClick={() => {
+                        try { localStorage.setItem('preferred-lang', 'ko'); } catch {}
+                        setMobileNavOpen(false);
+                      }}
+                      aria-current={lang === 'ko' ? 'true' : undefined}
+                      className={[
+                        'no-underline',
+                        lang === 'ko' ? 'font-bold text-bento-ink dark:text-white' : 'text-bento-dim',
+                        FOCUS_RING,
+                      ].join(' ')}
+                    >
+                      KR
+                    </Link>
+                  </div>
                 </nav>
               </SheetContent>
             </Sheet>
