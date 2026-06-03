@@ -14,6 +14,14 @@ description: Use when translating a Korean blog article (contents/{category}/{sl
 - 특정 글의 영어 버전을 만들 때 (`contents/.../index.md` → 같은 폴더 `index_en.md`)
 - 이미 `index_en.md`가 있으면 덮어쓰기 전에 사용자에게 확인
 
+## 대상 지정
+
+- **단일 글**: slug(`go/타입-변환-type-conversion`) 또는 `index.md` 경로
+- **폴더(카테고리)**: 그 안의 글들을 순회하되 **한 번에 최대 5개까지만** 번역한다.
+  - `index_en.md`가 아직 없는 글을 우선 대상으로 한다(이미 번역된 글은 건너뜀).
+  - 5개를 초과하면 처음 5개만 처리하고, **남은 글 목록과 "다시 실행하면 이어서 번역됨"을 사용자에게 보고**한다.
+  - 사용자가 "전부 번역해줘"라고 명시해도, 한 번에 5개씩 끊어서 진행 상황을 보고하며 처리한다(코드 보존·품질을 배치마다 확인하기 위함).
+
 ## Procedure
 
 1. 대상 `contents/{category}/{slug}/index.md`를 읽는다.
