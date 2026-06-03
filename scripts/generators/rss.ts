@@ -19,6 +19,7 @@ interface ArticleMetadata {
   series?: string;
   seriesOrder?: number;
   firstImage?: string;
+  lang: 'ko' | 'en';
 }
 
 interface Manifest {
@@ -69,9 +70,10 @@ function extractTextSummary(html: string, maxLength: number = 300): string {
 /**
  * 마크다운 파일에서 본문 읽기
  */
-function readArticleContent(slug: string): string | null {
+function readArticleContent(slug: string, lang: 'ko' | 'en' = 'ko'): string | null {
   const contentsDir = path.join(process.cwd(), 'contents');
-  const indexPath = path.join(contentsDir, slug, 'index.md');
+  const fileName = lang === 'en' ? 'index_en.md' : 'index.md';
+  const indexPath = path.join(contentsDir, slug, fileName);
 
   if (!fs.existsSync(indexPath)) {
     console.warn(`⚠️  Article not found: ${indexPath}`);
@@ -86,7 +88,7 @@ function readArticleContent(slug: string): string | null {
 /**
  * RSS 2.0 피드 생성
  */
-export async function generateRSS(manifestPath: string, outputPath: string): Promise<void> {
+export async function generateRSS(manifestPath: string, outputPath: string, lang: 'ko' | 'en' = 'ko'): Promise<void> {
   console.log('📡 Generating RSS feed...');
 
   // Manifest 로드
@@ -97,8 +99,11 @@ export async function generateRSS(manifestPath: string, outputPath: string): Pro
 
   const manifest: Manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf-8'));
 
-  // 최신 article 20개 (이미 날짜순 정렬되어 있음)
-  const recentArticles = manifest.articles.slice(0, 20);
+  const langPrefix = lang === 'en' ? '/en' : '';
+
+  // 언어 필터링 후 최신 article 20개 (이미 날짜순 정렬되어 있음)
+  const filtered = manifest.articles.filter((a) => a.lang === lang);
+  const recentArticles = filtered.slice(0, 20);
 
   // RSS XML 생성
   const root = create({ version: '1.0', encoding: 'UTF-8' })
@@ -112,12 +117,12 @@ export async function generateRSS(manifestPath: string, outputPath: string): Pro
 
   // 채널 정보
   channel.ele('title').txt(blogConfig.title);
-  channel.ele('link').txt(blogConfig.baseUrl);
+  channel.ele('link').txt(`${blogConfig.baseUrl}${langPrefix}`);
   channel.ele('description').txt(blogConfig.description);
-  channel.ele('language').txt(blogConfig.language);
+  channel.ele('language').txt(lang === 'en' ? 'en' : blogConfig.language);
   channel.ele('lastBuildDate').txt(new Date().toUTCString());
   channel.ele('atom:link', {
-    href: `${blogConfig.baseUrl}/rss.xml`,
+    href: `${blogConfig.baseUrl}${langPrefix}/rss.xml`,
     rel: 'self',
     type: 'application/rss+xml',
   });
@@ -125,7 +130,7 @@ export async function generateRSS(manifestPath: string, outputPath: string): Pro
   // Article 아이템 추가
   for (const article of recentArticles) {
     const item = channel.ele('item');
-    const articleUrl = `${blogConfig.baseUrl}/${article.slug.split('/').pop()}`;
+    const articleUrl = `${blogConfig.baseUrl}${langPrefix}/${article.slug.split('/').pop()}`;
 
     item.ele('title').txt(article.title);
     item.ele('link').txt(articleUrl);
@@ -133,7 +138,7 @@ export async function generateRSS(manifestPath: string, outputPath: string): Pro
     item.ele('pubDate').txt(new Date(article.date).toUTCString());
 
     // 본문 HTML 생성
-    const markdown = readArticleContent(article.slug);
+    const markdown = readArticleContent(article.slug, lang);
     if (markdown) {
       const html = await markdownToHtml(markdown, article.slug);
 
