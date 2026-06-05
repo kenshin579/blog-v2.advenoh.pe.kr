@@ -1,8 +1,8 @@
 ---
 title: "Go + React로 Google OAuth 2.0 로그인 구현하기 (JWT vs 세션)"
 description: "Go Echo 백엔드와 React 프론트엔드로 Google OAuth 2.0 소셜 로그인을 구현하는 실전 가이드. OAuth 공통 흐름을 한 번 정리하고, 인증 이후 상태 유지 방식을 JWT(무상태)와 세션(서버 상태) 두 구현으로 나눠 비교합니다."
-date: 2026-03-01
-update: 2026-06-03
+date: 2026-06-05
+update: 2026-06-05
 tags:
   - oauth2
   - google-login
@@ -121,7 +121,7 @@ OAuth 흐름에는 `state`, PKCE, Redirect URI 검증 같은 보안 요소가 �
 2. 상단의 프로젝트 선택기에서 **새 프로젝트**를 클릭한다
 3. 프로젝트 이름을 입력하고 **만들기**를 클릭한다
 
-<!-- TODO: 스크린샷 삽입 - 프로젝트 생성 -->
+![새 프로젝트 생성 — 프로젝트 이름 입력](./gcp-create-project.png)
 
 ## 3.2 OAuth 동의 화면 구성
 
@@ -130,7 +130,13 @@ OAuth 흐름에는 `state`, PKCE, Redirect URI 검증 같은 보안 요소가 �
 3. 앱 이름, 사용자 지원 이메일을 입력한다
 4. 범위(Scope)에서 `openid`, `email`, `profile`을 추가한다
 
-<!-- TODO: 스크린샷 삽입 - OAuth 동의 화면 -->
+![OAuth 동의 화면 — 앱 정보(앱 이름·사용자 지원 이메일) 입력](./oauth-consent-app-info.png)
+
+![OAuth 동의 화면 — User Type을 외부로 선택](./oauth-consent-user-type.png)
+
+> **테스트 사용자 등록**: 앱이 "테스트 중" 상태인 외부 앱은 **콘솔에 등록한 테스트 사용자만 로그인**할 수 있다. 등록하지 않은 계정으로 로그인하면 `403 access_denied`가 발생하므로, **대상(Audience) > 테스트 사용자**에 본인 Google 계정을 추가해 둔다.
+>
+> ![테스트 사용자 추가](./oauth-test-users.png)
 
 ## 3.3 OAuth 2.0 클라이언트 ID 생성
 
@@ -141,7 +147,11 @@ OAuth 흐름에는 `state`, PKCE, Redirect URI 검증 같은 보안 요소가 �
    - `http://localhost:8080/api/auth/session/callback` — **세션 버전(서버 redirect 플로우)** 용
 4. **만들기**를 클릭하면 **Client ID**와 **Client Secret**이 발급된다
 
-<!-- TODO: 스크린샷 삽입 - 클라이언트 ID 생성 -->
+![OAuth 클라이언트 ID 생성 — 웹 애플리케이션 + 승인된 리디렉션 URI 2개](./oauth-client-redirect-uris.png)
+
+생성하면 **Client ID**와 **Client Secret**이 발급된다.
+
+![OAuth 클라이언트 생성 완료 — Client ID / Client Secret 발급](./oauth-client-created.jpg)
 
 > **왜 redirect URI가 두 개인가?** 이 글은 같은 OAuth 클라이언트를 두 구현이 함께 쓴다. Google은 인증이 끝난 뒤 **redirect URI로 Authorization Code를 돌려보내는데, 그 목적지가 두 플로우에서 다르다.**
 >
@@ -838,6 +848,16 @@ export function useAuth() {
 ```
 
 > CORS 주의: 쿠키를 주고받으려면 백엔드 CORS에서 `AllowCredentials: true`와 함께 `AllowOrigins`를 **정확한 프론트 주소**로 지정해야 한다. 와일드카드 `*`와 credentials는 함께 쓸 수 없다.
+
+## 5.3 실행 화면
+
+두 버전 모두 프론트엔드(`http://localhost:3000`)에서 "Google로 로그인" 버튼을 누르는 것으로 시작한다.
+
+![로그인 화면 — Google 계정으로 로그인](./demo-login-page.png)
+
+로그인에 성공하면 Google 프로필(이름·이메일·아바타·provider)을 표시한다. JWT 버전은 토큰을 localStorage에, 세션 버전은 세션 ID를 HttpOnly 쿠키에 보관하지만, 화면상 동작은 동일하다.
+
+![로그인 완료 — 사용자 프로필 표시](./demo-welcome.png)
 
 # 6. 보안 심화
 
