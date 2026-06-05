@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-06-03
+Updated 2026-06-05
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -169,6 +169,7 @@ Updated 2026-06-03
 * [Getter and Setter Methods in Go (Getter, Setter in Go)](https://blog.advenoh.pe.kr/go에서의-게터-세터-메서드-getter-setter-in-go/)
 * [Getting Started with Continuous Profiling for Go Applications Using Grafana Pyroscope](https://blog.advenoh.pe.kr/grafana-pyroscope로-go-애플리케이션-continuous-profiling-시작하기/)
 * [Getting Started with Go Dependency Injection using uber/fx](https://blog.advenoh.pe.kr/go-fx-의존성-주입/)
+* [Go + React로 Google OAuth 2.0 로그인 구현하기 (JWT vs 세션)](https://blog.advenoh.pe.kr/go-google-oauth-로그인-구현-가이드/)
 * [Go 1.26 변경사항 총정리 (What's New in Go 1.26)](https://blog.advenoh.pe.kr/go-1-26-변경사항-whats-new-in-go-1-26/)
 * [Go Recover 함수에서 반환값을 반환하는 예제](https://blog.advenoh.pe.kr/go-recover-함수에서-반환값을-반환하는-예제/)
 * [Go Strings (String Functions)](https://blog.advenoh.pe.kr/go-strings-문자열-함수/)
