@@ -208,6 +208,7 @@ Updated 2026-06-05
 * [Grafana Pyroscope로 Go 애플리케이션 Continuous Profiling 시작하기](https://blog.advenoh.pe.kr/grafana-pyroscope로-go-애플리케이션-continuous-profiling-시작하기/)
 * [How to Sort Collections in Go (Go Sort)](https://blog.advenoh.pe.kr/go에서-컬렉션-정렬하는-방법-go-sort/)
 * [How to Use Three Dots in Go (Three Dots Usage)](https://blog.advenoh.pe.kr/go에서-삼-도트-dot-사용방법-three-dots-usage/)
+* [Implementing Google OAuth 2.0 Login with Go + React (JWT vs Session)](https://blog.advenoh.pe.kr/go-google-oauth-로그인-구현-가이드/)
 * [JWKS(JSON Web Key Set)이란?](https://blog.advenoh.pe.kr/jwks-json-web-key-set이란/)
 * [Logging in Go (Logging in Go)](https://blog.advenoh.pe.kr/go에서의-로그깅-logging-in-go/)
 * [Methods in Go (Method in Go)](https://blog.advenoh.pe.kr/go에서의-메서드-method-in-go/)
