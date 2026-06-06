@@ -13,11 +13,11 @@ tags:
 
 # 1. Overview
 
-## What is Kind?
+## 1.1 What is Kind?
 
 `Kind` (Kubernetes in Docker) is a tool that helps you run a `Kubernetes` cluster inside Docker containers. It's useful for quickly running and testing a `Kubernetes` cluster in a local environment.
 
-## Kind's Architecture
+## 1.2 Kind's Architecture
 
 `Kind` works by running `Kubernetes` nodes as `Docker` containers. The following is the basic architecture of `Kind`.
 
@@ -27,7 +27,7 @@ tags:
 - It configures the network using a CNI and provides DNS using CoreDNS
 - This approach is well suited for running a lightweight Kubernetes cluster in a local development environment, and is also widely used as a CI/CD testing environment
 
-## Differences from Other Kubernetes Tools
+## 1.3 Differences from Other Kubernetes Tools
 
 | Item              | `Kind`                             | `Minikube`                               | `Docker Desktop Kubernetes` | `Rancher Desktop`         |
 | ----------------- | ---------------------------------- | ---------------------------------------- | --------------------------- | ------------------------- |
@@ -41,7 +41,7 @@ tags:
 
 Now let's actually use `Kind` to build a `Kubernetes` cluster, deploy an Echo Server, and access it from outside. Personally, I've set up a `Kubernetes` cluster on a Mac Mini at home and access several applications on a port basis.
 
-# 2.1 Prerequisites and Installing Kind
+# 3. Prerequisites and Installing Kind
 
 `Kind` can be run on macOS as well, and you can easily install it using Homebrew.
 
@@ -51,7 +51,7 @@ Now let's actually use `Kind` to build a `Kubernetes` cluster, deploy an Echo Se
 kind v0.27.0 go1.24.0 darwin/arm64
 ```
 
-# 2.2 Creating a Kubernetes Cluster
+# 4. Creating a Kubernetes Cluster
 
 Create the following Kind configuration file (`kind-config.yaml`) to set up the **ports to access from outside**.
 
@@ -110,7 +110,7 @@ NAME                 STATUS   ROLES           AGE   VERSION
 kind-control-plane   Ready    control-plane   12m   v1.32.2
 ```
 
-# 2.3 Deploying the Echo Server Application
+# 5. Deploying the Echo Server Application
 
 Deploy an Echo Server to the cluster and verify that it can be accessed from outside. Here is the `Kubernetes` YAML file (`echo-server.yaml`) that deploys the Echo Server.
 
@@ -158,7 +158,7 @@ deployment.apps/echo-server created
 service/echo-server created
 ```
 
-## Accessing the Echo Server from Outside
+## 5.1 Accessing the Echo Server from Outside
 
 Verify that the Echo Server was deployed successfully.
 
@@ -182,13 +182,13 @@ Let's call the API on the Echo Server with `curl`.
 
 ------
 
-# 3. Conclusion
+# 6. Conclusion
 
 In this post, we covered how to set up a `Kubernetes` cluster on a Mac using `Kind`, deploy an Echo Server, and access it from outside. Similar to other Kubernetes tools, we were able to confirm that creating a cluster and deploying an application are both very easy.
 
 Now go ahead and test various `Kubernetes` applications using Kind! 🚀
 
-# 4. References
+# 7. References
 
 - [Local Kubernetes cluster - installing kind](https://kmaster.tistory.com/26)
 - [kind](https://kind.sigs.k8s.io/)

@@ -17,7 +17,7 @@ tags:
 > - Why did Naver build its second office building, 1784? https://www.youtube.com/watch?v=WG7JHLfClEo
 > - Naver Labs - https://www.naverlabs.com/
 
-# 1.What is Jaeger?
+# 1. What is Jaeger?
 
 ## 1.1 Distributed Tracing?
 
@@ -33,7 +33,7 @@ In a distributed environment separated into multiple components, such as microse
 ![Distributed Tracing](distributed-tracing.png)
 
 
-### The basic idea of Distributed Tracing
+### 1.1.1 The basic idea of Distributed Tracing
 
 - Establish execution time and additional information for each component that runs
 - Store the collected information in a DB
@@ -61,7 +61,7 @@ Jaeger is an open-source distributed tracing system created by Uber in 2015. Jae
     - It is a vendor-neutral open-source observability framework for instrumenting, generating, collecting, and exporting telemetry data such as traces, metrics, and logs
 
 
-### Reference
+### 1.2.2 Reference
 
 - https://opencensus.io/
 - https://opentracing.io/
@@ -69,7 +69,7 @@ Jaeger is an open-source distributed tracing system created by Uber in 2015. Jae
 
 
 
-### 1.2.2 History
+### 1.2.3 History
 
 - Dapper (Google) : Foundation of all tracers
     - Topics related to tracing started to appear from the 1990s
@@ -90,7 +90,7 @@ Jaeger is an open-source distributed tracing system created by Uber in 2015. Jae
 
 
 
-### 1.2.3 Feature
+### 1.2.4 Feature
 
 - Designed with High Scalability in mind
     - Supports auto-scaling of the collector
@@ -113,9 +113,9 @@ Jaeger is an open-source distributed tracing system created by Uber in 2015. Jae
 - Post-collection data processing pipeline (coming soon)
 - Service Performance Monitoring (SPM)
 
-### 1.2.4 Getting familiar with Tracing terminology
+### 1.2.5 Getting familiar with Tracing terminology
 
-#### Span
+#### 1.2.5.1 Span
 - The most basic building block in distributed tracing, representing a unit of work executed in a distributed system
     - ex. HTTP request, call to DB
 - A Span has the following information
@@ -124,11 +124,11 @@ Jaeger is an open-source distributed tracing system created by Uber in 2015. Jae
     - Span Tags, Logs (key:value)
     - Span Context : tracing information that distinguishes each Span within a Trace as it is passed from one service to another (ex. Span id, Trace id)
 
-#### Trace
+#### 1.2.5.2 Trace
 - A Trace represents the data/execution path across the entire system
 - It consists of one or more Spans, and multiple Spans come together to complete a single Trace
 
-#### Instrumentation
+#### 1.2.5.3 Instrumentation
 - Various libraries are provided as open source depending on the application (ex. DB)
 - Spans are generated through instrumentation libraries
 
@@ -188,13 +188,13 @@ Instead of storing all tracing information raw, sampling is used to reduce the n
     - It is called tail-based because sampling is done at the collector
     - It also supports Adaptive sampling (since v1.27), which can automatically adjust sampling based on the traffic and the number of traces coming into the system
 
-# 3.Running Jaeger Docker on Local Machine
+# 3. Running Jaeger Docker on Local Machine
 
 ## 3.1 Running the Hot R.O.D - Rides on Demand Sample
 
 HotROD is a "ride on demand" demo application provided on the Jaeger GitHub, and it is a version that uses the OpenTracing API. It runs standalone, and multiple microservices run on separate ports to operate in a simple MSA-like form. In this example, no separate instrumentation is used; instead, Spans are generated directly.
 
-### Running Jaeger
+### 3.1.1 Running Jaeger
 
 For quick execution, we run it using the all-in-one Docker image that contains all of Jaeger's components.
 
@@ -208,7 +208,7 @@ After the container is running, to access the Jaeger UI, go to this address: htt
 
 ![Jaeger Web](image-20220717103342529.png)
 
-### Running the Hot R.O.D sample program
+### 3.1.2 Running the Hot R.O.D sample program
 
 The HotROD sample code is written in golang, so you need to install the go toolchain in advance.
 
@@ -228,7 +228,7 @@ With the all option, you can run all of HotROD's services at once, and after sta
 
 When you click a button in HotROD to request a ride, you can check the trace for the API in Jaeger.
 
-### System Architecture > DAG
+### 3.2.1 System Architecture > DAG
 
 - On this screen, you can see all the components at a glance
 
@@ -240,7 +240,7 @@ When an error occurs, it is not easy to find which service segment it occurred i
 
 
 
-### Advantages of Jaeger Tracing
+### 3.2.2 Advantages of Jaeger Tracing
 
 - You can easily find which segment a failure occurred in
 - You can also easily check which segment has a bottleneck among the various components
@@ -249,7 +249,7 @@ When an error occurs, it is not easy to find which service segment it occurred i
 
 ![Jaeger Trace](image-20220717115937277.png)
 
-# 3.2 Sample code using OpenTelemetry - using MongoDB, Gin instrumentation
+# 4. Sample code using OpenTelemetry - using MongoDB, Gin instrumentation
 
 The HotROD application is a version implemented using the OpenTracing SDK + Manual Instrumentation approach. Let's also look at a version implemented with the SDK based on the latest OpenTelemetry standardization.
 
@@ -280,12 +280,12 @@ r.Use(otelgin.Middleware("todo-service")) //that's all it takes
 
 
 
-## 3.3 Reference
+## 4.1 Reference
 
 - https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941
 - https://www.aspecto.io/blog/opentelemetry-go-getting-started/
 
-# 4.Conclusion
+# 5. Conclusion
 
 > *Frank's inner voice: When there's a problem, I no longer want to look at Kibana logs. Wouldn't it be urgent to introduce an APM/distributed trace system within the team to quickly grasp things at once?*
 
@@ -297,7 +297,7 @@ I learned this for the first time this time, but Pinpoint is also included as a 
 
 - https://landscape.cncf.io/?selected=pinpoint
 
-# 5.Terminology
+# 6. Terminology
 
 - Observability
     - The concept of Observability was first introduced by the engineer [Rudolf E. Kálmán](https://en.wikipedia.org/wiki/Rudolf_E._K%C3%A1lm%C3%A1n)
@@ -311,7 +311,7 @@ I learned this for the first time this time, but Pinpoint is also included as a 
     - Telemetry data; there are three types: metrics, logs, and traces
 
 
-# 6.Reference
+# 7. Reference
 
 - https://www.aspecto.io/blog/jaeger-tracing-the-ultimate-guide/
 - https://www.slideshare.net/OracleDeveloperkr/opentracing-jaeger

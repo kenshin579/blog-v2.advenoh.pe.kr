@@ -98,7 +98,7 @@ If null is passed in, it creates an empty Optional object.
 Optional<String> optStr2 = Optional.ofNullable(null); //returns an empty Optional object
 ```
 
-## 2.3 How to Access and Use the Object Held by Optional
+## 2.2 How to Access and Use the Object Held by Optional
 
 Let's look at how to use the various methods for accessing the object held by an Optional.
 
@@ -344,7 +344,7 @@ public void test_jdk9_ifPresentOrElse() {
 }}
 ```
 
-# 4.3 stream() : Used to Convert an Optional Object into a Stream Object
+# 5. stream() : Used to Convert an Optional Object into a Stream Object
 
 The Stream added in JDK8 is a feature that makes it easy to manipulate collections in a functional way through various APIs. By adding stream() to Optional, you can now use the existing Stream APIs. This example shows using a Stream function after converting an Optional into a Stream.
 
@@ -357,7 +357,7 @@ public void test_jdk9_stream() {
 }
 ```
 
-# 5. References
+# 6. References
 
 The source code written for this post is available on [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-optional).
 

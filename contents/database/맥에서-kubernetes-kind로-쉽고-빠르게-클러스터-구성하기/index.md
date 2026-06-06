@@ -13,11 +13,11 @@ tags:
 
 # 1. 개요
 
-## Kind란?
+## 1.1 Kind란?
 
 `Kind`(Kubernetes in Docker)는 Docker 컨테이너 내에서 `Kubernetes` 클러스터를 실행할 수 있도록 도와주는 도구이다. 로컬 환경에서 빠르게 `Kubernetes` 클러스터를 실행하고 테스트하는 데 유용하다.
 
-## Kind의 아키텍처 구조
+## 1.2 Kind의 아키텍처 구조
 
 `Kind`는 `Kubernetes` 노드를 `Docker` 컨테이너로 실행하는 방식으로 동작한다. 다음은 `Kind`의 기본 아키텍처 구조이다.
 
@@ -27,7 +27,7 @@ tags:
 - CNI를 사용하여 네트워크를 구성하고, CoreDNS를 활용하여 DNS를 제공하낟
 - 이 방식은 로컬 개발 환경에서 가벼운 Kubernetes 클러스터를 실행하기에 적합하며, CI/CD 테스트 환경으로도 많이 활용된다
 
-## 다른 Kubernetes 도구와의 차이점
+## 1.3 다른 Kubernetes 도구와의 차이점
 
 | 항목              | `Kind`                             | `Minikube`                               | `Docker Desktop Kubernetes` | `Rancher Desktop`         |
 | ----------------- | ---------------------------------- | ---------------------------------------- | --------------------------- | ------------------------- |
@@ -41,7 +41,7 @@ tags:
 
 이제 실제로 `Kind`를 사용하여 `Kubernetes` 클러스터를 구축하고, Echo Server를 배포한 후 외부에서 접근해보보자. 개인적으로 집에서 Mac Mini에 `Kubernetes` 클러스터 구성하고 여러 애플리케이션을 포트 기반으로 접근하고 있다.
 
-# 2.1 필요 조건 및 Kind 설치
+# 3. 필요 조건 및 Kind 설치
 
 `Kind`는 macOS 환경에서도 실행할 수 있으며, Homebrew를 사용하여 쉽게 설치할 수 있다.
 
@@ -51,7 +51,7 @@ tags:
 kind v0.27.0 go1.24.0 darwin/arm64
 ```
 
-# 2.2 Kubernetes 클러스터 생성
+# 4. Kubernetes 클러스터 생성
 
 다음과 같은 Kind 설정 파일(`kind-config.yaml`)을 생성하여 **외부에서 접근할 포트**를 설정한다.
 
@@ -110,7 +110,7 @@ NAME                 STATUS   ROLES           AGE   VERSION
 kind-control-plane   Ready    control-plane   12m   v1.32.2
 ```
 
-# 2.3 Echo Server 애플리케이션 배포
+# 5. Echo Server 애플리케이션 배포
 
 클러스터에 Echo Server를 배포해서 외부에서 잘 접근되는지 확인해본다. Echo Server를 배포하는 `Kubernetes` YAML 파일(`echo-server.yaml`)이다.
 
@@ -158,7 +158,7 @@ deployment.apps/echo-server created
 service/echo-server created
 ```
 
-## 외부에서 Echo Server 접근
+## 5.1 외부에서 Echo Server 접근
 
 Echo Server가 정상적으로 배포되었는지 확인한다.
 
@@ -182,13 +182,13 @@ Echo Server에 `curl` 로 API를 호출을 해보자.
 
 ------
 
-# 3. 마무리
+# 6. 마무리
 
 이번 글에서는 `Kind`를 이용하여 Mac에서 `Kubernetes` 클러스터를 구성하고, Echo Server를 배포하여 외부에서 접근하는 방법을 다뤘다. 다른 Kubernetes 도구와 비슷하게 매우 쉽게 클러스터 생성하고 애플리케이션 배포도 쉽다는 것을 확인할 수 있었다.
 
 이제 Kind를 활용하여 다양한 `Kubernetes` 애플리케이션을 테스트해보세요! 🚀
 
-# 4. 참고
+# 7. 참고
 
 - [로컬 Kubernetes 클러스터 - kind 설치](https://kmaster.tistory.com/26)
 - [kind](https://kind.sigs.k8s.io/)

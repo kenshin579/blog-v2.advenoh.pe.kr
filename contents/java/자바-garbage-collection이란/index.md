@@ -100,7 +100,7 @@ Serial collector는 single 쓰레드로 동작하며 Young와 Old를 serial 하�
 - Old 영역 (single thread)
     - mark-sweep-compact : 안쓰는 객체를 표시한 이후 삭제하고 한 곳으로 모으는 알고리즘이다
 
-### Young 영역의 Minor GC 절차 - mark and copy
+### 3.1.1 Young 영역의 Minor GC 절차 - mark and copy
 
 - 처음에 생성된 객체는 Eden에 쌓인다
 - Eden이 어느 정도 쌓이면 GC가 발생하고 살아남은 객체는 Survisor(Empty) 영역으로 이동한다
@@ -193,7 +193,7 @@ G1 (Garbage First) collector는 메모리가 큰 multi core 머신을 타켓으�
     - Full GC
         - Old GC를 통해서도 필요한 Young 영역을 확보하지 못하면, 어쩔수 없이 Full GC를 실행한다
 
-# 4.참고
+# 4. 참고
 
 * Garbage Collection
     * [https://d2.naver.com/helloworld/1329](https://d2.naver.com/helloworld/1329)

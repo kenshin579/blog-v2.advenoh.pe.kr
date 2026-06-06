@@ -21,7 +21,7 @@ In this post, I'll introduce the Alfred Workflow `2FA Read Code` that I used as 
 
 > Alfred Workflow is one of the powerful features of the `Alfred` app, which boosts productivity on macOS by helping you automate repetitive tasks.
 
-## What Is 2FA Read Code?
+## 1.1 What Is 2FA Read Code?
 
 `2FA Read Code` is an Alfred Workflow that automatically finds and copies `OTP` codes received in `iMessage`. With it, you can easily complete authentication for `VPN` logins, website 2FA entry, and more.
 
@@ -40,7 +40,7 @@ This way, the 2FA text messages you receive on your iPhone can also be seen on y
 
 To use the `2FA Read Code` Workflow, you need Node.js and SQLite3. You can install them easily with `brew`.
 
-### Installing Node.js and SQLite3 with Homebrew
+### 2.2.1 Installing Node.js and SQLite3 with Homebrew
 
 Enter the following command in the terminal.
 
@@ -50,13 +50,13 @@ Enter the following command in the terminal.
 
 Once installation is complete, the `2FA Read Code` Workflow is ready to work properly.
 
-### Setting Alfred Disk Permissions
+### 2.2.2 Setting Alfred Disk Permissions
 
 The `2FA Read Code` Workflow needs disk permissions, so grant `Alfred` disk access in the setting below.
 
 ![Full Disk Access](image-20250308153609186.png)
 
-# 2.3 Installing the `2FA Read Code` Workflow
+# 3. Installing the `2FA Read Code` Workflow
 
 Here's how to install the `2FA Read Code` Workflow.
 
@@ -73,7 +73,7 @@ Here's how to install the `2FA Read Code` Workflow.
 
 Now `2FA Read Code` is ready to use in `Alfred`.
 
-## 2.4 How to Use the Workflow
+## 3.1 How to Use the Workflow
 
 Now let's look at how to actually use `2FA Read Code` to enter an `OTP` automatically.
 
@@ -101,7 +101,7 @@ It's waiting for the `OTP`. Let's use 2FA.
 
 ![Entering the OTP code](image-20250308153829628.png)Now you no longer need to check your phone directly and type the OTP in manually!
 
-# 3. Wrapping Up
+# 4. Wrapping Up
 
 Using the 2FA Read Code Workflow, you can automate OTP code entry and make the login process much more convenient. Especially if you're a user who has to connect to a VPN or complete 2FA authentication every day, this simple automation alone can greatly speed up your work.
 
@@ -109,7 +109,7 @@ If you want to boost your productivity while using a MacBook, give Alfred Workfl
 
 > Once again, thank you to the coworker who introduced this to me.
 
-# 4. References
+# 5. References
 
 - [2FA Read Code](https://alfred.app/workflows/alanhe/2fa-read-code/)
 - [Full Disk Access](https://www.alfredapp.com/help/getting-started/permissions/#full-disk)

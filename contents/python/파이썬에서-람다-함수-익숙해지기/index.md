@@ -51,11 +51,11 @@ def test_lambda_multiple_parameters(self):
 ```
 
 
-## 1.2. Map, Filter, Reduce 예제
+## 1.2 Map, Filter, Reduce 예제
 
 파이썬에서 람다를 인자로 받는 대표적인 함수들에 대해서 알아보자.
 
-## 1.2.1 map
+## 1.3 map
 
 `map` 함수는 `입력함수`를 `입력리스트`의 `item`에 적용하는 함수이고 리스트의 데이터 형태를 변경할 때 자주사용하는 함수이다. syntax는 다음과 같다.
 
@@ -73,7 +73,7 @@ def test_map(self):
 
 
 
-## 1.2.2 filter
+## 1.4 filter
 
 `filter` 함수도 입력리스트의 `item`에 입력함수를 적용하고 결과적으로 참을 반환하는 `item`만 처리하는 함수이다.
 
@@ -90,7 +90,7 @@ def test_filter(self):
 
 ```
 
-## 1.2.3 reduce
+## 1.5 reduce
 
 `reduce` 함수는 리스트의 첫번째, 두번째 `item`을 인자로 받아 하나의 값을 반환하고 최종적으로 단일 값을 반환하는 함수이다.
 

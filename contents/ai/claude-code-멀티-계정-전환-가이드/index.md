@@ -109,14 +109,14 @@ claude
 
 ## 5.2 케이스 B: API Key 전환 (하이브리드)
 
-### 사전 준비: API Key 발급
+### 5.2.1 사전 준비: API Key 발급
 
 1. [console.anthropic.com](https://console.anthropic.com) 접속
 2. Settings → API Keys → Create Key
 3. 키를 안전하게 저장 (한 번만 노출됨)
 4. **Settings → Billing에서 크레딧 충전 필수**
 
-### ~/.zshrc 설정
+### 5.2.2 ~/.zshrc 설정
 
 ```bash
 # OAuth와 API Key가 동시에 존재하면 Auth conflict 발생
@@ -140,7 +140,7 @@ claude-oauth() {
 }
 ```
 
-### 사용법
+### 5.2.3 사용법
 
 ```bash
 source ~/.zshrc

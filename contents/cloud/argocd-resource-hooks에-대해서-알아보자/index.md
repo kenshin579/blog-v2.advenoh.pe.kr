@@ -203,7 +203,7 @@ metadata:
 
 # 3. FAQ
 
-### 3.1 `PreSync`가 실패가 되면 다음 Hook은 실행되지 않나?
+## 3.1 `PreSync`가 실패가 되면 다음 Hook은 실행되지 않나?
 
 `PreSync`가 실패하면 다음 Phase로 넘어가지 않고 멈춘다. 실제로 아래와 같이 강제로 실패가 떨어지게 하고 실행해 보면 `Sync`, `PostSync`도 실행이 안 되는 것을 확인할 수 있다.
 
@@ -236,7 +236,7 @@ ArgoCD에서도 PreSync, PostSync가 실패로 표시되고, 마지막으로 Syn
 
 ![k9s](image-20241021225344736.png)
 
-### 3.2 `HookSucceeded` 삭제 정책으로 지정을 하면 실행후 바로 삭제가 되어 결과를 확인할 수 없는데, 5분?뒤에 삭제할 방법은 없나?
+## 3.2 `HookSucceeded` 삭제 정책으로 지정을 하면 실행후 바로 삭제가 되어 결과를 확인할 수 없는데, 5분?뒤에 삭제할 방법은 없나?
 
 `hook-delete-policy` 어노테이션을 지정하지 않고 `ttlSecondsAfterFinished: 600` 값으로 지정을 하면 600초 뒤에 삭제가 된다.
 
@@ -278,15 +278,15 @@ spec:
 > ![ttlSecondsAfterFinished 스펙](image-20241030180211686.png)
 > 참고: [JobSpec v1 batch (kubernetes v1.18)](https://k8s-dev-ko.netlify.app/docs/reference/generated/kubernetes-api/v1.18/)
 
-### 3.3 실제 App 버전은 같아서 배포가 필요 없지만, 수동으로 `PreSync`, `PostSync`를 할수는 없나?
+## 3.3 실제 App 버전은 같아서 배포가 필요 없지만, 수동으로 `PreSync`, `PostSync`를 할수는 없나?
 
 `Sync` 버튼을 누르면 무조건 `PreSync` → `Sync` → `PostSync`를 실행하게 되어 있어서 실제로 Hook이 실행이 된다
 
-### 3.4 Presync가 실패가 되었는데, Deployment는 배포를 하는 경우에는 어떻게 하면 되나?
+## 3.4 Presync가 실패가 되었는데, Deployment는 배포를 하는 경우에는 어떻게 하면 되나?
 
 Presync 실행 시 오류가 발생해서 Pod가 배포가 안된 경우에는 ArgoCD에서 deployment 블록을 선택해서 수동으로 시작하면 Pod를 배포할 수 있다. 
 
-### 3.5 무한 Syncing/Terminating을 계속 하고 있는 경우 강제로 terminate하는 방법은 없나?
+## 3.5 무한 Syncing/Terminating을 계속 하고 있는 경우 강제로 terminate하는 방법은 없나?
 
 ![무한 Syncing](image-20241031180353715.png)
 

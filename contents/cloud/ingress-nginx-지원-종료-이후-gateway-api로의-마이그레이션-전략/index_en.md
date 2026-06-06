@@ -112,7 +112,7 @@ As a result, the structure becomes one where the standard is loose while impleme
 
 `Gateway API` separates and manages resources by role. This structure is similar to the `StorageClass`/`PersistentVolume` pattern.
 
-### GatewayClass
+### 4.1.1 GatewayClass
 
 Defines which implementation to use. This is a resource managed by the infrastructure provider.
 
@@ -127,7 +127,7 @@ spec:
 
 - e.g., NGINX, `Istio`, `Kong`, `Traefik`, etc.
 
-### Gateway
+### 4.1.2 Gateway
 
 The actual traffic ingress point. It handles `LoadBalancer` and `Listener` (TLS/HTTP) settings and is an **infrastructure-perspective resource**.
 
@@ -164,7 +164,7 @@ If TLS is used, an HTTPS listener can be added.
             name: echo-tls
 ```
 
-### HTTPRoute
+### 4.1.3 HTTPRoute
 
 Defines which `Service` a request should be sent to. This is an **application-perspective resource**.
 
@@ -464,7 +464,7 @@ nginx-gateway-fabric:
 
 `Gateway` defines the traffic ingress point, and `HTTPRoute` defines the service routing rules. The example project manages them as `Helm` templates, so you can deploy them to suit various environments by modifying only the `values` file.
 
-#### Gateway Resource
+#### 7.3.2.1 Gateway Resource
 
 `Gateway` defines the ingress point where external traffic enters the cluster. It configures which `GatewayClass` to use, which port and protocol to listen on, and which namespaces' `Routes` to allow.
 
@@ -497,7 +497,7 @@ spec:
     {{- end }}
 ```
 
-#### HTTPRoute Resource
+#### 7.3.2.2 HTTPRoute Resource
 
 `HTTPRoute` defines, based on hostname and path conditions, which backend `Service` to forward requests that come into the `Gateway`. Multiple `HTTPRoutes` can be connected to a single `Gateway`, enabling independent routing management per service.
 
@@ -550,7 +550,7 @@ When rendered with the actual `values` file, the following resources are created
 
 To use HTTPS, enable `cert-manager` and add the related settings.
 
-#### Step 1: Enable cert-manager
+#### 7.3.3.1 Step 1: Enable cert-manager
 
 Uncomment the `cert-manager` entry in `bootstrap/infra-gateway.yaml`.
 
@@ -570,7 +570,7 @@ elements:
     path: cloud/ingress-gateway/charts/gateway/gateway-routes
 ```
 
-#### Step 2: Configure TLS-related values
+#### 7.3.3.2 Step 2: Configure TLS-related values
 
 Enable TLS in `charts/gateway/gateway-routes/values.yaml`.
 

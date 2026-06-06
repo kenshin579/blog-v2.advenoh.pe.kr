@@ -34,7 +34,7 @@ This post is the fourth in the Quartz tutorial series and covers how to handle a
 
 To gracefully shut down a running Job, you only need to configure two things.
 
-# 3.1 Registering a ShutdownHook for the SchedulerFactoryBean in the Quartz Configuration
+# 4. Registering a ShutdownHook for the SchedulerFactoryBean in the Quartz Configuration
 
 The SchedulerFactoryBean used in Quartz implements the SmartLifeCycle interface.
 
@@ -143,11 +143,11 @@ public class CronJob2 extends QuartzJobBean implements InterruptableJob {
 }
 ```
 
-# 4. Wrap-up
+# 5. Wrap-up
 
 We looked at how to gracefully shut down a running Job. The next post is the last in the Quartz tutorial series, where we'll look at implementing the Quartz admin UI.
 
-# 5. References
+# 6. References
 
 * On Servlet startup
     * [https://karismamun.tistory.com/46](https://karismamun.tistory.com/46)

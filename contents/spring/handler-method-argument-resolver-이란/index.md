@@ -14,7 +14,7 @@ tags:
   - 리졸버
 ---
 
-# 1.HandlerMethodArgumentResolver란?
+# 1. HandlerMethodArgumentResolver란?
 
 ## 1.1 들어가면
 
@@ -157,7 +157,7 @@ Request 처리시 Argument Resolver가 실행되는 순서는 크게 보면 아�
         1. `DispatcherServlet.doDispatch()` -> `RequestMappingHandlerAdapter.handleInternal()` -> `invokeHandlerMethod()`
 4. 컨트롤러 메서드 실행
 
-### 1.2.1 스프링 기본 + Custom Argument Resolver은 어디서 등록이 되나?
+## 3.1 스프링 기본 + Custom Argument Resolver은 어디서 등록이 되나?
 
 `RequestMappingHandlerAdapter` 객체가 초기화(ex. 스프링 시작시) 될 때 `afterPropertiesSet()`에서 `getDefaultArgumentResolvers()` 메서드를 호출하여 기본 스프링과 Custom resolver를 등록한다.
 
@@ -178,7 +178,7 @@ private List<HandlerMethodArgumentResolver> getDefaultArgumentResolvers() {
 }
 ```
 
-### 1.2.2 supportsParameter는 어디에서 호출되나?
+## 3.2 supportsParameter는 어디에서 호출되나?
 
 `HandlerMethodArgumentResolverComposite.getArgumentResolver()` 메서드에서 `supportsPameter()` 실행해서 true를 반환하면 해당 Argument Resolver를 반환한다.
 

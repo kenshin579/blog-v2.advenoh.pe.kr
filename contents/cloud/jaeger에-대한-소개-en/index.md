@@ -12,7 +12,7 @@ tags:
 ---
 
 
-# 1.What is Jaeger?
+# 1. What is Jaeger?
 
 ## 1.1 Distributed Tracing?
 
@@ -27,7 +27,7 @@ In a distributed environment such as Microservices, it is not easy to identify t
 ![Distributed Tracing](distributed-tracing.png)
 
 
-### Basic Idea for Implementing Distributed Tracing
+### 1.1.1 Basic Idea for Implementing Distributed Tracing
 
 - Establish execution time and additional information for each executed component
 - Store the collected information in DB
@@ -53,7 +53,7 @@ Jaeger is an open source Distributed Tracing System created by Uber in 2015. Jae
     - A vendor-neutral open-source observability framework for instrumenting, generating, collecting, and exporting remote measurement data, such as trace, metric, and log data
 
 
-### Reference
+### 1.2.2 Reference
 
 - https://opencensus.io/
 - https://opentracing.io/
@@ -61,7 +61,7 @@ Jaeger is an open source Distributed Tracing System created by Uber in 2015. Jae
 
 
 
-### 1.2.2 History
+### 1.2.3 History
 
 - Dapper (Google): Foundation of all tracers
 
@@ -87,7 +87,7 @@ Jaeger is an open source Distributed Tracing System created by Uber in 2015. Jae
 
 
 
-### 1.2.3 Feature
+### 1.2.4 Feature
 
 - Jaeger backend is designed with High Scalability in mind
 
@@ -107,9 +107,9 @@ Jaeger is an open source Distributed Tracing System created by Uber in 2015. Jae
     - ex. Memory (default), Cassandra, Elasticsearch
 - Service Performance Monitoring (SPM)
 
-### 1.2.4 Tracing Terms
+### 1.2.5 Tracing Terms
 
-#### Span
+#### 1.2.5.1 Span
 
 - In distributed tracing, span represents the unit of work performed in a distributed system, typically corresponding to a single operation such as an HTTP request or call to a database.
 - A span has the following information:
@@ -118,12 +118,12 @@ Jaeger is an open source Distributed Tracing System created by Uber in 2015. Jae
     - Span Tags, Logs (key:value)
     - Span Context: Tracing information that allows each span to be distinguished in a trace as it is propagated from one service to another (e.g. span id, Trace id)
 
-#### Trace
+#### 1.2.5.2 Trace
 
 - A trace represents the data and execution path across a system
 - It is composed of one or more spans, with multiple spans coming together to form a complete trace
 
-#### Instrumentation
+#### 1.2.5.3 Instrumentation
 
 - Several libraries are provided as open source for different applications (e.g. databases)
 - Instrumentation libraries are used to create spans
@@ -181,13 +181,13 @@ Sampling is used to reduce the number of traces stored in the backend by not sto
     - Sampling is done at the collector, so it is called tail-based sampling
     - Adaptive sampling (supported since v1.27) is also available, which allows automatic adjustment of sampling based on traffic and the number of traces entering the system
 
-# 3.Running Jaeger Docker on Local Machine
+# 3. Running Jaeger Docker on Local Machine
 
 ## 3.1 Hot R.O.D - Running Rides on Demand Sample
 
 HotROD is a "ride on demand" demo application available on Jaeger's github and uses the OpenTracing API. It runs standalone and has multiple microservices running on separate ports to work in a simple MSA format. In this example, we are creating the spans directly without using any instrumentation.
 
-### Running Jaeger
+### 3.1.1 Running Jaeger
 
 To get up and running quickly, run it as an all-in-one Docker image that includes all of Jaeger's components.
 
@@ -205,7 +205,7 @@ To access the Jaeger UI after the container is running, open up a browser and en
 
 ![Jaeger Web ](image-20220717103342529.png)
 
-### Run Hot R.O.D Sample Program
+### 3.1.2 Run Hot R.O.D Sample Program
 
 The HotROD sample code is written in golang, so you'll need to install the go toolchain beforehand. Download and run the program from Github.
 
@@ -223,7 +223,7 @@ If you enter all above commands, you can run all the services of HotROD at once.
 
 When you click the button on the HotROD to request a ride, you'll see a trace of the API in Jaeger.
 
-### System Architecture > DAG
+### 3.2.1 System Architecture > DAG
 
 - This screen gives you a entire view of all your components
 
@@ -235,7 +235,7 @@ If an error occurs, it's not easy to find in the logs which service it occured.
 
 
 
-### The Benefits of Jaeger Tracing
+### 3.2.2 The Benefits of Jaeger Tracing
 
 - Easier to find where failures occured
 - Be able to see where the bottlenecks occur across multiple components
@@ -244,7 +244,7 @@ If an error occurs, it's not easy to find in the logs which service it occured.
 
 ![Jaeger Tracing](image-20220717115937277.png)
 
-## 3.2 Sample code for using OpenTelemetry for MongoDB and Gin instrumentation
+## 3.3 Sample code for using OpenTelemetry for MongoDB and Gin instrumentation
 
 The HotROD application is implemented using the OpenTracing SDK and manual instrumentation. You can also see the version implemented with the latest OpenTelemetry SDK.
 
@@ -273,12 +273,12 @@ r := gin.Default()
 r.Use(otelgin.Middleware("todo-service")) // this is all you have to do. 
 ```
 
-## 3.3 Reference
+## 3.4 Reference
 
 - https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941
 - https://www.aspecto.io/blog/opentelemetry-go-getting-started/
 
-# 4.Conclusion
+# 4. Conclusion
 
 In this post, I briefly introduced Jaeger, but there are other open source tracing projects such as Pinpoint. The Pinpoint is also a part of CNCF project as well.
 
@@ -287,7 +287,7 @@ In this post, I briefly introduced Jaeger, but there are other open source traci
 > If you are interested in developing a robot service and platform, you are welcome to apply for our Platform Enginering team. If you want to know what we are doing, take a look at the [YouTube channel](https://www.youtube.com/@NAVERLABS).
 >
 
-# 5.Terminology
+# 5. Terminology
 
 - Observability
     - Engineer [Rudolf E. Kálmán](https://en.wikipedia.org/wiki/Rudolf_E._K%C3%A1lm%C3%A1n) first introduced the concept of observability
@@ -300,7 +300,7 @@ In this post, I briefly introduced Jaeger, but there are other open source traci
 - Telemetry data
     - There are three types of telemetry data: metrics, log, and traces
 
-# 6.Reference
+# 6. Reference
 
 - https://www.aspecto.io/blog/jaeger-tracing-the-ultimate-guide/
 - https://www.slideshare.net/OracleDeveloperkr/opentracing-jaeger

@@ -39,7 +39,7 @@ Disallow: /search.php
 
 If a robots.txt file exists, you should identify in advance which paths you should not access, and be careful not to access those paths while web scraping.
 
-# 2.2 Set User Agents
+# 3. Set User Agents
 The site below is a good place to test how the browser properties of a visitor appear to the web server.
 
 * [http://www.whatismybrowser.com](http://www.whatismybrowser.com/)
@@ -70,7 +70,7 @@ html = session.get(WIKI_URL, headers=headers).content
 bsObj = BeautifulSoup(html, "html.parser”)
 ```
 
-## 2.3 Reduce Load by Sleeping Briefly
+## 3.1 Reduce Load by Sleeping Briefly
 If you connect to multiple pages and fill out online forms to scrape faster than a real user actually browsing the site would, you give the impression that you're not a user, and you can get blocked. Also, if you load and process multiple pages with loops or handle things with multi-threaded programming, you can put a heavy load on the server. It's best to keep accessing each page and requesting data to a minimum. To do so, putting a small interval between accessing each page with a sleep statement can reduce the load.
 
 ```python
@@ -80,14 +80,14 @@ rand_value = randint(1, MAX_SLEEP_TIME)
 time.sleep(rand_value)
 ```
 
-## 2.4 IP rotation - Tor
+## 3.2 IP rotation - Tor
 Tor, short for The Onion Router, is an encrypted router network that makes traffic analysis and IP address tracking impossible. The transmitted data is encrypted at every hop as it is routed through the Tor network, so even if someone obtains a packet in the middle and tries to decrypt it, finding the actual source IP address is not easy. It's described as almost impossible(?). (Book: Web Scraping with Python)
 
 For how Tor actually works, please refer to the link (Reference #4.1). Here, we cover how to actually do web scraping within the Tor network.
 
 The Tor installation and execution instructions are written for Mac. For installation on other OSes, please refer to the link below (Reference #4.5).
 
-### 2.4.1 Installing Tor
+### 3.2.1 Installing Tor
 ```bash
 $ brew install tor
 $ tor
@@ -95,7 +95,7 @@ $ tor
 
 You can run Tor with the tor command, but network traffic is not yet transmitted through Tor.
 
-### 2.4.2 Configuring and Running Tor
+### 3.2.2 Configuring and Running Tor
 For all system traffic to be routed through Tor, you need to change the system's network settings. There's the hassle of configuring the settings for each network you use (e.g., Wi-Fi, Ethernet) and then having to revert the settings to use the default network. The part that changes the network settings can be easily scripted in bash (refer to the kremalicious website, Reference #4.2).
 
 Below is the screen after running the tor.sh script.
@@ -122,7 +122,7 @@ $ torsocks wget -q0- http://icanhazip.com/; echo
 
 ![](3CA8367A-1885-43C8-AF38-98D920F3CDD5.png)
 
-### 2.4.3 Web Scraping in the Tor Network
+### 3.2.3 Web Scraping in the Tor Network
 To web scrape through the Tor network in Python, you need a SOCKS proxy client module. Install it with the pip command.
 
 ```bash
@@ -153,8 +153,8 @@ You can confirm that the IP address obtained with the torsocks command and the a
 
 ![](F088A986-3EE3-4F16-BE74-4050809E949A.png)
 
-# 3. Considerations When Writing Web Scrapers
-## 3.1 Write Code as Unit Tests
+# 4. Considerations When Writing Web Scrapers
+## 4.1 Write Code as Unit Tests
 When writing a script, you have to access the website each time you write code. Rather than accessing the site every time, if you copy the necessary HTML part from the Chrome browser, save it to a file, and write the code as a unit test against that file, the chance of being blocked also decreases.
 
 ![](image_12.png)
@@ -175,7 +175,7 @@ if __name__ == '__main__':
 unittest.main()
 ```
 
-# 4. References
+# 5. References
 
 The files written in this post can be found on [GitHub](https://github.com/kenshin579/tutorials-python/tree/master/web_scraping).
 

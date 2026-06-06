@@ -19,7 +19,7 @@ db.inventory.insertMany([
 ])
 ```
 
-# 1.db.collection.find().forEach()
+# 1. db.collection.find().forEach()
 
 `find().forEach()` iterates over the collection's documents one by one with `forEach` and inserts them into another collection, inventory2. Since it processes documents one at a time, it has the drawback of being slow.
 
@@ -30,11 +30,11 @@ db.inventory.find().forEach(
     })
 ```
 
-# 2.db.collection.aggregate()
+# 2. db.collection.aggregate()
 
 Using the `$out operator` of `aggregate` allows you to clone a bit faster.
 
-## Syntax
+## 2.1 Syntax
 
 ```javascript
 { $out: { db: "<output-db>", coll: "<output-collection>" } }
@@ -46,7 +46,7 @@ db.inventory.aggregate([{ $match: {} }, { $out: "inventory3" }])
 
 ```
 
-# References
+# 3. References
 
 - https://www.mongodbmanager.com/clone-mongodb-collection
 - https://www.mongodb.com/docs/manual/reference/operator/aggregation/out/

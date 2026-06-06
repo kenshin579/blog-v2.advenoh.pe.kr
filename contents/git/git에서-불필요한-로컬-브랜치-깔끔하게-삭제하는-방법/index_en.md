@@ -12,7 +12,7 @@ tags:
   - 로컬브랜치 정리
 ---
 
-# Overview
+# 1. Overview
 
 When you use `Git` for code version control, even after creating a new branch for some work, working on it, and then `Merge`-ing it, unused branches keep piling up locally.
 
@@ -24,9 +24,9 @@ But local branches are not deleted automatically and have to be done manually ev
 
 > I got help writing the script from `ChatGPT`. As long as you convey your requirements well these days, it writes a perfect script, so I'm using it really well.
 
-# Usage
+# 2. Usage
 
-## Command usage
+## 2.1 Command usage
 
 - When the `-i` option is present, it runs `interactive`ly, asking for a `confirm` before deleting each local branch
 
@@ -37,7 +37,7 @@ Usage: cleanup_prune_local_branches.sh [-i]
 -i: Enable interactive mode with confirmation prompt for each branch deletion
 ```
 
-## Run example
+## 2.2 Run example
 
 ```bash
 > cleanup_prune_local_branches.sh -i 
@@ -60,7 +60,7 @@ Deleting local branch: feat/#1987-robot-path-order
 =======[WARN] Are you sure you want to delete unused branch ? [y/N]
 ```
 
-# Source Code
+# 3. Source Code
 
 Here is the full source code of the script.
 

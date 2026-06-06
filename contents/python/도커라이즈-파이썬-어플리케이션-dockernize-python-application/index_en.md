@@ -49,7 +49,7 @@ There are three Python base images you can use. Their differences are as follows
 
 The `alpine` base image is a `lightweight` version provided for many development languages and is widely used. For simple Python, it's fine to use the `alpine` image, but depending on the libraries the application uses, alpine by default does not support `linux wheel`, so a separate build may be required. To dockerize directly without going through such a build process, I recommend choosing `buster` or `slim-buster` as the base image.
 
-### References
+### 1.1.1 References
 
 - https://nayoungs.tistory.com/m/entry/Docker-Python-%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%EB%A5%BC-%EC%8B%A4%ED%96%89%ED%95%98%EB%8A%94-Docker-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B9%8C%EB%93%9C%ED%95%98%EA%B8%B0
 - https://pythonspeed.com/articles/alpine-docker-python/
@@ -57,7 +57,7 @@ The `alpine` base image is a `lightweight` version provided for many development
 
 
 
-### Building the Docker Image
+### 1.1.2 Building the Docker Image
 
 Since my personal MacBook is an `M1` version, I add the `platform` option when building.
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
 
 
-### Writing the Dockerfile
+## 2.1 Writing the Dockerfile
 
 ```dockerfile
 FROM python:3.8-slim-buster
@@ -152,7 +152,7 @@ $ docker run --rm --platform linux/x86-64 -p 8080:8080 kenshin579/advenoh:python
 ```
 
 
-### Web Screen
+## 2.2 Web Screen
 
 ![](image-20220625175829408.png)
 

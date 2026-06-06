@@ -26,7 +26,7 @@ Rate limiting is a technique that restricts API calls or server requests within 
 
 `aiolimiter` is a rate limiter library that supports asynchronous programming. Used together with `asyncio`, it helps you control the number of requests even while processing multiple tasks asynchronously. `aiolimiter` is especially useful when handling server or API calls asynchronously.
 
-### Example
+### 2.1.1 Example
 
 The following is an example of applying a rate limit to API calls using `aiolimiter`.
 
@@ -83,7 +83,7 @@ In this code, `AsyncLimiter` is used to allow only 20 requests per second. By us
 
 `aiometer` is similar to `aiolimiter`, but it provides the ability to manage multiple rate limiters at once. It is useful when you need to call multiple APIs simultaneously or apply several different constraints.
 
-### Example
+### 3.1.1 Example
 
 This is an example of applying a rate limit to asynchronous requests using `aiometer`.
 

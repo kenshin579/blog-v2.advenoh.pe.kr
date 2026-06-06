@@ -251,7 +251,7 @@ public class TestNameRuleTest {
 }
 ```
 
-## 3.1.7 RuleChain
+## 3.2 RuleChain
 
 The RuleChain Rule is a Rule that helps run multiple Rules sequentially when a test executes.
 
@@ -275,7 +275,7 @@ public class RuleChainTest {
 
 ![](image_9.png)
 
-### 3.1.8 ExternalResource
+### 3.2.1 ExternalResource
 
 The ExternalResource Rule is a Rule that connects to a resource so you can access an external resource (e.g., file, network socket, server, database connection, etc.) before the test, and automatically disconnects after the test finishes.
 
@@ -319,7 +319,7 @@ It connects to the server before and after the test runs, and disconnects after 
 
 ![](image_5.png)
 
-### 3.1.9 ClassRule
+### 3.2.2 ClassRule
 
 When you use the ClassRule annotation together with the @Rule annotation, it integrates and runs the classes bundled as a TestSuite.
 
@@ -357,7 +357,7 @@ You can confirm that the server connection is made first before the multiple tes
 
 ![](image_8.png)
 
-### 3.1.10 TestWatcher
+### 3.2.3 TestWatcher
 
 The TestWatcher Rule provides the ability to monitor the success or failure of test execution, helping you write test logs.
 
@@ -423,7 +423,7 @@ The tests run in the order of the method names, and the log accumulates as each 
 
 ![](image_3.png)
 
-## 3.2 Custom Rules
+## 3.3 Custom Rules
 
 So far we have looked at the Rules JUnit provides by default. How to create a Rule directly is easier to understand by looking at the code introduced so far. As an example, let's look at the TemporaryFolder Rule.
 

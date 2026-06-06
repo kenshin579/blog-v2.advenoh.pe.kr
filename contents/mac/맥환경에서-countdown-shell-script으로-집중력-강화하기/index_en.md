@@ -64,7 +64,7 @@ $ cp Clock-chimes.mp3 ~\_Library_Sounds
 
 <a href='Clock-chimes.mp3'>Clock-chimes.mp3</a>
 
-# 3.3 Configuring System Notifications
+# 4. Configuring System Notifications
 
 If you don't configure the notification separately, the default is the **banner notification style**, so the notification appears and then disappears automatically. As a result, if you're looking at another screen, you often won't even notice that a notification appeared. It's better to change it to a notification style that doesn't disappear automatically and requires you to click the close button.
 
@@ -72,7 +72,7 @@ Go to System Preferences > Notifications > select Script Editor, and change the 
 
 ![](C20D14F1-A6B9-41CA-B38B-C2ACA00774E3.png)
 
-## 3.4 Running It
+## 4.1 Running It
 
 If you enter 1, a 1-minute countdown starts, and after 1 minute passes a popup window appears as shown below.
 
@@ -82,6 +82,6 @@ $ countdown 1
 
 ![](image_3.png)
 
-# 4. References
+# 5. References
 
 - Display Notification from Mac \* [https://code-maven.com/display-notification-from-the-mac-command-line](https://code-maven.com/display-notification-from-the-mac-command-line)

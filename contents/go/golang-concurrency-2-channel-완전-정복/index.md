@@ -20,7 +20,7 @@ Channel은 goroutine 간 **데이터를 주고받는 통신 수단**이다. Go�
 
 이번 편에서는 Channel의 기본 동작부터 buffered/unbuffered 차이, 방향 제한, close 규칙까지 완전히 다룬다.
 
-## 1. Channel 개념과 생성
+# 1. Channel 개념과 생성
 
 <img src="cover.png" alt="cover" width="75%" />
 
@@ -31,7 +31,7 @@ ch := make(chan int)       // unbuffered channel (int 타입)
 ch := make(chan string, 5) // buffered channel (string 타입, 버퍼 크기 5)
 ```
 
-## 2. Send / Receive 동작
+# 2. Send / Receive 동작
 
 Channel에 값을 보내려면 `<-` 연산자를 사용한다.
 
@@ -74,7 +74,7 @@ func TestChannelStructType(t *testing.T) {
 }
 ```
 
-## 3. Blocking 동작 이해
+# 3. Blocking 동작 이해
 
 Channel의 가장 중요한 특성은 **blocking**이다.
 
@@ -95,9 +95,9 @@ graph LR
     end
 ```
 
-## 4. Unbuffered vs Buffered Channel
+# 4. Unbuffered vs Buffered Channel
 
-### Unbuffered Channel
+## 4.1 Unbuffered Channel
 
 ```go
 ch := make(chan int) // 버퍼 크기 0
@@ -120,7 +120,7 @@ func TestUnbufferedChannel(t *testing.T) {
 }
 ```
 
-### Buffered Channel
+## 4.2 Buffered Channel
 
 ```go
 ch := make(chan int, 3) // 버퍼 크기 3
@@ -146,7 +146,7 @@ func TestBufferedChannel(t *testing.T) {
 }
 ```
 
-### cap과 len
+## 4.3 cap과 len
 
 ```go
 func TestBufferedChannelCapLen(t *testing.T) {
@@ -163,7 +163,7 @@ func TestBufferedChannelCapLen(t *testing.T) {
 }
 ```
 
-### 언제 어떤 것을 쓸까?
+## 4.4 언제 어떤 것을 쓸까?
 
 | 상황 | 선택 |
 |------|------|
@@ -173,7 +173,7 @@ func TestBufferedChannelCapLen(t *testing.T) {
 | Producer/Consumer 패턴 | Buffered |
 | 성능이 중요한 대량 데이터 전달 | Buffered |
 
-## 5. Channel 방향 제한
+# 5. Channel 방향 제한
 
 함수 파라미터에서 channel의 방향을 제한할 수 있다.
 
@@ -217,13 +217,13 @@ var sendOnly chan<- int = ch  // OK: 양방향 → send-only
 var recvOnly <-chan int = ch  // OK: 양방향 → receive-only
 ```
 
-## 6. Channel Close
+# 6. Channel Close
 
-### close의 의미
+## 6.1 close의 의미
 
 `close(ch)`는 "이 channel에 **더 이상 값을 보내지 않겠다**"는 선언이다.
 
-### 닫힌 Channel에서 Receive
+## 6.2 닫힌 Channel에서 Receive
 
 ```go
 func TestReceiveFromClosedChannel(t *testing.T) {
@@ -243,7 +243,7 @@ func TestReceiveFromClosedChannel(t *testing.T) {
 }
 ```
 
-### Close 규칙
+## 6.3 Close 규칙
 
 | 규칙 | 설명 |
 |------|------|
@@ -252,7 +252,7 @@ func TestReceiveFromClosedChannel(t *testing.T) {
 | **닫힌 channel에 send 금지** | 닫힌 channel에 값을 보내면 **panic** |
 | **닫힌 channel에서 receive 가능** | zero value + false 반환 |
 
-### Close 책임 패턴
+## 6.4 Close 책임 패턴
 
 ```go
 // 패턴: sender가 channel을 생성하고, 보내고, close한다
@@ -268,7 +268,7 @@ func generator() <-chan int {
 }
 ```
 
-## 7. Range over Channel
+# 7. Range over Channel
 
 `range`를 사용하면 channel이 **닫힐 때까지** 자동으로 값을 수신한다.
 
@@ -294,7 +294,7 @@ func TestRangeOverChannel(t *testing.T) {
 
 > `range ch`가 종료되려면 반드시 `close(ch)`가 호출되어야 한다. close하지 않으면 range는 영원히 blocking된다.
 
-### 신호용 Channel
+## 7.1 신호용 Channel
 
 데이터 전달이 아닌 **완료 신호**만 보내려면 `chan struct{}`를 사용한다. struct{}는 메모리를 차지하지 않는다.
 
@@ -315,7 +315,7 @@ func TestChannelSignaling(t *testing.T) {
 
 > `struct{}`와 `struct{}{}`의 차이가 헷갈린다면 [FAQ](#q-struct와-struct의-차이는)를 참고하자.
 
-## 8. 실습: Producer / Consumer 패턴
+# 8. 실습: Producer / Consumer 패턴
 
 ```go
 func TestProducerConsumer(t *testing.T) {
@@ -340,7 +340,7 @@ func TestProducerConsumer(t *testing.T) {
 }
 ```
 
-### 여러 Producer
+## 8.1 여러 Producer
 
 ```go
 func TestMultipleProducers(t *testing.T) {
@@ -373,7 +373,7 @@ func TestMultipleProducers(t *testing.T) {
 }
 ```
 
-## 9. 정리
+# 9. 정리
 
 | 개념 | 핵심 |
 |------|------|
@@ -387,9 +387,9 @@ func TestMultipleProducers(t *testing.T) {
 
 다음 편에서는 여러 channel을 동시에 처리하는 **select**문과 **fan-in/fan-out** 등 channel 심화 패턴을 다룬다.
 
-## FAQ
+# 10. FAQ
 
-### Q. `struct{}`와 `struct{}{}`의 차이는?
+## 10.1 Q. `struct{}`와 `struct{}{}`의 차이는?
 
 `struct{}`는 **타입**이고, `struct{}{}`는 **값(인스턴스)**이다.
 
@@ -436,7 +436,7 @@ close(done)
 
 `struct{}`는 메모리를 0바이트 차지하므로, 데이터 없이 **신호만 전달**할 때 가장 효율적인 선택이다.
 
-## 참고
+# 11. 참고
 
 - [Go Tour - Channels](https://go.dev/tour/concurrency/2)
 - [Effective Go - Channels](https://go.dev/doc/effective_go#channels)

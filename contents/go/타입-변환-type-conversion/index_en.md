@@ -48,7 +48,7 @@ func Example_TypeConversion() {
 
 You can find the code written in this post on [github](https://github.com/kenshin579/tutorials-go/tree/master/go-type-conversion).
 
-# References
+# 1. References
 
 - Go type conversion
     - https://tour.golang.org/basics/13

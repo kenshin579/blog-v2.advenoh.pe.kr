@@ -51,13 +51,13 @@ Frank 개발자는 master로부터 feature/GIT-6-working-branch 이름의 새로
 
 _master 브랜치를 선택 > 오른쪽 클릭 > Create branch here 선택 > feature/GIT-6-working-branch 브랜치 이름 입력_
 
-### 3.1.1.1 Frank 개발자 코드 수정후 commt하기
+### 3.1.2 Frank 개발자 코드 수정후 commt하기
 
 Frank 개발자는 체크아웃 이후에 코드 수정 후 3개의 커밋을 push한다.
 
 ![](D53A13F9-9D6E-4CCF-9338-AA7DDE127F5F.png)
 
-#### 3.1.1.2 Joe 개발자 코드 수정후 commit하기
+#### 3.1.2.1 Joe 개발자 코드 수정후 commit하기
 
 Joe 개발자도 다른 기능을 개발을 위해서 master로부터 새로운 브랜치 (feature/GIT-7)을 생성한다.
 
@@ -83,7 +83,7 @@ Joe가 커밋한 내용(feature/GIT-7)은 master에 잘 반영되었네요.
 
 ![](image_10.png)
 
-### 3.1.2 Rebase로 최신 master로 rebase로 합병하기
+### 3.1.3 Rebase로 최신 master로 rebase로 합병하기
 
 Joe 개발자에 의해 커밋된 최신 코드를 현재 Frank 개발자가 개발 중인 feature/GIT-6-working-branch로 가져와 보도록 할게요.
 
@@ -107,7 +107,7 @@ remote/GIT-6-working-branch로 push한 결과이다. GIT-6-working-branch에서 
 
 ![](image_18.png)
 
-### 3.1.3 Interactive 하게 Rebase 하기
+### 3.1.4 Interactive 하게 Rebase 하기
 
 같은 상황에서 여러 방식으로 rebase를 테스트해보기 위해 같은 지점에서 여러 브랜치(ex. GIT-6-working-branch-*)를 미리 생성해 두었어요.
 

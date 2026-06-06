@@ -15,11 +15,11 @@ tags:
 
 # 1. 개요
 
-### Minikube란?
+## 1.1 Minikube란?
 
 `Minikube`는 로컬 환경에서 가볍게 `Kubernetes` 클러스터를 실행할 수 있는 도구이다. `Kubernetes`를 실습하거나 개발 환경에서 테스트할 때 유용하다. Mac, Linux, Windows에서 실행할 수 있으며, 가상화 기술을 이용해 클러스터를 구성한다. 
 
-### Kubernetes 클러스터 실행 방식 비교
+## 1.2 Kubernetes 클러스터 실행 방식 비교
 
 `Kubernetes` 클러스터를 실행하는 방법은 여러 가지가 있으며, 각각 장단점이 있다. 
 
@@ -169,7 +169,7 @@ echoserver-6c45798fdc-b8kcr   1/1     Running   0          36s   10.244.0.3   mi
 
 ## 2.4 외부에서 접속해보기
 
-### Minikube Service 명령어로 외부로 노출하는 방법
+### 2.4.1 Minikube Service 명령어로 외부로 노출하는 방법
 
 `Minikube`는 기본적으로 `LoadBalancer`를 지원하지 않으므로, `minikube service` 명령어를 이용해 외부에서 접근할 수 있도록 한다. 
 
@@ -189,7 +189,7 @@ http://127.0.0.1:59333
 {"host":{"hostname":"localhost","ip":"::ffff:10.244.0.1","ips":[]},"http":{"method":"GET","baseUrl":"","originalUrl":"/","protocol":"http"},"request":{"params":{"0":"/"},"query":{},"cookies":{},"body":{},"headers":{"host":"localhost:59333","user-agent":"curl/8.7.1","accept":"*/*"}},"environment":{"PATH":"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","HOSTNAME":"echoserver-6c45798fdc-qm9br","PORT":"80","KUBERNETES_PORT":"tcp://10.96.0.1:443","ECHOSERVER_PORT_80_TCP_PROTO":"tcp","KUBERNETES_SERVICE_PORT_HTTPS":"443","KUBERNETES_PORT_443_TCP_PORT":"443","KUBERNETES_PORT_443_TCP_PROTO":"tcp","ECHOSERVER_PORT_80_TCP_PORT":"80","ECHOSERVER_PORT_80_TCP_ADDR":"10.104.239.11","KUBERNETES_SERVICE_PORT":"443","KUBERNETES_PORT_443_TCP":"tcp://10.96.0.1:443","ECHOSERVER_SERVICE_HOST":"10.104.239.11","ECHOSERVER_SERVICE_PORT":"80","ECHOSERVER_PORT":"tcp://10.104.239.11:80","ECHOSERVER_PORT_80_TCP":"tcp://10.104.239.11:80","KUBERNETES_SERVICE_HOST":"10.96.0.1","KUBERNETES_PORT_443_TCP_ADDR":"10.96.0.1","NODE_VERSION":"20.11.0","YARN_VERSION":"1.22.19","HOME":"/root"}}
 ```
 
-### Port Forwarding 하는 방법
+### 2.4.2 Port Forwarding 하는 방법
 
 port forwarding으로 특정 포트를 외부에 노출할 수 있다. 
 
@@ -227,7 +227,7 @@ Forwarding from [::1]:8080 -> 80
 
 ## 2.6 Minikube 중지 및 삭제
 
-### Minikube 중지
+### 2.6.1 Minikube 중지
 
 Minikube `stop`으로 `minikube`를 중지시킬 수 있다. 
 
@@ -238,7 +238,7 @@ Minikube `stop`으로 `minikube`를 중지시킬 수 있다.
 🛑  1개의 노드가 중지되었다.
 ```
 
-### Minikube 삭제
+### 2.6.2 Minikube 삭제
 
 `Minikube` 클러스터를 완전히 삭제하려면 다음 명령어를 실행한다. 
 

@@ -70,7 +70,7 @@ OAuth 2.0 is **a standard protocol that delegates authorization so a third-party
 
 OAuth 2.0 is originally an **authorization** protocol, but combined with OpenID Connect (OIDC) it can also handle **authentication**. Google OAuth supports OIDC by default.
 
-### The 4 roles of OAuth 2.0
+### 2.1.1 The 4 roles of OAuth 2.0
 
 | Role | Description | In this project |
 |------|------|----------------|

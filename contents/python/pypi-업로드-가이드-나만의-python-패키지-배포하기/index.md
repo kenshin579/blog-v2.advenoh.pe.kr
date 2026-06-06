@@ -33,7 +33,7 @@ Python 패키지를 개발한 후 `PyPi`(Python Package Index)에 업로드하�
 
 # 2. Python 모듈 패키지화
 
-## 프로젝트 구조 설명
+## 2.1 프로젝트 구조 설명
 
 ```bash
 > tree -L 1
@@ -48,7 +48,7 @@ korea_investment_stock/
 └── LICENSE
 ```
 
-## `pyproject.toml` 파일 작성 (권장)
+## 2.2 `pyproject.toml` 파일 작성 (권장)
 
 `pyproject.toml`은 Python 패키지 설정을 정의하는 표준 파일이다. 과거 버전에서는 `setup.py` 파일로 작성을 했지만, 지금은 `toml` 포멧으로 정의를 한다.
 
@@ -81,7 +81,7 @@ dependencies = [
 "Bug Tracker" = "<https://github.com/kenshin579/korea-investment-stock/issues>"
 ```
 
-## 패키지 빌드
+## 2.3 패키지 빌드
 
 패키지를 빌드하려면 `build` 모듈을 사용한다.
 
@@ -115,7 +115,7 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
 
 ## 3.2 패키지를 PyPi에 업로드하기
 
-### 1) 사전 작업
+### 3.2.1 사전 작업
 
 - **PyPi 계정 생성**: https://pypi.org/account/register/
 
@@ -136,7 +136,7 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
  
 ```
 
-### 2) `twine`을 이용한 업로드
+### 3.2.2 `twine`을 이용한 업로드
 
 ```bash
 > pip install twine
@@ -147,7 +147,7 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
 
 ![PyPi.org](image-20250316155025346.png)
 
-## 업로드 후 패키지 테스트
+## 3.3 업로드 후 패키지 테스트
 
 ```bash
 > pip install korea-investment-stock
@@ -159,7 +159,7 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
 
 # 4. 배포 및 유지보수
 
-## 패키지 버전 관리 (`bumpversion`)
+## 4.1 패키지 버전 관리 (`bumpversion`)
 
 > `bumpversion`은 Python 패키지의 버전을 자동으로 업데이트하는 도구이다.
 >

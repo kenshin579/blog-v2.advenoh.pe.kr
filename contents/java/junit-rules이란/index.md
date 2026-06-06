@@ -251,7 +251,7 @@ public class TestNameRuleTest {
 }
 ```
 
-## 3.1.7 RuleChain
+## 3.2 RuleChain
 
 RuleChain Rule은 테스트 실행 시 여러 Rule을 순차적으로 실행하도록 도와주는 Rule이다.
 
@@ -275,7 +275,7 @@ public class RuleChainTest {
 
 ![](image_9.png)
 
-### 3.1.8 ExternalResource
+### 3.2.1 ExternalResource
 
 ExternalResource Rule은 테스트 전에 외부 리소스(ex. 파일, 네트워크 소켓, 서버, 데이터베이스 연결 등)에 접근할 수 있도록 자원에 연결해주고 테스트 종료 후에도 연결을 자동으로 끊어주는 Rule이다.
 
@@ -319,7 +319,7 @@ public class Server {
 
 ![](image_5.png)
 
-### 3.1.9 ClassRule
+### 3.2.2 ClassRule
 
 ClassRule 어노테이션을 @Rule 어노테이션과 같이 사용하면 TestSuite로 묶여 있는 클래스를 통합하여 실행해줍니다.
 
@@ -357,7 +357,7 @@ public class TestFirstServer {
 
 ![](image_8.png)
 
-### 3.1.10 TestWatcher
+### 3.2.3 TestWatcher
 
 TestWatcher Rule은 테스트 실행에 대한 성공 실패를 모니터링 하는 기능을 제공하여 테스트 로그를 쓰도록 도와줍니다.
 
@@ -423,7 +423,7 @@ public class TestWatcherRuleTest {
 
 ![](image_3.png)
 
-## 3.2 Custom Rules
+## 3.3 Custom Rules
 
 지금까지 JUnit에서 기본으로 제공하는 Rules을 알아보았다. 직접 Rule을 어떻게 생성하는지는 지금까지 소개해 드렸던 코드를 보면 더 이해가 쉽다. 예로. TemporaryFolder Rule을 살펴보도록 하자.
 

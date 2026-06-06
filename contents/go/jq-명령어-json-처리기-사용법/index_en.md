@@ -11,9 +11,9 @@ tags:
 
 I don't use `jq` often, but there are times when it's handy when I need it, so I'm leaving it on the blog for the record.
 
-# A Collection of jq Usage
+# 1. A Collection of jq Usage
 
-## 1. How to extract a field value from an array where a specific field matches?
+## 1.1 How to extract a field value from an array where a specific field matches?
 
 
 For a JSON array like the one below, how would you write a `jq` query to extract a desired field from the item where a specific field, `id`, matches?
@@ -50,7 +50,7 @@ $ cat json/ex2.json | jq '.[] | select(.id == "423be8de-9c04-4f0e-8ff0-545a8cb17
 }
 ```
 
-## 2. How to print the number of elements in an array from a JSON string?
+## 1.2 How to print the number of elements in an array from a JSON string?
 
 You can get the number of elements in an array with the `length` function.
 
@@ -63,7 +63,7 @@ Reference
 - https://phpfog.com/count-json-array-elements-with-jq/
 
 
-# References
+# 2. References
 
 - https://stackoverflow.com/questions/51184524/get-parent-element-id-while-parsing-json-data-with-jq
 - https://stackoverflow.com/questions/18592173/select-objects-based-on-value-of-variable-in-object-using-jq

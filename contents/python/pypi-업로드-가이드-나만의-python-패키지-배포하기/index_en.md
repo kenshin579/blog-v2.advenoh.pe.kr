@@ -33,7 +33,7 @@ In this article, I'll organize and explain the process of packaging the `korea-i
 
 # 2. Packaging a Python Module
 
-## Project Structure Explained
+## 2.1 Project Structure Explained
 
 ```bash
 > tree -L 1
@@ -48,7 +48,7 @@ korea_investment_stock/
 └── LICENSE
 ```
 
-## Writing the `pyproject.toml` File (Recommended)
+## 2.2 Writing the `pyproject.toml` File (Recommended)
 
 `pyproject.toml` is the standard file that defines Python package configuration. In older versions, the configuration was written in a `setup.py` file, but now it is defined in the `toml` format.
 
@@ -81,7 +81,7 @@ dependencies = [
 "Bug Tracker" = "<https://github.com/kenshin579/korea-investment-stock/issues>"
 ```
 
-## Building the Package
+## 2.3 Building the Package
 
 To build the package, use the `build` module.
 
@@ -115,7 +115,7 @@ To install it in the PyCharm IDE, click the `Python Packages` icon located at th
 
 ## 3.2 Uploading the Package to PyPi
 
-### 1) Prerequisites
+### 3.2.1 Prerequisites
 
 - **Create a PyPi account**: https://pypi.org/account/register/
 
@@ -136,7 +136,7 @@ To install it in the PyCharm IDE, click the `Python Packages` icon located at th
  
 ```
 
-### 2) Uploading with `twine`
+### 3.2.2 Uploading with `twine`
 
 ```bash
 > pip install twine
@@ -147,7 +147,7 @@ If the upload succeeds, you can verify the [package on PyPi](https://pypi.org/pr
 
 ![PyPi.org](image-20250316155025346.png)
 
-## Testing the Package After Upload
+## 3.3 Testing the Package After Upload
 
 ```bash
 > pip install korea-investment-stock
@@ -159,7 +159,7 @@ If the upload succeeds, you can verify the [package on PyPi](https://pypi.org/pr
 
 # 4. Distribution and Maintenance
 
-## Package Version Management (`bumpversion`)
+## 4.1 Package Version Management (`bumpversion`)
 
 > `bumpversion` is a tool that automatically updates the version of a Python package.
 >

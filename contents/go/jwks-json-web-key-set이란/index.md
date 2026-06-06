@@ -180,7 +180,7 @@ func (suite *jwksTestSuite) generateJWKS() (jwkset.JWKSMarshal, error) {
 
 # 3. FAQ
 
-### 3.1 공개 키와 개인 키는 각각 언제 어떻게 사용되나?
+## 3.1 공개 키와 개인 키는 각각 언제 어떻게 사용되나?
 
 - 서명(Signature)
   - 서명을 생성하려면 개인 키를 사용한다

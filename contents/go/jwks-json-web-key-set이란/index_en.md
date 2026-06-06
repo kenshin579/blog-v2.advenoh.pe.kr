@@ -180,7 +180,7 @@ This is also a site additionally created by the developer who built the `JWKSet`
 
 # 3. FAQ
 
-### 3.1 When and how are the public key and private key each used?
+## 3.1 When and how are the public key and private key each used?
 
 - Signature
   - To generate a signature, use the private key

@@ -371,7 +371,7 @@ type Number interface { Signed | Unsigned }
 
 # 7. FAQ
 
-### Q. `golang.org/x/exp/constraints` 패키지에는 어떤 constraint가 있는가?
+## 7.1 Q. `golang.org/x/exp/constraints` 패키지에는 어떤 constraint가 있는가?
 
 | Constraint | 포함 타입 |
 |-----------|----------|

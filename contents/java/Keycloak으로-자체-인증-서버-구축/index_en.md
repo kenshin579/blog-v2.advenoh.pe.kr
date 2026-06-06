@@ -30,7 +30,7 @@ Our internal company services had been using the NCP (Naver Cloud Platform) auth
 
 While reviewing several IAM solutions, I came across Keycloak, a widely used open-source option, and ran a study to actually try it out. This post summarizes what I learned in that process, looking at what Keycloak is, what features it provides, and how it is structured.
 
-## What is Keycloak?
+## 1.1 What is Keycloak?
 
 Keycloak is an open-source IAM (Identity and Access Management) solution led by **Red Hat**, a platform that lets you handle user authentication and authorization in an integrated way. It supports standard protocols such as OAuth 2.0, OpenID Connect, and SAML, and lets you delegate complex authentication logic such as login, logout, and session management to Keycloak instead of implementing it directly in your application.
 
@@ -38,7 +38,7 @@ Keycloak is an open-source IAM (Identity and Access Management) solution led by 
 
 Modern application environments are becoming increasingly complex, with multiple microservices, web/mobile clients, and external API integrations. If you implement a separate login feature for each service, the security and maintenance costs grow. With Keycloak, you can achieve centralized authentication management, Single Sign-On (SSO), and social login integration, gaining both stronger security and development efficiency at the same time.
 
-### Key Features
+### 1.1.1 Key Features
 
 - **Single Sign-On (SSO)**: Access multiple applications with a single login
 - **Social login**: Integrates with Google, Facebook, GitHub, and more
@@ -51,7 +51,7 @@ Modern application environments are becoming increasingly complex, with multiple
 
 ![Keycloak Architecture](image-20250908164025074.png)
 
-### Keycloak Components
+### 1.1.2 Keycloak Components
 
 Keycloak provides several core components to handle authentication/authorization.
 
@@ -107,7 +107,7 @@ When you log in as admin, the admin page where you can configure Keycloak loads.
 
 To use Keycloak as an authentication server, a minimum of basic configuration is required. The basic configuration here aims to reach a state where you can **redirect from your application to the Keycloak login screen** → **issue a token after a successful login**.
 
-### 1. Create a Realm
+### 2.2.1 Create a Realm
 
 - A **Realm** is Keycloak's authentication unit
   - Since users, clients, and policies are all managed per Realm, it is common to separate **Realms** by project and by environment
@@ -115,7 +115,7 @@ To use Keycloak as an authentication server, a minimum of basic configuration is
 
 ![Create realm](image-20250908174737075.png)
 
-### 2. Register a Client
+### 2.2.2 Register a Client
 
 - A **Client** refers to an application that integrates with `Keycloak`
   - Web apps, API servers, and other targets that authenticate through `Keycloak` fall under this
@@ -153,7 +153,7 @@ To use Keycloak as an authentication server, a minimum of basic configuration is
   - For Public Clients (e.g., SPAs, mobile apps), **using PKCE is strongly recommended as mandatory**
 
 
-### Summary of Authentication flow options
+### 2.2.3 Summary of Authentication flow options
 
 | Option                                   | OAuth2 equivalent                           | Description                                                  | Use case                        |
 | ---------------------------------------- | ------------------------------------------- | ------------------------------------------------------------ | ------------------------------- |
@@ -183,7 +183,7 @@ These are the values you must set in **Access settings**.
 
 
 
-### 3. Create a User
+### 2.2.4 Create a User
 
 For authentication testing, you need at least one user. After creating a new user, set its password.
 
@@ -198,7 +198,7 @@ For authentication testing, you need at least one user. After creating a new use
 
 After creating the user, you must set a password directly in the **Credentials tab** for login to work. Initially, it is convenient to turn off the `Temporary` option. (If turned on, it requires a password change on first login.)
 
-# 2.3 Keycloak Authentication Example Sample Code
+# 3. Keycloak Authentication Example Sample Code
 
 At this point, you have **Realm + Client + User** ready. Now the client application can redirect to the `Keycloak` login screen, and once the user logs in, it can receive a token and continue the authentication flow.
 
@@ -217,9 +217,9 @@ The full sample code is available on GitHub.
 
 # 4. FAQ
 
-### 4.1 OAuth 2.0 vs OpenID Connect
+## 4.1 OAuth 2.0 vs OpenID Connect
 
-### OAuth 2.0
+### 4.1.1 OAuth 2.0
 
 - **What is it?** → An **authorization framework**
 
@@ -235,7 +235,7 @@ The full sample code is available on GitHub.
 
   - In other words, you can know "this token can use Google Calendar," but you cannot know **who the user is**
 
-### OpenID Connect (OIDC)
+### 4.1.2 OpenID Connect (OIDC)
 
 - **What is it?** → An **authentication protocol** built on top of OAuth 2.0
 
@@ -265,9 +265,9 @@ The full sample code is available on GitHub.
 
 So when using an IdP like Keycloak as a login server, it is common to **always layer OIDC on top of OAuth 2.0**.
 
-### 4.2 Identity Brokering vs Identity Provider
+## 4.2 Identity Brokering vs Identity Provider
 
-### **Identity Provider (IdP)**
+### 4.2.1 Identity Provider (IdP)
 
 - **Definition**: An external service that actually performs user authentication
 - **The IdP from Keycloak's perspective**
@@ -275,7 +275,7 @@ So when using an IdP like Keycloak as a login server, it is common to **always l
   - Examples: Google, GitHub, Facebook, Kakao, another Keycloak, or a SAML-based enterprise IdP
 - **Role**: Confirms "who this user is" and passes the success/failure result and user profile information to Keycloak
 
-### **Identity Brokering**
+### 4.2.2 Identity Brokering
 
 - **Definition**: A feature where Keycloak brokers multiple **IdPs**, so that the client application authenticates through Keycloak instead of communicating directly with the external IdP
 - **Flow**
@@ -288,7 +288,7 @@ So when using an IdP like Keycloak as a login server, it is common to **always l
 
 ------
 
-## **⚖️ Summary of Differences**
+### 4.2.3 ⚖️ Summary of Differences
 
 | **Category**        | **Identity Provider (IdP)**            | **Identity Brokering**                                   |      |
 | ------------------- | -------------------------------------- | -------------------------------------------------------- | ---- |
@@ -299,7 +299,7 @@ So when using an IdP like Keycloak as a login server, it is common to **always l
 
 Simply put, **an IdP is the entity that performs authentication**, and **Identity Brokering is the feature where Keycloak connects multiple IdPs**.
 
-### 4.3 What is the Events feature in Keycloak?
+## 4.3 What is the Events feature in Keycloak?
 
 It is a feature that records important activities occurring in Keycloak. It is very useful from an operational/security standpoint.
 

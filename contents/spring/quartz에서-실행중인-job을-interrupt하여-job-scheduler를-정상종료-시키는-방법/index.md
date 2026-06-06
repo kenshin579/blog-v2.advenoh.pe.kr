@@ -34,7 +34,7 @@ series: "Spring Quartz"
 
 실행 중인 Job을 gracefully하게 셧다운 하려면 2가지만 설정해주면 된다.
 
-# 3.1 Quartz 설정에 SchedulerFactoryBean에 대한 ShutdownHook 등록하기
+# 4. Quartz 설정에 SchedulerFactoryBean에 대한 ShutdownHook 등록하기
 
 Quartz에서 사용하는 SchedulerFactoryBean은 SmartLifeCycle 인터페이스를 구현하고 있다.
 
@@ -143,11 +143,11 @@ public class CronJob2 extends QuartzJobBean implements InterruptableJob {
 }
 ```
 
-# 4. 정리
+# 5. 정리
 
 실행 중인 Job을 Gracefully 하게 셧다운 시키는 방법에 대해서 알아보았다. 다음 포스팅은 Quartz 튜터리얼 시리지로의 마지막으로 Quartz 어드민 UI 구현에 대해서 알아보자.
 
-# 5. 참고
+# 6. 참고
 
 * Servlet 시작시
     * [https://karismamun.tistory.com/46](https://karismamun.tistory.com/46)

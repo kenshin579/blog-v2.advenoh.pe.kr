@@ -201,7 +201,7 @@ gog auth add your-email...@gmail.com --manual
 # Wait for the local callback server (127.0.0.1:50554) in the background
 ```
 
-### 7.3 Troubleshooting: 403 access_denied
+### 7.2.1 Troubleshooting: 403 access_denied
 
 When you first open the authentication URL, you may get a 403 error.
 
@@ -232,7 +232,7 @@ The cause is that OAuth apps are created in **test mode** by default. There are 
 
 ![Publish confirmation dialog](oauth-publish-confirm.png)
 
-### 7.4 Sign in to Google → Provide the callback URL
+### 7.2.2 Sign in to Google → Provide the callback URL
 
 After publishing the app, open the authentication URL again and the Google sign-in proceeds normally.
 
@@ -285,7 +285,7 @@ gog auth list
 # → email: your-email...@gmail.com, confirm 13 services connected
 ```
 
-### 7.5 Troubleshooting: macOS Keychain Access
+### 7.2.3 Troubleshooting: macOS Keychain Access
 
 gog stores authentication tokens in the macOS Keychain. On the first run, a Keychain access prompt may appear.
 
@@ -297,7 +297,7 @@ gog stores authentication tokens in the macOS Keychain. On the first run, a Keyc
 
 The Keychain prompt must be handled directly on the Mac Mini screen. Once allowed, it is accessed automatically thereafter.
 
-## 7.6 Set the Environment Variable
+## 7.3 Set the Environment Variable
 
 You need to set the `GOG_ACCOUNT` environment variable so you don't have to add the `--account` option every time.
 

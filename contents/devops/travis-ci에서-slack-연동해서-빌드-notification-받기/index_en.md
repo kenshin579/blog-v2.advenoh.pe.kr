@@ -14,7 +14,7 @@ tags:
   - 자동화
 ---
 
-# Introduction
+# 1. Introduction
 
 Let's look at how to receive notifications in Slack after a build with Travis CI. Explanations of how to deploy GitHub source to Travis CI already exist in many other places, so I'll skip that part.
 
@@ -26,9 +26,9 @@ These are the things you need beforehand. I'll just mention them briefly and mov
 
 The source we're building is [app-quotes](https://github.com/kenshin579/app-quotes), and the files written for this post are also included in this source.
 
-# Integrating Slack with Travis CI
+# 2. Integrating Slack with Travis CI
 
-## 1. Add Travis CI from the Slack App Directory
+## 2.1 Add Travis CI from the Slack App Directory
 
 Find and add the Travis CI App in the Slack app directory.
 
@@ -46,9 +46,9 @@ When the integration is set up properly, you'll receive messages in the Slack ch
 
 ![](205B5442-FCB2-4013-AA4D-1FEC7AB6CA46.png)
 
-## 2. Add Slack information to the travis.yml configuration
+## 2.2 Add Slack information to the travis.yml configuration
 
-### 2.1 Encrypting the app token
+### 2.2.1 Encrypting the app token
 
 Install the travis command needed for encryption.
 
@@ -71,7 +71,7 @@ Running it where the travis.yml file is located outputs the full configuration w
 $ travis encrypt "<slack-domain-name>:<token of the travis APP>#<channel-name>" --add notifications.slack
 ```
 
-### 2.2 Add the Slack configuration to travis.yml
+### 2.2.2 Add the Slack configuration to travis.yml
 
 I've set it up to always receive messages on both build success and failure. For additional explanation of Travis build settings, please refer to the [Travis documentation](https://docs.travis-ci.com/user/notifications/).
 
@@ -83,17 +83,17 @@ notifications:
     secure: pnEZaS1REkNU5VWKLK+JE2tbA7n18vfE8Cikk9RCO5rkGeubTDG/Pgicc=
 ```
 
-### 2.3 Building on Travis CI
+### 2.2.3 Building on Travis CI
 
 If you run a build directly on Travis CI, you can confirm that the build messages are received properly in Slack.
 
 ![](BE2B65F9-8EFE-4991-9118-849627BE8F8B.png)
 
-# Conclusion
+# 3. Conclusion
 
 We did the integration work so that build messages can be received in Slack on a Travis CI build. In the next post, I plan to work on integrating GitHub Action with Slack.
 
-# References
+# 4. References
 
 
 * Slack integration

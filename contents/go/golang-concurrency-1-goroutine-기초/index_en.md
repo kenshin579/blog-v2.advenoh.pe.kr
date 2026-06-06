@@ -19,7 +19,7 @@ One of the biggest features that sets Go apart from other languages is its suppo
 
 In this series, we cover Go concurrency step by step, from the basics to real-world use. In this first part, we look at the basic concepts of concurrency and Go's core unit of execution, the **goroutine**.
 
-## 1. Concurrency vs Parallelism
+# 1. Concurrency vs Parallelism
 
 <img src="cover.png" alt="cover" width="75%" />
 
@@ -57,15 +57,15 @@ Go's creator Rob Pike explains it this way:
 
 In Go, concurrency is about the **structure** of a program. Separating code into independently executable units is concurrency, and actually running them simultaneously on multiple CPUs is parallelism. If you design a Go program to be concurrent, the runtime takes care of leveraging parallelism.
 
-## 2. Why Is Go Strong at Concurrency?
+# 2. Why Is Go Strong at Concurrency?
 
-### The CSP Model
+## 2.1 The CSP Model
 
 Go's concurrency model is based on **CSP (Communicating Sequential Processes)**. The core of this model, proposed by Tony Hoare in 1978, is that independent processes communicate through **message passing**.
 
 In Go, this is implemented with **goroutines** (independent units of execution) and **channels** (the means of message passing).
 
-### Go's Concurrency Philosophy
+## 2.2 Go's Concurrency Philosophy
 
 > **"Do not communicate by sharing memory; instead, share memory by communicating."**
 > — Go Proverb
@@ -89,25 +89,25 @@ graph LR
     end
 ```
 
-## 3. When Should You Use Concurrency?
+# 3. When Should You Use Concurrency?
 
-### Cases Where It's a Good Fit
+## 3.1 Cases Where It's a Good Fit
 
 - **I/O-heavy work**: HTTP requests, DB queries, file read/write
 - **Parallel processing of independent tasks**: calling multiple APIs simultaneously
 - **Event-based processing**: handling requests in a web server
 - **Pipeline processing**: chaining data transformation stages
 
-### Cases Where You Shouldn't Use It (Over-Engineering)
+## 3.2 Cases Where You Shouldn't Use It (Over-Engineering)
 
 - **When simple sequential processing is enough**: simple data transformations
 - **When you create excessive goroutines for CPU-bound work**
 - **When there's so much shared state that locks become complex**: in this case, reconsider the design
 - **When it becomes so complex that debugging is hard**: concurrency adds complexity
 
-## 4. Goroutine Basics
+# 4. Goroutine Basics
 
-### What Is a Goroutine?
+## 4.1 What Is a Goroutine?
 
 A goroutine is a **lightweight unit of execution** managed by the Go runtime. Putting the `go` keyword in front of a function call creates a new goroutine.
 
@@ -121,7 +121,7 @@ go func() {
 go sayHello("World")
 ```
 
-### Goroutine vs OS Thread
+## 4.2 Goroutine vs OS Thread
 
 
 | Aspect            | Goroutine                | OS Thread            |
@@ -134,7 +134,7 @@ go sayHello("World")
 
 Goroutines are **multiplexed** on top of OS threads. Thousands to tens of thousands of goroutines run efficiently on a small number of OS threads.
 
-### Execution Order Is Non-Deterministic
+## 4.3 Execution Order Is Non-Deterministic
 
 The execution order of goroutines is **not guaranteed**. In the code below, you should not expect the numbers to be printed in order.
 
@@ -162,7 +162,7 @@ func TestGoroutineNonDeterministicOrder(t *testing.T) {
 }
 ```
 
-### main goroutine and lifecycle
+## 4.4 main goroutine and lifecycle
 
 In a Go program, the `main()` function runs in the **main goroutine**. When the main goroutine terminates, **the entire program terminates** regardless of whether other goroutines have finished.
 
@@ -199,7 +199,7 @@ func TestWaitGroupSolution(t *testing.T) {
 }
 ```
 
-### Creating Tens of Thousands of Goroutines
+## 4.5 Creating Tens of Thousands of Goroutines
 
 Goroutines are so lightweight that creating tens of thousands of them is no problem.
 
@@ -223,11 +223,11 @@ func TestGoroutineLightweight(t *testing.T) {
 }
 ```
 
-## 5. Comparison with Other Languages
+# 5. Comparison with Other Languages
 
 To better understand the characteristics of goroutines, let's compare them with Kotlin Coroutines and Java Threads.
 
-### Overall Comparison
+## 5.1 Overall Comparison
 
 | Aspect | Go Goroutine | Kotlin Coroutine | Java Platform Thread | Java Virtual Thread (21+) |
 |------|-------------|------------------|---------------------|--------------------------|
@@ -237,7 +237,7 @@ To better understand the characteristics of goroutines, let's compare them with 
 | Concurrent count | hundreds of thousands | hundreds of thousands | thousands | millions |
 | Communication | Channel (CSP) | Flow, Channel | synchronized, Lock | synchronized, Lock |
 
-### Goroutine vs Kotlin Coroutine
+## 5.2 Goroutine vs Kotlin Coroutine
 
 **The biggest difference is the scheduling method.**
 
@@ -268,7 +268,7 @@ On the other hand, Kotlin has some advantages too:
 - **Structured Concurrency** built in — when a parent coroutine is canceled, its children are automatically canceled too
 - **Error propagation** is systematic — consistent handling is possible with `CoroutineExceptionHandler`
 
-### Goroutine vs Java Thread
+## 5.3 Goroutine vs Java Thread
 
 A traditional Java Platform Thread maps 1:1 to an OS thread and takes up a ~1MB stack. Creating thousands or more causes memory and context-switching costs to spike.
 
@@ -286,7 +286,7 @@ Thread.startVirtualThread(() -> doWork());
 
 However, Java does not have a communication mechanism like Channel built into the language, so you have to use separate tools such as `BlockingQueue` or `CompletableFuture`.
 
-### Summary of Goroutine's Core Strengths
+## 5.4 Summary of Goroutine's Core Strengths
 
 1. **Language built-in**: `go` + `chan` are provided as keywords, so no separate library is needed
 2. **No function coloring problem**: there's no `async/await/suspend` distinction — all functions are the same
@@ -295,9 +295,9 @@ However, Java does not have a communication mechanism like Channel built into th
 
 As **weaknesses**, there's the lack of structured concurrency (you need to manually manage `Context`/`WaitGroup`) and the fact that a `panic` in a goroutine can terminate the entire program.
 
-## 6. Goroutine Scheduling Concepts
+# 6. Goroutine Scheduling Concepts
 
-### The GMP Model
+## 6.1 The GMP Model
 
 The Go runtime schedules goroutines with the **GMP model**. Rather than the OS directly managing goroutines, the Go runtime performs scheduling itself in user space. Thanks to this, context switching is possible at a much lower cost than OS threads.
 
@@ -343,7 +343,7 @@ The scheduling flow can be summarized as follows:
 3. When a running goroutine blocks on I/O waiting, channel waiting, `time.Sleep`, etc., `P` switches to the next goroutine
 4. When the local run queue is empty, it fetches a goroutine from another `P`'s queue via **work stealing**
 
-### runtime.GOMAXPROCS
+## 6.2 runtime.GOMAXPROCS
 
 `runtime.GOMAXPROCS(n)` sets the **maximum number of Ps (Processors)** that can run goroutines simultaneously. The default is the number of CPU cores. That is, on a 4-core machine, up to 4 goroutines can run physically at the same time.
 
@@ -364,19 +364,19 @@ func TestGOMAXPROCS(t *testing.T) {
 - `GOMAXPROCS=1`: since there is one P, goroutines are configured concurrently but only one runs at a time. Useful for debugging or reproducing race conditions
 - `GOMAXPROCS=N`: up to N goroutines can run simultaneously. Generally it's recommended to keep the default (number of CPU cores)
 
-## 7. Goroutine Leak
+# 7. Goroutine Leak
 
-### What Is a Goroutine Leak?
+## 7.1 What Is a Goroutine Leak?
 
 A state where a goroutine is no longer needed but **stays alive without terminating** is called a goroutine leak. It occupies memory and is not subject to GC, so memory usage keeps increasing over time.
 
-### Common Causes
+## 7.2 Common Causes
 
 1. **Channel waiting**: blocking forever on a channel that nobody receives from / sends to
 2. **Infinite loop**: a goroutine with no termination condition
 3. **Not using context**: a goroutine that runs without a cancellation signal
 
-### Leak Example
+## 7.3 Leak Example
 
 In the code below, `leakyFunc` creates an unbuffered channel and sends a value from a goroutine. But if the caller does not receive from the channel, the goroutine **blocks forever** at `ch <- 42`. This goroutine is not reclaimed even by GC.
 
@@ -402,7 +402,7 @@ func TestGoroutineLeak(t *testing.T) {
 
 If this pattern is called repeatedly, goroutines keep piling up and memory usage increases without bound.
 
-### Preventing Leaks with Context
+## 7.4 Preventing Leaks with Context
 
 To solve the problem above, a goroutine must be able to **terminate itself upon receiving an external signal**. Using `context.Context`'s cancellation mechanism, you can send a termination signal to the goroutine.
 
@@ -437,7 +437,7 @@ The improvements can be summarized as follows:
 
 **Key principle**: when creating a goroutine, always secure a **termination path**. Use `context`, a `done channel`, `close`, and the like.
 
-## 8. Summary
+# 8. Summary
 
 
 | Concept                       | Core                                                   |
@@ -452,7 +452,7 @@ The improvements can be summarized as follows:
 
 In the next part, we'll look at the **core mechanism for exchanging data** between goroutines: the Channel.
 
-## References
+# 9. References
 
 - [Effective Go - Concurrency](https://go.dev/doc/effective_go#concurrency)
 - [Go Blog - Concurrency is not parallelism](https://go.dev/blog/waza-talk)

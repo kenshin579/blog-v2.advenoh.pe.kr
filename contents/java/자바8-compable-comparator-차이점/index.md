@@ -18,7 +18,7 @@ tags:
 
 예제로 작성한 코드는 github [java-compare](https://github.com/kenshin579/tutorials-java/tree/master/java-compare) 모듈을 참고해주세요.
 
-# Comparable vs. Comparator
+# 1. Comparable vs. Comparator
 
 두 인터페이스 모두 컬렉션을 정렬할 때 정렬 규칙을 설정하는 데 사용되는데, 차이점은 아래와 같다.
 
@@ -49,11 +49,11 @@ public interface Comparator<T> {
 }
 ```
 
-# 1. 정렬할 대상 객체
+# 2. 정렬할 대상 객체
 
 Comparable의 경우에는 객체 자체에 Comparable 인터페이스를 구현해야 해서 Comparator와 구분하기 위해서 각각 다른 객체로 생성했다.
 
-## 1.1 Comparable
+## 2.1 Comparable
 
 ```java
 @Getter
@@ -72,7 +72,7 @@ public class ComparablePlayer implements Comparable<ComparablePlayer> {
 ```
 
 
-## 1.2 Comparator
+## 2.2 Comparator
 
 ```java
 @Getter
@@ -93,9 +93,9 @@ public class ComparatorPlayer {
 
 ```
 
-# 2. 객채 정렬하기
+# 3. 객채 정렬하기
 
-## 2.1 Collections.sort()로 정렬하기
+## 3.1 Collections.sort()로 정렬하기
 
 Collections의 sort() 메서드는 2가지 메서드를 제공한다. Comparable 객체의 List를 정렬할 수 있는 메서드와 Comparator 객체를 인자로 넘겨서 정렬할 수 있는 메서드를 제공한다.
 
@@ -128,7 +128,7 @@ public void comparator_lambda_Test() {
 ```
 
 
-## 2.2 Stream의 sorted()로 정렬하기
+## 3.2 Stream의 sorted()로 정렬하기
 
 Stream에서는 sorted() 메서드를 사용해서 정렬할 수 있다. sorted() 메서드는 comparator 인터페이스를 구현한 객체를 인자로 받는다.
 
@@ -180,7 +180,7 @@ assertThat(sortedPlayers).isSortedAccordingTo(ComparatorPlayer::compareByScoreTh
 
 
 
-## 2.3 자바8 Comparators
+## 3.3 자바8 Comparators
 
 자바8에서는 comparing() 팩토리 메서드가 추가되어 Comparator를 쉽게 정의하도록 도와줍니다. Comparator.comparing() 메서드는 항목을 비교하는데 사용할 객체의 필드 메서드를 인자로 넘겨주면 일치하는 Comparator 인스턴스를 반환해줍니다. 즉, 비교할 필드 메서드만 제공하면 알아서 Comparator 구현체를 반환해주는 것이다.
 
@@ -210,7 +210,7 @@ public void thenComparing_test() {
 ```
 
 
-# 참고
+# 4. 참고
 
 * https://www.baeldung.com/java-8-sort-lambda
 * https://www.daleseo.com/java-comparable-comparator/

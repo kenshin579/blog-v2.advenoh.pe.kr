@@ -25,7 +25,7 @@ To deploy a developed application to Kubernetes, we store the configuration the 
 
 To solve this, let's take a look at Sealed Secrets.
 
-# 1.1 How It Works
+# 2. How It Works
 
 Sealed Secrets works in the following way.
 
@@ -36,7 +36,7 @@ Sealed Secrets works in the following way.
 
 ![Sealed Secret](image-20240929065852168.png)
 
-# 2. Installing Sealed Secrets
+# 3. Installing Sealed Secrets
 
 > Since we will be running Kubernetes in a local environment, we use minikube
 
@@ -46,7 +46,7 @@ Sealed Secrets works in the following way.
 
 Installing Sealed Secrets is divided into installing the kubeseal CLI tool and installing the Sealed Secrets controller.
 
-# 2.1 Installing kubeseal
+# 4. Installing kubeseal
 
 The kubeseal CLI is used by the user to encrypt secret data. The installation method is as follows.
 
@@ -56,7 +56,7 @@ The kubeseal CLI is used by the user to encrypt secret data. The installation me
 > brew install kubeseal
 ```
 
-# 2.2 Installing the Sealed Secrets Controller
+# 5. Installing the Sealed Secrets Controller
 
 The Sealed Secrets controller is responsible for decrypting SealedSecret resources within the Kubernetes cluster. There are several installation methods (e.g. helm, kubectl), but here we install it with helm.
 
@@ -76,11 +76,11 @@ NAME                              READY   STATUS    RESTARTS   AGE
 sealed-secrets-697689447c-f6dkv   1/1     Running   0          93s
 ```
 
-# 3. Creating and Encrypting a Secret
+# 6. Creating and Encrypting a Secret
 
 Let's look at how to create and encrypt secret data using Sealed Secrets.
 
-# 3.1 Creating a Sample Secret YAML
+# 7. Creating a Sample Secret YAML
 
 First, create a YAML file containing plaintext secret data.
 
@@ -110,7 +110,7 @@ When writing `yaml` manually, values that need to be represented as secrets must
 > echo -n "string" | base64
 > ```
 
-# 3.2 Encrypting Secrets
+# 8. Encrypting Secrets
 
 Use the kubeseal CLI tool to convert the Secret into an encrypted SealedSecret.
 
@@ -135,7 +135,7 @@ spec:
       namespace: frank
 ```
 
-# 3.3  Applying Sealed Secrets to Kubernetes
+# 9. Applying Sealed Secrets to Kubernetes
 
 Apply the encrypted SealedSecret to the Kubernetes cluster.
 
@@ -147,7 +147,7 @@ namespace/frank created
 sealedsecret.bitnami.com/mysecret created
 ```
 
-# 3.4 Verifying That It Was Applied Correctly
+# 10. Verifying That It Was Applied Correctly
 
 You can verify that the `secrets` were created correctly with the `kubectl` command.
 
@@ -174,7 +174,7 @@ mysecret              Opaque                                1      3m20s
 
 ![OpenLens - Secret](image-20240929070103980.png)
 
-# 4. References
+# 11. References
 
 - [How to create an actually safe secrets for GitOps](https://jaehong21.com/posts/k3s/06-sealed-secrets/)
 - [Managing secrets deployment in Kubernetes using Sealed Secrets](https://aws.amazon.com/ko/blogs/opensource/managing-secrets-deployment-in-kubernetes-using-sealed-secrets/)

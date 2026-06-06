@@ -15,12 +15,12 @@ tags:
   - 고언어
 ---
 
-# Polymorphism
+# 1. Polymorphism
 
 Polymorphism is one of the characteristics you must know in the object-oriented paradigm. The basic concept is that, when an object's method is called, that object's method can have various implementations. When explaining polymorphism, shapes or animals are often used as examples. In this post, we explain it using animals.
 
 
-# How to Implement Polymorphism in Go
+# 2. How to Implement Polymorphism in Go
 
 In Go, you can implement polymorphism with interfaces. Using Go's interfaces, it's easier to implement than in other languages. Let's learn through an example.
 
@@ -99,7 +99,7 @@ Let's run it in a unit test. We create the `Dog` and `Cat` data types with separ
 
 For the code written in this post, please refer to [github](https://github.com/kenshin579/tutorials-go/tree/master/go-design-pattern/polymorphism).
 
-# References
+# 3. References
 
 - https://www.sohamkamani.com/golang/2019-03-29-polymorphism-without-interfaces/
 - https://golangbot.com/polymorphism/

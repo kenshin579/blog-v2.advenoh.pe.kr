@@ -166,7 +166,7 @@ bind r source-file ~/.tmux.conf \; display "Reloaded!"
 - **장시간 자율 작업이 detach로 살아남는다.** Claude Code에 긴 작업을 맡겨두고 `Ctrl+b d`로 빠져나오면, 터미널을 닫아도 작업은 계속 돌아간다.
 - **한 화면에서 병렬로 일할 수 있다.** Claude Code와 dev server, 로그를 Pane으로 나눠 동시에 보면 작업 흐름이 끊기지 않는다.
 
-## 폴더마다 Session을 만들고 이름 붙이기
+## 7.1 폴더마다 Session을 만들고 이름 붙이기
 
 여러 프로젝트를 오가며 Claude Code를 쓰다 보면, 프로젝트(폴더)마다 tmux Session을 하나씩 띄워 두는 게 편하다. 여기에 머신을 여러 대(노트북, 데스크톱, 미니 PC 등) 쓴다면 Session 이름이 겹칠 수 있으니, **`<머신>-<폴더>` 규칙**으로 이름을 정해 두면 어디서 붙어도 헷갈리지 않는다. 예를 들어 데스크톱(`m4`)에서 `blog` 폴더를 열면 Session 이름은 `m4-blog`가 된다.
 

@@ -51,13 +51,13 @@ Developer Frank creates a new branch named feature/GIT-6-working-branch from mas
 
 _Select the master branch > right-click > select Create branch here > enter the branch name feature/GIT-6-working-branch_
 
-### 3.1.1.1 Developer Frank modifies code and commits
+### 3.1.2 Developer Frank modifies code and commits
 
 After checking out, developer Frank modifies the code and pushes 3 commits.
 
 ![](D53A13F9-9D6E-4CCF-9338-AA7DDE127F5F.png)
 
-#### 3.1.1.2 Developer Joe modifies code and commits
+#### 3.1.2.1 Developer Joe modifies code and commits
 
 Developer Joe also creates a new branch (feature/GIT-7) from master to develop another feature.
 
@@ -83,7 +83,7 @@ Joe's committed work (feature/GIT-7) was reflected nicely into master.
 
 ![](image_10.png)
 
-### 3.1.2 Merging onto the latest master with rebase
+### 3.1.3 Merging onto the latest master with rebase
 
 Let's bring the latest code committed by developer Joe into feature/GIT-6-working-branch, which developer Frank is currently working on.
 
@@ -107,7 +107,7 @@ This is the result of pushing to remote/GIT-6-working-branch. The work done on G
 
 ![](image_18.png)
 
-### 3.1.3 Doing an Interactive Rebase
+### 3.1.4 Doing an Interactive Rebase
 
 To test rebasing in various ways in the same situation, I created several branches (e.g. GIT-6-working-branch-*) in advance from the same point.
 

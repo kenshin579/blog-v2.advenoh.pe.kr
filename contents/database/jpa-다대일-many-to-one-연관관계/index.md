@@ -357,7 +357,7 @@ public class Post extends DateAudit {
 - 지연 로딩
     - 연관관계 맺어진 엔티티를 프록시를 통해서 나중에 조회한다. 실제 연관 엔티티를 사용할 때 프록시를 초기화 하면서 데이터베이스에서 조회한다.
 
-#### 4.2.1 즉시 로딩
+### 4.2.1 즉시 로딩
 
 @ManyToOne 어노테이션은 fetch 옵션 FetchType.EAGER 기본값으로 설정되어 Comment 엔티티 조회 시 무조건 Post 객체를 가져옵니다.
 

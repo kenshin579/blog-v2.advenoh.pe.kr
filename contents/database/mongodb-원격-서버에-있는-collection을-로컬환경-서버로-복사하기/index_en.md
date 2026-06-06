@@ -13,7 +13,7 @@ tags:
 
 During development, you often need to copy remote data to your local environment exactly as-is for testing. In a [previous post](https://blog.advenoh.pe.kr/mongodb-collection-cloning하는-방법/), we looked at how to clone a collection within the same server. This time, let's look at how to clone from a remote server to your local environment.
 
-# 1.mongodump
+# 1. mongodump
 
 The `mongodump` command is not a `mongo` shell command but a command-line tool installed alongside MongoDB. `mongodump` is a tool that exports MongoDB data.
 
@@ -41,7 +41,7 @@ $ ls
 inventory.bson               inventory.metadata.json      inventory3.bson              inventory3.metadata.json     inventoryclone.bson          inventoryclone.metadata.json
 ```
 
-# 2.mongoimport
+# 2. mongoimport
 
 To create the dumped data in your local environment with `mongoimport`, just use `mongoimport`.
 
@@ -55,7 +55,7 @@ $ mongoimport --uri "mongodb://localhost:27017" -d clone2 -c inventory inventory
 2022-07-24T22:56:53.381+0900    1 document(s) imported successfully. 0 document(s) failed to import.
 ```
 
-# Conclusion
+# 3. Conclusion
 
 As some of you may have already realized, using the mongodump and mongoimport commands enables cloning across various systems as shown below.
 
@@ -63,7 +63,7 @@ As some of you may have already realized, using the mongodump and mongoimport co
 - Remote server -> another remote server
 - Local environment -> local environment
 
-# References
+# 4. References
 
 - https://www.mongodb.com/docs/database-tools/mongodump/
 

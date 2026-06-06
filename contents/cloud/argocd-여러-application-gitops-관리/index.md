@@ -21,7 +21,7 @@ tags:
 series: "ArgoCD"
 ---
 
-## 1. 개요
+# 1. 개요
 
 ![cover](cover.png)
 
@@ -38,7 +38,7 @@ chart/
 
 이 3개의 애플리케이션을 `ArgoCD`로 배포하려면 어떻게 해야 할까?
 
-### ArgoCD가 제공하는 배포 패턴
+## 1.1 ArgoCD가 제공하는 배포 패턴
 
 | 패턴 | 설명 | 자동화 수준 | 유연성 |
 | --- | --- | --- | --- |
@@ -52,7 +52,7 @@ chart/
 
 ---
 
-## 2. 단일 Application
+# 2. 단일 Application
 
 가장 기본적인 방식으로, 하나의 Application `YAML`을 직접 작성하여 배포한다.
 
@@ -85,9 +85,9 @@ kubectl apply -f bootstrap/single-app/single.yaml -n argocd
 
 ---
 
-## 3. App of Apps 패턴
+# 3. App of Apps 패턴
 
-### 3.1 개념
+## 3.1 개념
 
 부모 Application이 자식 Application 매니페스트가 있는 디렉토리를 참조하는 구조다. `ArgoCD`의 기본 기능만으로 구현할 수 있다.
 
@@ -100,7 +100,7 @@ bootstrap/app-of-apps/
     └── hello-world-server-hook.yaml   # 자식 Application 3
 ```
 
-### 3.2 부모 Application
+## 3.2 부모 Application
 
 부모 Application은 `applications/` 디렉토리를 `source.path`로 지정한다. 이 디렉토리 안의 모든 Application 매니페스트를 `ArgoCD`가 자동으로 감지하여 생성한다.
 
@@ -126,7 +126,7 @@ spec:
       selfHeal: true
 ```
 
-### 3.3 자식 Application
+## 3.3 자식 Application
 
 각 자식 Application은 개별 `Helm Chart`를 참조하는 별도의 `YAML` 파일로 정의한다.
 
@@ -180,7 +180,7 @@ spec:
       selfHeal: true
 ```
 
-### 3.4 배포
+## 3.4 배포
 
 ```bash
 kubectl apply -f bootstrap/app-of-apps/apps.yaml -n argocd
@@ -188,7 +188,7 @@ kubectl apply -f bootstrap/app-of-apps/apps.yaml -n argocd
 
 부모 Application을 배포하면, `ArgoCD`가 `applications/` 디렉토리의 `YAML` 파일들을 읽어 자식 Application들을 자동으로 생성한다.
 
-### 3.5 장단점
+## 3.5 장단점
 
 **장점**
 - 개념이 단순하고 이해하기 쉬움
@@ -202,9 +202,9 @@ kubectl apply -f bootstrap/app-of-apps/apps.yaml -n argocd
 
 ---
 
-## 4. ApplicationSet 패턴
+# 4. ApplicationSet 패턴
 
-### 4.1 개념
+## 4.1 개념
 
 ApplicationSet은 `Generator`를 사용해 Application을 동적으로 생성하는 `ArgoCD`의 확장 기능이다(ArgoCD 2.0+). 템플릿 기반으로 여러 Application을 한 번에 정의할 수 있어 `DRY` 원칙을 지킬 수 있다.
 
@@ -217,7 +217,7 @@ ApplicationSet은 `Generator`를 사용해 Application을 동적으로 생성하
 | `Matrix` | 여러 `Generator`를 조합하여 조합(cartesian product) 생성 |
 | `Cluster` | 등록된 클러스터 목록 기반으로 생성 |
 
-### 4.2 List Generator
+## 4.2 List Generator
 
 배포할 애플리케이션 목록을 명시적으로 나열한다. 각 항목에 이름, 경로, 네임스페이스 등을 지정할 수 있다.
 
@@ -270,7 +270,7 @@ kubectl apply -f bootstrap/application-set/appset-list.yaml -n argocd
 
 `template` 블록에서 `{{name}}`, `{{path}}`, `{{namespace}}` 변수가 `generators.list.elements`의 각 항목으로 치환되어 Application이 생성된다.
 
-### 4.3 Git Generator
+## 4.3 Git Generator
 
 `Git` 저장소의 디렉토리 구조를 자동으로 탐지하여 Application을 생성한다. 새로운 `Chart` 디렉토리를 추가하면 별도 설정 변경 없이 Application이 자동으로 생성된다.
 
@@ -317,7 +317,7 @@ kubectl apply -f bootstrap/application-set/appset.yaml -n argocd
 
 `chart/*` 경로의 모든 하위 디렉토리를 탐지하여 `{{path.basename}}`(디렉토리명)을 Application 이름으로 사용한다. `chart/new-app/` 디렉토리를 추가하기만 하면 자동으로 `new-app` Application이 생성된다.
 
-### 4.4 Matrix Generator
+## 4.4 Matrix Generator
 
 여러 `Generator`를 조합하여 cartesian product를 생성한다. 다중 환경(`dev`/`staging`/`prod`) 배포에 유용하다.
 
@@ -386,7 +386,7 @@ kubectl apply -f bootstrap/application-set/appset-matrix.yaml -n argocd
 
 환경별로 `replicaCount`를 다르게 설정할 수 있어, 동일한 `Chart`를 환경에 맞게 배포할 수 있다.
 
-### 4.5 장단점
+## 4.5 장단점
 
 **장점**
 
@@ -402,7 +402,7 @@ kubectl apply -f bootstrap/application-set/appset-matrix.yaml -n argocd
 
 ---
 
-## 5. App of Apps vs ApplicationSet 비교
+# 5. App of Apps vs ApplicationSet 비교
 
 | 구분 | App of Apps | ApplicationSet |
 | --- | --- | --- |
@@ -414,7 +414,7 @@ kubectl apply -f bootstrap/application-set/appset-matrix.yaml -n argocd
 | **디버깅** | 쉬움 | 상대적으로 어려움 |
 | **`ArgoCD` 버전** | 기본 기능 | `ArgoCD` 2.0+ |
 
-### 언제 어떤 패턴을 사용할까?
+## 5.1 언제 어떤 패턴을 사용할까?
 
 **App of Apps가 적합한 경우**
 - `ArgoCD`를 처음 도입하는 팀
@@ -429,9 +429,9 @@ kubectl apply -f bootstrap/application-set/appset-matrix.yaml -n argocd
 
 ---
 
-## 6. FAQ
+# 6. FAQ
 
-### 6.1 ApplicationSet에서 특정 Application을 삭제하려면?
+## 6.1 ApplicationSet에서 특정 Application을 삭제하려면?
 
 ApplicationSet으로 생성된 Application을 `ArgoCD` UI나 `kubectl delete`로 직접 삭제하면, `ApplicationSet Controller`가 이를 감지하고 **다시 생성**한다.
 
@@ -473,7 +473,7 @@ generators:
           exclude: true  # echo-server 제외
 ```
 
-### 6.2 PreSync Job에 필요한 Secret을 먼저 생성하려면?
+## 6.2 PreSync Job에 필요한 Secret을 먼저 생성하려면?
 
 `ArgoCD`의 **`Sync Wave`**를 사용하여 리소스 생성 순서를 제어할 수 있다. `Sync Wave` 값이 낮은 리소스가 먼저 생성된다.
 
@@ -546,7 +546,7 @@ PostSync         →  PostSync Hook 실행
 
 ---
 
-## 7. 마무리
+# 7. 마무리
 
 `ArgoCD`에서 여러 애플리케이션을 관리하는 두 가지 주요 패턴을 살펴보았다.
 
@@ -557,7 +557,7 @@ PostSync         →  PostSync Hook 실행
 
 ---
 
-## 참고
+# 8. 참고
 
 - [ArgoCD ApplicationSet Documentation](https://argo-cd.readthedocs.io/en/stable/user-guide/application-set/)
 - [ArgoCD App of Apps Pattern](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/)

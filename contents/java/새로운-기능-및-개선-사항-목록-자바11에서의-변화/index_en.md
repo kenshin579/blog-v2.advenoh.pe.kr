@@ -13,7 +13,7 @@ tags:
   - 개선사항
 ---
 
-# Java 11
+# 1. Java 11
 
 - JEP 181: Nest-Based Access Control
 - JEP 309: Dynamic Class-File Constants
@@ -37,14 +37,14 @@ For the various features and improvements added in Java 11, please refer to the 
 
 - [http://openjdk.java.net/projects/jdk/11/](http://openjdk.java.net/projects/jdk/11/)
 
-# JEP 321: HTTP Client (Standard)
+# 2. JEP 321: HTTP Client (Standard)
 
 The HTTP client incubated in Java 9 & 10 was released as a standardized version in Java 11.
 Package: java.net.http
 
 For more details on HTTP2, please refer to [HTTP/2 - the one only I didn't know about](https://www.popit.kr/%EB%82%98%EB%A7%8C-%EB%AA%A8%EB%A5%B4%EA%B3%A0-%EC%9E%88%EB%8D%98-http2/).
 
-# JEP 323: Local-Variable Syntax for Lambda Parameters
+# 3. JEP 323: Local-Variable Syntax for Lambda Parameters
 
 var was introduced in JDK 10, but it could not be used in implicitly typed lambda expressions. From Java 11, the var keyword can also be used in lambda expressions.
 
@@ -59,7 +59,7 @@ public void test_JEP323() {
     System.out.println(x);
 }
 ```
-## References
+## 3.1 References
 
 - Java 11
     - [https://blog.takipi.com/java-11-will-include-more-than-just-features/?utm_source=10countdown&utm_medium=readmore](https://blog.takipi.com/java-11-will-include-more-than-just-features/?utm_source=10countdown&utm_medium=readmore)

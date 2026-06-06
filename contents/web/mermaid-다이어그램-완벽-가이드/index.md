@@ -18,11 +18,11 @@ tags:
   - visualization
 ---
 
-## Mermaid란?
+# 1. Mermaid란?
 
 Mermaid는 마크다운과 유사한 텍스트 기반 문법으로 다이어그램을 생성하는 JavaScript 라이브러리이다. 코드처럼 다이어그램을 작성할 수 있어 버전 관리가 쉽고, 문서와 함께 관리할 수 있다는 장점이 있다.
 
-### 주요 특징
+## 1.1 주요 특징
 
 - 텍스트 기반으로 다이어그램 작성
 - Git으로 버전 관리 가능
@@ -31,11 +31,11 @@ Mermaid는 마크다운과 유사한 텍스트 기반 문법으로 다이어그�
 
 ---
 
-## 1. Flowchart (플로우차트)
+# 2. Flowchart (플로우차트)
 
 플로우차트는 프로세스나 알고리즘의 흐름을 시각화하는 데 사용한다.
 
-### 기본 문법
+## 2.1 기본 문법
 
 **코드:**
 
@@ -59,14 +59,14 @@ flowchart TD
     D --> E
 ```
 
-### 방향 설정
+## 2.2 방향 설정
 
 - `TD` 또는 `TB`: 위에서 아래로 (Top to Bottom)
 - `BT`: 아래에서 위로 (Bottom to Top)
 - `LR`: 왼쪽에서 오른쪽으로 (Left to Right)
 - `RL`: 오른쪽에서 왼쪽으로 (Right to Left)
 
-### 노드 모양
+## 2.3 노드 모양
 
 **코드:**
 
@@ -96,11 +96,11 @@ flowchart LR
 
 ---
 
-## 2. Sequence Diagram (시퀀스 다이어그램)
+# 3. Sequence Diagram (시퀀스 다이어그램)
 
 시퀀스 다이어그램은 객체 간의 상호작용을 시간 순서대로 표현한다.
 
-### API 호출 예시
+## 3.1 API 호출 예시
 
 **코드:**
 
@@ -136,7 +136,7 @@ sequenceDiagram
     API Gateway-->>Client: 200 OK + Token
 ```
 
-### 메시지 유형
+## 3.2 메시지 유형
 
 **코드:**
 
@@ -160,7 +160,7 @@ sequenceDiagram
     A-xB: 실패/거부
 ```
 
-### 활성화 및 노트
+## 3.3 활성화 및 노트
 
 **코드:**
 
@@ -192,11 +192,11 @@ sequenceDiagram
 
 ---
 
-## 3. Class Diagram (클래스 다이어그램)
+# 4. Class Diagram (클래스 다이어그램)
 
 클래스 다이어그램은 객체 지향 설계에서 클래스 간의 관계를 표현한다.
 
-### 기본 클래스 구조
+## 4.1 기본 클래스 구조
 
 **코드:**
 
@@ -252,7 +252,7 @@ classDiagram
     Animal <|-- Cat : 상속
 ```
 
-### 관계 표현
+## 4.2 관계 표현
 
 **코드:**
 
@@ -280,11 +280,11 @@ classDiagram
 
 ---
 
-## 4. State Diagram (상태 다이어그램)
+# 5. State Diagram (상태 다이어그램)
 
 상태 다이어그램은 객체의 상태 변화를 표현한다.
 
-### 주문 상태 예시
+## 5.1 주문 상태 예시
 
 **코드:**
 
@@ -316,7 +316,7 @@ stateDiagram-v2
     주문취소 --> [*]
 ```
 
-### 복합 상태
+## 5.2 복합 상태
 
 **코드:**
 
@@ -354,7 +354,7 @@ stateDiagram-v2
 
 ---
 
-## 5. Entity Relationship Diagram (ERD)
+# 6. Entity Relationship Diagram (ERD)
 
 ERD는 데이터베이스 설계에서 엔티티 간의 관계를 표현한다.
 
@@ -432,7 +432,7 @@ erDiagram
 
 ---
 
-## 6. Git Graph
+# 7. Git Graph
 
 Git의 브랜치와 커밋 히스토리를 시각화한다.
 
@@ -478,7 +478,7 @@ gitGraph
 
 ---
 
-## 7. Gantt Chart (간트 차트)
+# 8. Gantt Chart (간트 차트)
 
 프로젝트 일정을 시각화하는 간트 차트이다.
 
@@ -530,7 +530,7 @@ gantt
 
 ---
 
-## 8. Pie Chart (파이 차트)
+# 9. Pie Chart (파이 차트)
 
 **코드:**
 
@@ -558,18 +558,18 @@ pie showData
 
 ---
 
-## 9. Mermaid 렌더링 도구
+# 10. Mermaid 렌더링 도구
 
 Mermaid 다이어그램을 렌더링할 수 있는 다양한 도구와 플랫폼이 있다.
 
-### 온라인 에디터
+## 10.1 온라인 에디터
 
 | 도구 | 설명 |
 |-----|------|
 | [Mermaid Live Editor](https://mermaid.live/) | 공식 온라인 에디터. 실시간 미리보기 및 이미지 내보내기 지원 |
 | [Mermaid Chart](https://www.mermaidchart.com/) | 팀 협업을 위한 Mermaid 에디터 |
 
-### 기본 지원 플랫폼
+## 10.2 기본 지원 플랫폼
 
 다음 플랫폼에서는 별도 설정 없이 Mermaid 코드 블록을 자동으로 렌더링한다.
 
@@ -579,14 +579,14 @@ Mermaid 다이어그램을 렌더링할 수 있는 다양한 도구와 플랫폼
 - **Obsidian** - 기본 지원
 - **Typora** - 기본 지원
 
-### IDE 확장 프로그램
+## 10.3 IDE 확장 프로그램
 
 | IDE | 확장 프로그램 |
 |-----|-------------|
 | **VS Code** | [Markdown Preview Mermaid Support](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) |
 | **IntelliJ / WebStorm** | [Mermaid Plugin](https://plugins.jetbrains.com/plugin/20146-mermaid) |
 
-### 웹 프레임워크 통합
+## 10.4 웹 프레임워크 통합
 
 | 프레임워크 | 라이브러리 |
 |-----------|-----------|
@@ -596,7 +596,7 @@ Mermaid 다이어그램을 렌더링할 수 있는 다양한 도구와 플랫폼
 | **Hugo** | 내장 지원 (shortcode) |
 | **Jekyll** | `jekyll-mermaid` |
 
-### CLI 도구
+## 10.5 CLI 도구
 
 ```bash
 # mermaid-cli 설치
@@ -611,11 +611,11 @@ mmdc -i diagram.mmd -o diagram.png
 
 ---
 
-## 마무리
+# 11. 마무리
 
 Mermaid는 텍스트 기반으로 다양한 다이어그램을 쉽게 작성할 수 있는 강력한 도구이다. 특히 기술 문서, README, 블로그 포스트 등에서 복잡한 개념을 시각적으로 표현할 때 유용하다.
 
-### 참고 자료
+## 11.1 참고 자료
 
 - [Mermaid 공식 문서](https://mermaid.js.org/)
 - [Mermaid Live Editor](https://mermaid.live/)

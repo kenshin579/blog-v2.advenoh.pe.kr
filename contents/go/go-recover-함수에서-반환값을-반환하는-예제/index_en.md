@@ -13,7 +13,7 @@ tags:
 
 While developing a Validation API function, there were cases where evaluating a complex expression caused a panic for invalid expressions. When a panic occurs, the `recover()` function keeps the server from dying, but for a Validation API, we need to return a response to the client indicating that the expression is invalid.
 
-# 1.panic() and recover() Functions
+# 1. panic() and recover() Functions
 
 Let's look at how to return a value from a `recover()` function. These are the Go built-in functions we'll use today.
 
@@ -77,7 +77,7 @@ Returned normally from f.
 
 
 
-# 2.Returning a Value from a recover() Function
+# 2. Returning a Value from a recover() Function
 
 To return a value from a `recover()` function, give a name to the return value of `MyFunc()` and assign a value to that named variable; the value will then be returned after the `recover()` function runs.
 
@@ -120,7 +120,7 @@ func TestMyFunc(t *testing.T) {
 }
 ```
 
-# 3.Printing a Stack Trace in recover()
+# 3. Printing a Stack Trace in recover()
 
 To recover after a panic and print a stack trace for easier debugging, use the `PrintStack()` function included in the Debug package.
 
@@ -163,7 +163,7 @@ err: test
 ```
 
 
-# 4.References
+# 4. References
 
 - http://golang.site/go/article/20-Go-defer%EC%99%80-panic
 - https://github.com/kenshin579/tutorials-go/pull/287

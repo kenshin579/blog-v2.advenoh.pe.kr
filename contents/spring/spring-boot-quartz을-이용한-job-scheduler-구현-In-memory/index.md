@@ -113,7 +113,7 @@ spring.quartz.properties.org.quartz.threadPool.threadCount = 5
 
 Job 작업 내용은 지정한 sleep 타임에 따라서 화면에 숫자를 출력하는 것이다.
 
-#### **3.2.1.1 SimpleJob**
+#### 3.2.1.1 SimpleJob
 
 loop을 돌면서 화면에 숫자를 출력하고 지정한 sleep 타임동안 쉬고 다시 반복하는 로직이다.
 
@@ -139,7 +139,7 @@ public class SimpleJob extends QuartzJobBean {
 }
 ```
 
-#### **3.2.1.2 CronJob**
+#### 3.2.1.2 CronJob
 
 CronJob 구현도 SimpleJob과 동일하고 추가로 jobId를 JobDataMap으로 받아서 화면에 출력하고 있다.
 
@@ -164,7 +164,7 @@ public class CronJob extends QuartzJobBean {
 
 ### 3.2.2 Job 추가 API
 
-#### **3.2.2.1 Controller Job 추가**
+#### 3.2.2.1 Controller Job 추가
 
 Quartz 스케줄러에서는 SimpleJob과 CronJob 형식으로 추가할 수 있어서 cron 표현식이 있는 경우에는 CronJob으로 등록하도록 조건문을 추가했다.
 
@@ -188,7 +188,7 @@ public ResponseEntity<?> addScheduleJob(@ModelAttribute JobRequest jobRequest) {
 }
 ```
 
-#### **3.2.2.2 ScheduleService Job 추가**
+#### 3.2.2.2 ScheduleService Job 추가
 
 사용자가 제공한 Job 이름, 그룹, Cron 표현 등으로 Trigger와 JobDetail을 생성하고 schedulerJob() 메서드로 job을 Quartz에 등록할 수 있다.
 
@@ -308,7 +308,7 @@ public JobStatusResponse getAllJobs() {
 
 ### 3.2.4 Listeners
 
-#### **3.2.4.1 TriggerListener**
+#### 3.2.4.1 TriggerListener
 
 메서드 이름으로 쉽게 알 수 있듯이 이벤트(ex. triggerFire, triggerMisfired) 발생시 호출되는 메서드들이다.
 
@@ -345,7 +345,7 @@ public class TriggersListener implements TriggerListener {
 }
 ```
 
-#### **3.2.4.2 JobListener**
+#### 3.2.4.2 JobListener
 
 JobListener도 메서드 이름만으로 발생 이벤트시 호출 되는 메서드를 쉽게 알 수 있다. jobExecutionVetoed는 TriggersListener.vetoJobExecution() 메서드에서 veto를 시킨 경우 호출된다.
 

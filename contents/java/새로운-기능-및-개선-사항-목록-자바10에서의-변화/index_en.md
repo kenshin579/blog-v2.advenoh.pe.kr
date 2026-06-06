@@ -13,7 +13,7 @@ tags:
 ---
 
 
-# Java 10
+# 1. Java 10
 * **Language**
     * JEP 286: Local Variable Type Inference
 * JVM/Compiler
@@ -36,7 +36,7 @@ For the various features and improvements added in Java 10, please refer to the 
 * [https://www.oracle.com/technetwork/java/javase/10-relnote-issues-4108729.html](https://www.oracle.com/technetwork/java/javase/10-relnote-issues-4108729.html)
 * [https://dzone.com/articles/whats-new-in-java-10](https://dzone.com/articles/whats-new-in-java-10)
 
-# JEP 286: Local Variable Type Inference
+# 2. JEP 286: Local Variable Type Inference
 Type inference refers to the feature where the Java compiler infers the type of an argument by looking at each method call and the defined method declaration. Type inference has been continuously improved since Java 5.
 
 * Java 5 : Generic methods and type-aware type inference
@@ -44,25 +44,25 @@ Type inference refers to the feature where the Java compiler infers the type of 
 * Java 8 : Lambda expression argument types
 * Java 10 : Local variable type inference
 
-## **History of Type Inference Improvements**
+## 2.1 History of Type Inference Improvements
 
 
-### **Java 5 : Generic method type inference**
+### 2.1.1 Java 5 : Generic method type inference
 ```java
 List<String> cs = Collections.<String>emptyList();
 ```
 
-### **Java 7 : Diamond operator (<>)**
+### 2.1.2 Java 7 : Diamond operator (<>)
 ```java
 Map<String, List<String>> myMap = new HashMap<String,List<String>>();
 ```
 
-### **Java 8 : Lambda expression argument types**
+### 2.1.3 Java 8 : Lambda expression argument types
 ```java
 Predicate<String> nameValidation = (String x) -> x.length() > 0;
 ```
 
-### **Java 10 : Local variable type inference**
+### 2.1.4 Java 10 : Local variable type inference
 Java too introduced var to support implicit typing. var is not a keyword (e.g., abstract) but a reserved type name, so it can also be used as a variable or function name.
 Also, the introduction of var does not mean Java supports dynamic types. The compiler infers the type on its own and compiles it.
 
@@ -145,7 +145,7 @@ var custList = dbconn.executeQuery(query);
 It is good to add the type to the variable name and use the name to improve readability.
 For more details, please refer to the guideline provided by java.net ([Style Guidelines for Local Variable Type Inference in Java](http://openjdk.java.net/projects/amber/LVTIstyle.html)).
 
-# References
+# 3. References
 
 * Local variable type inference
     * [https://www.baeldung.com/java-10-local-variable-type-inference](https://www.baeldung.com/java-10-local-variable-type-inference)

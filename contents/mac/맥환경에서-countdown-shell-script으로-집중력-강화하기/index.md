@@ -64,7 +64,7 @@ $ cp Clock-chimes.mp3 ~\_Library_Sounds
 
 <a href='Clock-chimes.mp3'>Clock-chimes.mp3</a>
 
-# 3.3 시스템 알람 설정하기
+# 4. 시스템 알람 설정하기
 
 알람을 별도로 설정하지 않으면 기본으로 **배너 알람 스타일** 이라서 알람이 나왔다가 자동으로 사라집니다. 그래서 다른 화면을 보고 있으면 알람 창이 뜬지도 모르는 경우가 종종 발생한다. 알람창이 자동으로 사라지지 않고 닫기 버튼을 둘러야 사라지는 알람 스타일로 변경하는 게 좋다.
 
@@ -72,7 +72,7 @@ $ cp Clock-chimes.mp3 ~\_Library_Sounds
 
 ![](C20D14F1-A6B9-41CA-B38B-C2ACA00774E3.png)
 
-## 3.4 실행하기
+## 4.1 실행하기
 
 1을 입력하면 1분 동안 카운트 다운이 시작되고 1분이 지난 후에는아래와 같이 Popup 창이 뜨게 된다.
 
@@ -82,6 +82,6 @@ $ countdown 1
 
 ![](image_3.png)
 
-# 4. 참고
+# 5. 참고
 
 - Display Notification from Mac \* [https://code-maven.com/display-notification-from-the-mac-command-line](https://code-maven.com/display-notification-from-the-mac-command-line)

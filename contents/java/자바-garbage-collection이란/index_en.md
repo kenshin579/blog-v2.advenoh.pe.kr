@@ -100,7 +100,7 @@ The Serial collector operates with a single thread and performs GC on Young and 
 - Old area (single thread)
     - mark-sweep-compact : An algorithm that marks unused objects, then deletes them and gathers them into one place
 
-### The Minor GC procedure in the Young area - mark and copy
+### 3.1.1 The Minor GC procedure in the Young area - mark and copy
 
 - Objects created at first accumulate in Eden
 - When Eden fills up to a certain degree, GC occurs and surviving objects move to the Survivor (Empty) area

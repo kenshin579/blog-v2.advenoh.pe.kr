@@ -14,15 +14,15 @@ tags:
 
 Let's take a look at how to install Docker on a Raspberry Pi.
 
-## Prerequisites
+# 1. Prerequisites
 
 - Raspbian OS installed on the Raspberry Pi
     - Reference: [Installing Raspberry Pi 4 OS Without a Monitor](https://blog.advenoh.pe.kr/raspberry-pi4-os-설치/)
 - SSH connection enabled
 
-# Installing Docker on a Raspberry Pi
+# 2. Installing Docker on a Raspberry Pi
 
-## Installing Docker with a Script
+## 2.1 Installing Docker with a Script
 
 Download the installation script provided by Docker and run it directly.
 
@@ -38,7 +38,7 @@ Warning: apt-key output should not be parsed (stdout is not a terminal)
 
 
 
-## Adding a Non-root User to the Docker Group
+## 2.2 Adding a Non-root User to the Docker Group
 
 By default, running a Docker container requires root privileges. You can run it with sudo, but if you want a user without root privileges to run it as well, you can add the user to the docker group. You need to log out and log back in for it to take effect.
 
@@ -54,7 +54,7 @@ $ docker verion
 
 
 
-## Testing by Running the Hello World Container
+## 2.3 Testing by Running the Hello World Container
 
 The best way to test whether Docker was installed correctly is to run the Hello World container as the final step. Run the container with the command below.
 
@@ -62,7 +62,7 @@ The best way to test whether Docker was installed correctly is to run the Hello 
 $ docker run hello-world
 ```
 
-# References
+# 3. References
 
 - https://dev.to/elalemanyo/how-to-install-docker-and-docker-compose-on-raspberry-pi-1mo
 - https://www.boolsee.pe.kr/installation-and-running-of-docker-in-raspberry-pi-buster/

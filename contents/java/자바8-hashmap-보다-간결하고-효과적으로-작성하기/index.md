@@ -33,7 +33,7 @@ tags:
 
 2가지 메서드의 공통점은 key의 존재 여부에 따라서 새로운 key와 value 값을 추가하는 메서드이다.
 
-### putIfAbsent
+## 1.1 putIfAbsent
 
 putIfAbsent는 2개의 인자를 받는다.
 
@@ -64,7 +64,7 @@ public void putIfAbsent() {
 }
 ```
 
-### computeIfAbsent
+## 1.2 computeIfAbsent
 
 `computeIfAbsent` 2개의 인자를 받는다.
 
@@ -106,7 +106,7 @@ public void computeIfAbsent() {
 
 3개의 메서드들은 모두 Map의 value 값을 업데이트할 때 사용된다.
 
-### compute
+## 2.1 compute
 
 `compute는` key와 `remappingFunction을` 인자로 받고 key가 존재해야, value값을 인자로 넘겨준 `remappingFunction` 람다 함수의 결과로 업데이트가 된다. key 값이 존재하지 않는 경우에는 `NullPointerException이` 발생한다.
 
@@ -129,7 +129,7 @@ public void compute() {
 }
 ```
 
-### computeIfPresent
+## 2.2 computeIfPresent
 
 ```java
 default V compute(K key,
@@ -159,7 +159,7 @@ public void computeIfPresent() {
 }
 ```
 
-### merge
+## 2.3 merge
 
 
 ```java
@@ -245,7 +245,7 @@ public void getOrDefault() {
 }
 ```
 
-# 참고
+# 4. 참고
 
 * http://tech.javacafe.io/2018/12/03/HashMap/
 * https://www.baeldung.com/java-hashmap

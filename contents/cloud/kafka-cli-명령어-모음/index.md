@@ -21,7 +21,7 @@ Kafka 사용시 [Ahkq](https://github.com/tchiotludo/akhq) UI를 대부분 사�
 
 로컬환경에서 Kafka를 실행하는 방법은 그전 [포스팅](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/)을 참고해주세요.
 
-# 1.Download Kafka
+# 1. Download Kafka
 
 최신 Kafka binary 파일은 아래 링크에서 다운로드한다.
 
@@ -33,7 +33,7 @@ $ wget https://downloads.apache.org/kafka/3.2.1/kafka_2.13-3.2.1.tgz
 $ tar -jxvf kafka_2.13-3.2.1.tgz
 ```
 
-# 2.Kafka CLI
+# 2. Kafka CLI
 
 Kafka 기본 포트번호는 9092로 시작하지만, [로컬환경에서 Kafka 실행하기](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/)에서 설정한 포트번호로 실행한다.
 
@@ -55,7 +55,7 @@ $ source ~/.zshrc
 
 ## 2.1 Topics
 
-### 2.1.2 Topic 목록 출력
+### 2.1.1 Topic 목록 출력
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --list
@@ -68,7 +68,7 @@ frank
 test
 ```
 
-### 2.1.1 Topic 생성
+### 2.1.2 Topic 생성
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --replication-factor 1 --partitions 1 --topic my_topic --create
@@ -93,7 +93,7 @@ $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --delete
 
 
 
-## 2.2  Producer
+## 2.2 Producer
 
 ```bash
 $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
@@ -144,7 +144,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic
 
 
 
-### 2.3.2 key, value 값을 출력하려면?
+### 2.3.1 key, value 값을 출력하려면?
 
 ```bash
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic --formatter kafka.tools.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --from-beginning
@@ -191,7 +191,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
 > 22
 ```
 
-## 2.5. Consumer Group Management
+## 2.5 Consumer Group Management
 
 여기서는 Kafka consumer group을 어떻게 재설정 할 수 있는지 다룬다.
 
@@ -271,7 +271,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic 
 value
 ```
 
-# 3.FAQ
+# 3. FAQ
 
 ## 3.1 Topic의 Partition 수를 늘리는 방법
 

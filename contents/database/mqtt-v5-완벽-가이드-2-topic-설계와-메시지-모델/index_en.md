@@ -312,7 +312,7 @@ if (now - message.timestamp) > threshold:
 
 # 3. FAQ
 
-### Q: When subscribing with a Wildcard, can I know the actual matched Topic?
+## 3.1 Q: When subscribing with a Wildcard, can I know the actual matched Topic?
 
 **A: Yes, you can. The actual Topic is always included and delivered with the message.**
 

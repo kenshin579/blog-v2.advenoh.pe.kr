@@ -93,7 +93,7 @@ Kafka Connect를 사용하면 이미 여러 타겟 시스템 대상으로 connec
 
 새로운 애플리케이션 개발할 때 기존의 애플리케이션에는 영향을 주지 않기 위해 Kafka Connect를 사용하면 더 쉽게 마이그레이션이 가능할 수 있다. Mysql이나 MongoDB는 Change Data Capture (CDC) 기능을 지원하고 있어서 해당 sink connector를 사용하면 스키마 변경, INSERT, UPDATE, DELETE 모두에 대한 변경은 포착해서 Kafka로 데이터를 스트리밍할 수 있다. 이렇게 되면 기존 애플리케이션에는 전혀 수정하지 않고 새로운 애플리케이션을 개발할 수 있다.
 
-# 2.내부 구성요소 및 동작 원리
+# 2. 내부 구성요소 및 동작 원리
 
 Kafka Connect는 크게 5가지 요소로 되어 있다.
 
@@ -147,7 +147,7 @@ Kafka Connect는 크게 5가지 요소로 되어 있다.
 
 
 
-## 2.1 Task Rebalancing
+## 2.2 Task Rebalancing
 
 Task rebalancing은 새로운 worker가 추가되거나 worker가 강제 종료된 경우에 worker 간의 작업을 다시 나누기 위해 task 재조정이 발생한다. Task rebalancing이 일어나는 경우는 다음과 같다.
 
@@ -165,7 +165,7 @@ Worker 2가 프로세스가 죽게 되어 실행하던 T2, T3 작업을 남아 �
 
 
 
-## 2.2 Workers
+## 2.3 Workers
 
 Worker는 connector와 task를 실행하는 프로세스이고 2가지 모드로 실행시킬 수 있다.
 
@@ -182,7 +182,7 @@ Worker는 connector와 task를 실행하는 프로세스이고 2가지 모드로
 
 
 
-## 2.3 Converters
+## 2.4 Converters
 
 Kafka에서 write, read 할 때 특정 데이터 형식을 지원하기 위해서 여러 converter를 제공한다. Task는 converter를 사용해서 bytes 데이터 형식을 connect 내부 데이터 형식으로 변경해서 사용한다.
 
@@ -199,7 +199,7 @@ Kafka에서 write, read 할 때 특정 데이터 형식을 지원하기 위해�
 - ByteArrayConverter
     - `org.apache.kafka.connect.converters.ByteArrayConverter`: 변환 없은 옵션을 제공
 
-## 2.4 Transforms
+## 2.5 Transforms
 
 Transform은 Kafka <-> 외부 시스템에서 데이터를 가져오고 넣는 과정에서 기존 데이터를 변환해주는 기능이다. Connector 등록 시 어떻게 변환할지 같이 설정하여 사용한다. Transform은 단순 변환 작업으로 하나의 record를 입력받아 수정된 record를 결과값으로 반환한다. 여러 transform이 있으면 파이프라인으로 실행한다.
 

@@ -13,11 +13,11 @@ tags:
 
 # 1. Overview
 
-## Why You Should Use pipx
+## 1.1 Why You Should Use pipx
 
 When installing Python packages, you typically use `pip`, but for some CLI (application) packages, it can be more appropriate to install them globally while still running them in an isolated environment. Using `pipx` for this offers the following advantages.
 
-## Differences from pip
+## 1.2 Differences from pip
 
 | Feature           | `pip`                                            | `pipx`                               |
 | -------------- | ------------------------------------------------ | ------------------------------------ |
@@ -25,7 +25,7 @@ When installing Python packages, you typically use `pip`, but for some CLI (appl
 | Running CLI apps    | `python -m <package>` or run directly              | Run directly with `pipx run <package>` |
 | Package management    | Suited for managing per-project dependencies                    | Suited for installing and managing global CLI tools    |
 
-## Key Features
+## 1.3 Key Features
 
 - Installs each package in a separate virtual environment, so it doesn't pollute the system Python environment
 - Lets you run CLI packages with `pipx run` without a separate installation

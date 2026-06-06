@@ -18,7 +18,7 @@ When using Kafka, it is much nicer to have some kind of UI interface and I belie
 
 To learn how to run Kafka on your local environment, see our previous [article](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/).
 
-# 1.Download Kafka
+# 1. Download Kafka
 
 The Kafka binary file has CLI so let's download the latest binary file from the link below.
 
@@ -30,7 +30,7 @@ $ wget https://downloads.apache.org/kafka/3.2.1/kafka_2.13-3.2.1.tgz
 $ tar -jxvf kafka_2.13-3.2.1.tgz
 ```
 
-# 2.Kafka CLI
+# 2. Kafka CLI
 
 The default port number for Kafka is 9092. If you running the Kafka in different port,  make sure to use the number instead.
 
@@ -52,7 +52,7 @@ $ source ~/.zshrc
 
 ## 2.1 Topics
 
-### 2.1.2 A List of Topics
+### 2.1.1 A List of Topics
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --list
@@ -65,7 +65,7 @@ frank
 test
 ```
 
-## 2.1.1 Creating a Topic
+## 2.2 Creating a Topic
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --replication-factor 1 --partitions 1 --topic my_topic --create
@@ -74,7 +74,7 @@ Created topic my_topic.
 
 
 
-### 2.1.3 View Topic Information
+### 2.2.1 View Topic Information
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --describe
@@ -82,13 +82,13 @@ Topic: my_topic	TopicId: Zlpf9YfsSRO07grMU3MZlA	PartitionCount: 1	ReplicationFac
 	Topic: my_topic	Partition: 0	Leader: 0	Replicas: 0	Isr: 0
 ```
 
-### 2.1.4 Deleting a Topic
+### 2.2.2 Deleting a Topic
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --delete
 ```
 
-## 2.2  Producer
+## 2.3 Producer
 
 ```bash
 $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
@@ -97,7 +97,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
 
 When the `> `prompt is displayed, you can send data to the topic (press `Enter` to send). To exit the producer console window, enter `Ctrl+C`.
 
-### 2.2.1 How to send a message with a key?
+### 2.3.1 How to send a message with a key?
 
 By default, sending a message to a Kafka topic generates a message with a `null` key. To send a message with a key, you need to use the values of the `parse.key` and `key.separator` properties. In the example, `:` is used as the separator.
 
@@ -108,7 +108,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic 
 
 
 
-## 2.3 Consumer
+## 2.4 Consumer
 
 Here are the things to know when using the `kafka-console-consumer.sh` command:
 
@@ -134,7 +134,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic
 
 
 
-### 2.3.2 How to print out the consumed message with key?
+### 2.4.1 How to print out the consumed message with key?
 
 ```bash
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic --formatter kafka.tools.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --from-beginning
@@ -148,7 +148,7 @@ CreateTime:1660481924547	null	asdf
 
 
 
-## 2.4 Consumer Group
+## 2.5 Consumer Group
 
 To learn about the Consumer group feature, a topic is created with at least two partition values. Here's what you need to know about consumer groups:
 
@@ -181,7 +181,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
 > 22
 ```
 
-## 2.5. Consumer Group Management
+## 2.6 Consumer Group Management
 
 This section covers how you can reset a Kafka consumer group.
 
@@ -198,7 +198,7 @@ The following are options for the `kafka-consumer-groups.sh` command:
 - `--all-topics`: Be careful using this option, as it applies the offset reset to all topics.
 - `--by-duration`: Resets the offset by duration.
 
-### 2.5.1 Reset offset with `to-earliest` option
+### 2.6.1 Reset offset with `to-earliest` option
 
 Make sure to check to see if there is any active consumers.
 
@@ -232,7 +232,7 @@ asdf
 value
 ```
 
-### 2.5.2 Reset the offset with `--shift-by`
+### 2.6.2 Reset the offset with `--shift-by`
 
 You can also move the offset by 2.
 
@@ -257,7 +257,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic 
 value
 ```
 
-# 3.FAQ
+# 3. FAQ
 
 ## 3.1 How to increase the number of partition for a topic?
 

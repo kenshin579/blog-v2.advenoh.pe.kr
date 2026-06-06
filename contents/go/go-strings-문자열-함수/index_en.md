@@ -15,11 +15,11 @@ tags:
   - 고랭
 ---
 
-# String Functions
+# 1. String Functions
 
 Among Go's standard libraries, the `strings` package provides many useful string functions. Let's work with strings through several examples.
 
-## 1. Search (Contains, Prefix/Suffix, Index)
+## 1.1 Search (Contains, Prefix/Suffix, Index)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -33,7 +33,7 @@ func TestStrings(t *testing.T) {
 }
 ```
 
-## 2. Replace (Uppercase/Lowercase, Trim, Map)
+## 1.2 Replace (Uppercase/Lowercase, Trim, Map)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -51,7 +51,7 @@ func TestStrings(t *testing.T) {
 
 > The `Map` function takes a function and a string as arguments and applies the function to each character of the string.
 
-## 3. Split (Split, Fields)
+## 1.3 Split (Split, Fields)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -62,7 +62,7 @@ func TestStrings(t *testing.T) {
 
 > Fields splits a string around white space characters (as defined by unicode.IsSpace)
 
-## 4. Concatenate (+, Sprintf, Builder)
+## 1.4 Concatenate (+, Sprintf, Builder)
 
 The `fmt.Sprintf()` method returns a string by formatting various types as you want, making it easy to build the string you need.
 
@@ -83,7 +83,7 @@ func TestStrings(t *testing.T) {
 
 > The methods provided by `strings.Builder` offer a way to combine strings faster and more efficiently
 
-# 5. Join (Join, Repeat)
+# 2. Join (Join, Repeat)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -92,7 +92,7 @@ func TestStrings(t *testing.T) {
 }
 ```
 
-## 6. Format, Convert (strconv)
+## 2.1 Format, Convert (strconv)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -108,7 +108,7 @@ func TestStrings(t *testing.T) {
 You can find the examples written here on [github](https://github.com/kenshin579/tutorials-go/tree/master/go-strings).
 
 
-# References
+# 3. References
 
 - https://yourbasic.org/golang/string-functions-reference-cheat-sheet/
 - http://pyrasis.com/book/GoForTheReallyImpatient/Unit46

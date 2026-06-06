@@ -162,13 +162,13 @@ func Example_TypeAssertion_a_panic_occurs_when_a_different_interface_does_not_im
 
 Because the `Student` struct does not implement the `Animal` interface, a panic occurs during the `p.(Animal)` type assertion.
 
-# Summary
+# 2. Summary
 
 Type assertion is used to retrieve the actual type value from an interface variable and execute the method appropriate for that type.
 
 The code written in this post can be found on [github](https://github.com/kenshin579/tutorials-go/tree/master/go-type-assertions).
 
-# References
+# 3. References
 
 - Type assertions
     - https://yourbasic.org/golang/type-assertion-switch/

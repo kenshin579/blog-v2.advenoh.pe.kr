@@ -139,7 +139,7 @@ web: node index.js
 
 If there's no Procfile, it starts with the start script defined in package.json.
 
-# 3.3 Opening the Deployed Site
+# 4. Opening the Deployed Site
 
 Let's check in the browser whether it deployed properly. You can see the browser open, connect to the public URL, and load the page normally.
 
@@ -149,7 +149,7 @@ $ heroku open
 
 ![배포된 사이트 오픈하기](F8ADA800-156E-4335-BF77-EF1811E865EE.png)
 
-## 3.4 Redeploying After Modifying Code
+## 4.1 Redeploying After Modifying Code
 
 Now let's go through the process of modifying code and then deploying again. On the main page (views/pages/index.ejs), modify the title section.
 
@@ -183,11 +183,11 @@ $ heroku logs --tail
 
 ![Heroku Log](A925BBD7-96F3-4F38-9F0C-DB2A6B7492F5.png)
 
-# 4. Installing the MongoDB Add-on and Connecting It with Node.js
+# 5. Installing the MongoDB Add-on and Connecting It with Node.js
 
 The add-on marketplace supports a large number of data stores (e.g. Postgres, Redis, MongoDB, MySQL). In this example, let's install the MongoDB add-on and cover how to connect it with the Node.js app we're building.
 
-## 4.1 Installing MongoDB
+## 5.1 Installing MongoDB
 
 Add the MongoDB add-on.
 
@@ -201,7 +201,7 @@ Besides the command, you can also add an add-on by visiting the [marketplace dir
 
 ![Heroku Add-ons Site](image_5.png)
 
-## 4.2 Connecting with MongoDB
+## 5.2 Connecting with MongoDB
 
 When you add mLab MongoDB, a MONGODB_URI is added to the Heroku environment variables. The MongoDB URL is shown below.
 
@@ -236,7 +236,7 @@ db.timers.insert([
 ]
 ```
 
-## 4.3 Modifying the Code
+## 5.3 Modifying the Code
 
 Let's write code that fetches the JSON values of the data we entered into MongoDB earlier when the browser visits /timers. First, to use MongoDB from Node.js, you need the mongoose module. Install the mongoose module with the Npm command.
 
@@ -316,7 +316,7 @@ express()
 
 The code written so far is uploaded to [github](https://github.com/kenshin579/blog-node-js-getting-started.git).
 
-## 4.4 Verifying the Redeployment
+## 5.4 Verifying the Redeployment
 
 Let's deploy to Heroku again and check.
 
@@ -334,9 +334,9 @@ $ heroku open
 
 ![Heroku WebApp](image_14.png)
 
-# 5. Appendix
+# 6. Appendix
 
-## 5.1 Deploying an Existing App to Heroku
+## 6.1 Deploying an Existing App to Heroku
 
 I deployed Heroku for an existing Node.js project I had written. The actual process isn't much different from the sample project above.
 
@@ -385,7 +385,7 @@ $ heroku open
 
 ![WebApp - Countdown Timer](image_3.png)
 
-## 5.2 Command Collection
+## 6.2 Command Collection
 
 In addition to the Heroku commands already mentioned, here's a collection of commands that are useful to know.
 
@@ -405,7 +405,7 @@ In addition to the Heroku commands already mentioned, here's a collection of com
 
 ![Heroku CLI - ps:stop](image_10.png)
 
-# 6. References
+# 7. References
 
 * IaaS, PaaS, SaaS
     * [https://blogs.msdn.microsoft.com/eva/?p=1383](https://blogs.msdn.microsoft.com/eva/?p=1383)

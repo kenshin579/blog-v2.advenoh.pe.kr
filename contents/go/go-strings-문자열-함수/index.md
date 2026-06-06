@@ -15,11 +15,11 @@ tags:
   - 고랭
 ---
 
-# 문자열 함수
+# 1. 문자열 함수
 
 Golang에서 표준 라이브러리중에 `strings` 패키지에서 많이 유용하게 사용할 수 있는 문자열 함수들을 제공한다. 여러 예제를 통해서 문자열를 다루어보자.
 
-## 1. Search (Contains, Prefix/Suffix, Index)
+## 1.1 Search (Contains, Prefix/Suffix, Index)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -33,7 +33,7 @@ func TestStrings(t *testing.T) {
 }
 ```
 
-## 2. Replace (Uppercase/Lowercase, Trim, Map)
+## 1.2 Replace (Uppercase/Lowercase, Trim, Map)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -51,7 +51,7 @@ func TestStrings(t *testing.T) {
 
 > `Map` 함수는 인자로 함수와 문자열을 받고 문자열의 각 character마다 함수를 적용하는 함수이다.
 
-## 3. Split (Split, Fields)
+## 1.3 Split (Split, Fields)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -62,7 +62,7 @@ func TestStrings(t *testing.T) {
 
 > Fields는 문자열을 white space character (unicode.IsSpace로 정의됨) 기준으로 문자열을 `split` 시켜준다
 
-## 4. Concatenate (+, Sprintf, Builder)
+## 1.4 Concatenate (+, Sprintf, Builder)
 
 `fmt.Sprintf()` 메서드로 원하는 여러 타입을 formatting을 통해서 문자열로 반환해주어 원하는 문자열을 쉽게 만들 수 있다.
 
@@ -83,7 +83,7 @@ func TestStrings(t *testing.T) {
 
 > `strings.Builde`r에서 제공하는 메서드를 통해서 문자열 조합을 더 빠르고 효과적으로 할수 있는 기능을 제공한다
 
-# 5. Join (Join, Repeat)
+# 2. Join (Join, Repeat)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -92,7 +92,7 @@ func TestStrings(t *testing.T) {
 }
 ```
 
-## 6. Format, Convert (strconv)
+## 2.1 Format, Convert (strconv)
 
 ```go
 func TestStrings(t *testing.T) {
@@ -108,7 +108,7 @@ func TestStrings(t *testing.T) {
 여기서 작성한 예제는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-strings)를 참고해주세요.
 
 
-# 참고
+# 3. 참고
 
 - https://yourbasic.org/golang/string-functions-reference-cheat-sheet/
 - http://pyrasis.com/book/GoForTheReallyImpatient/Unit46

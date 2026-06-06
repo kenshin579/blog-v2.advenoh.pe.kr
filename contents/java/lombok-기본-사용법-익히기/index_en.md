@@ -56,7 +56,7 @@ Let's look mainly at the frequently used annotations.
 - @Slf4j, @Log, @Log4j, @Log4j2
 - Lombok Configuration
 
-## @NonNull
+## 3.1 @NonNull
 
 If you add the @NonNull annotation to a method or constructor argument, Lombok generates a null-check statement.
 
@@ -90,7 +90,7 @@ public class NonNullExample extends Something {
 
 If you want to see the vanilla version of the Java source as shown above, enable the Java Bytecode Decompiler plugin in your IDE, then click the relevant class to directly view the source code.
 
-## @Getter, @Setter
+## 3.2 @Getter, @Setter
 
 It generates getter and setter methods for class fields, and you can auto-generate various code with several options. Setters are generated for fields that are not final.
 
@@ -210,7 +210,7 @@ public class PersonSetterChain {
 }
 ```
 
-## @ToString
+## 3.3 @ToString
 
 It automatically generates the class's toString method, and with options you can also specify fields to exclude from toString.
 
@@ -268,7 +268,7 @@ public class PersonExclude {
 }
 ```
 
-## @EqualsAndHashCode
+## 3.4 @EqualsAndHashCode
 
 An annotation that automatically generates equals() and hashCode().
 
@@ -347,7 +347,7 @@ public class PersonExclude {
 }
 ```
 
-## @NoArgsConstructor, @AllArgsConstructor, @RequiredArgsConstructor
+## 3.5 @NoArgsConstructor, @AllArgsConstructor, @RequiredArgsConstructor
 
 An annotation that automatically generates constructors. The constructor arguments are determined by the order of field declaration. It is good to remember that if you refactor later, the argument order may change.
 
@@ -401,7 +401,7 @@ public class PersonArgs {
 }
 ```
 
-## @Data
+## 3.6 @Data
 
 The @Data annotation is an annotation to which all of the annotations below are applied.
 
@@ -437,7 +437,7 @@ public class Person {
 }
 ```
 
-## @Builder
+## 3.7 @Builder
 
 It generates the [Builder Pattern](https://en.wikipedia.org/wiki/Builder_pattern#Java) with a single annotation. The builder pattern is a pattern that configures various settings and then creates an object. For more details, please check the references below.
 
@@ -508,7 +508,7 @@ public class Car {
 }
 ```
 
-## @Slf4j, (@Log, @Log4j, @Log4j2, etc)
+## 3.8 @Slf4j, (@Log, @Log4j, @Log4j2, etc)
 
 You can choose and declare the logging framework you want to use logging more easily.
 
@@ -580,7 +580,7 @@ public class Car {
 
 ```
 
-## Lombok Configuration
+## 3.9 Lombok Configuration
 
 You can configure things such as disabling the features Lombok provides. Create a lombok.config file in the project root and write the settings you want in key=value form. For specific settings, please refer to the [Lombok Configuration system](https://projectlombok.org/features/configuration).
 

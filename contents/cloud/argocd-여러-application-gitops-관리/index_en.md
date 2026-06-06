@@ -21,7 +21,7 @@ tags:
 series: "ArgoCD"
 ---
 
-## 1. Overview
+# 1. Overview
 
 ![cover](cover.png)
 
@@ -38,7 +38,7 @@ chart/
 
 How should you deploy these three applications with `ArgoCD`?
 
-### Deployment Patterns Provided by ArgoCD
+## 1.1 Deployment Patterns Provided by ArgoCD
 
 | Pattern | Description | Automation Level | Flexibility |
 | --- | --- | --- | --- |
@@ -52,7 +52,7 @@ In this article, we compare the **App of Apps** pattern and the **ApplicationSet
 
 ---
 
-## 2. Single Application
+# 2. Single Application
 
 This is the most basic approach: you write a single Application `YAML` directly and deploy it.
 
@@ -85,9 +85,9 @@ This works fine when you only have a few applications, but as the number of mana
 
 ---
 
-## 3. App of Apps Pattern
+# 3. App of Apps Pattern
 
-### 3.1 Concept
+## 3.1 Concept
 
 This is a structure where a parent Application references a directory containing the child Application manifests. It can be implemented using only `ArgoCD`'s built-in features.
 
@@ -100,7 +100,7 @@ bootstrap/app-of-apps/
     └── hello-world-server-hook.yaml   # Child Application 3
 ```
 
-### 3.2 Parent Application
+## 3.2 Parent Application
 
 The parent Application specifies the `applications/` directory as `source.path`. `ArgoCD` automatically detects and creates all Application manifests inside this directory.
 
@@ -126,7 +126,7 @@ spec:
       selfHeal: true
 ```
 
-### 3.3 Child Applications
+## 3.3 Child Applications
 
 Each child Application is defined as a separate `YAML` file that references an individual `Helm Chart`.
 
@@ -180,7 +180,7 @@ spec:
       selfHeal: true
 ```
 
-### 3.4 Deployment
+## 3.4 Deployment
 
 ```bash
 kubectl apply -f bootstrap/app-of-apps/apps.yaml -n argocd
@@ -188,7 +188,7 @@ kubectl apply -f bootstrap/app-of-apps/apps.yaml -n argocd
 
 When you deploy the parent Application, `ArgoCD` reads the `YAML` files in the `applications/` directory and automatically creates the child Applications.
 
-### 3.5 Pros and Cons
+## 3.5 Pros and Cons
 
 **Pros**
 - Simple concept and easy to understand
@@ -202,9 +202,9 @@ When you deploy the parent Application, `ArgoCD` reads the `YAML` files in the `
 
 ---
 
-## 4. ApplicationSet Pattern
+# 4. ApplicationSet Pattern
 
-### 4.1 Concept
+## 4.1 Concept
 
 ApplicationSet is an `ArgoCD` extension feature that dynamically generates Applications using a `Generator` (ArgoCD 2.0+). Being template-based, it lets you define multiple Applications at once and keep the `DRY` principle.
 
@@ -217,7 +217,7 @@ The main `Generator` types are as follows.
 | `Matrix` | Combines multiple `Generator`s to produce a cartesian product |
 | `Cluster` | Generates based on the list of registered clusters |
 
-### 4.2 List Generator
+## 4.2 List Generator
 
 Explicitly enumerate the list of applications to deploy. You can specify a name, path, namespace, and so on for each entry.
 
@@ -270,7 +270,7 @@ kubectl apply -f bootstrap/application-set/appset-list.yaml -n argocd
 
 In the `template` block, the `{{name}}`, `{{path}}`, and `{{namespace}}` variables are substituted with each entry in `generators.list.elements`, creating the Applications.
 
-### 4.3 Git Generator
+## 4.3 Git Generator
 
 This automatically detects the directory structure of a `Git` repository and creates Applications. When you add a new `Chart` directory, an Application is automatically created without any separate configuration change.
 
@@ -317,7 +317,7 @@ kubectl apply -f bootstrap/application-set/appset.yaml -n argocd
 
 It detects all subdirectories under the `chart/*` path and uses `{{path.basename}}` (the directory name) as the Application name. Simply adding a `chart/new-app/` directory automatically creates a `new-app` Application.
 
-### 4.4 Matrix Generator
+## 4.4 Matrix Generator
 
 This combines multiple `Generator`s to produce a cartesian product. It is useful for multi-environment (`dev`/`staging`/`prod`) deployments.
 
@@ -386,7 +386,7 @@ kubectl apply -f bootstrap/application-set/appset-matrix.yaml -n argocd
 
 Since you can set `replicaCount` differently per environment, you can deploy the same `Chart` tailored to each environment.
 
-### 4.5 Pros and Cons
+## 4.5 Pros and Cons
 
 **Pros**
 
@@ -402,7 +402,7 @@ Since you can set `replicaCount` differently per environment, you can deploy the
 
 ---
 
-## 5. App of Apps vs ApplicationSet Comparison
+# 5. App of Apps vs ApplicationSet Comparison
 
 | Category | App of Apps | ApplicationSet |
 | --- | --- | --- |
@@ -414,7 +414,7 @@ Since you can set `replicaCount` differently per environment, you can deploy the
 | **Debugging** | Easy | Relatively hard |
 | **`ArgoCD` Version** | Built-in feature | `ArgoCD` 2.0+ |
 
-### When to Use Which Pattern
+## 5.1 When to Use Which Pattern
 
 **When App of Apps Is a Good Fit**
 - Teams adopting `ArgoCD` for the first time
@@ -429,9 +429,9 @@ Since you can set `replicaCount` differently per environment, you can deploy the
 
 ---
 
-## 6. FAQ
+# 6. FAQ
 
-### 6.1 How do I delete a specific Application in an ApplicationSet?
+## 6.1 How do I delete a specific Application in an ApplicationSet?
 
 If you directly delete an Application created by an ApplicationSet using the `ArgoCD` UI or `kubectl delete`, the `ApplicationSet Controller` detects this and **recreates it**.
 
@@ -473,7 +473,7 @@ generators:
           exclude: true  # exclude echo-server
 ```
 
-### 6.2 How do I create a Secret needed by a PreSync Job first?
+## 6.2 How do I create a Secret needed by a PreSync Job first?
 
 You can control the resource creation order using `ArgoCD`'s **`Sync Wave`**. Resources with a lower `Sync Wave` value are created first.
 
@@ -546,7 +546,7 @@ Summary of key annotations:
 
 ---
 
-## 7. Conclusion
+# 7. Conclusion
 
 We have looked at the two main patterns for managing multiple applications in `ArgoCD`.
 
@@ -557,7 +557,7 @@ The two patterns are not mutually exclusive, so you can choose the appropriate o
 
 ---
 
-## References
+# 8. References
 
 - [ArgoCD ApplicationSet Documentation](https://argo-cd.readthedocs.io/en/stable/user-guide/application-set/)
 - [ArgoCD App of Apps Pattern](https://argo-cd.readthedocs.io/en/stable/operator-manual/cluster-bootstrapping/)

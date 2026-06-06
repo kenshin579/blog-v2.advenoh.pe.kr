@@ -76,7 +76,7 @@ DESCRIPTION
 
 ```
 
-# References
+# 1. References
 
 - https://superuser.com/questions/1469592/how-can-i-convert-a-pdf-into-a-series-of-images-jpgs-or-pngs-via-the-terminal
 - https://superuser.com/questions/1469592/how-can-i-convert-a-pdf-into-a-series-of-images-jpgs-or-pngs-via-the-terminal

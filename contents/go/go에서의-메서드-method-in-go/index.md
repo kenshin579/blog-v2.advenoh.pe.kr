@@ -229,11 +229,11 @@ func Example_Indirection_Method_Value_Receiver() {
 
 리시버 인자의 경우,  (&r).perimeter() 호출 시 Go는 리시버 인자는 밸류 인자로 선언되어 (*r).perimeter()로 자동으로 해석해서 실행해준다.
 
-# 정리
+# 2. 정리
 
 Go에서는 함수와 메서드가 존재를 한다. 메서드는 함수에 리시버 인자를 추가한 버전으로 생각하면 이해하기 쉽다. 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-methods)에서 확인할 수 있다.
 
-# 참고
+# 3. 참고
 
 - https://tour.golang.org/methods/4
 - http://golang.site/go/article/17-Go-%EB%A9%94%EC%84%9C%EB%93%9C

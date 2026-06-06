@@ -201,7 +201,7 @@ gog auth add your-email...@gmail.com --manual
 # 로컬 콜백 서버(127.0.0.1:50554)를 백그라운드에서 대기
 ```
 
-### 7.3 트러블슈팅: 403 access_denied
+### 7.2.1 트러블슈팅: 403 access_denied
 
 처음 인증 URL을 열면 403 에러가 발생할 수 있다.
 
@@ -232,7 +232,7 @@ gog auth add your-email...@gmail.com --manual
 
 ![게시 확인 다이얼로그](oauth-publish-confirm.png)
 
-### 7.4 Google 로그인 → callback URL 전달
+### 7.2.2 Google 로그인 → callback URL 전달
 
 앱 게시 후 인증 URL을 다시 열면 정상적으로 Google 로그인이 진행된다.
 
@@ -285,7 +285,7 @@ gog auth list
 # → email: your-email...@gmail.com, services: 13개 서비스 연동 확인
 ```
 
-### 7.5 트러블슈팅: macOS 키체인 접근
+### 7.2.3 트러블슈팅: macOS 키체인 접근
 
 gog는 인증 토큰을 macOS 키체인에 저장한다. 최초 실행 시 키체인 접근 허용 팝업이 뜰 수 있다.
 
@@ -297,7 +297,7 @@ gog는 인증 토큰을 macOS 키체인에 저장한다. 최초 실행 시 키�
 
 키체인 팝업은 Mac Mini 화면에서 직접 처리해야 한다. 한 번 허용하면 이후에는 자동으로 접근된다.
 
-## 7.6 환경변수 설정
+## 7.3 환경변수 설정
 
 `GOG_ACCOUNT` 환경변수를 설정해야 매번 `--account` 옵션을 붙이지 않아도 된다.
 

@@ -62,7 +62,7 @@ public class UsingMakerAnnotation {
 }
 ```
 
-## 2.1.2 Single Value Annotation
+## 2.2 Single Value Annotation
 This is an annotation that can take only one value as input.
 
 ```java
@@ -79,7 +79,7 @@ public @interface SingleValueAnnotation {
 }
 ```
 
-### 2.1.3 Multi Value Annotation
+### 2.2.1 Multi Value Annotation
 You can specify multiple values in the annotation.
 
 ```java
@@ -103,7 +103,7 @@ public @interface MultiValueAnnotation {
 
 ```
 
-## 2.2 Where to Place Annotations
+## 2.3 Where to Place Annotations
 As in the example below, annotations can be declared above a class, field variable, method argument, and local variable.
 
 ```java

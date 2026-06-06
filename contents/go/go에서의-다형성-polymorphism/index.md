@@ -15,12 +15,12 @@ tags:
   - 고언어
 ---
 
-# 다형성 (Polymorphism)
+# 1. 다형성 (Polymorphism)
 
 다형성은 객체지향 패러다임에서는 꼭 알아야 하는 특징 중의 하나이다. 기본 개념은 객체 메서드를 호출했을 때, 그 객체의 메서드가 다양한 구현을 할 수 있게 한다. 다형성을 설명할 때 도형이나 동물을 예제로 자주 설명한다. 본 포스팅에서는 동물을 예제로 설명한다.
 
 
-# Go에서 다형성을 구현하는 방법
+# 2. Go에서 다형성을 구현하는 방법
 
 Go에서는 다형성을 인터페이스로 구현할 수 있다. Go의 인터페이스를 사용하면 다른 언어보다 더 쉽게 구현이 가능하다. 예제를 통해서 알아보자.
 
@@ -99,7 +99,7 @@ Unit Test에서 실행해보자. `Dog`와 `Cat`를 별도 생성자로 데이터
 
 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-design-pattern/polymorphism)를 참고해주세요.
 
-# 참고
+# 3. 참고
 
 - https://www.sohamkamani.com/golang/2019-03-29-polymorphism-without-interfaces/
 - https://golangbot.com/polymorphism/

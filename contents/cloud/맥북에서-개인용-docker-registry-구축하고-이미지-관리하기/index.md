@@ -25,7 +25,7 @@ tags:
 
 `Docker`는 `Registry` 이미지를 제공하고 있어 별도로 복잡한 설치 없이 컨테이너 하나로 `Registry` 서버를 실행할 수 있다. 다음 명령어를 통해 기본 사용자 인증과 로컬 저장소 폴더 설정을 적용한 `Docker Registry`를 실행한다.
 
-### 1. 사용자 로그인 인증 파일 생성
+### 2.1.1 사용자 로그인 인증 파일 생성
 
 ```bash
 > brew install http
@@ -37,7 +37,7 @@ tags:
 
 입력한 `username`과 `password`는 `/Users/user/data/docker/auth/htpasswd` 파일에 저장이 된다.
 
-### 2. Docker Registry 컨테이너 실행
+### 2.1.2 Docker Registry 컨테이너 실행
 
 ```bash
 > docker run -d --name private-registry -p 7001:5000 \\

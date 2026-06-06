@@ -47,7 +47,7 @@ SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해�
 </dependency>
 ```
 
-### **xmemcached**
+### 3.1.1 xmemcached
 
 ```xml
 <dependency>
@@ -57,7 +57,7 @@ SSM 사용에 필요한 dependency와 스프링 빈 설정 파일을 추가해�
 </dependency>
 ```
 
-### **spymemcached**
+### 3.1.2 spymemcached
 
 ```xml
 <dependency>

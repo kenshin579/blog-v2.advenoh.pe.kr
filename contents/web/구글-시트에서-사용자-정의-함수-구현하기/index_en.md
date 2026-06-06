@@ -25,7 +25,7 @@ tags:
 
 While doing an investment study, I've been keeping a [stock trading journal](https://docs.google.com/spreadsheets/d/112wngK0qecpPl6R-Q-aytDQ-5PH36XC1d_wuT15H6HI/edit?usp=sharing) in Google Sheets, and since I found Google Apps Script quite useful, I'm putting together a quick summary.
 
-# What Is the Google Finance Function?
+# 1. What Is the Google Finance Function?
 
 Before getting into Apps Script, let's first take a look at the Google Finance function. This is one of the built-in functions available in Google Sheets, and it can fetch real-time stock quote data.
 
@@ -37,7 +37,7 @@ As shown in the image below, I use it to check the current stock price and decid
 
 The Google Finance function provides quote data for most stocks, but there are cases where it doesn't. For example, it does not provide spot gold prices.
 
-# How to Implement a Custom Function?
+# 2. How to Implement a Custom Function?
 
 Since the Google Finance function doesn't provide spot gold prices, you need to implement a custom function that fetches the data through a different API and inserts it into a cell.
 
@@ -45,7 +45,7 @@ To fetch spot gold price information, I use the API from [RapidAPI Stock-API](ht
 
 ![](image-20230305181043304.png)
 
-## 1.Writing the Apps Script
+## 2.1 Writing the Apps Script
 
 Google Apps Script provides a JavaScript platform that lets you automate and extend various Google services (e.g. Google Sheets, Docs, Gmail), enabling interaction with Google services.
 
@@ -75,7 +75,7 @@ function GoldShareInit() {
 
 
 
-## 2.Using the Custom Function
+## 2.2 Using the Custom Function
 
 When you enter the following in Google Sheets, you'll see the spot gold price value displayed.
 
@@ -88,7 +88,7 @@ When you enter the following in Google Sheets, you'll see the spot gold price va
 
 ![](image-20230305182202117.png)
 
-# References
+# 3. References
 
 - https://developers.google.com/apps-script/reference/url-fetch/url-fetch-app?hl=ko
 - https://www.youtube.com/watch?v=k0su6345KDI&t=828s

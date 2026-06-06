@@ -28,7 +28,7 @@ type Person struct {
 }
 ```
 
-# Setter
+# 1. Setter
 
 - A `Setter` can be created as `SetFoo()`
     - To call the method from the outside, the first letter of the method is uppercase
@@ -48,7 +48,7 @@ func (p *Person) SetName(name string) error {
 
 The `SetName` setter method takes name as an argument and stores the value in the name field of the `Person` struct. If `name` is empty, it returns an `Error`.
 
-# Getter
+# 2. Getter
 
 - A `Getter` is named with just the variable name, without prefixing it with Get
     - e.g. `GetName()` - X
@@ -73,7 +73,7 @@ func (p *Person) Name() string {
 
 The code written in this post can be found on [github](https://github.com/kenshin579/tutorials-go/tree/master/go-getter-setter).
 
-# References
+# 3. References
 
 - https://www.socketloop.com/tutorials/golang-implement-getters-and-setters
 - https://johngrib.github.io/wiki/golang-cheatsheet/

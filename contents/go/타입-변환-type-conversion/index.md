@@ -48,7 +48,7 @@ func Example_TypeConversion() {
 
 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-type-conversion)에서 확인할 수 있다.
 
-# 참고
+# 1. 참고
 
 - Go 형변환
     - https://tour.golang.org/basics/13

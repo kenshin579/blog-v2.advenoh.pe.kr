@@ -180,7 +180,7 @@ classpath=lib/mysql-connector-j-8.0.33.jar
 
 > The mysql connector jar file can be downloaded from the [[mysql.com](http://mysql.com)](http://mysql.comhttps://downloads.mysql.com/archives/c-j/) site
 
-# 3.3 Creating a SQL Changelog
+# 4. Creating a SQL Changelog
 
 In `Liquibase`, you write a Changelog file to record database changes. The format of a `Changelog` can be `SQL`, `XML`, `JSON`, or `YAML` so that it is not tied to a specific database. Here, we write the `Changelog` in `yaml` and write the `Changeset` in SQL syntax, which is familiar to developers.
 
@@ -223,11 +223,11 @@ Reference
 
 - [Example Changelogs: SQL Format](https://docs.liquibase.com/concepts/changelogs/sql-format.html)
 
-## 3.4 Applying the Changelog to the DB
+## 4.1 Applying the Changelog to the DB
 
 To apply the written `Changelog` to the DB, run a `Liquibase` command. You can use Docker or run the `Liquibase` command directly.
 
-### 3.4.1 Running with the Liquibase Command
+### 4.1.1 Running with the Liquibase Command
 
 ```sql
 ❯ liquibase --defaultsFile=liquibase.properties update
@@ -249,7 +249,7 @@ When you run the `update` command, it references the `Changelog` file specified 
 
 ![](image-20240920182833879.png)
 
-### 3.4.2 Running the Liquibase Command with Docker
+### 4.1.2 Running the Liquibase Command with Docker
 
 Running it with Docker lets you easily run `Liquibase` without a separate installation process, but a few caveats are needed.
 
@@ -291,11 +291,11 @@ You can run Liquibase with Docker using the command below.
 - `--defaultsFile`: Specifies the Liquibase configuration file (`liquibase.docker.properties`)
 - `update`: The Liquibase command that applies changes to the database
 
-# 4. Liquibase Commands
+# 5. Liquibase Commands
 
 `Liquibase` provides various commands, as shown below. I'll organize the ones that seem likely to be used frequently. For more details, please refer to Liquibase Commands.
 
-## 4.1 Update Commands
+## 5.1 Update Commands
 
 The `update` command of `Liquibase` is the basic command that applies changes to the database. However, the `update` command has several useful variations tailored to different situations.
 
@@ -339,7 +339,7 @@ Liquibase command 'update-sql' was executed successfully.
 > liquibase --defaultsFile=liquibase.properties update-count 2
 ```
 
-## 4.2 Rollback Commands
+## 5.2 Rollback Commands
 
 The `rollback` command of `Liquibase` provides the ability to revert database changes to a previous state. You can perform rollbacks in various ways based on specific conditions.
 
@@ -392,7 +392,7 @@ Rolling Back Changeset: db/changelog/3_update.sql::3::your.name
 Liquibase command 'rollbackCount' was executed successfully.
 ```
 
-## 4.3 Database Inspection Commands
+## 5.3 Database Inspection Commands
 
 Commands used to check or compare the current state of the database.
 
@@ -471,7 +471,7 @@ ALTER TABLE person
     ADD address3 VARCHAR(30) NULL COMMENT 'test';
 ```
 
-## 4.4 Change Tracking Commands
+## 5.4 Change Tracking Commands
 
 The Change Tracking commands of `Liquibase` are used to track the changes applied to the database, check the current state, or generate a record of changes.
 
@@ -519,7 +519,7 @@ Generated changelog written to changelog.mysql.sql
 Liquibase command 'generate-changelog' was executed successfully.
 ```
 
-## 4.5 Utility Commands
+## 5.5 Utility Commands
 
 `Liquibase` provides utility commands that let you manage the database state and track changes.
 
@@ -571,9 +571,9 @@ UPDATE liquibase_quickstart.DATABASECHANGELOGLOCK SET `LOCKED` = 0, LOCKEDBY = N
 Liquibase command 'changelog-sync-sql' was executed successfully.
 ```
 
-# 5. FAQ
+# 6. FAQ
 
-### 1. What is the difference between `context` and `label`?
+## 6.1 What is the difference between `context` and `label`?
 
 `Context` and `Label` are both features in `Liquibase` that define the environment or condition under which a specific `Changeset` is applied, but their purposes differ slightly.
 
@@ -596,7 +596,7 @@ CREATE TABLE example_feature (id INT PRIMARY KEY);
 
 > To summarize, `Context` mainly controls `Changeset` execution tailored to the deployment environment, whereas `Label` is used for logical grouping or tracking purposes
 
-### 2. What is the unit of a rollback?
+## 6.2 What is the unit of a rollback?
 
 - Although there are multiple rollback commands within a changeset, a rollback runs at the changeset unit, so you can think of the entire set of rollback commands below as being executed
 
@@ -640,7 +640,7 @@ UPDATE liquibase_quickstart.employee SET email = 'user2@naver.com' WHERE id = 2;
 
 
 
-# 6. Wrap-up
+# 7. Wrap-up
 
 `Liquibase` is a powerful tool that lets you manage database changes safely and efficiently across various environments. You can control environment-specific execution using `Context` and `Label`, and easily undo mistakes or changes through `rollback`. In addition, since you can easily set it up and run it via Docker, it provides a convenient option for developers.
 
@@ -653,7 +653,7 @@ When applying it to a real environment, you mainly use the following commands.
 
 With `Liquibase`, you can review the SQL schema like code, and it resolves issues where the DB schema gradually diverges and becomes unmanaged because SQL was executed manually and directly on the DB per environment. It's great that managing the DB has become simpler by leveraging `Liquibase`.
 
-# 7. References
+# 8. References
 
 - [Liquibase Documentation](https://docs.liquibase.com/home.html)
 - [Liquibase에 대해 자세히 알아보기: DB 스키마 버전 관리의 핵심 도구](https://velog.io/@gun_123/Liquibase에-대해-자세히-알아보기-DB-스키마-버전-관리의-핵심-도구)

@@ -354,18 +354,18 @@ specs/plans는 PR과 함께 커밋해 영구 레퍼런스로 남긴다. 6개월 
 
 가이드성 정보는 여기까지. 이 섹션은 "직접 한 사이클 돌려본 사람의 관찰"이다. 톤이 약간 informal하더라도 양해 바란다.
 
-## 좋았던 점
+## 7.1 좋았던 점
 
 - **전체 개발 흐름이 자연스럽게 이어진다**: 기존엔 PRD → implementation plan → todo.md를 따로 수동 작성하고 단계마다 마크다운을 리뷰하는 데 시간이 꽤 들었다. superpowers는 brainstorm → spec → plan → 구현 → 리뷰까지 한 흐름으로 묶여 매 단계 산출물이 자연스럽게 다음 단계의 입력이 되고, 작업자가 들이는 문서 작성·검토 비용이 크게 줄었다
 - **컨텍스트 오염이 거의 0**: 한 task가 끝나면 맥락이 implementer subagent와 함께 정리됨 → 큰 PR(25 commits)을 한 세션에서 끝낼 수 있었던 이유
 - **spec/quality 두 단계 리뷰가 PR 리뷰 비용을 사이클 안으로 내림**: 컴파일/테스트는 통과하는 critical 이슈(한국어 rune count, DueDate aliasing)와 회귀 갭(Vitest e2e config 버그)까지 사이클 도중에 발견·수정됨
 
-## 비용과 트레이드오프
+## 7.2 비용과 트레이드오프
 
 - **토큰 사용량이 빠르게 늘어난다**: 매 task마다 implementer + spec/quality reviewer 3회 디스패치가 누적되어 소모가 크다. Claude Max 100x 플랜에서도 한 사이클 도중에 rate limit이 걸리는 경험을 했다
 - **plan 파일 체크박스 자동 갱신 X**: subagent-driven은 인-메모리 task list로 추적, plan.md는 끝까지 `- [ ]` 그대로. plan을 영구 추적기로 쓰고 싶다면 executing-plans가 더 맞음
 
-## 권장 적용 시나리오
+## 7.3 권장 적용 시나리오
 
 요약: **다단계 + 다영역 작업에 가장 강력**, 단일 파일 수정엔 일반 슬래시 커맨드가 빠르다.
 

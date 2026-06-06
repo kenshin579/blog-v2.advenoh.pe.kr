@@ -12,17 +12,17 @@ tags:
 
 # 1. Overview
 
-## What is a Git submodule?
+## 1.1 What is a Git submodule?
 
 A `Git` submodule (Git Submodule) is a feature that lets you include another `Git` repository inside a single `Git` repository. This allows you to manage a separate repository independently while still reusing it within a specific project.
 
-## Why and when do you use it?
+## 1.2 Why and when do you use it?
 
 - **Code reuse**: Useful when you need to maintain the same library or common codebase across multiple projects
 - **Independent version control**: Since submodules are managed independently, you can version-control them separately from the main project
 - **Sharing and collaboration**: Convenient when a team needs to use a common module across multiple projects
 
-## How do you use it?
+## 1.3 How do you use it?
 
 With `Git` submodules, you can include and manage a separate repository within a single Git repository. Basically, it goes through the following process:
 

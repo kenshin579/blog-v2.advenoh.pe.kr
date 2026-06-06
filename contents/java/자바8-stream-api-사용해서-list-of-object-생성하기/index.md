@@ -48,11 +48,11 @@ public void convert_intstream_list_of_obj() {
 }
 ```
 
-# 정리
+# 3. 정리
 
 for문을 대신하여 Stream API를 사용할 수 있는 간단한 예제를 같이 보았다. 다음 포스팅에도 다양한 스트림 방식으로 코딩하는 방법에 대해서 알아보자.
 
-# 참고
+# 4. 참고
 
 * http://jtuts.com/2017/04/21/create-list-range-integers-using-java-8/
 * https://stackoverflow.com/questions/22649978/java-8-lambda-can-i-generate-a-new-arraylist-of-objects-from-an-intstream

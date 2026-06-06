@@ -14,7 +14,7 @@ tags:
   - 자바8
 ---
 
-# Java 9
+# 1. Java 9
 
 - Java Platform Module System
 - JEP 222: Jshell - REPL

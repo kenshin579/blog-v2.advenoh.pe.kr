@@ -22,7 +22,7 @@ I came across `n8n` through a recommendation from a coworker. It is a workflow-b
 
 ## 2.1 Prerequisites
 
-### Update Installed Packages
+### 2.1.1 Update Installed Packages
 
 Run the following command to keep the Raspberry Pi's packages up to date.
 
@@ -30,7 +30,7 @@ Run the following command to keep the Raspberry Pi's packages up to date.
 > sudo apt update && sudo apt upgrade -y
 ```
 
-### Install Node.js and Check the Version
+### 2.1.2 Install Node.js and Check the Version
 
 Since `n8n` runs on `Node.js`, you need to install the latest version of Node.js.
 
@@ -45,7 +45,7 @@ Check the installed `Node.js` version to confirm it was installed correctly.
 > node -v
 ```
 
-### Install `n8n`
+### 2.1.3 Install `n8n`
 
 Now, use npm to install `n8n` globally.
 
@@ -59,7 +59,7 @@ Now, use npm to install `n8n` globally.
 
 Registering `n8n` as a system service makes it start automatically when the Raspberry Pi boots.
 
-### Create the Service File
+### 2.2.1 Create the Service File
 
 ```bash
 sudo vi /etc/systemd/system/n8n.service
@@ -113,7 +113,7 @@ Check whether it is running correctly.
 
 ------
 
-# 2.4 Connecting to `n8n`
+# 3. Connecting to `n8n`
 
 Once `n8n` is running correctly, you can access it from a web browser at `http://localhost:5678` to verify.
 
@@ -121,7 +121,7 @@ Once `n8n` is running correctly, you can access it from a web browser at `http:/
 
 ------
 
-# 3. Conclusion
+# 4. Conclusion
 
 We successfully installed `n8n` on the Raspberry Pi and registered it as a system service so it can run reliably. With this, you can build and make use of automated workflows. Additionally, if you need security, it is a good idea to enable basic authentication and consider setting up HTTPS.
 

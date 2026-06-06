@@ -228,11 +228,11 @@ func Example_Indirection_Method_Value_Receiver() {
 
 In the case of a receiver parameter, when calling (&r).perimeter(), since the receiver parameter is declared as a value parameter, Go automatically interprets and executes it as (*r).perimeter().
 
-# Summary
+# 2. Summary
 
 In Go, both functions and methods exist. It's easy to understand a method as a version of a function with a receiver parameter added. The code written in this post can be found on [github](https://github.com/kenshin579/tutorials-go/tree/master/go-methods).
 
-# References
+# 3. References
 
 - https://tour.golang.org/methods/4
 - http://golang.site/go/article/17-Go-%EB%A9%94%EC%84%9C%EB%93%9C

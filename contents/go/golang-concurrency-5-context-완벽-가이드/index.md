@@ -418,7 +418,7 @@ context는 Go에서 goroutine의 생명주기를 관리하는 핵심 도구다. 
 
 # 9. FAQ
 
-### Q. cancel() 함수는 내부적으로 어떻게 구현되어 있는가?
+## 9.1 Q. cancel() 함수는 내부적으로 어떻게 구현되어 있는가?
 
 `context.WithCancel`이 반환하는 `cancel()` 함수는 Go 표준 라이브러리(`go/src/context/context.go`)의 `cancelCtx` 구조체에 정의되어 있다.
 
@@ -478,7 +478,7 @@ func (c *cancelCtx) cancel(removeFromParent bool, err, cause error) {
 
 `close(d)`가 핵심인데, Go에서 **닫힌 channel은 즉시 zero value를 반환**하므로 `<-ctx.Done()`으로 대기 중인 모든 goroutine이 동시에 깨어난다. 이것이 context의 취소 전파가 효율적인 이유다.
 
-### Q. API 핸들러에서 DB/외부 API 호출 시 context timeout은 어떻게 설정해야 하는가?
+## 9.2 Q. API 핸들러에서 DB/외부 API 호출 시 context timeout은 어떻게 설정해야 하는가?
 
 API 핸들러에서 DB 조회나 외부 API를 호출할 때, 각 레이어에서 문제가 생기면 전체 요청이 멈출 수 있다. 이를 방지하기 위해 context timeout을 적절히 설정해야 한다.
 
@@ -587,7 +587,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 > }
 > ```
 
-### Q. Echo 프레임워크에서 timeout 관리는 어떻게 하는가?
+## 9.3 Q. Echo 프레임워크에서 timeout 관리는 어떻게 하는가?
 
 Echo에는 `TimeoutMiddleware`가 내장되어 있어, 모든 핸들러에 자동으로 timeout을 적용할 수 있다.
 

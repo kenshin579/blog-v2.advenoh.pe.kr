@@ -28,9 +28,9 @@ API 서버를 구축하기 위해 사용할 수 있는 서비스는 아래와 �
 
 위 서비스들은 대부분 무료 플랜을 제공하고 있고 제한된 리소스와 기능을 제공한다. 개인적으로 여러 서비스 중에서 그래도 장기간 12개월간 무료로 사용할 수 있는 AWS를 선호한다. 자주 EC2를 구축하지는 않지만, EC2로 API를 구축하면 매번 구글링해서 세팅하는 과정이 시간이 걸린다. 이번에 [stock-api](https://rapidapi.com/kenshin579-dCJkBINoF/api/stock-api7/) 구축하면서 나중에 바로 참고할 수 있도록 블로그에 정리해둡니다.
 
-# 1.서버 구축 사전작업
+# 1. 서버 구축 사전작업
 
-## AWS 계정 생성하기
+## 1.1 AWS 계정 생성하기
 
 AWS 계정은 12개월 무료로 사용할 수 있지만, 이메일 주소로 계정을 생성해야 한다. 매번 새로운 이메일 주소를 생성하기보다는 구글의 [별칙 기능](https://blog.advenoh.pe.kr/하나의-구글-계정으로-여러-이메일-주소-사용하기/)을 사용하기를 추천한다.
 
@@ -103,7 +103,7 @@ $ ssh -i echo-server.pem xxx.xxxx.xxx.xxx # EC2의 탄력적 IP 주소
 
 IP 주소로 기억하기 쉽지 않고 매번 긴 명령어 입력을 해야 해서 ssh 설정 파일을 다음과 같이 설정하면 간단한 명령어로 접근이 가능하다.
 
-### 2.3.1 ssh 설정에 미리 PEM 파일 및 서버 IP 주소 설정하기
+### 2.3.2 ssh 설정에 미리 PEM 파일 및 서버 IP 주소 설정하기
 
 `PEM` 파일을`.ssh` 폴더로 복사하고 권한을 변경한다.
 
@@ -141,7 +141,7 @@ Run "sudo yum update" to apply all updates.
 [ec2-user@xxx.xxx.xxx.xxx ~]$
 ```
 
-## 2.4. EC2 생성 후 EC2 인스턴스 추가 설정
+## 2.4 EC2 생성 후 EC2 인스턴스 추가 설정
 
 ### 2.4.1 타임존 변경
 
@@ -209,7 +209,7 @@ $ ssh echo-server
 $ git clone https://github.com/kenshin579/echo-server
 ```
 
-## 3.1 golang 설치
+## 3.2 golang 설치
 
 Echo server는 golang으로 작성이 되어 있어서 golang을 설치한다.
 
@@ -217,7 +217,7 @@ Echo server는 golang으로 작성이 되어 있어서 golang을 설치한다.
 $ sudo yum install -y golang
 ```
 
-## 3.2 소스 코드 빌드
+## 3.3 소스 코드 빌드
 
 Makefile에 빌드 명령이 지정되어 있어 쉽게 make로 빌드한다.
 
@@ -249,9 +249,9 @@ github.com/kenshin579/echo-server/cmd/bootstrap
 command-line-arguments
 ```
 
-## 3.3 Echo 실행하고 외부에서 테스트해보기
+## 3.4 Echo 실행하고 외부에서 테스트해보기
 
-### 3.3.1 API 실행
+### 3.4.1 API 실행
 
 ```bash
 $ go run cmd/server/main.go
@@ -279,7 +279,7 @@ ____________________________________O/_______
 
 ```
 
-### 3.3.2 외부에서 API 접근하기
+### 3.4.2 외부에서 API 접근하기
 
 먼저 EC2 공개 주소를 알아야 접근할 수 있기 때문에 EC2 인스턴스 세부 정보에서 확인한다.
 
@@ -296,7 +296,7 @@ $ curl --location 'https://ec1-3-30-20-2342.ap-northeast-2.compute.amazonaws.com
 Pong
 ```
 
-# 참고
+# 4. 참고
 
 - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/go-devenv.html
 - https://ryanwoo.tistory.com/8
