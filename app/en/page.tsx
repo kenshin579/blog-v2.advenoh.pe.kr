@@ -1,4 +1,4 @@
-import { getAllArticles, getAllSeries, getArticlesBySeries, getArticleTitleFromSlug } from '@/lib/articles';
+import { getAllArticles, getAllSeries, getArticlesBySeries, getArticleTitleFromSlug, isBiweeklySeries } from '@/lib/articles';
 import { formatDate } from '@/lib/utils';
 import { seriesSlug } from '@/lib/url';
 import { Headline } from '@/components/home/headline';
@@ -89,11 +89,12 @@ export default async function EnHomePage() {
   const yearsWriting = Math.max(1, new Date().getFullYear() - firstYear);
 
   const featured = articles[0];
-  const latest = articles.slice(1, 5);
   const recent = articles.slice(5, 9);
   const wideLatest = articles.slice(9, 14);
 
-  const featuredSeriesArticle = articles.find((a) => a.series);
+  const biweeklyItems = articles.filter((a) => isBiweeklySeries(a.series)).slice(0, 4);
+
+  const featuredSeriesArticle = articles.find((a) => a.series && !isBiweeklySeries(a.series));
   let spotlightEpisodes: Array<{ num: number; title: string; slug: string }> = [];
   let spotlightName = '';
   if (featuredSeriesArticle?.series) {
@@ -163,11 +164,11 @@ export default async function EnHomePage() {
           />
         )}
 
-        {latest.length > 0 && (
+        {biweeklyItems.length > 0 && (
           <LatestCard
             basePath="/en"
             subtitle="One post biweekly"
-            items={latest.map((a) => ({
+            items={biweeklyItems.map((a) => ({
               slug: getArticleTitleFromSlug(a.slug),
               title: a.title,
               date: formatDate(a.date),
