@@ -589,7 +589,7 @@ Plan: 7 to add, 0 to change, 0 to destroy.
 
 Now that the cluster and ArgoCD are ready with Terraform, let's register and deploy an application in ArgoCD. We will use `bootstrap/sample-apps.yaml` and `charts/sample-nginx/` included in the sample code.
 
-### Helm Chart Structure
+### 5.6.1 Helm Chart Structure
 
 First, let's look at the Helm chart structure of the sample NGINX app to be deployed.
 
@@ -602,7 +602,7 @@ charts/sample-nginx/
     └── service.yaml     # K8s Service template
 ```
 
-### Registering Apps in ArgoCD with an ApplicationSet
+### 5.6.2 Registering Apps in ArgoCD with an ApplicationSet
 
 When registering apps in ArgoCD, use an **ApplicationSet**. An ApplicationSet lets you define multiple Applications at once based on a template.
 
@@ -642,7 +642,7 @@ spec:
 - `source.path`: The Helm chart path within the Git repository. `{{appName}}` is substituted with the actual app name
 - `syncPolicy.automated`: When a change is detected in Git, it is automatically applied to K8s
 
-### Running and Verifying the Deployment
+### 5.6.3 Running and Verifying the Deployment
 
 ```bash
 # 1. Apply the ApplicationSet
@@ -670,7 +670,7 @@ kubectl port-forward svc/sample-nginx -n study 8081:80
 
 In the ArgoCD UI (`https://localhost:8080`), you can also confirm that the `sample-nginx` app is registered in the Synced/Healthy state.
 
-### Testing a Configuration Change
+### 5.6.4 Testing a Configuration Change
 
 Let's verify ArgoCD's automatic synchronization. If you change the replica count in `values.yaml` and Git push, ArgoCD applies it automatically.
 
@@ -809,7 +809,7 @@ sequenceDiagram
 
 To change an app's configuration, you only need to **modify the Helm chart's `values.yaml`**. There is no need to touch the Terraform code.
 
-### ApplicationSet Example
+### 6.3.1 ApplicationSet Example
 
 When registering apps in ArgoCD, use an ApplicationSet. The following is an example included in the sample code.
 
@@ -845,7 +845,7 @@ spec:
 - `generators.list`: The list of apps to deploy. To add a new app, just add an entry here
 - `syncPolicy.automated`: When ArgoCD detects a Git change, it is automatically applied to K8s
 
-### Helm Chart Example
+### 6.3.2 Helm Chart Example
 
 Each app's Kubernetes resources are defined with a Helm chart.
 
@@ -890,7 +890,7 @@ Key takeaways:
 - **Module**: Separates resources into reusable units to structure the code
 - **Real-world structure**: Separating roles with the combination of Terraform (cluster) + ArgoCD (deployment automation) + Helm (app configuration) makes management much easier
 
-## References
+## 7.1 References
 
 - [Terraform Official Documentation](https://developer.hashicorp.com/terraform/docs)
 - [Terraform Registry - Provider List](https://registry.terraform.io/browse/providers)

@@ -11,7 +11,7 @@ tags:
   - 개선사항
 ---
 
-# Java Beyond
+# 1. Java Beyond
 
 - JEP 301: Enhanced Enums - currently on hold
 
@@ -24,7 +24,7 @@ tags:
 
 As Java's release cycle has changed to 6 months, new features and improvements are expected to be reflected quickly. They have not been reflected yet, but I have organized the parts that are expected to be reflected in future Java versions.
 
-# JEP 301: Enhanced Enums - currently on hold
+# 2. JEP 301: Enhanced Enums - currently on hold
 
 This proposal document is currently on hold. Since it may be introduced later, let's briefly look at what kind of improvement it is.
 It is about supporting generics in Enums as well, and supporting a more precise type (sharper type) for the constant values defined in an Enum.
@@ -50,15 +50,15 @@ enum Bar<X> {
 Class<String> cs = Bar.ONE.getClazz(); //uses shaper typing of enum constant
 ```
 
-## References
+## 2.1 References
 
 - Enum improvements
     - [http://openjdk.java.net/jeps/301](http://openjdk.java.net/jeps/301)
     - [https://www.infoq.com/news/2017/01/java-enhanced-enums](https://www.infoq.com/news/2017/01/java-enhanced-enums)
 
-# JEP 302: Enhancements to Lambda Expressions : Lambda Leftovers - Status: Candidate
+# 3. JEP 302: Enhancements to Lambda Expressions : Lambda Leftovers - Status: Candidate
 
-## 1. Expressing unused lambda parameters with an underscore
+## 3.1 Expressing unused lambda parameters with an underscore
 
 This is a feature that improves readability by expressing unused variables in lambda parameters with an underscore.
 
@@ -71,7 +71,7 @@ After improvement
 numbers.forEach(( **\_**, v) -> System.out.println(v*2));
 ```
 
-## 2. Parameter shadowing
+## 3.2 Parameter shadowing
 
 Variable shadowing refers to the case where a variable defined in an inner scope has the same variable name as one defined in an outer scope.
 
@@ -108,7 +108,7 @@ map.computeIfAbsent(key, _ -> {
 });
 ```
 
-## 3. Optional: Improvements to disambiguating function calls\*\*
+## 3.3 Optional: Improvements to disambiguating function calls\*\*
 
 This is a feature where the compiler infers and compiles well on its own even without specifying the type when calling several overloaded methods.
 
@@ -132,13 +132,13 @@ private void callingM() {
 }
 ```
 
-## References
+## 3.4 References
 
 - Lambda improvement work
     - [http://openjdk.java.net/jeps/302](http://openjdk.java.net/jeps/302)
     - [https://www.infoq.com/news/2017/01/java10-lambda-leftovers](https://www.infoq.com/news/2017/01/java10-lambda-leftovers)
 
-# JEP ???: Data Classes
+# 4. JEP ???: Data Classes
 
 A data class refers to a pure data object that holds data and has no logic implementation. It has various methods (e.g., getter, setter) for accessing the data attributes. It is also called a DTO (Data Transfer Object) or VO (Value Object).
 
@@ -183,7 +183,7 @@ switch (shape) {
 }
 ```
 
-## References
+## 4.1 References
 
 - Data object
     - [https://refactoring.guru/smells/data-class](https://refactoring.guru/smells/data-class)
@@ -193,7 +193,7 @@ switch (shape) {
 - Other languages
     - [https://www.baeldung.com/kotlin-data-classes](https://www.baeldung.com/kotlin-data-classes)
 
-# JEP 305 : Pattern Matching - Candidate
+# 5. JEP 305 : Pattern Matching - Candidate
 
 This JEP introduces the matches keyword and covers the work to improve switch pattern matching.
 
@@ -249,7 +249,7 @@ switch (obj) {
 }
 ```
 
-## References
+## 5.1 References
 
 - Improvement work
     - [http://openjdk.java.net/jeps/305](http://openjdk.java.net/jeps/305)

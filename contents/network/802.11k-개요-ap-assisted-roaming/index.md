@@ -23,7 +23,7 @@ tags:
 
 # 1. 개요
 
-# 1.1 IEEE 802.11
+# 2. IEEE 802.11
 
 오늘날 우리가 와이파이(Wi-Fi)라고 부르는 무선 근거리 통신망(WLAN)의 기반이 되는 국제 표준이다.
 
@@ -40,7 +40,7 @@ tags:
 
 - [802.11 Amendments – The “Alphabet Soup”](https://wifivitae.com/2021/11/30/80211-soup/)
 
-## 주요 802.11 표준 (물리) 및 특징
+## 2.1 주요 802.11 표준 (물리) 및 특징
 
 아래 표는 Wi-Fi 기술이 세대를 거치며 어떻게 발전해 왔는지를 한눈에 보여준다.
 
@@ -70,7 +70,7 @@ tags:
 
 참고: [Roaming in 802.11k/v/r Wi-Fi](https://interline.pl/Information-and-Tips/Roaming-802.11k-v-r-Wi-Fi)
 
-# 2. 802.11k (AP Assisted Roaming)
+# 3. 802.11k (AP Assisted Roaming)
 
 `802.11k`는 모바일 기기가 더 나은 신호의 인접 `AP`를 쉽게 찾도록 돕는 무선 자원 측정(Radio Resource Measurement) 표준이다. 이 표준 덕분에 기기는 주변 `AP` 목록을 미리 알 수 있어, 기존 방식보다 빠르게 최적의 `AP`로 로밍(roaming)할 수 있다. 즉, `802.11k`는 기기가 `AP`를 더 효율적으로 선택하게 하여 Wi-Fi 성능과 안정성을 향상시킨다.
 
@@ -91,7 +91,7 @@ tags:
   - 호환성 문제 (클라이언트 및 `AP` 모두 요구)
     - `802.11k`는 `AP`와 클라이언트 장치(스마트폰, 노트북 등) 양쪽 모두 이 표준을 지원해야만 작동한다
 
-# 2.1 작동 방식
+# 4. 작동 방식
 
 ![802.11k](image-20251212002101551.png)
 
@@ -111,7 +111,7 @@ tags:
 5. **신속한 로밍**
    - 클라이언트는 최적의 `AP` 정보를 미리 알기 때문에 로밍 대기 시간이 줄어들고, VoIP 통화와 같이 지연 시간에 민감한 애플리케이션의 연결 품질이 향상된다
 
-## 참고: 핸드오버 절차
+## 4.1 참고: 핸드오버 절차
 
 ![Handover](image-20251212002121937.png)
 
@@ -164,7 +164,7 @@ tags:
 
 > 누가 Neighbor List를 만들어주는가?
 
-## 2.1.1 `WLC` - 중앙 집중식 네트워크 관리 시스템
+## 4.2 `WLC` - 중앙 집중식 네트워크 관리 시스템
 
 대부분의 기업 또는 대규모 Wi-Fi 환경에서는 `AP`들이 중앙의 **무선 컨트롤러(Wireless LAN Controller, `WLC`)** 시스템에 의해 관리된다.
 
@@ -215,17 +215,17 @@ tags:
 > | **운영 클래스 및 PHY 유형**         | `AP`의 작동 주파수 대역(예: 2.4GHz, 5GHz, 6GHz) 및 지원되는 물리 계층(PHY) 유형(예: 802.11n, 802.11ac, 802.11ax)과 같은 운영 세부 정보 |
 > | 기능 정보                           | `AP`가 지원하는 기능(예: 보안 방식, 로밍 지원 프로토콜 등)을 나타내는 정보 요소(IE)가 포함 |
 
-# 2.3 성능 비교
+# 5. 성능 비교
 
 > 찾지 못함
 
-# 3. 802.11k 설정해서 사용하는 방법
+# 6. 802.11k 설정해서 사용하는 방법
 
 - `AP`와 Client에서 802.11k를 지원해야 사용할 수 있다
   - `AP`에서 지원하더라도 `WLC` 관리자 웹 UI에서 활성화시켜줘야 한다
   - Client Wi-Fi 장치에서 802.11k를 지원하면 추가 활성화 없이 `AP`에서 이 기능이 활성화되어 있음을 감지하고 자동으로 해당 기능을 사용한다
 
-# 3.1  클라이언트 Wi-Fi device 에서도 802.11k 지원을 하나?
+# 7. 클라이언트 Wi-Fi device 에서도 802.11k 지원을 하나?
 
 ```bash
 > sudo lspci -k | grep -A3 -i network
@@ -259,7 +259,7 @@ tags:
 # RRM은 Radio Resource Management의 약자로 802.11k 표준이 포함된 기능을 지원한다는 의미
 ```
 
-# 3.2 `AP`에서는 802.11k 지원을 하나?
+# 8. `AP`에서는 802.11k 지원을 하나?
 
 - `AP`에서 지원을 해야 하고 관리자 어드민 UI에서 활성화를 시켜줘야 한다
   - Assisted Roaming Prediction Optimization (로밍 예측 최적화): 802.11k 지원하지 않는 클라이언트를 위한 기능
@@ -273,13 +273,13 @@ tags:
 
 ![Capture](https://semfionetworks.com/wp-content/uploads/2020/11/screen-shot-2017-01-02-at-11-25-07-2_orig.png)
 
-# 4. FAQ
+# 9. FAQ
 
-## 4.1 여러 Wifi 로밍을 동시에 설정해서 사용해도 되나?
+## 9.1 여러 Wifi 로밍을 동시에 설정해서 사용해도 되나?
 
 - 실제 기업/산업용 Wifi 대부분은 각 역할이 다르고 상호 보완이라서 동시에 설정해서 사용하고 있다고 함
 
-## 4.2 드론 행사에서는 어떤 네트워크를 사용하나?
+## 9.2 드론 행사에서는 어떤 네트워크를 사용하나?
 
 - 드론 쇼 행사에서는 **Wi-Fi를 주 네트워크로 사용**하지만, 안정성과 대역폭 문제로 **mesh 네트워크, 전용 RF(라디오 주파수), 또는 다중 라디오 조합**을 병행한다
   - **Wi-Fi 기반 (주요)**:
@@ -293,7 +293,7 @@ tags:
     - 쇼 파일 전체를 사전 업로드해 오프라인 비행 가능(실시간 제어 최소화)
   - **백업/중복**: GNSS/RTK 위치 + 5G(최신 트렌드)로 지연 0ms 동기화
 
-## 4.3 PSK, PMK, PTK 여러 용어가 헷갈리고 실제 인증, 로밍 인증 흐름에서 어떻게 사용되고 있는지?
+## 9.3 PSK, PMK, PTK 여러 용어가 헷갈리고 실제 인증, 로밍 인증 흐름에서 어떻게 사용되고 있는지?
 
 - 로봇(클라이언트) ↔ `AP` ↔ 인증 서버(RADIUS) 과정에서 어떤 키가 어떻게 만들어지고 전달되는지 그리고 로밍 시 어떤 키를 재사용하는지를 한눈에 보여주는 다이어그램
 
@@ -393,13 +393,13 @@ tags:
   ────────── 로밍 완료 (ms 단위) ──────────
   ```
 
-## 4.4 무선 네트워크 패킷은 어떻게 캡처할 수 있나?
+## 9.4 무선 네트워크 패킷은 어떻게 캡처할 수 있나?
 
 - https://www.cisco.com/c/ko_kr/support/docs/wireless-mobility/wireless-mobility/217042-collect-packet-captures-over-the-air-on.html
 
-# 5. 용어
+# 10. 용어
 
-## 5.1 Wi-Fi 로밍이란?
+## 10.1 Wi-Fi 로밍이란?
 
 - Wi-Fi 로밍은 이동 기기가 더 강한 `AP`로 자동으로 전환하는 기술이며, 802.11r/k/v를 활성화하면 전환 속도와 안정성을 크게 향상시킬 수 있다
 - `802.11r` (Fast BSS Transition: 빠른 `AP` 이동)
@@ -422,7 +422,7 @@ tags:
 - "더 나은 `AP`로 이동" 요청
 - 부하 균형 | | 로봇 효과 | Ping-pong handover ↓ | 불필요 스캔 ↓, 배터리 절약 | 과부하 `AP` 탈출, 안정적 연결 유지 | | 필수 조건 | 동일 Mobility Domain (MDID) | `AP` 간 이웃 테이블 설정 | 클라이언트 동의 필요 (일부 거부 가능) | | 호환성 | iOS/Android 대부분 지원 | 광범위 지원 (legacy 포함) | 최신 기기 위주, 일부 제한 |
 
-## 5.2 무선 신호 관련 용어
+## 10.2 무선 신호 관련 용어
 
 - `RSSI` (Received Signal Strength Indicator)
 
@@ -446,7 +446,7 @@ tags:
 
   - `RSSI`는 신호 자체, `SNR`은 신호의 질(노이즈 대비)
 
-## 5.3 Wi-Fi 암호화/키 관련 용어
+## 10.3 Wi-Fi 암호화/키 관련 용어
 
 - `PSK` (Pre-Shared Key)
   - 공유된 비밀번호(= 우리가 입력하는 Wi-Fi 패스워드)
@@ -463,7 +463,7 @@ tags:
 - `PTK` (Pairwise Transient Key)
   - PMK에서 파생된 실제 데이터 암호화 키
 
-## 5.4 Wi-Fi 인증 관련 용어
+## 10.4 Wi-Fi 인증 관련 용어
 
 - `EAP` (Extensible Authentication Protocol) - 인증(로그인) 방식의 프레임워크
 
@@ -492,7 +492,7 @@ tags:
 
   - WPA2-Enterprise 환경에서 사용되는 인증 방식
 
-## 5.5 보안 프로토콜
+## 10.5 보안 프로토콜
 
 - `WPA` (Wi-Fi Protected Access: Wi-Fi 암호화 표준 / 보안 규격 전체)
 
@@ -524,32 +524,32 @@ tags:
 
 - WPA는 "Wi-Fi에서 보안을 어떻게 적용할까"를 정의한 표준 이름이고, PSK/PMK는 그 안에서 실제로 사용하는 암호화 키 개념이다.
 
-## 5.6 BSSID (Basic Service Set Identifier)
+## 10.6 BSSID (Basic Service Set Identifier)
 
 - `AP`의 MAC 주소
 - SSID는 Wi-Fi 이름, BSSID는 `AP` 장치 ID
 
-## 5.7 SSID (Service Set Identifier)
+## 10.7 SSID (Service Set Identifier)
 
 - 사용자가 자신의 Wi-Fi 네트워크를 식별하고 연결하기 위한 이름
 - 단말기에서 Wi-Fi 목록을 볼 때 보이는 것이 SSID 이다
 
-## 5.8 Wi-Fi Band
+## 10.8 Wi-Fi Band
 
 - 무선 통신에 사용하기 위해 할당된 특정 주파수 범위를 의미하며, 이 주파수 대역에 따라 통신 속도, 도달 거리, 그리고 간섭 수준이 달라진다. 현재 주로 사용되는 밴드는 2.4GHz, 5GHz, 그리고 최신 기술인 6GHz이다
 
-## 5.9 Channel
+## 10.9 Channel
 
 - 채널은 `AP`가 통신을 위해 사용하는 특정 주파수 대역을 의미한다 (ex. 채널 1, 6, 11 또는 36, 149등)
 - 하나의 `AP`는 보통 하나의 채널 또는 두 개의 채널(2.4GHz 대역 하나, 5GHz 대역 하나)을 사용한다
 
-## 5.10 Scanning
+## 10.10 Scanning
 
 - 스캐닝은 장치가 주변의 Wi-Fi `AP`를 찾고 연결할 수 있는 정보를 수집하는 과정을 말한다. 이 과정은 일반적으로 두 가지 방식으로 이루어진다
   - 수동 스캔(Passive Scanning): 클라이언트가 `AP`가 주기적으로 브로드캐스트하는 비콘(Beacon) 프레임을 조용히 수신 대기하여 정보를 얻는 방식이다. 모든 채널을 확인해야 하므로 시간이 오래 걸릴 수 있다
   - 능동 스캔(Active Scanning): 클라이언트가 특정 채널로 프로브 요청(Probe Request) 프레임을 전송하고, `AP`가 이에 대한 프로브 응답(Probe Response) 프레임을 보내는 방식으로 정보를 얻는다. 수동 스캔보다 빠르지만, 여전히 여러 채널을 오가며 스캔하는 과정에서 시간이 소요될 수 있다
 
-## 5.11 WLC (Wireless LAN Controller)
+## 10.11 WLC (Wireless LAN Controller)
 
 - `WLC`(Wireless LAN Controller) 동작 원리는 중앙 집중 관리가 핵심으로, 여러 `AP`(액세스 포인트)를 하나의 컨트롤러에서 통합 제어하여 SSID, 보안 정책, 채널 등을 일괄 설정하고, 로드밸런싱, RF 최적화, 클라이언트 로밍 및 장애 관리까지 자동화하여 대규모 무선 네트워크를 효율적으로 운영하는 방식이다
 
@@ -569,7 +569,7 @@ tags:
 
   `WLC`는 `AP`와 통신하며 제어 정보를 주고받고, 클라이언트 장치(노트북, 스마트폰 등)는 `AP`를 통해 `WLC`와 연결된 유선 네트워크로 접속된다
 
-# 6. 참고
+# 11. 참고
 
 - https://wiki.navercorp.com/pages/viewpage.action?pageId=4265685224&spaceKey=RCWG&title=802.11r%2BFast%2BBSS%2BTransition
 - https://www.cisco.com/c/ko_kr/support/docs/wireless/catalyst-9800-series-wireless-controllers/221671-understand-802-11r-11k-11v-fast-roams-on.html
@@ -580,11 +580,11 @@ tags:
 - https://www.shixuen.com/router/wifi_network_roaming.html
 - https://www.slideshare.net/slideshow/mobile-devices-v15-final/32403571?from_search=4
 
-# 7. Appendix
+# 12. Appendix
 
-# 7.1 Commands
+# 13. Commands
 
-## 7.1.1 Wi-Fi 디바이스 연결 상태 출력
+## 13.1 Wi-Fi 디바이스 연결 상태 출력
 
 지금 wlp4s0 인터페이스가 어느 `AP`/SSID에 어떤 상태로 붙어 있는지를 확인할 때 쓰는 상태 조회 명령어이다.
 

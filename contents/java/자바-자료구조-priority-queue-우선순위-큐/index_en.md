@@ -42,7 +42,7 @@ For more details on the methods, please refer to the [Oracle Java API](https://d
 
 # 2. How to Use a Priority Queue
 
-# 2.1 Min Heap
+# 3. Min Heap
 
 If you create a `PriorityQueue` object with no additional arguments, it operates as a Min Heap. As you can see in the example, when you extract data after adding it, the lowest value is returned.
 
@@ -62,7 +62,7 @@ If you create a `PriorityQueue` object with no additional arguments, it operates
 
 
 
-## 2.2 Max Heap
+## 3.1 Max Heap
 
 When creating a `PriorityQueue` object, you can specify the priority for the data by passing a Comparator to the constructor. To make the Max value of Integer be returned when extracting values, specify it with the `reverseOrder()` method provided by default in Collections.
 
@@ -82,7 +82,7 @@ When creating a `PriorityQueue` object, you can specify the priority for the dat
 
 
 
-## 2.3 Min Heap - Student Object
+## 3.2 Min Heap - Student Object
 
 Besides basic Integer values, you can also set a specific value in an object to have priority. In the example, it is set so that the lowest Age value of the Student object is extracted first. To pass a Comparator as an argument, the `Comparator.comparing()` method was used. The `comparing()` method returns a Comparator method function based on the field value passed as an argument, making it easy to create a Comparator.
 
@@ -103,13 +103,13 @@ public void test_student_age() {
 }
 ```
 
-# 3. Wrapping Up
+# 4. Wrapping Up
 
 `PriorityQueue` is a Queue data structure that has priority. If you use `PriorityQueue` during development, you can easily use it as a Min+Max Heap data structure.
 
 For the example code, please refer to [github](https://github.com/kenshin579/tutorials-java/blob/master/java8/src/test/java/com/advenoh/structure/PriorityQueueTest.java).
 
-# 4. References
+# 5. References
 
 - Priority Queue
     - http://asuraiv.blogspot.com/2015/11/java-priorityqueue.html

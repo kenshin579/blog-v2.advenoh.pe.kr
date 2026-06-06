@@ -112,7 +112,7 @@ spec:
 
 `Gateway API`는 역할에 따라 리소스를 분리하여 관리한다. 이 구조는 `StorageClass`/`PersistentVolume` 패턴과 유사하다.
 
-### GatewayClass
+### 4.1.1 GatewayClass
 
 어떤 구현체를 사용할지 정의한다. 인프라 제공자가 관리하는 리소스다.
 
@@ -127,7 +127,7 @@ spec:
 
 - 예: NGINX, `Istio`, `Kong`, `Traefik` 등
 
-### Gateway
+### 4.1.2 Gateway
 
 실제 트래픽 진입 지점이다. `LoadBalancer`, `Listener`(TLS/HTTP) 설정을 담당하며 **인프라 관점의 리소스**다.
 
@@ -164,7 +164,7 @@ TLS를 사용하는 경우 HTTPS 리스너를 추가할 수 있다.
             name: echo-tls
 ```
 
-### HTTPRoute
+### 4.1.3 HTTPRoute
 
 요청을 어떤 `Service`로 보낼지 정의한다. **애플리케이션 관점의 리소스**다.
 
@@ -464,7 +464,7 @@ nginx-gateway-fabric:
 
 `Gateway`는 트래픽 진입점을, `HTTPRoute`는 서비스 라우팅 규칙을 정의한다. 예제 프로젝트에서는 `Helm` 템플릿으로 관리하며, `values` 파일만 수정하면 다양한 환경에 맞게 배포할 수 있다.
 
-#### Gateway 리소스
+#### 7.3.2.1 Gateway 리소스
 
 `Gateway`는 외부 트래픽이 클러스터로 들어오는 진입점을 정의한다. 어떤 `GatewayClass`를 사용할지, 어떤 포트와 프로토콜로 리스닝할지, 어떤 네임스페이스의 `Route`를 허용할지를 설정한다.
 
@@ -497,7 +497,7 @@ spec:
     {{- end }}
 ```
 
-#### HTTPRoute 리소스
+#### 7.3.2.2 HTTPRoute 리소스
 
 `HTTPRoute`는 `Gateway`로 들어온 요청을 호스트명과 경로 조건에 따라 어떤 백엔드 `Service`로 전달할지 정의한다. 하나의 `Gateway`에 여러 `HTTPRoute`를 연결할 수 있어 서비스별로 독립적인 라우팅 관리가 가능하다.
 
@@ -550,7 +550,7 @@ spec:
 
 HTTPS를 사용하려면 `cert-manager`를 활성화하고 관련 설정을 추가한다.
 
-#### 1단계: cert-manager 활성화
+#### 7.3.3.1 1단계: cert-manager 활성화
 
 `bootstrap/infra-gateway.yaml`에서 `cert-manager` 항목의 주석을 해제한다.
 
@@ -570,7 +570,7 @@ elements:
     path: cloud/ingress-gateway/charts/gateway/gateway-routes
 ```
 
-#### 2단계: TLS 관련 values 설정
+#### 7.3.3.2 2단계: TLS 관련 values 설정
 
 `charts/gateway/gateway-routes/values.yaml`에서 TLS를 활성화한다.
 

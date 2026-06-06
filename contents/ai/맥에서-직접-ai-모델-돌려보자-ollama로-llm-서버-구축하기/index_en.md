@@ -21,7 +21,7 @@ As AI-related services have become more widely used recently, the associated cos
 
 First, install `Ollama`. `Ollama` is a tool that makes it easy to run an `LLM` locally.
 
-### **Installation**
+### 2.1.1 Installation
 
 Go to the website, download the build for your OS, and proceed with the installation.
 
@@ -43,7 +43,7 @@ ollama version is 0.6.2
 Warning: client version is 0.4.7
 ```
 
-### Running Ollama
+### 2.1.2 Running Ollama
 
 After installation, you can now download and run a model.
 
@@ -75,7 +75,7 @@ How can I help you today?
 
 Using only the CLI environment can be inconvenient, so you can also use Open WebUI. Open WebUI is a web-based UI that makes it easy to use `Ollama`.
 
-### **Installation**
+### 3.1.1 Installation
 
 There are several methods, but here we'll simply run it with Docker.
 

@@ -174,7 +174,7 @@ TearDownSuite :: run once
 PASS
 ```
 
-# References
+# 1. References
 
 - https://brunoscheufler.com/blog/2020-04-12-building-go-test-suites-using-testify
 

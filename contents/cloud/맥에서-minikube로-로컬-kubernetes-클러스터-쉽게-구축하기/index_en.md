@@ -15,11 +15,11 @@ tags:
 
 # 1. Overview
 
-### What is Minikube?
+## 1.1 What is Minikube?
 
 `Minikube` is a tool that lets you run a `Kubernetes` cluster lightly in a local environment. It is useful for practicing `Kubernetes` or testing in a development environment. It runs on Mac, Linux, and Windows, and uses virtualization technology to build the cluster.
 
-### Comparison of Kubernetes Cluster Execution Methods
+## 1.2 Comparison of Kubernetes Cluster Execution Methods
 
 There are several ways to run a `Kubernetes` cluster, each with its own pros and cons.
 
@@ -169,7 +169,7 @@ echoserver-6c45798fdc-b8kcr   1/1     Running   0          36s   10.244.0.3   mi
 
 ## 2.4 Accessing from Outside
 
-### Exposing Externally with the Minikube Service Command
+### 2.4.1 Exposing Externally with the Minikube Service Command
 
 Since `Minikube` does not support `LoadBalancer` by default, use the `minikube service` command to make it accessible from outside.
 
@@ -189,7 +189,7 @@ After checking the printed URL, send a `curl` request to that address to verify 
 {"host":{"hostname":"localhost","ip":"::ffff:10.244.0.1","ips":[]},"http":{"method":"GET","baseUrl":"","originalUrl":"/","protocol":"http"},"request":{"params":{"0":"/"},"query":{},"cookies":{},"body":{},"headers":{"host":"localhost:59333","user-agent":"curl/8.7.1","accept":"*/*"}},"environment":{"PATH":"/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin","HOSTNAME":"echoserver-6c45798fdc-qm9br","PORT":"80","KUBERNETES_PORT":"tcp://10.96.0.1:443","ECHOSERVER_PORT_80_TCP_PROTO":"tcp","KUBERNETES_SERVICE_PORT_HTTPS":"443","KUBERNETES_PORT_443_TCP_PORT":"443","KUBERNETES_PORT_443_TCP_PROTO":"tcp","ECHOSERVER_PORT_80_TCP_PORT":"80","ECHOSERVER_PORT_80_TCP_ADDR":"10.104.239.11","KUBERNETES_SERVICE_PORT":"443","KUBERNETES_PORT_443_TCP":"tcp://10.96.0.1:443","ECHOSERVER_SERVICE_HOST":"10.104.239.11","ECHOSERVER_SERVICE_PORT":"80","ECHOSERVER_PORT":"tcp://10.104.239.11:80","ECHOSERVER_PORT_80_TCP":"tcp://10.104.239.11:80","KUBERNETES_SERVICE_HOST":"10.96.0.1","KUBERNETES_PORT_443_TCP_ADDR":"10.96.0.1","NODE_VERSION":"20.11.0","YARN_VERSION":"1.22.19","HOME":"/root"}}
 ```
 
-### Using Port Forwarding
+### 2.4.2 Using Port Forwarding
 
 With port forwarding, you can expose a specific port externally.
 
@@ -227,7 +227,7 @@ The browser opens, allowing you to visually check the state of the `Kubernetes` 
 
 ## 2.6 Stopping and Deleting Minikube
 
-### Stopping Minikube
+### 2.6.1 Stopping Minikube
 
 You can stop `minikube` with Minikube `stop`.
 
@@ -238,7 +238,7 @@ You can stop `minikube` with Minikube `stop`.
 🛑  1 node stopped.
 ```
 
-### Deleting Minikube
+### 2.6.2 Deleting Minikube
 
 To completely delete the `Minikube` cluster, run the following command.
 

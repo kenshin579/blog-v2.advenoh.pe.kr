@@ -25,7 +25,7 @@ To run Kafka using the `docker-compose` command, the following conditions must b
 
 To make it easy for users to run Kafka, several open source projects provide `docker-compose` or `helm` configuration files. Let's run Kafka using files from a publicly available project.
 
-# 2.1 Running Only the Kafka Components
+# 3. Running Only the Kafka Components
 
 Run Docker using the `docker-compose.yml` file provided by [wurstmeister](https://github.com/wurstmeister/kafka-docker).
 
@@ -44,7 +44,7 @@ Connected to localhost.
 Escape character is '^]'.
 ```
 
-## 2.2 Running Kafka + Akhq (UI) Together
+## 3.1 Running Kafka + Akhq (UI) Together
 
 If you only run the Kafka server, then to create and query topics you need to download the kafka binary, run it with kafka commands, and be well-versed in various options. To use and manage Kafka more easily, several Kafka Manager UIs are provided. Among them, let's also run AKHQ, one of the most commonly used ones.
 
@@ -132,7 +132,7 @@ To access the AKHQ UI, go to http://localhost:8080.
 
 ![AKHQ Web](image-20220807203854874.png)
 
-# References
+# 4. References
 
 - https://akhq.io/docs/#installation
 

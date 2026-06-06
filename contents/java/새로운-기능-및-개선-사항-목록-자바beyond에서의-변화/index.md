@@ -11,7 +11,7 @@ tags:
   - 개선사항
 ---
 
-# 자바 Beyond
+# 1. 자바 Beyond
 
 - JEP 301: Enhanced Enums - 현재 보류중
 
@@ -24,7 +24,7 @@ tags:
 
 자바의 릴리스 주기가 6개월로 변경되면서 새로운 기능, 개선사항들이 빠르게 반영될 것으로 기대하고 있다. 아직 반영되지는 않았지만, 추후 자바 버전에서 반영될 것으로 기대되는 부분을 정리해보았다.
 
-# JEP 301: Enhanced Enums - 현재 보류 상태
+# 2. JEP 301: Enhanced Enums - 현재 보류 상태
 
 이 제안 문서는 현재 보류된 상태이다. 나중에 도입될 수 있어서 어떤 개선 사항인지 간단하게 알아봅니다.
 Enum에서도 제너릭을 지원하고 Enum에 정의된 상수 값에 대해 보다 정교한 타입(shaper type)을 지원하는 것이다.
@@ -50,15 +50,15 @@ enum Bar<X> {
 Class<String> cs = Bar.ONE.getClazz(); //uses shaper typing of enum constant
 ```
 
-## 참고
+## 2.1 참고
 
 - Enum 개선사항
     - [http://openjdk.java.net/jeps/301](http://openjdk.java.net/jeps/301)
     - [https://www.infoq.com/news/2017/01/java-enhanced-enums](https://www.infoq.com/news/2017/01/java-enhanced-enums)
 
-# JEP 302: Enhancements to Lambda Expressions : Lambda Leftovers - 상태: Candidate
+# 3. JEP 302: Enhancements to Lambda Expressions : Lambda Leftovers - 상태: Candidate
 
-## 1. 사용하지 않는 lambda 인자를 underscore로 표현
+## 3.1 사용하지 않는 lambda 인자를 underscore로 표현
 
 람다 인자에서 사용되지 않는 변수는 underscore로 표현해 가독성을 높여주는 기능이다.
 
@@ -71,7 +71,7 @@ numbers.forEach(( **k**, v) -> System.out.println(v*2)); k를 사용하지 않�
 numbers.forEach(( **\_**, v) -> System.out.println(v*2));
 ```
 
-## 2. 인자 은닉화
+## 3.2 인자 은닉화
 
 변수 은닉화(variable shadowing)란 inner 스코프에서 정의된 변수가 outer 스코프에서 정의된 동일한 변수 이름을 가지는 경우를 일컫는다.
 
@@ -108,7 +108,7 @@ map.computeIfAbsent(key, _ -> {
 });
 ```
 
-## 3. 옵션: 함수 호출에 대한 명확성에 대한 개선\*\*
+## 3.3 옵션: 함수 호출에 대한 명확성에 대한 개선\*\*
 
 오버로딩된 여러 메서드를 호출할 타임을 명시하지 않아도 컴파일러가 알아서 잘 추론하여 컴파일 해주는 기능이다.
 
@@ -132,13 +132,13 @@ private void callingM() {
 }
 ```
 
-## 참고
+## 3.4 참고
 
 - 람다 개선 작업
     - [http://openjdk.java.net/jeps/302](http://openjdk.java.net/jeps/302)
     - [https://www.infoq.com/news/2017/01/java10-lambda-leftovers](https://www.infoq.com/news/2017/01/java10-lambda-leftovers)
 
-# JEP ???: Data Classes
+# 4. JEP ???: Data Classes
 
 데이터 클라스란 데이터를 담고 로직 구현이 없는 순수한 데이터 객체를 말한다. 데이터 속성에 접근하기 위한 여러 메서드(ex. getter, setter)를 가집니다. DTO(Data Transfer Object)나 VO(Value Object)이라고도 한다.
 
@@ -183,7 +183,7 @@ switch (shape) {
 }
 ```
 
-## 참고
+## 4.1 참고
 
 - 데이터 객체
     - [https://refactoring.guru/smells/data-class](https://refactoring.guru/smells/data-class)
@@ -193,7 +193,7 @@ switch (shape) {
 - 다른 언어
     - [https://www.baeldung.com/kotlin-data-classes](https://www.baeldung.com/kotlin-data-classes)
 
-# JEP 305 : Pattern Matching - Candidate
+# 5. JEP 305 : Pattern Matching - Candidate
 
 이 JEP에서는 matches 키워드를 도입하고 switch 패턴 매칭 개선 작업을 다루고 있다.
 
@@ -249,7 +249,7 @@ switch (obj) {
 }
 ```
 
-## 참고
+## 5.1 참고
 
 - 개선작업
     - [http://openjdk.java.net/jeps/305](http://openjdk.java.net/jeps/305)

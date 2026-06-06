@@ -30,7 +30,7 @@ tags:
 
 이 과정에서 여러 IAM 솔루션을 검토하다가, 오픈소스 기반으로 널리 사용되고 있는 Keycloak을 접하게 되었고, 실제로 적용해보기 위해 스터디를 진행했다. 이번 글은 그 과정에서 학습한 내용을 정리한 것으로, Keycloak이 무엇인지, 어떤 기능을 제공하며, 어떻게 구성되어 있는지를 살펴보려 한다.
 
-## Keycloak 이란?
+## 1.1 Keycloak 이란?
 
 Keycloak은 **Red Hat**에서 주도하는 오픈소스 IAM(Identity and Access Management) 솔루션으로, 사용자 인증과 권한 관리를 통합적으로 처리할 수 있는 플랫폼이다. OAuth 2.0, OpenID Connect, SAML 같은 표준 프로토콜을 지원하며, 로그인, 로그아웃, 세션 관리와 같은 복잡한 인증 로직을 애플리케이션에서 직접 구현하지 않고 Keycloak에 위임할 수 있다. 
 
@@ -38,7 +38,7 @@ Keycloak은 **Red Hat**에서 주도하는 오픈소스 IAM(Identity and Access 
 
 최근 애플리케이션 환경은 다수의 마이크로서비스, 웹/모바일 클라이언트, 외부 API 연동 등으로 점점 복잡해지고 있다. 이때 각 서비스마다 별도의 로그인 기능을 구현하면 보안 및 유지보수 비용이 커지게 된다. Keycloak 을 사용하면 중앙집중식 인증 관리, Single Sign-On(SSO), 소셜 로그인 연동이 가능하여 보안 강화와 개발 효율성을 동시에 얻을 수 있다. 
 
-### 주요 기능
+### 1.1.1 주요 기능
 
 - **Single Sign-On (SSO)**: 한 번 로그인으로 여러 애플리케이션 접근
 - **소셜 로그인**: Google, Facebook, GitHub 등 연동 가능
@@ -51,7 +51,7 @@ Keycloak은 **Red Hat**에서 주도하는 오픈소스 IAM(Identity and Access 
 
 ![Keycloak Architecture](image-20250908164025074.png)
 
-### Keycloak 구성 요소
+### 1.1.2 Keycloak 구성 요소
 
 Keycloak은 인증/인가를 처리하기 위해 여러 핵심 구성 요소를 제공한다. 
 
@@ -107,7 +107,7 @@ admin으로 로그인하면 Keycloak 을 설정할 수 있는 어드민 페이�
 
 Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필요하다. 여기서 말하는 기본 설정은 **내 애플리케이션에서 Keycloak 로그인 화면으로 리디렉션** → **로그인 성공 후 토큰 발급** 까지 가능한 상태를 만드는 것을 목표로 한다.
 
-### 1. Realm 생성
+### 2.2.1 Realm 생성
 
 - **Realm**은 Keycloak의 인증 단위이다
   - 사용자, 클라이언트, 정책이 모두 Realm 단위로 관리되므로 프로젝트별, 환경별로 **Realm**을 분리하는 것이 일반적이다
@@ -115,7 +115,7 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
 
 ![Create realm](image-20250908174737075.png)
 
-### 2. Client 등록
+### 2.2.2 Client 등록
 
 - **Client**는 `Keycloak`과 연동되는 애플리케이션을 의미한다
   - 웹앱, API 서버 등 `Keycloak`을 통해 인증할 대상이 여기에 해당한다
@@ -153,7 +153,7 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
   - Public Client (예: SPA, 모바일 앱)에서는 **필수적으로 PKCE 사용**을 권장한다
 
 
-### Authentication flow 옵션 정리
+### 2.2.3 Authentication flow 옵션 정리
 
 | 옵션                                     | OAuth2 대응                                 | 설명                                                         | 사용 사례                       |
 | ---------------------------------------- | ------------------------------------------- | ------------------------------------------------------------ | ------------------------------- |
@@ -183,7 +183,7 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
 
 
 
-### 3. 사용자(User) 생성
+### 2.2.4 사용자(User) 생성
 
 인증 테스트를 위해 최소 한 명의 사용자가 필요하다. 새로운 사용자를 생성한 이후 암호를 설정하면 된다. 
 
@@ -198,7 +198,7 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
 
 사용자 생성 후 **Credentials 탭**에서 비밀번호를 직접 설정해야 로그인 가능하다. 초기에는 `Temporary` 옵션을 꺼 두는 게 편하다. (켜두면 첫 로그인 시 비밀번호 변경을 요구한다)
 
-# 2.3 Keycloak 인증 예제 샘플 코드
+# 3. Keycloak 인증 예제 샘플 코드
 
 여기까지 하면 **Realm + Client + User** 가 준비된 상태가 된다. 이제 클라이언트 애플리케이션에서 `Keycloak` 로그인 화면으로 리디렉션하고, 사용자가 로그인하면 토큰을 받아 인증 플로우를 이어갈 수 있다. 
 
@@ -217,9 +217,9 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
 
 # 4. FAQ
 
-### 4.1 OAuth 2.0 vs OpenID Connect
+## 4.1 OAuth 2.0 vs OpenID Connect
 
-### OAuth 2.0
+### 4.1.1 OAuth 2.0
 
 - **무엇인가?** → **인가(Authorization) 프레임워크**
 
@@ -235,7 +235,7 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
 
   - 즉, "이 토큰은 구글 캘린더를 쓸 수 있다"까지는 알 수 있어도, **사용자가 누구인지**는 알 수 없음
 
-### OpenID Connect (OIDC)
+### 4.1.2 OpenID Connect (OIDC)
 
 - **무엇인가?** → OAuth 2.0을 기반으로 만든 **인증(Authentication) 프로토콜**
 
@@ -265,9 +265,9 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
 
 그래서 Keycloak 같은 IdP를 로그인 서버로 쓸 때는 **항상 OAuth 2.0 위에 OIDC를 얹어서** 쓰는 게 일반적이에요.
 
-### 4.2 Identity Brokering vs Identity Provider
+## 4.2 Identity Brokering vs Identity Provider
 
-### **Identity Provider (IdP)**
+### 4.2.1 Identity Provider (IdP)
 
 - **정의**: 사용자의 인증(Authentication)을 실제로 수행하는 외부 서비스
 - **Keycloak 관점에서의 IdP**
@@ -275,7 +275,7 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
   - 예: Google, GitHub, Facebook, Kakao, 또 다른 Keycloak, SAML 기반 기업 IdP
 - **역할**: “이 사용자가 누구인지”를 확인하고, 성공/실패 결과 및 사용자 프로필 정보를 Keycloak에 전달
 
-### **Identity Brokering**
+### 4.2.2 Identity Brokering
 
 - **정의**: Keycloak이 여러 **IdP를 중개(broker)** 하여, 클라이언트 애플리케이션이 외부 IdP와 직접 통신하지 않고 Keycloak을 통해 인증을 수행하도록 하는 기능
 - **흐름**
@@ -288,7 +288,7 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
 
 ------
 
-## **⚖️ 차이점 요약**
+### 4.2.3 ⚖️ 차이점 요약
 
 | **구분**            | **Identity Provider (IdP)**            | **Identity Brokering**                                   |      |
 | ------------------- | -------------------------------------- | -------------------------------------------------------- | ---- |
@@ -299,7 +299,7 @@ Keycloak을 인증 서버로 활용하려면 최소한의 기본 설정이 필�
 
 쉽게 말해, **IdP는 인증을 해주는 주체**이고, **Identity Brokering은 Keycloak이 여러 IdP를 연결해주는 기능**이다.
 
-### 4.3 Keycloak에 Events는 무슨 기능인가?
+## 4.3 Keycloak에 Events는 무슨 기능인가?
 
 Keycloak에서 발생하는 중요한 활동을 기록하는 기능이다. 운영/보안 측면에서 매우 유용하다.
 

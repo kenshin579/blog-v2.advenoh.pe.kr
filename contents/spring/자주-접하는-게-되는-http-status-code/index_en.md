@@ -23,24 +23,24 @@ There is even a site that shows cat images according to the HTTP status value. T
 ![](image-20201115171009139.png)
 
 
-# Http Status Code
+# 1. Http Status Code
 
-## **1xx** (Informational)
+## 1.1 **1xx** (Informational)
 - Personally, this is a response value I haven't encountered yet
 
-## **2xx** (Success) : These status code values return a response when the request processing is successful.
+## 1.2 **2xx** (Success) : These status code values return a response when the request processing is successful.
 - **200** (`OK` Success)
 - **201** (`Created`)
   - Returned when the request is processed and a new resource is successfully created
 
 
-## **3xx** (Redirection) : These status code values indicate that the client must take additional action to complete the request. And most 3xx status codes are used for URL redirection.
+## 1.3 **3xx** (Redirection) : These status code values indicate that the client must take additional action to complete the request. And most 3xx status codes are used for URL redirection.
 - **301** (`Moved Permanently`)
    - Used when permanently moving the requested page to a new location
    - If this response value is returned for a GET or HEAD request, the client automatically moves to the new location
    
 
-## **4xx** (Client Error) : These status code values are returned when caused by a client-side error
+## 1.4 **4xx** (Client Error) : These status code values are returned when caused by a client-side error
 - **400** (`Bad Request`)
 - **401** (`Unauthorized`)
   - Occurs when authentication is required for the request and is returned when not authenticated
@@ -53,7 +53,7 @@ There is even a site that shows cat images according to the HTTP status value. T
   - Returned as the response value when the request cannot be processed because a conflict occurred
 
 
-## **5xx** (Server Error) : These response code values are returned when the server cannot process the request
+## 1.5 **5xx** (Server Error) : These response code values are returned when the server cannot process the request
 - **500** (`Internal Server Error`)
   - Used for general server errors
 
@@ -63,7 +63,7 @@ There is even a site that shows cat images according to the HTTP status value. T
   - Used when the server is running but overloaded due to many requests
 - **504** (`Gateway Timeout`)
 
-# References
+# 2. References
 
 - Http Status Code
     - https://http.cat/

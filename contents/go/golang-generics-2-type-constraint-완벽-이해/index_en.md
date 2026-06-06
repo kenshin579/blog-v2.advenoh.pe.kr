@@ -371,7 +371,7 @@ A constraint that's more complex than necessary reduces readability. In many cas
 
 # 7. FAQ
 
-### Q. What constraints are in the `golang.org/x/exp/constraints` package?
+## 7.1 Q. What constraints are in the `golang.org/x/exp/constraints` package?
 
 | Constraint | Included Types |
 |-----------|----------|

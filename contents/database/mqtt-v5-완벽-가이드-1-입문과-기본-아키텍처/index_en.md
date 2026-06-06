@@ -43,7 +43,7 @@ MQTT stands for "Message Queuing Telemetry Transport" and is an **event-driven m
   - It is a lightweight messaging protocol running on top of the TCP/IP stack, and **WebSocket support makes it usable in web browser environments as well**
 
 
-### Broker-Centric Structure
+### 1.1.1 Broker-Centric Structure
 
 The most distinctive feature of MQTT is that a **broker** sits in the middle. Clients do not communicate directly with each other; all messages are relayed through the central broker. Thanks to this structure, a client does not need to know about the existence or location of other clients—it only needs to know the broker.
 
@@ -67,7 +67,7 @@ flowchart LR
 
 Publishers and subscribers do not know each other directly. They only need to know the broker. Thanks to this loose coupling, the system is easy to scale. Adding a new subscriber requires no changes to the publisher, and conversely, adding a publisher does not affect existing subscribers.
 
-### Fundamental Differences from HTTP
+### 1.1.2 Fundamental Differences from HTTP
 
 The best way to understand MQTT is to compare it with the familiar HTTP. The two protocols use fundamentally different communication patterns, and each has its own suitable use cases.
 

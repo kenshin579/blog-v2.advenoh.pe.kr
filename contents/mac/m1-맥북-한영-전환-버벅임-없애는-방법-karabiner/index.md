@@ -41,7 +41,7 @@ tags:
 
 ![개인정보 보호 및 보안 - 입력 모니터링](image-20240824183154776.png)
 
-# 2.2 Karabiner 설정 - 한영 전환 버벅임 없애기
+# 3. Karabiner 설정 - 한영 전환 버벅임 없애기
 
 `Karabiner-Elements` 를 실행하고 아래와 같이 매팅을 추가한다. 이 설정은 `caps_lock`을 누르면 f18 키를 누른 것과 동일한 결과가 나온다는 의미이다.
 
@@ -55,7 +55,7 @@ tags:
 
 결론적으로 위 과정을 통해서 사용자가 `caps_lock` 키 누름 → 매팅에 의해서 `f18` 가 눌림 → 한영키가 잘 전환된다.
 
-# 3. 참고
+# 4. 참고
 
 - [[MAC\] Karabiner 한영키 전환 버벅임 없애기](https://www.clien.net/service/board/lecture/18250346)
 - [맥 한영전환 딜레이 해결방법 (Karabiner-Elements)](https://blog.naver.com/rkdals530/222385359410)

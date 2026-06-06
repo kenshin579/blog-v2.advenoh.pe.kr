@@ -17,11 +17,11 @@ series: "Apache Kafka"
 ---
 
 
-# 1.들어가며
+# 1. 들어가며
 
 로컬환경에서 헬름으로 Kafka를 설치하는 방법에 대해서 알아보자.
 
-# 2.Kafka 설치
+# 2. Kafka 설치
 
 ## 2.1 Helm repo 추가 및 helm으로 설치
 
@@ -61,7 +61,7 @@ statefulset.apps/my-kafka             1/1     4h11m
 statefulset.apps/my-kafka-zookeeper   1/1     4h11m
 ```
 
-# 3.Kafka 테스트해보기
+# 3. Kafka 테스트해보기
 
 Kafka 설치 이후 정상적으로 동작하는지는 간단하게 브로커 서버에 메시지를 보내고 브로커로부터 메시지를 잘 받는지 확인해서 테스트해보자.
 

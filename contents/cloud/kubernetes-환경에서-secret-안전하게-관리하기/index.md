@@ -25,7 +25,7 @@ tags:
 
 이런 해결하기 위해 Sealed Secrets에 대해서 알아보자.
 
-# 1.1 동작 원리
+# 2. 동작 원리
 
 Sealed Secrets는 다음과 같은 방식으로 동작한다.
 
@@ -36,7 +36,7 @@ Sealed Secrets는 다음과 같은 방식으로 동작한다.
 
 ![Sealed Secret](image-20240929065852168.png)
 
-# 2. Sealed Secrets 설치하기
+# 3. Sealed Secrets 설치하기
 
 > 로컬환경에서 쿠버네티스를 실행할 거라서 minikube를 사용한다
 
@@ -46,7 +46,7 @@ Sealed Secrets는 다음과 같은 방식으로 동작한다.
 
 Sealed Secrets를 설치하는 과정은 kubeseal CLI 도구와 Sealed Secrets 컨트롤러를 설치하는 과정으로 나뉜다.
 
-# 2.1 kubeseal 설치하기
+# 4. kubeseal 설치하기
 
 kubeseal CLI는 사용자가 비밀 데이터를 암호화하는 데 사용된다. 설치 방법은 다음과 같다
 
@@ -56,7 +56,7 @@ kubeseal CLI는 사용자가 비밀 데이터를 암호화하는 데 사용된�
 > brew install kubeseal
 ```
 
-# 2.2 Sealed Secrets Controller 설치하기
+# 5. Sealed Secrets Controller 설치하기
 
 Sealed Secrets 컨트롤러는 Kubernetes 클러스터 내에서 SealedSecret 리소스를 복호화하는 역할을 한다. 설치는 여러 방식 (ex. helm, kubectl)이 있지만, 여기서는 helm으로 설치한다.
 
@@ -76,11 +76,11 @@ NAME                              READY   STATUS    RESTARTS   AGE
 sealed-secrets-697689447c-f6dkv   1/1     Running   0          93s
 ```
 
-# 3. Secret 생성하고 암호화하기
+# 6. Secret 생성하고 암호화하기
 
 Sealed Secrets를 사용하여 비밀 데이터를 생성하고 암호화하는 방법을 알아보자.
 
-# 3.1 샘플 Secret YAML 생성하기
+# 7. 샘플 Secret YAML 생성하기
 
 먼저 평문 비밀 데이터를 포함한 YAML 파일을 생성한다.
 
@@ -110,7 +110,7 @@ metadata:
 > echo -n "string" | base64
 > ```
 
-# 3.2 Secrets 암호화하기
+# 8. Secrets 암호화하기
 
 kubeseal CLI 도구를 사용하여 Secret을 암호화된 SealedSecret으로 변환한다.
 
@@ -135,7 +135,7 @@ spec:
       namespace: frank
 ```
 
-# 3.3  쿠버네티스에 Sealed Secrets 적용하기
+# 9. 쿠버네티스에 Sealed Secrets 적용하기
 
 암호화된 SealedSecret을 Kubernetes 클러스터에 적용한다.
 
@@ -147,7 +147,7 @@ namespace/frank created
 sealedsecret.bitnami.com/mysecret created
 ```
 
-# 3.4 적용 잘 되었는지 확인해보기
+# 10. 적용 잘 되었는지 확인해보기
 
 `kubectl` 명령어로 `secrets`이 잘 생성이 되었는지 확인할 수 있다.
 
@@ -174,7 +174,7 @@ mysecret              Opaque                                1      3m20s
 
 ![OpenLens - Secret](image-20240929070103980.png)
 
-# 4. 참고
+# 11. 참고
 
 - [How to create an actually safe secrets for GitOps](https://jaehong21.com/posts/k3s/06-sealed-secrets/)
 - [Managing secrets deployment in Kubernetes using Sealed Secrets](https://aws.amazon.com/ko/blogs/opensource/managing-secrets-deployment-in-kubernetes-using-sealed-secrets/)

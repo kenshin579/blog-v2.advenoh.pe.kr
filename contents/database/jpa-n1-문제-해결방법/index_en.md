@@ -298,7 +298,7 @@ Each time `findAll()` is called, it fetches in batch-size chunks using a where-i
 The batch-size approach requires changing the global fetch strategy to eager loading, and it can only fetch as many as the batch size, so it does not perfectly solve the N+1 problem and is therefore not the recommended solution.
 
 # 4. FAQ
-# 4.1 What is the default global fetch strategy in JPA?
+# 5. What is the default global fetch strategy in JPA?
 
 - Eager loading (EAGER)
     - @OneToOne
@@ -307,7 +307,7 @@ The batch-size approach requires changing the global fetch strategy to eager loa
     - @OneToMany
     - @ManyToMany
 
-## 4.2 Are there any caveats when using a fetch join?
+## 5.1 Are there any caveats when using a fetch join?
 
 Fetch joins can query related entities all at once, reducing the number of queries, so they are widely used for performance optimization. However, fetch joins have the following limitations.
 
@@ -322,7 +322,7 @@ Reference - Book: Java ORM Standard JPA Programming
     - Collections (one-to-many) cannot use the paging API
         - For single-valued association fields (one-to-one, many-to-one), you can use a fetch join.
 
-# 5. References
+# 6. References
 
 - JPA N+1
     - https://cheese10yun.github.io/jpa-nplus-1

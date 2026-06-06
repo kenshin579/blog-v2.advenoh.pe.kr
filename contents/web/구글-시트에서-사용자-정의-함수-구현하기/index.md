@@ -25,7 +25,7 @@ tags:
 
 투자 스터디를 하면서 [주식 투자 매매일지](https://docs.google.com/spreadsheets/d/112wngK0qecpPl6R-Q-aytDQ-5PH36XC1d_wuT15H6HI/edit?usp=sharing)를 구글 시트로 작성하고 있는데 Google Apps Script를 유용하게 사용하게 되어 간단하게 정리한다.
 
-# Google Finance 함수란?
+# 1. Google Finance 함수란?
 
 Apps Script에 언급하기 전에 먼저 Google Finance 함수를 알아보자. 이 함수는 구글 시트에서 사용할 수 있는 내장 함수 중에 하나로, 실시간 주식 시세 데이터를 가져올 수 있다.
 
@@ -37,7 +37,7 @@ Apps Script에 언급하기 전에 먼저 Google Finance 함수를 알아보자.
 
 Google Finance 함수는 대부분의 주식 세시 데이터를 제공하고 있지만, 없는 경우도 있다. 예를 들면, 금현물 시세는 제공하고 있지 않다.
 
-# 사용자 정의 함수를 구현하려면?
+# 2. 사용자 정의 함수를 구현하려면?
 
 Google Finance 함수에서는 금현물 시세를 제공하지 않아 다른 API를 통해서 데이터를 가져와 셀에 입력할 수 있도록 사용자 정의 함수를 구현해야 한다.
 
@@ -45,7 +45,7 @@ Google Finance 함수에서는 금현물 시세를 제공하지 않아 다른 AP
 
 ![](image-20230305181043304.png)
 
-## 1.Apps Script 작성하기
+## 2.1 Apps Script 작성하기
 
 Google Apps Script는 Google 여러 서비스 (ex. Google Sheets, Docs, Gmail 등)를 자동화하고 확장 가능하도록 JavaScript 플랫폼을 제공하여 구글 서비스와 상호 작용이 가능하다.
 
@@ -75,7 +75,7 @@ function GoldShareInit() {
 
 
 
-## 2.사용자 정의 함수 사용
+## 2.2 사용자 정의 함수 사용
 
 구글시트에서 아래와 같이 입력을 하면 금현물 시세 값이 표시되는 것을 확인할 수 있다.
 
@@ -88,7 +88,7 @@ function GoldShareInit() {
 
 ![](image-20230305182202117.png)
 
-# 참고
+# 3. 참고
 
 - https://developers.google.com/apps-script/reference/url-fetch/url-fetch-app?hl=ko
 - https://www.youtube.com/watch?v=k0su6345KDI&t=828s

@@ -14,7 +14,7 @@ tags:
   - 자바8
 ---
 
-# Java 8
+# 1. Java 8
 
 - **Language**
     - **Lambda expressions**

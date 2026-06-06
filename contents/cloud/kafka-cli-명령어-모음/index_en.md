@@ -21,7 +21,7 @@ When using Kafka, I mostly rely on the [Ahkq](https://github.com/tchiotludo/akhq
 
 For how to run Kafka in a local environment, please refer to the previous [post](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/).
 
-# 1.Download Kafka
+# 1. Download Kafka
 
 Download the latest Kafka binary file from the link below.
 
@@ -33,7 +33,7 @@ $ wget https://downloads.apache.org/kafka/3.2.1/kafka_2.13-3.2.1.tgz
 $ tar -jxvf kafka_2.13-3.2.1.tgz
 ```
 
-# 2.Kafka CLI
+# 2. Kafka CLI
 
 Kafka's default port number starts at 9092, but here we run it on the port number configured in [Running Kafka in a Local Environment](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/).
 
@@ -55,7 +55,7 @@ $ source ~/.zshrc
 
 ## 2.1 Topics
 
-### 2.1.2 List Topics
+### 2.1.1 List Topics
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --list
@@ -68,7 +68,7 @@ frank
 test
 ```
 
-### 2.1.1 Create a Topic
+### 2.1.2 Create a Topic
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --replication-factor 1 --partitions 1 --topic my_topic --create
@@ -93,7 +93,7 @@ $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --delete
 
 
 
-## 2.2  Producer
+## 2.2 Producer
 
 ```bash
 $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
@@ -144,7 +144,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic
 
 
 
-### 2.3.2 How do you print the key and value?
+### 2.3.1 How do you print the key and value?
 
 ```bash
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic --formatter kafka.tools.DefaultMessageFormatter --property print.timestamp=true --property print.key=true --property print.value=true --from-beginning
@@ -191,7 +191,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
 > 22
 ```
 
-## 2.5. Consumer Group Management
+## 2.5 Consumer Group Management
 
 This section covers how to reset a Kafka consumer group.
 
@@ -271,7 +271,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic 
 value
 ```
 
-# 3.FAQ
+# 3. FAQ
 
 ## 3.1 How to increase the number of partitions in a topic
 

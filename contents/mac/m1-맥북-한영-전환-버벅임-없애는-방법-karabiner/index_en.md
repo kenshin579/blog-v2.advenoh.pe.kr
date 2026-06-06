@@ -41,7 +41,7 @@ Under `Privacy & Security` > `Input Monitoring`, allow the following two monitor
 
 ![Privacy & Security - Input Monitoring](image-20240824183154776.png)
 
-# 2.2 Configuring Karabiner - Eliminating Korean/English Switching Lag
+# 3. Configuring Karabiner - Eliminating Korean/English Switching Lag
 
 Launch `Karabiner-Elements` and add the mapping as shown below. This setting means that pressing `caps_lock` produces the same result as pressing the f18 key.
 
@@ -55,7 +55,7 @@ In the Mac `Keyboard` settings, click `Input Sources` > `Keyboard Shortcuts…` 
 
 In conclusion, through the process above, when the user presses the `caps_lock` key → the mapping presses `f18` → the Korean/English key switches smoothly.
 
-# 3. References
+# 4. References
 
 - [[MAC\] Eliminating Korean/English switching lag with Karabiner](https://www.clien.net/service/board/lecture/18250346)
 - [How to fix Korean/English switching delay on Mac (Karabiner-Elements)](https://blog.naver.com/rkdals530/222385359410)

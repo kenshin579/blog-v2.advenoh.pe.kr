@@ -20,7 +20,7 @@ Go에서는 여러 컬렉션 타입에 대해서 어떻게 정렬할 수 있는�
 - Sort interface로 정렬하기
 - Map에서 특정 key/value로 정렬하기
 
-# 2.Sort 4가지 방법
+# 2. Sort 4가지 방법
 
 ## 2.1 Primitive 데이터 타입 정렬하기
 

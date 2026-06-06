@@ -18,7 +18,7 @@ Let's look at the difference between the Comparator and Comparable interfaces us
 
 For the example code, please refer to the github [java-compare](https://github.com/kenshin579/tutorials-java/tree/master/java-compare) module.
 
-# Comparable vs. Comparator
+# 1. Comparable vs. Comparator
 
 Both interfaces are used to set the sorting rule when sorting a collection, and the difference is as follows.
 
@@ -49,11 +49,11 @@ public interface Comparator<T> {
 }
 ```
 
-# 1. Objects to Be Sorted
+# 2. Objects to Be Sorted
 
 In the case of Comparable, you have to implement the Comparable interface on the object itself, so I created each as a different object to distinguish it from Comparator.
 
-## 1.1 Comparable
+## 2.1 Comparable
 
 ```java
 @Getter
@@ -72,7 +72,7 @@ public class ComparablePlayer implements Comparable<ComparablePlayer> {
 ```
 
 
-## 1.2 Comparator
+## 2.2 Comparator
 
 ```java
 @Getter
@@ -93,9 +93,9 @@ public class ComparatorPlayer {
 
 ```
 
-# 2. Sorting Objects
+# 3. Sorting Objects
 
-## 2.1 Sorting with Collections.sort()
+## 3.1 Sorting with Collections.sort()
 
 The sort() method of Collections provides two methods. It provides a method that can sort a List of Comparable objects, and a method that can sort by passing a Comparator object as an argument.
 
@@ -128,7 +128,7 @@ public void comparator_lambda_Test() {
 ```
 
 
-## 2.2 Sorting with Stream's sorted()
+## 3.2 Sorting with Stream's sorted()
 
 In a Stream, you can sort using the sorted() method. The sorted() method takes as an argument an object that implements the comparator interface.
 
@@ -180,7 +180,7 @@ assertThat(sortedPlayers).isSortedAccordingTo(ComparatorPlayer::compareByScoreTh
 
 
 
-## 2.3 Java 8 Comparators
+## 3.3 Java 8 Comparators
 
 In Java 8, the comparing() factory method was added to help you easily define a Comparator. The Comparator.comparing() method returns a matching Comparator instance when you pass the field method of the object to use for comparing the items as an argument. In other words, if you just provide the field method to compare, it returns the Comparator implementation on its own.
 
@@ -210,7 +210,7 @@ public void thenComparing_test() {
 ```
 
 
-# References
+# 4. References
 
 * https://www.baeldung.com/java-8-sort-lambda
 * https://www.daleseo.com/java-comparable-comparator/

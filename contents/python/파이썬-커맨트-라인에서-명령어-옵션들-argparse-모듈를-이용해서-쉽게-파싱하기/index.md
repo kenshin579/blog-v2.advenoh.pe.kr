@@ -30,7 +30,7 @@ argparse는 파이썬 표준 라이브러리에 포함되어 있어 별도로 �
 import argparse
 ```
 
-# 2.1 help 도움말 옵션 추가하기
+# 3. help 도움말 옵션 추가하기
 
 커맨트 라인에서 대부분의 명령어는 도움말을 제공한다. 옵션 -h 이나 --help 으로 명령어 옵션들에 대한 설명을 확인할 수 있다. argparse 모듈에서는 도움말 옵션은 기본으로 추가된다.
 
@@ -43,7 +43,7 @@ parser.parse_args()
 
 ![](image_2.png)
 
-## 2.2 Flag 형태 옵션 추가하기
+## 3.1 Flag 형태 옵션 추가하기
 
 커맨트 라인에서 flag 형태의 옵션이 가장 많이 사용된다. Flag 옵션(-v, --verbosity)이 주어졌을 때 실행하는 옵션이다. add_argument() 함수를 통해서 여러 옵션에 대해서 설정할 수 있다. 아래와 같이 dash 입력으로 short와 long 옵션을 지정할 수 있고 해당 옵션에 대한 설명은 help= 키워드에 지정하면 된다. **action 키워드에 ’store_true’로 지정** 하면 해당 옵션이 명시될 때 True 값이 지정되고 없으면 False로 지정된다.
 
@@ -60,7 +60,7 @@ print("verbosity enabled")
 
 ![](image_4.png)
 
-## 2.3 옵션에 Value 값 입력 받기
+## 3.2 옵션에 Value 값 입력 받기
 
 특정 옵션에 대한 value 값도 입력을 받을 수 있다. 예를 들면, 아래와 같이 날짜, 숫자, String 값등을 입력받을 수 있다.
 
@@ -85,7 +85,7 @@ print("args", args)
 
 ![](image_1.png)
 
-## 2.4 입력한 값에 대한 유효 검사하기
+## 3.3 입력한 값에 대한 유효 검사하기
 
 int나 String과 같은 타입(ex. int)에 대해서는 기본적으로 유효 검사를 해줍니다. 하지만, 날짜와 같은 타입은 별도의 함수 구현이 필요한다. 입력한 날짜가 YYYY-MM-DD 포맷인지는 strptime() 함수를 실행해서 포맷이 아닌 경우에는 Exception을 띄우도록 해서 체크를 할 수 있다.
 
@@ -110,7 +110,7 @@ print("args", args)
 
 ![](image_3.png)
 
-## 2.5 선택 집합 세트에서 입력값을 선택하기
+## 3.4 선택 집합 세트에서 입력값을 선택하기
 
 choices 키워드로 정해진 선택 집합 세트에서만 입력값을 줄 수 있도록 설정할 수 있다.
 
@@ -132,7 +132,7 @@ print("args", args)
 
 소스 코드는 [github](https://github.com/kenshin579/tutorials-python/tree/master/argparse) 를 참조해주세요.
 
-# 3. 참고
+# 4. 참고
 
 - Parsing LIbraries
 - [https://realpython.com/comparing-python-command-line-parsing-libraries-argparse-docopt-click/](https://realpython.com/comparing-python-command-line-parsing-libraries-argparse-docopt-click/)

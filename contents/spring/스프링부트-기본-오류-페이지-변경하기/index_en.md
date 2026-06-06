@@ -128,7 +128,7 @@ public class DefaultErrorAttributes implements ErrorAttributes, HandlerException
 
 # 2. Handling a Custom Error Page
 
-# 2.1 Error-Related Properties
+# 3. Error-Related Properties
 
 The server error-related settings are as follows.
 
@@ -143,7 +143,7 @@ The server error-related settings are as follows.
 
 
 
-## 2.2 Creating a Custom Error Page for a Specific Response Code
+## 3.1 Creating a Custom Error Page for a Specific Response Code
 
 Creating and using a custom error page is simple. If you create a file in the format `error/{response-code}.<extension>` in one of the folders below, Spring Boot loads the corresponding file according to the HTTP status value.
 
@@ -194,7 +194,7 @@ When you access a non-existent path in the browser, a 404 response error occurs 
 
 ![](image-20200907230948266.png)
 
-## 2.3 Creating a Separate ErrorController
+## 3.2 Creating a Separate ErrorController
 
 As above, the method of creating a view file for a specific response code has the disadvantage that you cannot perform specific logic. In such a case, you can create a Custom Error Controller so that calls to the `/error` PATH are handled by this controller.
 

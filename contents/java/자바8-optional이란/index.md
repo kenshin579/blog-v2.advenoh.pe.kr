@@ -98,7 +98,7 @@ null이 넘어 올 경우에는 empty Optional 객체를 생성한다.
 Optional<String> optStr2 = Optional.ofNullable(null); //empty Optional 객체를 반환함
 ```
 
-## 2.3 Optional이 담고 있는 객체에 접근 및 사용방법
+## 2.2 Optional이 담고 있는 객체에 접근 및 사용방법
 
 Optional이 담고 있는 객체에 접근하는 여러 메서드의 사용방법에 대해서 알아보자.
 
@@ -356,7 +356,7 @@ public void test_jdk9_ifPresentOrElse() {
 
 
 
-# 4.3 stream() : Optional 객체를 Stream 객체로 변환하기 위해 사용
+# 5. stream() : Optional 객체를 Stream 객체로 변환하기 위해 사용
 
 JDK8에 추가된 Stream은 여러 API를 통해 collection을 함수형 방식으로 쉽게 조작이 가능하게 하는 기능이다. Optional에 stream()을 추가함으로써 기존의 Stream API를 사용 할 수 있게 되었다. 이 예제에서는 Optional을 Stream으로 변경한이후 Stream의 함수를 사용한 예제이다.
 
@@ -371,7 +371,7 @@ public void test_jdk9_stream() {
 
 
 
-# 5. 참고
+# 6. 참고
 
 포스팅 작성된 소스 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-optional) 에서 확인가능한다.
 

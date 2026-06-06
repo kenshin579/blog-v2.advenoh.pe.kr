@@ -13,7 +13,7 @@ tags:
 
 Validation API 함수를 개발하는 과정에서 복잡한 expression을 evaluation 하는 과정에서 잘못된 표현식의 경우에는 panic이 발생하는 경우가 있었다. panic이 발생하여 `recover()` 함수로 서버가 죽지 않게 되어 있지만, Validation API의 경우에는 client에 잘못된 표현 식이라는 응답 값을 내려줘야 한다.
 
-# 1.panic(), recover() 함수
+# 1. panic(), recover() 함수
 
 `recover()` 함수에서 어떻게 반환값을 리턴할 수 있는지 알아보자. 오늘 사용할 Golang 내장함수들이다.
 
@@ -77,7 +77,7 @@ Returned normally from f.
 
 
 
-# 2.recover() 함수에서 반환 값 리턴하기
+# 2. recover() 함수에서 반환 값 리턴하기
 
 `recover()` 함수에 반환 값을 반환하려면 `MyFunc()`의 Return 값에 이름을 부여하여 부여한 이름변수에 값을 지정하면 `recover()` 함수 실행후 반환 값으로 리턴이 된다.
 
@@ -120,7 +120,7 @@ func TestMyFunc(t *testing.T) {
 }
 ```
 
-# 3.recover()에서 stack trace 출력하기
+# 3. recover()에서 stack trace 출력하기
 
 Panic 발생 후 recover를 하고 stack trace를 출력하여 조금 더 디버깅을 쉽게 하려면 Debug 패키지에 포함된 `PrintStack()` 함수를 사용한다.
 
@@ -163,7 +163,7 @@ err: test
 ```
 
 
-# 4.참고
+# 4. 참고
 
 - http://golang.site/go/article/20-Go-defer%EC%99%80-panic
 - https://github.com/kenshin579/tutorials-go/pull/287

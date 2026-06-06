@@ -265,7 +265,7 @@ func main() {
 
 CPU 프로파일은 프로그램이 CPU 시간을 가장 많이 소비하는 함수를 식별한다. 기본적으로 초당 100회 샘플링하여, 해당 시점에 실행 중인 함수의 스택 트레이스를 기록한다.
 
-### 수집 방법
+### 3.1.1 수집 방법
 
 ```bash
 # 30초간 CPU 프로파일 수집
@@ -275,7 +275,7 @@ go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
 go tool pprof http://localhost:6060/debug/pprof/profile?seconds=10
 ```
 
-### CPU 부하 예제 코드
+### 3.1.2 CPU 부하 예제 코드
 
 ```go
 package cpu
@@ -313,7 +313,7 @@ func increase2000(n int) int {
 }
 ```
 
-### 분석 결과 예시
+### 3.1.3 분석 결과 예시
 
 ```bash
 (pprof) top10
@@ -333,14 +333,14 @@ Showing top 10 nodes out of 23
 
 힙 프로파일은 현재 메모리 할당 상태를 보여준다. 메모리 누수를 찾거나, 메모리를 많이 사용하는 함수를 식별할 때 사용한다.
 
-### 수집 방법
+### 3.2.1 수집 방법
 
 ```bash
 # 힙 프로파일 수집
 go tool pprof http://localhost:6060/debug/pprof/heap
 ```
 
-### 메모리 할당 예제 코드
+### 3.2.2 메모리 할당 예제 코드
 
 ```go
 package memory
@@ -361,7 +361,7 @@ func alloc1000() []byte {
 }
 ```
 
-### inuse_space vs alloc_space
+### 3.2.3 inuse_space vs alloc_space
 
 힙 프로파일은 두 가지 관점으로 분석할 수 있다.
 
@@ -382,7 +382,7 @@ go tool pprof -alloc_space http://localhost:6060/debug/pprof/heap
 
 `inuse_space`는 현재 GC에 의해 해제되지 않고 남아있는 메모리를 보여주므로 **메모리 누수를 탐지**할 때 주로 사용한다. `alloc_space`는 이미 해제된 메모리까지 포함하여 **할당이 빈번한 코드**를 찾을 때 유용하다.
 
-### 힙 프로파일 비교 (diff)
+### 3.2.4 힙 프로파일 비교 (diff)
 
 두 시점의 힙 프로파일을 비교하면 메모리 누수를 더 명확하게 확인할 수 있다.
 
@@ -401,7 +401,7 @@ go tool pprof -base=base.prof current.prof
 
 고루틴 프로파일은 현재 실행 중인 모든 고루틴의 스택 트레이스를 보여준다. 고루틴 누수를 탐지하거나, 어떤 고루틴이 어디에서 블로킹되어 있는지 확인할 때 사용한다.
 
-### 수집 방법
+### 3.3.1 수집 방법
 
 ```bash
 # 고루틴 프로파일 수집
@@ -413,7 +413,7 @@ curl http://localhost:6060/debug/pprof/goroutine?debug=2
 
 `debug=2` 파라미터를 사용하면 모든 고루틴의 전체 스택 트레이스를 텍스트 형태로 확인할 수 있어, 고루틴이 어디에서 대기 중인지 한눈에 파악할 수 있다.
 
-### 고루틴 누수 예제 코드
+### 3.3.2 고루틴 누수 예제 코드
 
 고루틴 누수는 생성된 고루틴이 종료되지 않고 계속 쌓이는 현상이다.
 
@@ -452,7 +452,7 @@ func leakyGoroutine(id int) {
 
 위 코드에서 `leakyGoroutine`은 아무도 닫지 않는 채널을 대기하므로, 100개의 고루틴이 영원히 종료되지 않고 메모리를 점유한다.
 
-### 고루틴 누수 방지 패턴
+### 3.3.3 고루틴 누수 방지 패턴
 
 ```go
 func safeGoroutine(ctx context.Context, id int) {
@@ -473,7 +473,7 @@ func safeGoroutine(ctx context.Context, id int) {
 
 블로킹 프로파일은 고루틴이 대기 상태(blocking)에 머무는 시간을 분석한다. 채널 수신 대기, Mutex Lock 대기, I/O 대기 등이 포함된다.
 
-### 활성화 및 수집 방법
+### 3.4.1 활성화 및 수집 방법
 
 블로킹 프로파일은 기본적으로 비활성화되어 있으므로, 명시적으로 활성화해야 한다.
 
@@ -489,7 +489,7 @@ runtime.SetBlockProfileRate(1) // 1 = 모든 블로킹 이벤트 기록
 go tool pprof http://localhost:6060/debug/pprof/block
 ```
 
-### 블로킹 예제 코드
+### 3.4.2 블로킹 예제 코드
 
 ```go
 package block
@@ -515,7 +515,7 @@ func PrintWorld() {
 
 뮤텍스 프로파일은 Mutex 경합(contention)을 분석한다. 여러 고루틴이 같은 Mutex를 두고 경쟁할 때, 각 고루틴이 Lock을 획득하기 위해 대기한 시간을 측정한다.
 
-### 활성화 및 수집 방법
+### 3.5.1 활성화 및 수집 방법
 
 ```go
 // 뮤텍스 프로파일 활성화
@@ -529,7 +529,7 @@ runtime.SetMutexProfileFraction(1) // 1 = 모든 뮤텍스 경합 기록
 go tool pprof http://localhost:6060/debug/pprof/mutex
 ```
 
-### 뮤텍스 경합 예제 코드
+### 3.5.2 뮤텍스 경합 예제 코드
 
 ```go
 package mutex
@@ -572,7 +572,7 @@ func Mutex03() {
 
 스레드 생성 프로파일은 프로그램이 생성한 OS 스레드의 패턴을 보여준다. 과도한 스레드 생성은 시스템 자원을 낭비하므로, 이를 모니터링할 때 사용한다.
 
-### 대량 고루틴 생성 예제 코드
+### 3.6.1 대량 고루틴 생성 예제 코드
 
 Go 런타임은 고루틴을 OS 스레드 위에서 다중화(multiplexing)하여 실행한다. 고루틴이 시스템 콜 등으로 블로킹되면 런타임이 새로운 OS 스레드를 생성하여 다른 고루틴이 계속 실행될 수 있도록 한다. 대량의 고루틴을 동시에 실행하면 이러한 스레드 생성 패턴을 프로파일에서 확인할 수 있다.
 
@@ -614,7 +614,7 @@ go tool pprof http://localhost:6060/debug/pprof/profile?seconds=10
 
 수집이 완료되면 `(pprof)` 프롬프트가 나타나고, 다양한 명령어로 프로파일 데이터를 분석할 수 있다.
 
-### 주요 명령어
+### 4.1.1 주요 명령어
 
 | 명령어 | 설명 | 예시 |
 |--------|------|------|
@@ -627,7 +627,7 @@ go tool pprof http://localhost:6060/debug/pprof/profile?seconds=10
 | `svg` | SVG 파일로 콜 그래프 저장 | `svg` |
 | `png` | PNG 이미지로 콜 그래프 저장 | `png` |
 
-### top 명령어
+### 4.1.2 top 명령어
 
 ```bash
 (pprof) top10
@@ -638,7 +638,7 @@ Showing nodes accounting for 5.20s, 98.11% of 5.30s total
      0.80s 15.09% 83.02%      3.60s 67.92%  main.IncreaseInt
 ```
 
-### flat vs cum 차이
+### 4.1.3 flat vs cum 차이
 
 프로파일 분석에서 가장 중요한 두 가지 지표이다.
 
@@ -662,7 +662,7 @@ func B() {        // flat=2s, cum=2s
 
 **`flat`이 높은 함수**는 직접 최적화 대상이고, **`cum`이 높은 함수**는 호출 체인 전체를 살펴봐야 한다.
 
-### list 명령어
+### 4.1.4 list 명령어
 
 특정 함수의 소스코드를 라인별로 프로파일 정보와 함께 볼 수 있다.
 
@@ -695,7 +695,7 @@ go tool pprof -http=:8080 http://localhost:6060/debug/pprof/profile?seconds=10
 
 웹 UI에서는 다음과 같은 뷰를 제공한다.
 
-### Graph 뷰
+### 4.2.1 Graph 뷰
 
 콜 그래프를 시각화한다. 노드(사각형)가 함수를 나타내고, 노드의 크기와 색상이 리소스 소비량에 비례한다. 화살표는 함수 호출 관계를 나타내며, 화살표의 두께가 호출 빈도에 비례한다.
 
@@ -703,15 +703,15 @@ go tool pprof -http=:8080 http://localhost:6060/debug/pprof/profile?seconds=10
 - **두꺼운 화살표** → 빈번한 호출 경로
 - **빨간색** → 높은 리소스 소비
 
-### Flame Graph (플레임 그래프)
+### 4.2.2 Flame Graph (플레임 그래프)
 
 Flame Graph 뷰에서 플레임 그래프를 확인할 수 있다. 플레임 그래프는 콜 스택을 시각적으로 표현하며, 성능 병목을 직관적으로 파악할 수 있다.
 
-### Top 뷰
+### 4.2.3 Top 뷰
 
 CLI의 `top` 명령어와 동일한 정보를 테이블 형태로 보여준다. 정렬 기준을 변경하거나 필터링할 수 있다.
 
-### Source 뷰
+### 4.2.4 Source 뷰
 
 소스코드 라인별로 프로파일링 결과를 보여준다. CLI의 `list` 명령어와 유사하지만, 전체 소스 파일을 탐색할 수 있다.
 
@@ -742,11 +742,11 @@ CLI의 `top` 명령어와 동일한 정보를 테이블 형태로 보여준다. 
 
 ## 5.1 시나리오: CPU 병목 진단
 
-### 문제 상황
+### 5.1.1 문제 상황
 
 웹 서버의 특정 API 응답이 느리다. 원인을 찾아야 한다.
 
-### 진단 단계
+### 5.1.2 진단 단계
 
 **Step 1: CPU 프로파일 수집**
 
@@ -783,7 +783,7 @@ Showing nodes accounting for 5.20s, 98.11% of 5.30s total
 
 → 호출 체인을 시각적으로 확인하여 어떤 경로에서 해당 함수가 호출되는지 파악
 
-### 최적화 후 검증
+### 5.1.3 최적화 후 검증
 
 최적화 후 동일한 프로파일링을 수행하여 개선 효과를 측정한다.
 
@@ -794,11 +794,11 @@ go tool pprof -base=before.prof after.prof
 
 ## 5.2 시나리오: 메모리 누수 진단
 
-### 문제 상황
+### 5.2.1 문제 상황
 
 서비스 운영 중 메모리 사용량이 시간이 지남에 따라 지속적으로 증가한다.
 
-### 진단 단계
+### 5.2.2 진단 단계
 
 **Step 1: 두 시점의 힙 프로파일 수집**
 
@@ -835,11 +835,11 @@ go tool pprof -base=heap_t1.prof heap_t2.prof
 
 ## 5.3 시나리오: 고루틴 누수 진단
 
-### 문제 상황
+### 5.3.1 문제 상황
 
 시간이 지남에 따라 고루틴 수가 계속 증가한다.
 
-### 진단 단계
+### 5.3.2 진단 단계
 
 **Step 1: 현재 고루틴 수 확인**
 
@@ -925,7 +925,7 @@ func helloHandler(ctx echo.Context) error {
 
 `echopprof.Wrap(e)` 한 줄로 Echo 서버에 pprof 엔드포인트가 등록되며, `http://localhost:8080/debug/pprof/`에서 접근할 수 있다.
 
-### 프로덕션에서의 보안 고려사항
+## 6.1 프로덕션에서의 보안 고려사항
 
 pprof 엔드포인트는 프로그램의 내부 상태를 노출하므로, 프로덕션 환경에서는 별도 포트로 분리하여 외부 접근을 차단해야 한다.
 
@@ -996,7 +996,7 @@ gops pprof-heap <pid>
 
 `go tool trace`는 프로그램의 실행 흐름을 시간축으로 추적하는 도구이다. pprof가 "어디에서 시간을 소비했는가"에 초점을 맞춘다면, trace는 "시간 순서대로 무슨 일이 일어났는가"에 초점을 맞춘다.
 
-### 트레이스 데이터 수집
+### 7.2.1 트레이스 데이터 수집
 
 ```bash
 # HTTP 엔드포인트에서 5초간 트레이스 수집
@@ -1006,7 +1006,7 @@ curl -o trace.out http://localhost:6060/debug/pprof/trace?seconds=5
 go tool trace trace.out
 ```
 
-### 코드에서 트레이스 수집
+### 7.2.2 코드에서 트레이스 수집
 
 기본적인 트레이스 수집은 `trace.Start`와 `trace.Stop`으로 간단하게 구현할 수 있다.
 
@@ -1029,7 +1029,7 @@ func main() {
 }
 ```
 
-### Task와 Region을 활용한 구간별 트레이스
+### 7.2.3 Task와 Region을 활용한 구간별 트레이스
 
 `trace.NewTask`와 `trace.WithRegion`을 사용하면 트레이스 뷰어에서 특정 작업 구간을 논리적으로 구분하여 확인할 수 있다. 복잡한 프로그램에서 어떤 작업이 어느 구간에서 시간을 소비하는지 파악할 때 유용하다.
 
@@ -1053,7 +1053,7 @@ func worker(ctx context.Context, id int) {
 }
 ```
 
-### 트레이스 뷰어에서 확인할 수 있는 정보
+### 7.2.4 트레이스 뷰어에서 확인할 수 있는 정보
 
 - **Goroutine analysis**: 고루틴별 실행/대기 시간 분포
 - **Network/Sync blocking**: 네트워크 및 동기화 블로킹 이벤트
@@ -1131,7 +1131,7 @@ go tool pprof http://localhost:6060/debug/pprof/heap
 
 # 9. 정리
 
-## 프로파일 유형별 사용 시나리오
+## 9.1 프로파일 유형별 사용 시나리오
 
 | 증상 | 의심 원인 | 사용할 프로파일 | 분석 포인트 |
 |------|----------|---------------|------------|
@@ -1143,7 +1143,7 @@ go tool pprof http://localhost:6060/debug/pprof/heap
 | 스레드 과다 | 과도한 스레드 생성 | Threadcreate profile | 생성 패턴 확인 |
 | 전체 흐름 파악 | 스케줄링/GC 이슈 | Trace | 타임라인 분석 |
 
-## 진단 워크플로우 요약
+## 9.2 진단 워크플로우 요약
 
 ```mermaid
 flowchart TD

@@ -33,7 +33,7 @@ For the written code, please refer to [java8-hashmap](https://github.com/kenshin
 
 What the two methods have in common is that they add a new key and value depending on whether the key exists.
 
-### putIfAbsent
+## 1.1 putIfAbsent
 
 putIfAbsent takes two arguments.
 
@@ -64,7 +64,7 @@ public void putIfAbsent() {
 }
 ```
 
-### computeIfAbsent
+## 1.2 computeIfAbsent
 
 `computeIfAbsent` takes two arguments.
 
@@ -106,7 +106,7 @@ public void computeIfAbsent() {
 
 All three methods are used when updating the value of a Map.
 
-### compute
+## 2.1 compute
 
 `compute` takes the key and `remappingFunction` as arguments, and the key must exist for the value to be updated with the result of the `remappingFunction` lambda passed as an argument. When the key value does not exist, a `NullPointerException` occurs.
 
@@ -129,7 +129,7 @@ public void compute() {
 }
 ```
 
-### computeIfPresent
+## 2.2 computeIfPresent
 
 ```java
 default V compute(K key,
@@ -159,7 +159,7 @@ public void computeIfPresent() {
 }
 ```
 
-### merge
+## 2.3 merge
 
 
 ```java
@@ -245,7 +245,7 @@ public void getOrDefault() {
 }
 ```
 
-# References
+# 4. References
 
 * http://tech.javacafe.io/2018/12/03/HashMap/
 * https://www.baeldung.com/java-hashmap

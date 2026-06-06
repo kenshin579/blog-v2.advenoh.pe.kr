@@ -357,7 +357,7 @@ When you are not sure which to use, first use unidirectional mapping, and if you
 - Lazy loading
     - The associated entity is queried later through a proxy. When the actual associated entity is used, the proxy is initialized and queried from the database.
 
-#### 4.2.1 Eager Loading
+### 4.2.1 Eager Loading
 
 The @ManyToOne annotation is set with the fetch option default of FetchType.EAGER, so when querying the Comment entity it always fetches the Post object as well.
 

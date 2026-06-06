@@ -25,7 +25,7 @@ In this article, I'll walk through, step by step, how to set up a `Docker Regist
 
 `Docker` provides a `Registry` image, so you can run a `Registry` server with a single container without any complicated installation. The following command runs a `Docker Registry` with basic user authentication and a local storage folder configured.
 
-### 1. Create the User Login Authentication File
+### 2.1.1 Create the User Login Authentication File
 
 ```bash
 > brew install http
@@ -37,7 +37,7 @@ In this article, I'll walk through, step by step, how to set up a `Docker Regist
 
 The `username` and `password` you enter are saved in the `/Users/user/data/docker/auth/htpasswd` file.
 
-### 2. Run the Docker Registry Container
+### 2.1.2 Run the Docker Registry Container
 
 ```bash
 > docker run -d --name private-registry -p 7001:5000 \\

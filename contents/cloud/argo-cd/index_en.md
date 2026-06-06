@@ -15,15 +15,15 @@ series: "ArgoCD"
 
 For the previous Argo Projects presentation, please refer to [here](https://blog.advenoh.pe.kr/argo-projects/).
 
-# Argo CD?
+# 1. Argo CD?
 
-## What?
+## 1.1 What?
 
 Argo CD is a GitOps-based CD tool that provides the following features.
 
 ![Argo CD UI](argo-cd-ui.png)
 
-## Feature
+## 1.2 Feature
 
 - Supports automatic deployment of applications to the target environment (as specified in the Git repository)
 - Supports various template formats that generate Kubernetes manifest files
@@ -37,7 +37,7 @@ Argo CD is a GitOps-based CD tool that provides the following features.
 - Webhook integration support (GitHub, BitBucket, GitLab)
 - Also supports Presync, Sync, and Postsync hooks to support complex application rollouts
 
-## Architecture
+## 1.3 Architecture
 
 ![Argo CD Architecture](image-20220305010552026.png)
 
@@ -65,11 +65,11 @@ References
 - https://argo-cd.readthedocs.io/en/stable/operator-manual/architecture/
 - https://landscape.cncf.io/card-mode?project=incubating&selected=argo
 
-# When?
+# 2. When?
 
 - As a CD (Continuous Delivery) tool, it is well suited for automatically deploying applications to Kubernetes environments
 
-# Why?
+# 3. Why?
 
 Compare the traditional Jenkins approach with Argo CD and decide for yourself which tool is more suitable for a Kubernetes environment.
 
@@ -84,7 +84,7 @@ Compare the traditional Jenkins approach with Argo CD and decide for yourself wh
     - You can also verify whether the deployment succeeded after deployment
     - Pull deployment
 
-# How?
+# 4. How?
 
 To install and use Argo CD, follow the steps below. This example was written by referring to the Argo CD [official documentation](https://argo-cd.readthedocs.io/en/stable/).
 
@@ -96,7 +96,7 @@ To install and use Argo CD, follow the steps below. This example was written by 
 
 - Bump the Docker image version and sync it with Argo
 
-# 1. Installing Argo CD in a Local Environment
+# 5. Installing Argo CD in a Local Environment
 
 To install `argo` in a local environment, run `minikube`. If you do not have the command, install it with `brew install minikube`.
 
@@ -111,7 +111,7 @@ $ kubectl create namespace argocd
 $ kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 ```
 
-## 1.1 Accessing the Argo CD Web
+## 5.1 Accessing the Argo CD Web
 
 Let's access the web server via port forwarding without exposing the Kubernetes service.
 
@@ -130,13 +130,13 @@ HDzPVO0HOyGIDJD7
 
 
 
-# 2. Creating an Argo CD Application
+# 6. Creating an Argo CD Application
 
-## 2.1 Creating with the Argo CLI
+## 6.1 Creating with the Argo CLI
 
 To create an application with the Argo CLI, you need to install the Argo CD CLI.
 
-### 2.1.1 Installing the Argo CD CLI
+### 6.1.1 Installing the Argo CD CLI
 
 With the CLI, you can create, query, and delete Argo applications.
 
@@ -174,7 +174,7 @@ $ argocd app create guestbook --port-forward-namespace argocd --repo https://git
 
 
 
-### 2.1.1 Verifying the Argo Application
+### 6.1.2 Verifying the Argo Application
 
 ```bash
 $ argocd app get guestbook
@@ -197,7 +197,7 @@ GROUP  KIND        NAMESPACE  NAME          STATUS     HEALTH   HOOK  MESSAGE
 apps   Deployment  argotest   guestbook-ui  OutOfSync  Missing
 ```
 
-### 2.1.2 Sync Application
+### 6.1.3 Sync Application
 
 If it is OutOfSync, you can also sync it via the command line.
 
@@ -226,11 +226,11 @@ There is also an option to automatically create the desired namespace when deplo
 
 ![Argo CD Web](image-20220306153543079.png)
 
-## 2.2 Creating from the Web UI
+## 6.2 Creating from the Web UI
 
 You can create it by clicking the Applications > New App button.
 
-## 2.3 Creating with a Kubernetes Manifest File
+## 6.3 Creating with a Kubernetes Manifest File
 
 ```bash
 $ cat applcation.yaml
@@ -257,11 +257,11 @@ $ kubectl -n argotest application.yaml
 
 
 
-# 3. Bumping the Docker Image Version and Syncing with Argo
+# 7. Bumping the Docker Image Version and Syncing with Argo
 
 If you have built a new Docker image after developing your application, let's deploy it with Argo CD.
 
-## 3.1 Modifying the Kubernetes Config File
+## 7.1 Modifying the Kubernetes Config File
 
 Modify the Kubernetes config file in the Git repository. Bump the Docker image version, push, and then check it in Argo CD.
 
@@ -293,13 +293,13 @@ spec:
 
 
 
-## 3.2 Syncing from the Argo CD Web UI
+## 7.2 Syncing from the Argo CD Web UI
 
 Argo CD does not monitor the Git repository in real time but checks it periodically, so the UI does not immediately show OutOfSync. If you want to check it right away, click the Refresh button. Click the Sync button to sync.
 
 ![Argo CD Web - OutOfSync](image-20220306155528310.png)
 
-# FAQ
+# 8. FAQ
 
 1. **What other GitOps-based CD tools are there?**
 
@@ -319,7 +319,7 @@ References
 - https://kangwoo.kr/tag/argocd/
 - https://argo-cd.readthedocs.io/en/stable/user-guide/best_practices/
 
-# Reference
+# 9. Reference
 
 - https://argo-cd.readthedocs.io/en/stable/
 - https://ithub.tistory.com/345
@@ -327,7 +327,7 @@ References
 
 
 
-# Terms
+# 10. Terms
 
 - CI (Continuous Integration)
 - Refers to continuous integration, an automated process for developers
@@ -352,7 +352,7 @@ References
 
 ![GitOps Flow](gitops_flow.png)
 
-# References
+# 11. References
 
 - CR/CRD
     - https://blog.naver.com/PostView.naver?blogId=alice_k106&logNo=221579974362&redirect=Dlog&widgetTypeCall=true&directAccess=false
@@ -366,7 +366,7 @@ References
     - https://gruuuuu.github.io/cloud/argocd-gitops/
     - https://kangwoo.kr/tag/argocd/
 
-# Note
+# 12. Note
 
 > This material was prepared for the CNCF study within our Platform Engineering team. If you are interested in the robot platform development we do, please refer to the links below, and if you would like to work with us in a challenging and passionate way, please apply.
 >

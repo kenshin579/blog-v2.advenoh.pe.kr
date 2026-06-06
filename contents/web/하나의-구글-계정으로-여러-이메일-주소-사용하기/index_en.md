@@ -20,13 +20,13 @@ Did you know that you can use multiple email addresses with a single Google emai
 
 An AWS account can be used for free for 12 months, so personally I mainly use Google's alias feature whenever I create a new AWS account every year. No additional configuration is needed—you just add a dot or a plus sign as shown below.
 
-# Using the Email Alias Feature
+# 1. Using the Email Alias Feature
 
 Google's alias feature lets you add `plus` or `dot` to your username, and emails sent to those addresses arrive at your original Google mail account.
 
 - Google email address: frank@gmail.com
 
-## 1. Using a Dot (dot) in the Username
+## 1.1 Using a Dot (dot) in the Username
 
 You can add dots in the following format.
 
@@ -34,7 +34,7 @@ You can add dots in the following format.
 - fran.k@gmail.com
 - f.r.ank@gmail.com
 
-## 2. Using a Plus (+) in the Username
+## 1.2 Using a Plus (+) in the Username
 
 - frank+aws1@gmail.com
 - frank+aws2@gmail.com
@@ -42,7 +42,7 @@ You can add dots in the following format.
 
 All of the email addresses above will be delivered to frank@gmail.com.
 
-# References
+# 2. References
 
 - https://www.101domain.com/gmail_email_aliases.htm
 - https://blog.jeuke.com/67

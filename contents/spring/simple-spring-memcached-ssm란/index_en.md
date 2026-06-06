@@ -47,7 +47,7 @@ I used maven for the library. Choose one between Simple-spring-memcached and a M
 </dependency>
 ```
 
-### **xmemcached**
+### 3.1.1 xmemcached
 
 ```xml
 <dependency>
@@ -57,7 +57,7 @@ I used maven for the library. Choose one between Simple-spring-memcached and a M
 </dependency>
 ```
 
-### **spymemcached**
+### 3.1.2 spymemcached
 
 ```xml
 <dependency>

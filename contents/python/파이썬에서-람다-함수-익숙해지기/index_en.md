@@ -51,11 +51,11 @@ def test_lambda_multiple_parameters(self):
 ```
 
 
-## 1.2. Map, Filter, Reduce Examples
+## 1.2 Map, Filter, Reduce Examples
 
 Let's look at the representative functions in Python that take a lambda as an argument.
 
-## 1.2.1 map
+## 1.3 map
 
 The `map` function applies the `input function` to each `item` of the `input list`, and it is a function frequently used when transforming the data format of a list. The syntax is as follows.
 
@@ -73,7 +73,7 @@ def test_map(self):
 
 
 
-## 1.2.2 filter
+## 1.4 filter
 
 The `filter` function also applies the input function to each `item` of the input list and, as a result, processes only the `item`s that return true.
 
@@ -90,7 +90,7 @@ def test_filter(self):
 
 ```
 
-## 1.2.3 reduce
+## 1.5 reduce
 
 The `reduce` function takes the first and second `item`s of the list as arguments, returns a single value, and ultimately returns a single value.
 

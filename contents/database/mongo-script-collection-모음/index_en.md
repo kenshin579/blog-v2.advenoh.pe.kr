@@ -45,7 +45,7 @@ db.inventory.updateMany(
 )
 ```
 
-# References
+# 3. References
 
 - https://blog.kevinchisholm.com/javascript/mongodb/getting-started-with-mongo-shell-scripting-basic-crud-operations/
 

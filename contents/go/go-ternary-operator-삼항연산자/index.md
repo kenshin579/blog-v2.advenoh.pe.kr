@@ -15,7 +15,7 @@ tags:
 ---
 
 
-# 삼항연산자란?
+# 1. 삼항연산자란?
 
 삼항 연산자 (Ternary Operator)는 아래 형식으로 if 조건문 대신 사용할 수 있는 문법이다. JavaScript, Java와 같은 여러 언어에서 지원하는 문법이고 아래 코드는 자바의 삼항 연산자이다.
 
@@ -46,7 +46,7 @@ func Example_Ternary_Operator_EqualCheck() {
 
 예제 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-ternary)를 참고해주세요.
 
-# 참고
+# 2. 참고
 
 - https://golangdocs.com/ternary-operator-in-golang
 - https://needneo.tistory.com/105

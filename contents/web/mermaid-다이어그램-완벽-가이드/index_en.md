@@ -18,11 +18,11 @@ tags:
   - visualization
 ---
 
-## What is Mermaid?
+# 1. What is Mermaid?
 
 Mermaid is a JavaScript library that generates diagrams using a Markdown-like text-based syntax. Since you can write diagrams like code, they are easy to version-control and can be managed alongside your documentation.
 
-### Key Features
+## 1.1 Key Features
 
 - Write diagrams as text
 - Version-control with Git
@@ -31,11 +31,11 @@ Mermaid is a JavaScript library that generates diagrams using a Markdown-like te
 
 ---
 
-## 1. Flowchart
+# 2. Flowchart
 
 Flowcharts are used to visualize the flow of a process or algorithm.
 
-### Basic Syntax
+## 2.1 Basic Syntax
 
 **Code:**
 
@@ -59,14 +59,14 @@ flowchart TD
     D --> E
 ```
 
-### Setting Direction
+## 2.2 Setting Direction
 
 - `TD` or `TB`: Top to Bottom
 - `BT`: Bottom to Top
 - `LR`: Left to Right
 - `RL`: Right to Left
 
-### Node Shapes
+## 2.3 Node Shapes
 
 **Code:**
 
@@ -96,11 +96,11 @@ flowchart LR
 
 ---
 
-## 2. Sequence Diagram
+# 3. Sequence Diagram
 
 A sequence diagram represents the interactions between objects in chronological order.
 
-### API Call Example
+## 3.1 API Call Example
 
 **Code:**
 
@@ -136,7 +136,7 @@ sequenceDiagram
     API Gateway-->>Client: 200 OK + Token
 ```
 
-### Message Types
+## 3.2 Message Types
 
 **Code:**
 
@@ -160,7 +160,7 @@ sequenceDiagram
     A-xB: Failure/rejection
 ```
 
-### Activation and Notes
+## 3.3 Activation and Notes
 
 **Code:**
 
@@ -192,11 +192,11 @@ sequenceDiagram
 
 ---
 
-## 3. Class Diagram
+# 4. Class Diagram
 
 A class diagram represents the relationships between classes in object-oriented design.
 
-### Basic Class Structure
+## 4.1 Basic Class Structure
 
 **Code:**
 
@@ -252,7 +252,7 @@ classDiagram
     Animal <|-- Cat : Inheritance
 ```
 
-### Relationship Notation
+## 4.2 Relationship Notation
 
 **Code:**
 
@@ -280,11 +280,11 @@ classDiagram
 
 ---
 
-## 4. State Diagram
+# 5. State Diagram
 
 A state diagram represents the state transitions of an object.
 
-### Order State Example
+## 5.1 Order State Example
 
 **Code:**
 
@@ -316,7 +316,7 @@ stateDiagram-v2
     OrderCancelled --> [*]
 ```
 
-### Composite States
+## 5.2 Composite States
 
 **Code:**
 
@@ -354,7 +354,7 @@ stateDiagram-v2
 
 ---
 
-## 5. Entity Relationship Diagram (ERD)
+# 6. Entity Relationship Diagram (ERD)
 
 An ERD represents the relationships between entities in database design.
 
@@ -432,7 +432,7 @@ erDiagram
 
 ---
 
-## 6. Git Graph
+# 7. Git Graph
 
 Visualizes Git branches and commit history.
 
@@ -478,7 +478,7 @@ gitGraph
 
 ---
 
-## 7. Gantt Chart
+# 8. Gantt Chart
 
 A Gantt chart that visualizes a project schedule.
 
@@ -530,7 +530,7 @@ gantt
 
 ---
 
-## 8. Pie Chart
+# 9. Pie Chart
 
 **Code:**
 
@@ -558,18 +558,18 @@ pie showData
 
 ---
 
-## 9. Mermaid Rendering Tools
+# 10. Mermaid Rendering Tools
 
 There are various tools and platforms that can render Mermaid diagrams.
 
-### Online Editors
+## 10.1 Online Editors
 
 | Tool | Description |
 |-----|------|
 | [Mermaid Live Editor](https://mermaid.live/) | The official online editor. Supports real-time preview and image export |
 | [Mermaid Chart](https://www.mermaidchart.com/) | A Mermaid editor for team collaboration |
 
-### Natively Supported Platforms
+## 10.2 Natively Supported Platforms
 
 The following platforms automatically render Mermaid code blocks without any additional setup.
 
@@ -579,14 +579,14 @@ The following platforms automatically render Mermaid code blocks without any add
 - **Obsidian** - Native support
 - **Typora** - Native support
 
-### IDE Extensions
+## 10.3 IDE Extensions
 
 | IDE | Extension |
 |-----|-------------|
 | **VS Code** | [Markdown Preview Mermaid Support](https://marketplace.visualstudio.com/items?itemName=bierner.markdown-mermaid) |
 | **IntelliJ / WebStorm** | [Mermaid Plugin](https://plugins.jetbrains.com/plugin/20146-mermaid) |
 
-### Web Framework Integration
+## 10.4 Web Framework Integration
 
 | Framework | Library |
 |-----------|-----------|
@@ -596,7 +596,7 @@ The following platforms automatically render Mermaid code blocks without any add
 | **Hugo** | Built-in support (shortcode) |
 | **Jekyll** | `jekyll-mermaid` |
 
-### CLI Tool
+## 10.5 CLI Tool
 
 ```bash
 # Install mermaid-cli
@@ -611,11 +611,11 @@ mmdc -i diagram.mmd -o diagram.png
 
 ---
 
-## Conclusion
+# 11. Conclusion
 
 Mermaid is a powerful tool that lets you easily create various diagrams using a text-based approach. It is especially useful for visually expressing complex concepts in technical documentation, READMEs, blog posts, and more.
 
-### References
+## 11.1 References
 
 - [Mermaid Official Documentation](https://mermaid.js.org/)
 - [Mermaid Live Editor](https://mermaid.live/)

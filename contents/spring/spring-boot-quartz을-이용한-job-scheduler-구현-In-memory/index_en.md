@@ -113,7 +113,7 @@ Looking at the controller and service logic, the basic logic is simple, so let's
 
 The Job task content is to print numbers on the screen according to the specified sleep time.
 
-#### **3.2.1.1 SimpleJob**
+#### 3.2.1.1 SimpleJob
 
 This is logic that loops, prints numbers on the screen, rests for the specified sleep time, and then repeats.
 
@@ -139,7 +139,7 @@ public class SimpleJob extends QuartzJobBean {
 }
 ```
 
-#### **3.2.1.2 CronJob**
+#### 3.2.1.2 CronJob
 
 The CronJob implementation is the same as SimpleJob, and additionally it receives the jobId via JobDataMap and prints it on the screen.
 
@@ -164,7 +164,7 @@ public class CronJob extends QuartzJobBean {
 
 ### 3.2.2 Add Job API
 
-#### **3.2.2.1 Adding a Job in the Controller**
+#### 3.2.2.1 Adding a Job in the Controller
 
 In the Quartz scheduler, you can add Jobs in SimpleJob and CronJob forms, so I added a conditional to register as a CronJob when there is a cron expression.
 
@@ -188,7 +188,7 @@ public ResponseEntity<?> addScheduleJob(@ModelAttribute JobRequest jobRequest) {
 }
 ```
 
-#### **3.2.2.2 Adding a Job in the ScheduleService**
+#### 3.2.2.2 Adding a Job in the ScheduleService
 
 It creates a Trigger and JobDetail from the Job name, group, Cron expression, etc. provided by the user, and registers the job with Quartz using the schedulerJob() method.
 
@@ -308,7 +308,7 @@ It returns the response value as below.
 
 ### 3.2.4 Listeners
 
-#### **3.2.4.1 TriggerListener**
+#### 3.2.4.1 TriggerListener
 
 As you can easily tell from the method names, these are methods that are called when events occur (e.g. triggerFire, triggerMisfired).
 
@@ -345,7 +345,7 @@ public class TriggersListener implements TriggerListener {
 }
 ```
 
-#### **3.2.4.2 JobListener**
+#### 3.2.4.2 JobListener
 
 For JobListener too, you can easily tell from the method names which methods are called when events occur. jobExecutionVetoed is called when the TriggersListener.vetoJobExecution() method vetoes.
 

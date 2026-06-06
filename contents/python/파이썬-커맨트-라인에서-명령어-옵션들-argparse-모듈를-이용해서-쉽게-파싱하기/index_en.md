@@ -30,7 +30,7 @@ argparse is included in the Python standard library, so there's no need to insta
 import argparse
 ```
 
-# 2.1 Adding the help Option
+# 3. Adding the help Option
 
 In the command line, most commands provide help. You can check the description of command options with the -h or --help option. In the argparse module, the help option is added by default.
 
@@ -43,7 +43,7 @@ When you give the -h option, the argparse module automatically organizes and sho
 
 ![](image_2.png)
 
-## 2.2 Adding Flag-Style Options
+## 3.1 Adding Flag-Style Options
 
 Flag-style options are the most commonly used in the command line. This is an option that runs when a flag option (-v, --verbosity) is given. You can configure various options through the add_argument() function. As shown below, you can specify short and long options with dash input, and you specify the description for that option in the help= keyword. **Setting the action keyword to 'store_true'** assigns a True value when that option is specified, and False when it isn't.
 
@@ -60,7 +60,7 @@ print("verbosity enabled")
 
 ![](image_4.png)
 
-## 2.3 Receiving a Value for an Option
+## 3.2 Receiving a Value for an Option
 
 You can also receive a value for a specific option. For example, you can take date, number, and string values as shown below.
 
@@ -85,7 +85,7 @@ print("args", args)
 
 ![](image_1.png)
 
-## 2.4 Validating the Entered Value
+## 3.3 Validating the Entered Value
 
 For types like int or string (e.g., int), validation is performed by default. However, types like date require implementing a separate function. You can check whether the entered date is in YYYY-MM-DD format by running the strptime() function and raising an Exception when it's not the right format.
 
@@ -110,7 +110,7 @@ print("args", args)
 
 ![](image_3.png)
 
-## 2.5 Selecting an Input Value from a Set of Choices
+## 3.4 Selecting an Input Value from a Set of Choices
 
 With the choices keyword, you can configure it so that the input value can only be given from a defined set of choices.
 
@@ -132,7 +132,7 @@ There are various other option configurations, but I've organized only the frequ
 
 For the source code, please refer to [GitHub](https://github.com/kenshin579/tutorials-python/tree/master/argparse).
 
-# 3. References
+# 4. References
 
 - Parsing Libraries
 - [https://realpython.com/comparing-python-command-line-parsing-libraries-argparse-docopt-click/](https://realpython.com/comparing-python-command-line-parsing-libraries-argparse-docopt-click/)

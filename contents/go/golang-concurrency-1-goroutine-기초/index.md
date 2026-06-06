@@ -19,7 +19,7 @@ Go 언어가 다른 언어와 차별화되는 가장 큰 특징 중 하나는 **
 
 이 시리즈에서는 Go의 Concurrency를 기초부터 실전까지 단계별로 다룬다. 첫 번째 편에서는 Concurrency의 기본 개념과 Go의 핵심 실행 단위인 **Goroutine**에 대해 알아본다.
 
-## 1. Concurrency vs Parallelism
+# 1. Concurrency vs Parallelism
 
 <img src="cover.png" alt="cover" width="75%" />
 
@@ -57,15 +57,15 @@ Go의 창시자 Rob Pike는 이렇게 설명한다:
 
 Go에서 concurrency는 프로그램의 **구조**에 관한 것이다. 코드를 독립적으로 실행 가능한 단위로 분리하는 것이 concurrency이고, 이를 실제로 여러 CPU에서 동시에 실행하는 것이 parallelism이다. Go 프로그램은 concurrent하게 설계하면, runtime이 알아서 parallelism을 활용한다.
 
-## 2. 왜 Go는 Concurrency에 강한가
+# 2. 왜 Go는 Concurrency에 강한가
 
-### CSP 모델
+## 2.1 CSP 모델
 
 Go의 concurrency 모델은 **CSP(Communicating Sequential Processes)** 에 기반한다. 1978년 Tony Hoare가 제안한 이 모델의 핵심은 독립적인 프로세스들이 **메시지 전달(message passing)** 을 통해 통신하는 것이다.
 
 Go에서는 이를 **goroutine**(독립적인 실행 단위)과 **channel**(메시지 전달 수단)로 구현했다.
 
-### Go 동시성 철학
+## 2.2 Go 동시성 철학
 
 > **"Do not communicate by sharing memory; instead, share memory by communicating."**
 > — Go Proverb
@@ -89,25 +89,25 @@ graph LR
     end
 ```
 
-## 3. 언제 Concurrency를 사용해야 하는가
+# 3. 언제 Concurrency를 사용해야 하는가
 
-### 사용이 적합한 경우
+## 3.1 사용이 적합한 경우
 
 - **I/O 대기가 많은 작업**: HTTP 요청, DB 쿼리, 파일 읽기/쓰기
 - **독립적인 작업의 병렬 처리**: 여러 API를 동시에 호출
 - **이벤트 기반 처리**: 웹 서버의 요청 처리
 - **파이프라인 처리**: 데이터 변환 스테이지 체이닝
 
-### 사용하면 안 되는 경우 (오버엔지니어링)
+## 3.2 사용하면 안 되는 경우 (오버엔지니어링)
 
 - **단순 순차 처리로 충분한 경우**: 간단한 데이터 변환
 - **CPU-bound 작업에서 goroutine을 과도하게 생성하는 경우**
 - **공유 상태가 많아 lock이 복잡해지는 경우**: 이 경우 설계를 다시 고려
 - **디버깅이 어려워질 정도로 복잡한 경우**: concurrency는 복잡성을 추가한다
 
-## 4. Goroutine 기초
+# 4. Goroutine 기초
 
-### Goroutine이란?
+## 4.1 Goroutine이란?
 
 Goroutine은 Go runtime이 관리하는 **경량 실행 단위**이다. `go` 키워드를 함수 호출 앞에 붙이면 새로운 goroutine이 생성된다.
 
@@ -121,7 +121,7 @@ go func() {
 go sayHello("World")
 ```
 
-### Goroutine vs OS Thread
+## 4.2 Goroutine vs OS Thread
 
 
 | 구분            | Goroutine                | OS Thread            |
@@ -134,7 +134,7 @@ go sayHello("World")
 
 goroutine은 OS thread 위에서 **멀티플렉싱**된다. 수천~수만 개의 goroutine이 소수의 OS thread에서 효율적으로 실행된다.
 
-### 실행 순서는 비결정적
+## 4.3 실행 순서는 비결정적
 
 goroutine의 실행 순서는 **보장되지 않는다**. 아래 코드에서 숫자가 순서대로 출력되리라 기대하면 안 된다.
 
@@ -162,7 +162,7 @@ func TestGoroutineNonDeterministicOrder(t *testing.T) {
 }
 ```
 
-### main goroutine과 lifecycle
+## 4.4 main goroutine과 lifecycle
 
 Go 프로그램에서 `main()` 함수는 **main goroutine**에서 실행된다. main goroutine이 종료되면, 다른 goroutine의 완료 여부와 관계없이 **프로그램 전체가 종료**된다.
 
@@ -199,7 +199,7 @@ func TestWaitGroupSolution(t *testing.T) {
 }
 ```
 
-### 수만 개의 goroutine 생성
+## 4.5 수만 개의 goroutine 생성
 
 goroutine은 매우 가벼워서 수만 개를 생성해도 문제없다.
 
@@ -223,11 +223,11 @@ func TestGoroutineLightweight(t *testing.T) {
 }
 ```
 
-## 5. 다른 언어와의 비교
+# 5. 다른 언어와의 비교
 
 goroutine의 특징을 더 잘 이해하기 위해 Kotlin Coroutine, Java Thread와 비교해 보자.
 
-### 전체 비교
+## 5.1 전체 비교
 
 | 구분 | Go Goroutine | Kotlin Coroutine | Java Platform Thread | Java Virtual Thread (21+) |
 |------|-------------|------------------|---------------------|--------------------------|
@@ -237,7 +237,7 @@ goroutine의 특징을 더 잘 이해하기 위해 Kotlin Coroutine, Java Thread
 | 동시 실행 수 | 수십만 개 | 수십만 개 | 수천 개 | 수백만 개 |
 | 통신 방식 | Channel (CSP) | Flow, Channel | synchronized, Lock | synchronized, Lock |
 
-### Goroutine vs Kotlin Coroutine
+## 5.2 Goroutine vs Kotlin Coroutine
 
 **가장 큰 차이는 스케줄링 방식이다.**
 
@@ -268,7 +268,7 @@ func fetchData() {
 - **Structured Concurrency** 내장 — 부모 coroutine 취소 시 자식도 자동 취소
 - **에러 전파**가 체계적 — `CoroutineExceptionHandler`로 일관된 처리 가능
 
-### Goroutine vs Java Thread
+## 5.3 Goroutine vs Java Thread
 
 전통적인 Java Platform Thread는 OS thread와 1:1로 매핑되어 ~1MB의 스택을 차지한다. 수천 개 이상 생성하면 메모리와 context switching 비용이 급증한다.
 
@@ -286,7 +286,7 @@ Thread.startVirtualThread(() -> doWork());
 
 다만 Java는 Channel 같은 통신 메커니즘이 언어에 내장되지 않아, `BlockingQueue`나 `CompletableFuture` 등 별도 도구를 사용해야 한다.
 
-### Goroutine의 핵심 강점 요약
+## 5.4 Goroutine의 핵심 강점 요약
 
 1. **언어 내장**: `go` + `chan`이 키워드로 제공되어 별도 라이브러리 불필요
 2. **함수 색칠 문제 없음**: `async/await/suspend` 같은 구분 없이 모든 함수가 동일
@@ -295,9 +295,9 @@ Thread.startVirtualThread(() -> doWork());
 
 **약점**으로는 structured concurrency 부재(수동으로 `Context`/`WaitGroup` 관리 필요)와 goroutine에서 `panic` 발생 시 프로그램 전체가 종료될 수 있다는 점이 있다.
 
-## 6. Goroutine Scheduling 개념
+# 6. Goroutine Scheduling 개념
 
-### GMP 모델
+## 6.1 GMP 모델
 
 Go runtime은 **GMP 모델**로 goroutine을 스케줄링한다. OS가 직접 goroutine을 관리하는 것이 아니라, Go runtime이 사용자 공간에서 자체적으로 스케줄링을 수행한다. 이 덕분에 OS thread보다 훨씬 적은 비용으로 컨텍스트 스위칭이 가능하다.
 
@@ -343,7 +343,7 @@ graph TD
 3. 실행 중인 goroutine이 I/O 대기, channel 대기, `time.Sleep` 등으로 blocking되면 `P`는 다음 goroutine으로 전환한다
 4. 로컬 run queue가 비면 **work stealing**으로 다른 `P`의 queue에서 goroutine을 가져온다
 
-### runtime.GOMAXPROCS
+## 6.2 runtime.GOMAXPROCS
 
 `runtime.GOMAXPROCS(n)`는 동시에 goroutine을 실행할 수 있는 **P(Processor)의 최대 개수**를 설정한다. 기본값은 CPU 코어 수이다. 즉, 4코어 머신이면 최대 4개의 goroutine이 물리적으로 동시에 실행될 수 있다.
 
@@ -364,19 +364,19 @@ func TestGOMAXPROCS(t *testing.T) {
 - `GOMAXPROCS=1`: P가 1개이므로 goroutine이 concurrent하게 구성되지만, 한 번에 하나만 실행된다. 디버깅이나 race condition 재현 시 유용하다
 - `GOMAXPROCS=N`: 최대 N개의 goroutine이 동시에 실행 가능. 일반적으로 기본값(CPU 코어 수)을 그대로 사용하는 것이 권장된다
 
-## 7. Goroutine Leak
+# 7. Goroutine Leak
 
-### Goroutine Leak이란?
+## 7.1 Goroutine Leak이란?
 
 goroutine이 더 이상 필요하지 않지만 **종료되지 않고 계속 살아있는 상태**를 goroutine leak이라 한다. 메모리를 점유하고 GC 대상이 되지 않으므로, 시간이 지남에 따라 메모리 사용량이 계속 증가한다.
 
-### 대표적인 원인
+## 7.2 대표적인 원인
 
 1. **Channel 대기**: 아무도 receive/send하지 않는 channel에서 영원히 blocking
 2. **무한 루프**: 종료 조건 없는 goroutine
 3. **Context 미사용**: 취소 신호 없이 실행되는 goroutine
 
-### Leak 예시
+## 7.3 Leak 예시
 
 아래 코드에서 `leakyFunc`는 unbuffered channel을 생성하고, goroutine에서 값을 send한다. 하지만 호출하는 쪽에서 channel을 receive하지 않으면, goroutine은 `ch <- 42`에서 **영원히 blocking**된다. 이 goroutine은 GC로도 회수되지 않는다.
 
@@ -402,7 +402,7 @@ func TestGoroutineLeak(t *testing.T) {
 
 이런 패턴이 반복 호출되면 goroutine이 계속 쌓여 메모리 사용량이 무한히 증가하게 된다.
 
-### Context로 Leak 방지
+## 7.4 Context로 Leak 방지
 
 위 문제를 해결하려면, goroutine이 **외부 신호를 받아 스스로 종료**할 수 있어야 한다. `context.Context`의 취소 메커니즘을 활용하면 goroutine에게 종료 신호를 보낼 수 있다.
 
@@ -437,7 +437,7 @@ func TestGoroutineLeakPrevention_WithContext(t *testing.T) {
 
 **핵심 원칙**: goroutine을 생성할 때는 항상 **종료 경로**를 확보해야 한다. `context`, `done channel`, `close` 등을 활용하자.
 
-## 8. 정리
+# 8. 정리
 
 
 | 개념                       | 핵심                                                   |
@@ -452,7 +452,7 @@ func TestGoroutineLeakPrevention_WithContext(t *testing.T) {
 
 다음 편에서는 goroutine 간 **데이터를 주고받는 핵심 메커니즘**인 Channel에 대해 알아본다.
 
-## 참고
+# 9. 참고
 
 - [Effective Go - Concurrency](https://go.dev/doc/effective_go#concurrency)
 - [Go Blog - Concurrency is not parallelism](https://go.dev/blog/waza-talk)

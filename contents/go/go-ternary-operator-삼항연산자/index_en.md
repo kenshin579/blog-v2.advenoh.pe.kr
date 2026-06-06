@@ -15,7 +15,7 @@ tags:
 ---
 
 
-# What Is the Ternary Operator?
+# 1. What Is the Ternary Operator?
 
 The ternary operator is a syntax that can be used instead of an if statement in the form below. It is supported in many languages such as JavaScript and Java, and the code below is Java's ternary operator.
 
@@ -46,7 +46,7 @@ func Example_Ternary_Operator_EqualCheck() {
 
 Please refer to [github](https://github.com/kenshin579/tutorials-go/tree/master/go-ternary) for the example code.
 
-# References
+# 2. References
 
 - https://golangdocs.com/ternary-operator-in-golang
 - https://needneo.tistory.com/105

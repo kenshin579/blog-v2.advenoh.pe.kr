@@ -204,7 +204,7 @@ implements java.io.Serializable, Comparable<String>, CharSequence {
 
 여기서에 작성된 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-final) 를 참고해주세요.
 
-# 5.참고
+# 5. 참고
 
 - final
     - [https://en.wikipedia.org/wiki/Final\_(Java)](https://en.wikipedia.org/wiki/Final_%28Java%29)

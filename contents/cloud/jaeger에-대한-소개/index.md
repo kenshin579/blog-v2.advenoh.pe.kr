@@ -17,7 +17,7 @@ tags:
 > - 네이버는 왜 제2사옥 1784를 지었을 까요?  https://www.youtube.com/watch?v=WG7JHLfClEo
 > - 네이버 랩스 - https://www.naverlabs.com/
 
-# 1.What is Jaeger?
+# 1. What is Jaeger?
 
 ## 1.1 Distributed Tracing?
 
@@ -33,7 +33,7 @@ tags:
 ![Distributed Tracing](distributed-tracing.png)
 
 
-### Distributed Tracing의 기본 아이디어
+### 1.1.1 Distributed Tracing의 기본 아이디어
 
 - 실행되는 컨포넌트마다 실행 시간과 추가 정보 수립
 - 수집한 정보를 DB에 저장
@@ -61,7 +61,7 @@ Jaeger는 2015년 Uber가 만든 오픈 소스 Distributed Tracing System이다.
     - Trace, metric, log 와 같은 원격 측정 데이터를 기기, 생성, 수집 및 내보내기 위한 공급 업체-중립 오픈 소스 관찰 프레임워크이다
 
 
-### Reference
+### 1.2.2 Reference
 
 - https://opencensus.io/
 - https://opentracing.io/
@@ -69,7 +69,7 @@ Jaeger는 2015년 Uber가 만든 오픈 소스 Distributed Tracing System이다.
 
 
 
-### 1.2.2 History
+### 1.2.3 History
 
 - Dapper (Google) : Foundation of all tracers
     - Tracing 관련 주제는 1990년도 부터 나오기 시작
@@ -90,7 +90,7 @@ Jaeger는 2015년 Uber가 만든 오픈 소스 Distributed Tracing System이다.
 
 
 
-### 1.2.3 Feature
+### 1.2.4 Feature
 
 - High Scalability 고려해서 설계됨
     - collector의 auto-scaling을 지원함
@@ -113,9 +113,9 @@ Jaeger는 2015년 Uber가 만든 오픈 소스 Distributed Tracing System이다.
 - Post-collection data processing pipeline (coming soon)
 - Service Performance Monitoring (SPM)
 
-### 1.2.4 Tracing 용어와 친해지기
+### 1.2.5 Tracing 용어와 친해지기
 
-#### Span
+#### 1.2.5.1 Span
 - 분산 추척에서는 가장 기본이 되는 블록 단위로 분산 시스템에서 실행되는 작업 단위를 나타낸다
     - ex. HTTP request, call to DB
 - Span은 다음과 같은 정보가 있다
@@ -124,11 +124,11 @@ Jaeger는 2015년 Uber가 만든 오픈 소스 Distributed Tracing System이다.
     - Span Tags, Logs (key:value)
     - Span Context : 서비스에서 다른 서비스로 전달이 될 때 Trace에서 각 Span를 구별할 수 있는 추척 정보 (ex. Span id, Trace id)
 
-#### Trace
+#### 1.2.5.2 Trace
 - Trace는 시스템 전반에서 데이터/실행 경로를 나타낸다
 - 1개 이상의 Span으로 이루어져 있고 여러 개의 Span이 모여서 하나의 Trace를 완성하게 된다
 
-#### Instrumentation
+#### 1.2.5.3 Instrumentation
 - Application(ex. DB)에 따라 여러 library를 오픈소스로 제공
 - Instrumentation library를 통해서 Span으로 생성함
 
@@ -188,13 +188,13 @@ Span을 생성하는 방법은 2가지가 있다
     - collector 단에서 sampling을 하는 거라 tail-based라고 칭함
     - Adaptive sampling (v1.27이후) 도 지원해서 시스템으로 들어오는 트랙픽과 trace의 수을 가지고 sampling이 자동으로 조절이 가능함
 
-# 3.Running Jaeger Docker on Local Machine
+# 3. Running Jaeger Docker on Local Machine
 
 ## 3.1 Hot R.O.D - Rides on Demand Sample 실행하기
 
 HotROD는 Jaeger github에서 제공하는 "ride on demand" 데모 어플리케이션이고 OpenTracing API를 사용한 버전이다. Standalone으로 실행되고 여러 마이크로 서비스가 별도 port로 실행하여 간단한 MSA 형식으로 동작하게 되어 있다. 이 예제에서는 별도 Instrumentation을 사용하지 않고 직접 Span을 생성하는 방식으로 되어 있다.
 
-### Jaeger 실행하기
+### 3.1.1 Jaeger 실행하기
 
 빠른 실행을 위해 Jaeger의 모든 컨포넌트가 포함되어 있는 올인원 도커 이미지로 실행한다.
 
@@ -208,7 +208,7 @@ $ docker run -d -p6831:6831/udp -p16686:16686 jaegertracing/all-in-one:latest
 
 ![Jaeger Web](image-20220717103342529.png)
 
-### Hot R.O.D 샘플 프로그램 실행하기
+### 3.1.2 Hot R.O.D 샘플 프로그램 실행하기
 
 HotROD 샘플 코드는 golang으로 작성되어 있어서 미리 go toolchain 설치가 필요한다.
 
@@ -228,7 +228,7 @@ all 옵션을 주면  HotROD의 모든 서비스를 한번에 실행할 수 있�
 
 HotROD에서 버튼을 클릭하여 라이드 요청하면, Jaeger에서 API에 대한 trace를 확인할 수 있다.
 
-### System Architecture > DAG
+### 3.2.1 System Architecture > DAG
 
 - 이 화면에서는 컨포넌트를 전체 구성 요소를 한눈에 확인할 수 있다
 
@@ -240,7 +240,7 @@ HotROD에서 버튼을 클릭하여 라이드 요청하면, Jaeger에서 API에 
 
 
 
-### Jaeger Tracing의 장점
+### 3.2.2 Jaeger Tracing의 장점
 
 - 어느 구간에서 실패가 발생했는지 쉽게 찾을 수 있다
 - 여러 컨포넌트에서 어느 구간에서 bottleneck이 있는지도 쉽게 확인할 수 있다
@@ -249,7 +249,7 @@ HotROD에서 버튼을 클릭하여 라이드 요청하면, Jaeger에서 API에 
 
 ![Jaeger Trace](image-20220717115937277.png)
 
-# 3.2 OpenTelemetry를 사용한 샘플 코드 - MongoDB, Gin instrumentation 사용
+# 4. OpenTelemetry를 사용한 샘플 코드 - MongoDB, Gin instrumentation 사용
 
 HotROD 어플리케이션은 OpenTracing SDK를 사용 + Manual Instrumentation 방식으로 구현된 버전이다. 최신 OpenTelemetry 표준화인 SDK로 구현한 버전도 같이 확인해보자.
 
@@ -280,12 +280,12 @@ r.Use(otelgin.Middleware("todo-service")) //이렇게 하면 끝
 
 
 
-## 3.3 Reference
+## 4.1 Reference
 
 - https://medium.com/opentracing/take-opentracing-for-a-hotrod-ride-f6e3141f7941
 - https://www.aspecto.io/blog/opentelemetry-go-getting-started/
 
-# 4.Conclusion
+# 5. Conclusion
 
 > *Frank의 내면의 소리: 문제 있을 때 이제 Kibana 로그는 그만 보고 싶다. 한번에 빠르게 파악하기 위해서는 팀내에 APM/distributed trace system 도입이 시급하지 않을 까*
 
@@ -297,7 +297,7 @@ Jaeger를 도입하는 건 결국 운영 관리 비용이 들기 때문에 되�
 
 - https://landscape.cncf.io/?selected=pinpoint
 
-# 5.Terminology
+# 6. Terminology
 
 - Observability (관찰 가능성?)
     - Observability란 개념을 처음 도입한 건 엔지니어 [Rudolf E. Kálmán](https://en.wikipedia.org/wiki/Rudolf_E._K%C3%A1lm%C3%A1n) 임
@@ -311,7 +311,7 @@ Jaeger를 도입하는 건 결국 운영 관리 비용이 들기 때문에 되�
     - 원격 측정 데이터로 metrics, log, traces 3가지가 있다
 
 
-# 6.Reference
+# 7. Reference
 
 - https://www.aspecto.io/blog/jaeger-tracing-the-ultimate-guide/
 - https://www.slideshare.net/OracleDeveloperkr/opentracing-jaeger

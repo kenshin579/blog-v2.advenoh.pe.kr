@@ -124,7 +124,7 @@ WHERE employees.emp_no = dept_emp.emp_no;
 
 An equi join is a specific type of comparison-based join that uses equality comparison (=). The join already explained in 3.1.2 above is called an equi join (= equality join).
 
-### 3.1.2 Non-Equi Join (NON-EQUI JOIN)
+### 3.1.4 Non-Equi Join (NON-EQUI JOIN)
 
 A non-equi join is a join that does not use equality comparison (=); if the condition uses comparisons such as greater than, less than, or not equal, it is called a non-equi join.
 
@@ -305,7 +305,7 @@ AND A.dept_no = B.dept_no;
 
 ![Join Result](image_12.png)
 
-## **3.4 Anti Join (ANTI JOIN)**
+## 3.4 Anti Join (ANTI JOIN)
 
 An anti join is a join that extracts in the main query only the data that does not exist within the subquery. As a simple example, let's extract the employees whose department number (dept_no) is not 2 or greater and whose employee number (emp_no) is 10002 or greater. You can write it using NOT EXISTS or NOT IN.
 
@@ -327,7 +327,7 @@ AND d.dept_no >= 2);
 
 
 
-## **3.5 Semi Join (SEMI JOIN)**
+## 3.5 Semi Join (SEMI JOIN)
 
 A semi join, in contrast to an anti join, is a method that extracts in the main query only the data that exists within the subquery.
 

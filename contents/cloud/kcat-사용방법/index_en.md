@@ -17,7 +17,7 @@ series: "Apache Kafka"
 
 `kcat` is a handy tool for easily testing and debugging Apache Kafka. With the `kcat` command you can send and receive messages or list metadata. Let's take a look at the basic usage. For Kafka installation, please refer to [Running Kafka in a local environment](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/).
 
-# Installing kcat
+# 1. Installing kcat
 
 There are several ways to install it, but this post explains the installation based on macOS. Install `kcat` with `brew`.
 
@@ -27,9 +27,9 @@ $ brew install kcat
 ```
 
 
-# Basic Usage of kcat
+# 2. Basic Usage of kcat
 
-## Basic Syntax
+## 2.1 Basic Syntax
 
 The basic command format of `kcat` is as follows.
 
@@ -44,11 +44,11 @@ $ kcat <mode> -b <brokers> -t new_topic
 - `-b <brokers, ...>`
     -  Specifies the list of brokers
 
-# Sending Messages (-P)
+# 3. Sending Messages (-P)
 
 You can send messages by specifying the Produce (`-P`) mode. You must specify the Kafka broker (`-b`) and topic option (`-t`) as required arguments. Using `kcat`, you can easily send messages to a specific topic. Run the command with `-P`, type in the data you want, and then press `Ctrl-D` to finish.
 
-## Producing Message Values
+## 3.1 Producing Message Values
 
 ```bash
 $ kcat -b localhost:29092 -t test -P
@@ -64,7 +64,7 @@ $ kcat -b localhost:29092 -t test -C
 22
 ```
 
-## Producing Messages with Keys and Values
+## 3.2 Producing Messages with Keys and Values
 
 If you want to produce a message together with a key, use the key delimiter (`-K`) option to specify the delimiter you want.
 
@@ -74,7 +74,7 @@ key1:msg1
 key2:msg2
 ```
 
-## Producing Messages from a File
+## 3.3 Producing Messages from a File
 
 You can also produce messages by reading them from a file.
 
@@ -99,7 +99,7 @@ $ kcat -b localhost:29092 -t test -C -p 1
 hello world
 ```
 
-## Increasing the Number of Partitions for a Topic
+## 3.4 Increasing the Number of Partitions for a Topic
 
 To increase the number of partitions for a topic, you can add partitions using the script provided by Kafka as shown below.
 
@@ -130,9 +130,9 @@ Topic: test	TopicId: sLitGkHfRSyg261FxMoGCA	PartitionCount: 3	ReplicationFactor:
 
 > In Kafka, once you increase the number of partitions there is no way to decrease it, so in a real environment you need to carefully determine whether it is truly necessary before increasing it.
 
-# Receiving Messages (-D)
+# 4. Receiving Messages (-D)
 
-## Receiving All Messages from a Topic
+## 4.1 Receiving All Messages from a Topic
 
 By default, without any additional options, `kcat` fetches all messages from the beginning of the topic.
 
@@ -150,7 +150,7 @@ $ kcat -b localhost:29092 -t test -C
 44
 ```
 
-## Receiving Only N Messages
+## 4.2 Receiving Only N Messages
 
 Instead of fetching all messages, if you want to fetch only a few, specify the count with the `-c` option.
 
@@ -160,7 +160,7 @@ $ kcat -b localhost:29092 -t test -C -c 2
 22
 ```
 
-## Fetching Messages from a Specific Offset
+## 4.3 Fetching Messages from a Specific Offset
 
 The `-o` option fetches data starting from a specific offset.
 
@@ -183,7 +183,7 @@ $ kcat -b localhost:29092 -t test -C -o -2
 44
 ```
 
-## Changing the Output Format
+## 4.4 Changing the Output Format
 
 By default, `kcat` outputs only the message value (the value of the Kafka record). To change the output format, you can define it using various values with the `-f` option as shown below.
 
@@ -229,7 +229,7 @@ Value (2 bytes): 44
 
 
 
-# Querying Metadata (-L)
+# 5. Querying Metadata (-L)
 
 To check information about the brokers or the current topic, you can use the `-L` option. The cluster consists of 3 brokers in total, and you can also check how many partitions each topic is composed of.
 
@@ -257,7 +257,7 @@ Metadata for all topics (from broker -1: my-kafka.default.svc.cluster.local:9092
 
 
 
-# References
+# 6. References
 
 - https://docs.confluent.io/platform/current/app-development/kafkacat-usage.html
 - https://github.com/edenhill/kafkacat

@@ -30,7 +30,7 @@ Most of these services offer a free plan with limited resources and features. Pe
 
 # 1. Server Setup Prerequisites
 
-## Creating an AWS Account
+## 1.1 Creating an AWS Account
 
 An AWS account can be used for free for 12 months, but you need to create an account with an email address. Rather than creating a new email address each time, I recommend using Google's [alias feature](https://blog.advenoh.pe.kr/하나의-구글-계정으로-여러-이메일-주소-사용하기/).
 
@@ -103,7 +103,7 @@ $ ssh -i echo-server.pem xxx.xxxx.xxx.xxx # EC2's Elastic IP address
 
 Since an IP address is not easy to remember and you have to enter a long command every time, configuring the ssh config file as follows lets you access it with a simple command.
 
-### 2.3.1 Setting the PEM File and Server IP Address in Advance in the ssh Config
+### 2.3.2 Setting the PEM File and Server IP Address in Advance in the ssh Config
 
 Copy the `PEM` file to the `.ssh` folder and change its permissions.
 
@@ -141,7 +141,7 @@ Run "sudo yum update" to apply all updates.
 [ec2-user@xxx.xxx.xxx.xxx ~]$
 ```
 
-## 2.4. Additional EC2 Instance Configuration After Creating EC2
+## 2.4 Additional EC2 Instance Configuration After Creating EC2
 
 ### 2.4.1 Changing the Timezone
 
@@ -209,7 +209,7 @@ $ ssh echo-server
 $ git clone https://github.com/kenshin579/echo-server
 ```
 
-## 3.1 Installing golang
+## 3.2 Installing golang
 
 The Echo server is written in golang, so install golang.
 
@@ -217,7 +217,7 @@ The Echo server is written in golang, so install golang.
 $ sudo yum install -y golang
 ```
 
-## 3.2 Building the Source Code
+## 3.3 Building the Source Code
 
 A build command is specified in the Makefile, so you can easily build with make.
 
@@ -249,9 +249,9 @@ github.com/kenshin579/echo-server/cmd/bootstrap
 command-line-arguments
 ```
 
-## 3.3 Running Echo and Testing It from the Outside
+## 3.4 Running Echo and Testing It from the Outside
 
-### 3.3.1 Running the API
+### 3.4.1 Running the API
 
 ```bash
 $ go run cmd/server/main.go
@@ -279,7 +279,7 @@ ____________________________________O/_______
 
 ```
 
-### 3.3.2 Accessing the API from the Outside
+### 3.4.2 Accessing the API from the Outside
 
 First, you need to know the EC2 public address to access it, so check it in the EC2 instance details.
 
@@ -296,7 +296,7 @@ $ curl --location 'https://ec1-3-30-20-2342.ap-northeast-2.compute.amazonaws.com
 Pong
 ```
 
-# References
+# 4. References
 
 - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/go-devenv.html
 - https://ryanwoo.tistory.com/8

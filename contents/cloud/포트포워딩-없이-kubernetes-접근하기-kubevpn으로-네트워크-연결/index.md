@@ -13,7 +13,7 @@ tags:
 
 # 1. 개요
 
-### KubeVPN 란?
+## 1.1 KubeVPN 란?
 
 `KubeVPN`은 `Kubernetes` 클러스터와 로컬 환경 간의 원활한 네트워크 연결을 제공하는 도구이다. 기존의 port forwarding 방식과는 다음과 같은 차이점이 있다.
 
@@ -22,7 +22,7 @@ tags:
 | **Port Forwarding** | 특정 포트를 로컬로 전달하여 단일 서비스에 접근 가능하지만, 여러 포트나 복잡한 네트워크 설정이 필요할 경우 불편함 |
 | **KubeVPN**         | 전체 네트워크를 클러스터 내부처럼 확장하여 Pod IP 및 네이티브 DNS를 직접 사용 가능 |
 
-### KubeVPN의 Technical Architecture
+## 1.2 KubeVPN의 Technical Architecture
 
 ![KubeVPN Architecture](image-20250403231528867.png)
 
@@ -32,7 +32,7 @@ tags:
 - **VPN Client**: 로컬 머신에서 클러스터 네트워크로 접근할 수 있도록 설정
 - **Traffic Routing**: HTTP 헤더 조건 등을 기반으로 로컬 환경으로 트래픽을 리디렉션
 
-## 1.1 KubeVPN의 주요 특징
+## 1.3 KubeVPN의 주요 특징
 
 1. Direct Cluster Networking
 

@@ -26,7 +26,7 @@ Rate limiting은 API 호출이나 서버 요청을 특정 시간 단위 내에�
 
 `aiolimiter`는 비동기 프로그래밍을 지원하는 rate limiter 라이브러리이다. 이는 `asyncio`와 함께 사용되어, 비동기적으로 여러 작업을 처리하는 동안에도 요청 수를 제어할 수 있게 도와준다. `aiolimiter`는 특히 서버나 API 호출을 비동기적으로 처리할 때 유용하다.
 
-### 사용 예제
+### 2.1.1 사용 예제
 
 다음은 `aiolimiter`를 사용하여 API 호출에 rate limit을 적용하는 예제이다.
 
@@ -83,7 +83,7 @@ class AiolimiterTest(TestCase):
 
 `aiometer`는 `aiolimiter`와 비슷하지만, 여러 개의 rate limiter를 한 번에 관리할 수 있는 기능을 제공한다. 여러 API를 동시에 호출하거나 여러 가지 다른 제약을 두어야 할 때 유용하다.
 
-### 사용 예제
+### 3.1.1 사용 예제
 
 `aiometer`를 사용하여 비동기 요청에 rate limit을 적용한 예시이다.
 

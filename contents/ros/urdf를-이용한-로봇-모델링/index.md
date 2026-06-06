@@ -45,7 +45,7 @@ tags:
 
 URDF 으로 모델링할 로봇은 매니플레이터이다. 매니플레이터의 기본 구조는 다음과 같이 기저, 링크, 조인트, 말단 장치로 구성되어 있다.
 
-### 매니플레이터의 기본 구조
+## 2.1 매니플레이터의 기본 구조
 
 - 기저(base): 매니퓰레이터가 고정되어 있는 부분
     - 목적에 따라 작업 공간내 바닥이 될 수 있음
@@ -87,7 +87,7 @@ $ cd urdf
 $ vim testbot.urdf
 ```
 
-### 3.1 전체 URDF 예시
+## 3.1 전체 URDF 예시
 
   ```bash
   <?xml version="1.0" ?>
@@ -218,7 +218,7 @@ $ vim testbot.urdf
   </robot>
   ```
 
-### 3.2 RViz에서 렌더링된 화면
+## 3.2 RViz에서 렌더링된 화면
 ![RViz에서 렌더링된 화면](rviz1.png)
 
 # 4. URDF 작성하기
@@ -245,7 +245,7 @@ URDF는 로봇을 설명하기 위한 XML 명세서로 XML 태그를 이용해�
 </robot>
 ```
 
-## 4.3 `<link>`
+## 4.2 `<link>`
 `<link>` 태그는 일반적으로 로봇의 각 파트 (ex. 본체, 팔, 다리, 휠 등)을 표현하는데 사용되고 각 링크는 조인트를 통해 다른 링크에 연결이 된다.
 
 매니퓰레이터의 구성 요소 그 첫 번째인 기저는 URDF에서 링크로 표현한다. 기저는 첫번째 링크와 조인트로 연결되어 있으며 이 조인트는 `fixed` 타입으로 설정되어 움직이지 않게 고정되어 있고 원점(0.0,0.0,0.0)에 위치해 있다.
@@ -311,7 +311,7 @@ URDF는 로봇을 설명하기 위한 XML 명세서로 XML 태그를 이용해�
 
   > [3D insertia tensor 값 예제](https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors)
 
-### 4.3.1 `<material>`
+### 4.2.1 `<material>`
 
 `<material>` 태그는 링크의 색상(color)이나 텍스처(texture)를 지정하는 데 사용된다.
 
@@ -329,11 +329,11 @@ URDF는 로봇을 설명하기 위한 XML 명세서로 XML 태그를 이용해�
 </material>
 ```
 
-## 4.4 `<joint>`
+## 4.3 `<joint>`
 
 `<joint>` 태그는 로봇의 조인트를 정의하는 데 사용되고 각 조인트는 두 링크를 연결하며 어떤 방식으로 움직일 수 있는지 정의한다.
 
-### URDF 에서 지원하는 조인트 종류
+### 4.3.1 URDF 에서 지원하는 조인트 종류
 
 ![조인트의 종류](joint.png)
 
@@ -473,7 +473,7 @@ URDF를 담은 `robot_description` 파라미터와 `joint_state_publisher`,  `ro
     - Subscribed Topic
         - `/joint_states` (`sendor_msgs/msg/JointState`) - 로봇 위치에 대한 관절 상태가 업데이트된다
 
-#### RQT
+### 5.1.1 RQT
 ![RQT](rqt.png)
 
 참고
@@ -482,7 +482,7 @@ URDF를 담은 `robot_description` 파라미터와 `joint_state_publisher`,  `ro
 - https://github.com/ros/robot_state_publisher
 - https://github.com/ros/joint_state_publisher/tree/noetic-devel/joint_state_publisher
 
-# 5.2 빌드 및 실행
+## 5.2 빌드 및 실행
 
 런치 파일 생성후 rviz 디스플레이 생성 파일을 생성하면 된다. 모든 파일은 [github repo](https://github.com/kenshin579/tutorials-ros2)에 있어서 원본 파일을 참고하여 추가하자.
 
@@ -532,9 +532,9 @@ $ ros2 launch testbot_description testbot.launch.py
 
 ![Rviz](rviz3.png)
 
-## 6. URDF 작성시 필요한 도구
+# 6. URDF 작성시 필요한 도구
 
-### 6.1 URDF for VSCode
+## 6.1 URDF for VSCode
 
 - URDF 지원
     - `.urdf`, `.xacro` 파일 xml 형식 지원
@@ -547,13 +547,13 @@ $ ros2 launch testbot_description testbot.launch.py
 
 - https://marketplace.visualstudio.com/items?itemName=smilerobotics.urdf
 
-### 6.2 ~~ROS: Preview UDF~~ ← 이건 잘 안됨
+## 6.2 ~~ROS: Preview UDF~~ ← 이건 잘 안됨
 
 - Marketplace > ROS extension 설치
 - 사용방법 : urdf 파일 오픈 후 `Command Palette` > `ROS: Preview URDF` 선택
     - ROS로는 되는대 ROS 2에서는 안되는게 아닌가 싶음
 
-#### 기대하는 화면 - 안됨
+### 6.2.1 기대하는 화면 - 안됨
 
 - 실행해보면 blank 화면이 나옴
 
@@ -563,11 +563,11 @@ $ ros2 launch testbot_description testbot.launch.py
 
 - https://hiro-group.ronc.one/vscode_urdf_previewer.html
 
-### 6.3 URDF 파일 validation 체크
+## 6.3 URDF 파일 validation 체크
 
 URDF 으로 로봇 모델이 잘 작성이 되었는지 검토하는 방법은 여러 명령어로 확인이 가능하다.
 
-#### 6.3.1 `check_urdf`
+### 6.3.1 `check_urdf`
 
 ROS에서는 `check_urdf` 명령어로 작성한 URDF의 문법적 오류 및 각 링크의 연결 관계를 확인할 수 있다.
 
@@ -582,7 +582,7 @@ root Link: base has 1 child(ren)
                 child(1):  link4
 ```
 
-#### 6.3.2 `urdf_to_graphiz`
+### 6.3.2 `urdf_to_graphiz`
 
 작성한 모델을 `graphiz` 다이어그램으로도 나타낼 수 있다. `urdf_to_graphiz` 명령어로 아래처럼 실행하면 .gv 파일과 .pdf 파일이 생성이 된다. 링크와 조인트와의 관계, 각 조인트와 조인트 사이의 상대 좌표 변환을 한눈에 확인해 볼 수 있다.
 
@@ -594,12 +594,12 @@ Created file testbot.pdf
 <br>
 <br>
 
-##### URDF의 link와 joint의 관계
+#### 6.3.2.1 URDF의 link와 joint의 관계
 
 ![URDF의 link와 joint의 관계](testbot_pdf.png)
 
 
-#### 6.3.3 `tf2_tools`
+### 6.3.3 `tf2_tools`
 
 `view_frames` 은 현재 TF tree를 그래프로 PDF 생성해주는 그래픽 디버깅 도구이다.
 
@@ -615,11 +615,11 @@ $ evince frames_2024-02-16_19.20.58.pdf
 - http://wiki.ros.org/tf2_tools
 - https://docs.ros.org/en/humble/Tutorials/Intermediate/Tf2/Introduction-To-Tf2.html#tf2-tools
 
-### 6.4 RViz
+## 6.4 RViz
 
 RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위치 및 자세, 센서 데이터, 지도 정보등을 시각화하여 사용자가 로봇 시스템을 이해하고 디버깅할 수 있게 해준다. RViz가 설치 안되어 있으면 아래 명령어로 설치하고 `rivz2` 로 실행하면 된다.
 
-#### 설치 및 실행
+### 6.4.1 설치 및 실행
 
 ```bash
 # 설치
@@ -633,16 +633,16 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 
 - http://wiki.ros.org/rviz
 
-## FAQ
+# 7. FAQ
 
-#### 1. `xyz`, `rpy`의 차이점?
+## 7.1 `xyz`, `rpy`의 차이점?
 
 ![ChatGPT](chat1.png)
 
 <br>
 <br>
 
-##### RPY angles
+### 7.1.1 RPY angles
 
 ![RPY](rpy.png)
 
@@ -652,14 +652,14 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 - https://www.youtube.com/watch?v=sFi6i8YzQVA
 - https://www.youtube.com/watch?v=Hg3EGzB3oqQ
 
-#### 2. `xacro`이란?
+## 7.2 `xacro`이란?
 
 - `xacro` (자크로) 파일은 `XML Macro` 의 줄임말로 반복되는 코드를 불러올 수 있는 매크로 언어이다
 - URDF를 만드는데 XML로드 가능하지만, `xacro`를 사용하여 재사용 가능한 부분을 정의해서 코드를 간결하게 유지하고 재사용성을 높일 수 있다
 
-##### 2.1 Xacro 기능
+### 7.2.1 Xacro 기능
 
-##### 1. 속성, 속성 블럭
+#### 7.2.1.1 속성, 속성 블럭
 
 ```xml
 <xacro:property name="the_radius" value="2.1" />
@@ -668,7 +668,7 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 <geometry type="cylinder" radius="${the_radius}" length="${the_length}" />
 ```
 
-##### 2. 수학 상수 및 함수 제공
+#### 7.2.1.2 수학 상수 및 함수 제공
 - ex. `pi`, `sqrt(x)`, `radians(x)`
 
 ```xml
@@ -678,7 +678,7 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 <origin xyz="0.0 0.0 ${height/2+joint_height}" rpy="0.0 0.0 0.0"/>
 ```
 
-##### 3. 조건부 블럭
+#### 7.2.1.3 조건부 블럭
 
 - 조건부 블럭은 변수의 참(true, 1), 거짓(false, 0)에 따라서 다르게 정의를 할 수 있다
 
@@ -693,7 +693,7 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 </xacro:if>
 ```
 
-##### 4. 매크로
+#### 7.2.1.4 매크로
 
 - 매크로는 인자(parameter)를 받을 수 있다
 
@@ -715,11 +715,11 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 - http://wiki.ros.org/xacro
 - https://kumoh-irl.tistory.com/77
 
-#### 3. `base_link`, `base_footprint`의 차이점?
+## 7.3 `base_link`, `base_footprint`의 차이점?
 
 ![ChatGPT](chat2.png)
 
-#### 4. 매니플레이터, manipulator
+## 7.4 매니플레이터, manipulator
 
 - 인간의 팔과 유사한 동작을 하는 로봇의 기구이다
 - 보통 여러 개의 자유도를 가지며 대상물(부품 또는 공구)을 붙잡거나 옮길 목적으로, 서로 상대적인 회전 운동이나 미끄럼 운동을 하는 관절의 연결로 구성된 기구이다
@@ -729,17 +729,17 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 - https://terms.tta.or.kr/mobile/dictionaryView.do?subject=머니퓰레이터
 - https://roomedia.tistory.com/entry/41일차-매니퓰레이션-소개-및-URDF-작성법
 
-#### 5. inertia를 정의할 때 `ixx`, `ixy`의 의미는 뭔가?
+## 7.5 inertia를 정의할 때 `ixx`, `ixy`의 의미는 뭔가?
 
 ![ChatGPT](chat3.png)
 
-## 다음 스터디 주제
+# 8. 다음 스터디 주제
 
 - 로델링한 로봇 제어해보기
 - gazebo 로 로봇 모델링
 - navigation 관련 스터디
 
-## 참고
+# 9. 참고
 
 - [ROS 2 강좌 by 표윤석](https://cafe.naver.com/openrt/24070)
 - [Building a Visual Robot Model with URDF from Scratch](http://wiki.ros.org/urdf/Tutorials/Building a Visual Robot Model with URDF from Scratch)

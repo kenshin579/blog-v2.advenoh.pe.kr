@@ -225,7 +225,7 @@ Below is what passing a bot token actually looks like in the OpenClaw Telegram c
 
 OpenClaw generates the configuration automatically, but understanding the internal structure helps with customization and troubleshooting. `openclaw.json` consists of three main sections.
 
-### agents Section
+### 3.4.1 agents Section
 
 Defines each agent (AI brain). You can assign an independent workspace and model to each agent.
 
@@ -261,7 +261,7 @@ Defines each agent (AI brain). You can assign an independent workspace and model
 
 Since each agent can use a different model, you can tune performance and cost to fit each purpose.
 
-### channels Section
+### 3.4.2 channels Section
 
 Configures Telegram bot tokens and access policies.
 
@@ -299,7 +299,7 @@ Configures Telegram bot tokens and access policies.
 | `open` | Anyone can chat (`allowFrom: ["*"]` required) |
 | `disabled` | DM disabled |
 
-### bindings Section
+### 3.4.3 bindings Section
 
 Defines the routing rules for which bot's messages go to which agent.
 

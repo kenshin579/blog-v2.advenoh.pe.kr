@@ -13,11 +13,11 @@ series: "ArgoCD"
 ---
 
 
-# Argo Projects?
+# 1. Argo Projects?
 
 The Argo Project is a set of Kubernetes tools that run applications and jobs or help with deployments in a Kubernetes environment. Every Argo program is implemented with `CRD (Custom Resource Definition)` and the user's Kubernetes cluster. There are currently four major sub-projects, and while each program can be used independently, they become even more powerful tools when used together.
 
-## What?
+## 1.1 What?
 
 - `Argo Workflows`
     - A container-based workflow engine
@@ -52,18 +52,18 @@ The Argo Project is a set of Kubernetes tools that run applications and jobs or 
     - ex. canary, blue/green, rolling updates, etc
 
 
-### References
+### 1.1.1 References
 
 - https://github.com/terrytangyuan/awesome-argo
 
-## Who?
+## 1.2 Who?
 
 - The company Applatix created Argo and provided it as open source to the cloud-native developer community
 - In 2018, a company called Intuit acquired Applatix
 - In 2020, the Argo project was approved as a CNCF Incubator project
 - It is currently maintained by several companies
 
-### References
+### 1.2.1 References
 
 - https://argoproj.github.io/
 - https://www.intuit.com/blog/innovation/cloud-native-computing-foundation-accepts-argo-as-an-incubator-project/
@@ -71,17 +71,17 @@ The Argo Project is a set of Kubernetes tools that run applications and jobs or 
 - https://blog.argoproj.io/argo-goes-to-cncf-incubator-f0e9dfb40597
 
 
-## Where?
+## 1.3 Where?
 
 - More than 180 companies are actively using it in production
 
 - ex. Adobe, Alibaba Cloud, Data Dog, Datastax, Google, GitHub, IBM, MLB, NVIDIA, Red Hat, SAP, Tesla, Ticketmaster, Daangn Market, LINE
 
-## Reference
+## 1.4 Reference
 
 - https://argoproj.github.io/
 
-## Note
+## 1.5 Note
 
 > This content is material prepared for our Platform Engineering team's internal CNCF study. If you are interested in the robotics platform development we work on, please refer to the links below, and if you are someone who wants to work together with challenge and passion, we encourage you to apply.
 >

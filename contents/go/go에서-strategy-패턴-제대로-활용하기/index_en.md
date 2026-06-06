@@ -174,7 +174,7 @@ type PaymentResult struct {
 
 Each payment method is made into an independent struct that implements the `PaymentStrategy` interface. In Go, you don't need to explicitly declare that you `implement` an interface; as long as the method signatures match, the interface is automatically satisfied.
 
-### Credit Card Payment Service
+### 2.4.1 Credit Card Payment Service
 
 ```go
 // credit_card_service.go
@@ -623,14 +623,14 @@ The two patterns are structurally similar but differ in intent. In the Strategy 
 
 The Strategy pattern is powerful, but it doesn't need to be applied everywhere. Excessive abstraction can actually make code harder to understand, so use the criteria below to judge whether to apply it.
 
-## When It's Good to Apply
+## 5.1 When It's Good to Apply
 
 - When you need to switch algorithms at runtime
 - When similar classes differ only in how they execute
 - When you want to separate business logic from the algorithm implementation
 - When you have code that selects an algorithm with large conditionals
 
-## When You Don't Need to Apply It
+## 5.2 When You Don't Need to Apply It
 
 - When there are 2-3 or fewer algorithms and the likelihood of change is low
 - When a simple conditional branch is enough
@@ -640,7 +640,7 @@ The Strategy pattern is powerful, but it doesn't need to be applied everywhere. 
 
 In this post, we looked at how to implement the Strategy pattern in Go based on interfaces. We went step by step from the basic Strategy pattern, which lets you freely swap algorithms at runtime, to the Factory + Strategy combination, which automatically selects a strategy based on user settings. Thanks to Go's implicit interface implementation, you can apply the pattern cleanly without any inheritance.
 
-## Key Points
+## 6.1 Key Points
 
 1. **Separate what changes**: abstract the algorithm into an interface
 2. **Composition over inheritance**: a design that fits the Go style
@@ -648,7 +648,7 @@ In this post, we looked at how to implement the Strategy pattern in Go based on 
 4. **OCP compliance**: no need to modify existing code when adding a new strategy
 5. **Testability**: easy to test with mock strategies
 
-## Criteria for Using the Strategy Pattern in Go
+## 6.2 Criteria for Using the Strategy Pattern in Go
 
 - When there are 3 or more algorithm variants
 - When you need to swap algorithms at runtime

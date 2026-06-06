@@ -128,7 +128,7 @@ public class DefaultErrorAttributes implements ErrorAttributes, HandlerException
 
 # 2. Custom Error 페이지에 대한 처리
 
-# 2.1 Error 관련 Properties
+# 3. Error 관련 Properties
 
 서버 오류 관련 설정은 아래와 같다.
 
@@ -143,7 +143,7 @@ public class DefaultErrorAttributes implements ErrorAttributes, HandlerException
 
 
 
-## 2.2 특정 응답코드에 대한 Custom Error 페이지 만들기
+## 3.1 특정 응답코드에 대한 Custom Error 페이지 만들기
 
 Custom Error 페이지 만들어서 사용하는 건 간단한다. 아래 폴더중에 한 곳에 `error/{응답코드}.<확장명>` 형식으로 파일을 생성하면, 스프링 부트에서 Http 상태 값에 다라서 해당 파일을 로딩해줍니다.
 
@@ -194,7 +194,7 @@ Custom Error 페이지 만들어서 사용하는 건 간단한다. 아래 폴더
 
 ![](image-20200907230948266.png)
 
-## 2.3 별도 ErrorController 를 생성하기
+## 3.2 별도 ErrorController 를 생성하기
 
 위와 같이 특정 응답 코드에 대해서 뷰 파일을 생성하는 방식은 특정 로직을 수행할 수 없는 단점이 있다. 이런 경우에 Custom Error Controller를 생성하여 `/error` PATH에 대한 호출은 이 컨트롤러에서 처리하도록 할 수 있다.
 

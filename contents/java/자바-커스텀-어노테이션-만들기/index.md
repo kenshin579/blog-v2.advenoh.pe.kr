@@ -62,7 +62,7 @@ public class UsingMakerAnnotation {
 }
 ```
 
-## 2.1.2 싱글 값 어노테이션
+## 2.2 싱글 값 어노테이션
 하나의 값만 입력받을 수 있는 어노테이션이다.
 
 ```java
@@ -79,7 +79,7 @@ public @interface SingleValueAnnotation {
 }
 ```
 
-### 2.1.3 멀티 값 어노테이션
+### 2.2.1 멀티 값 어노테이션
 어노테이션에 여러 값들을 지정할 수 있다.
 
 ```java
@@ -103,7 +103,7 @@ public @interface MultiValueAnnotation {
 
 ```
 
-## 2.2 어노테이션 배치하는 곳
+## 2.3 어노테이션 배치하는 곳
 아래 예제처럼 어노테이션은 클래스, 필드 변수, 메서드 인자, 로컬변수위에 선언할 수 있다.
 
 ```java

@@ -54,7 +54,7 @@ func Example_TypeSwitch() {
 
 The code written in this post can be found on [github](https://github.com/kenshin579/tutorials-go/tree/master/go-type-switch).
 
-# References
+# 1. References
 
 * https://yourbasic.org/golang/type-assertion-switch/
 * https://riptutorial.com/go/example/14736/type-switch

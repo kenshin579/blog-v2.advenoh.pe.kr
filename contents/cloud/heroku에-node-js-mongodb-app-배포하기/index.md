@@ -139,7 +139,7 @@ web: node index.js
 
 Procfile이 없은 경우에는 package.json에 정의된 start script로 시작한다.
 
-# 3.3 배포된 사이트 오픈하기
+# 4. 배포된 사이트 오픈하기
 
 잘 배포되었는지 브라우저에서 확인해봅니다. 브라우저가 오픈되고 공개 주소로 접속되고 페이지가 정상적으로 로드되는 것을 볼수 있다.
 
@@ -149,7 +149,7 @@ $ heroku open
 
 ![배포된 사이트 오픈하기](F8ADA800-156E-4335-BF77-EF1811E865EE.png)
 
-## 3.4 코드 수정이후 다시 배포하기
+## 4.1 코드 수정이후 다시 배포하기
 
 이제 코드 수정한 이후에 다시 배포하는 과정을 거쳐보죠. 메인 페이지 (views/pages/index.ejs)에서 타이틀 부분을 수정한다.
 
@@ -183,11 +183,11 @@ $ heroku logs --tail
 
 ![Heroku Log](A925BBD7-96F3-4F38-9F0C-DB2A6B7492F5.png)
 
-# 4. Add-on MongoDB 설치후 Node.js와 연동하기
+# 5. Add-on MongoDB 설치후 Node.js와 연동하기
 
 Add-on 마켓장소에는 많은 수의 데이터 저장소(ex. Postgres, Redis, MongoDB, MySQL)를 지원하고 있다. 이 예제에서는 MongoDB add-on을 설치하고 작성하고 있는 Node.js와 연동하는 부분을 다루어 보도록 하자.
 
-## 4.1 MongoDB 설치
+## 5.1 MongoDB 설치
 
 MongoDB add-on을 추가한다.
 
@@ -201,7 +201,7 @@ $ heroku addons:create mongolab
 
 ![Heroku Add-ons Site](image_5.png)
 
-## 4.2 MongoDB와 연동
+## 5.2 MongoDB와 연동
 
 mLab MongoDB를 추가하면 Heroku 환경변수에 MONGODB_URI가 추가된다. MongoDB 주소는 아래와 같다.
 
@@ -236,7 +236,7 @@ db.timers.insert([
 ]
 ```
 
-## 4.3 코드 수정
+## 5.3 코드 수정
 
 앞서 MongoDB에 입력한 데이터를 브라우저에서 /timers에 접속시 json값을 가져오는 코드를 작성해보도록 하자. 먼저 MongoDB를 Node.js에서 사용하기 위해서는 mongoose 모듈이 필요한다. Npm 명령어로 mongoose 모듈를 설치한다.
 
@@ -316,7 +316,7 @@ express()
 
 지금까지 작성한 코드는 [github](https://github.com/kenshin579/blog-node-js-getting-started.git)에 업로드 되어 있다.
 
-## 4.4 재배포 확인
+## 5.4 재배포 확인
 
 다시 Heroku에 배포하고 확인해보죠.
 
@@ -334,9 +334,9 @@ $ heroku open
 
 ![Heroku WebApp](image_14.png)
 
-# 5. Appendix
+# 6. Appendix
 
-## 5.1 기존 App Heroku에 배포하기
+## 6.1 기존 App Heroku에 배포하기
 
 기존에 작성한 Node.js 프로젝트에 Heroku를 배포해보았다. 실제 적용 과정은 위 샘플 프로젝트와 크게 다르지 않는다.
 
@@ -385,7 +385,7 @@ $ heroku open
 
 ![WebApp - Countdown Timer](image_3.png)
 
-## 5.2 명령어 모음
+## 6.2 명령어 모음
 
 이미 언급된 Heroku 명령어외에 사용시 알면 유용한 명령어를 모아 보았다.
 
@@ -405,7 +405,7 @@ $ heroku open
 
 ![Heroku CLI - ps:stop](image_10.png)
 
-# 6. 참고
+# 7. 참고
 
 * IaaS, PaaS, SaaS
     * [https://blogs.msdn.microsoft.com/eva/?p=1383](https://blogs.msdn.microsoft.com/eva/?p=1383)

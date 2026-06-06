@@ -48,11 +48,11 @@ public void convert_intstream_list_of_obj() {
 }
 ```
 
-# Summary
+# 3. Summary
 
 We looked together at a simple example of using the Stream API in place of a for loop. In the next post, let's look at how to code in various stream ways.
 
-# References
+# 4. References
 
 * http://jtuts.com/2017/04/21/create-list-range-integers-using-java-8/
 * https://stackoverflow.com/questions/22649978/java-8-lambda-can-i-generate-a-new-arraylist-of-objects-from-an-intstream

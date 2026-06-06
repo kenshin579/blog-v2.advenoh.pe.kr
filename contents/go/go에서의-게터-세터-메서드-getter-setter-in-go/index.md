@@ -28,7 +28,7 @@ type Person struct {
 }
 ```
 
-# Setter
+# 1. Setter
 
 - `Setter`는 `SetFoo()`와 같이 만들면 된다
     - 외부에서 메서드를 호출하기 위해서 메서드 첫글자는 대문자로 한다
@@ -48,7 +48,7 @@ func (p *Person) SetName(name string) error {
 
 `SetName` setter메서드는 name을 인자로 받아서 `Person` 구조체에 name에 값을 저장한다. `name`이 없는 경우에는 `Error`를 반환한다.
 
-# Getter
+# 2. Getter
 
 - `Getter`는 Get을 붙이지 않고 변수 이름으로만 지정한다
     - ex. `GetName()` - X
@@ -73,7 +73,7 @@ func (p *Person) Name() string {
 
 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-getter-setter)에서 확인할 수 있다.
 
-# 참고
+# 3. 참고
 
 - https://www.socketloop.com/tutorials/golang-implement-getters-and-setters
 - https://johngrib.github.io/wiki/golang-cheatsheet/

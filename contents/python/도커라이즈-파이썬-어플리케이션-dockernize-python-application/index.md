@@ -12,7 +12,7 @@ tags:
   - 도커라이즈
 ---
 
-# 1.Dockernize Python Application
+# 1. Dockernize Python Application
 
 파이썬 어플리케이션을 도커 이미지로 생성하는 방법에 대해서 알아보자. 도 커 라이 저하는 과정은 개발언어와 상관없이 비슷한 과정을 통해서 도커 이미지를 만든다. 아래는 `Hello World`를 화면에 출력하는 파이썬 코드이다. 이 코드로 도커 이미지를 만들어보자.
 
@@ -49,7 +49,7 @@ CMD ["python3, main.py"]
 
 `alpine` 베이스 이미지는 `lightweight`한 버전으로 여러 개발 언어로도 제공하여 많이 사용하는 베이스 이미지이다. 간단한 파이썬의 경우에는 `alpine` 이미지를 사용해도 무방하지만, application에서 사용하는 libray에 따라서 alpine에서는 기존 적으로 `linux wheel`을 지원하지 않아 별도 빌드가 필요할 수 있다고 한다. 이런 빌드 과정을 거치지 않고 바로 도커나이즈하려면 `buster`나 `slim-buster`를 베이스 이미지로 선택하기를 추천한다.
 
-### 참고
+### 1.1.1 참고
 
 - https://nayoungs.tistory.com/m/entry/Docker-Python-%EC%8A%A4%ED%81%AC%EB%A6%BD%ED%8A%B8%EB%A5%BC-%EC%8B%A4%ED%96%89%ED%95%98%EB%8A%94-Docker-%EC%9D%B4%EB%AF%B8%EC%A7%80-%EB%B9%8C%EB%93%9C%ED%95%98%EA%B8%B0
 - https://pythonspeed.com/articles/alpine-docker-python/
@@ -57,7 +57,7 @@ CMD ["python3, main.py"]
 
 
 
-### Docker 이미지 빌드하기
+### 1.1.2 Docker 이미지 빌드하기
 
 개인 맥북이 `M1` 버전이라 `platform` 옵션을 추가하여 빌드한다.
 
@@ -118,7 +118,7 @@ if __name__ == "__main__":
 
 
 
-### Dockerfile 작성하기
+## 2.1 Dockerfile 작성하기
 
 ```dockerfile
 FROM python:3.8-slim-buster
@@ -152,7 +152,7 @@ $ docker run --rm --platform linux/x86-64 -p 8080:8080 kenshin579/advenoh:python
 ```
 
 
-### 웹 화면
+## 2.2 웹 화면
 
 ![](image-20220625175829408.png)
 

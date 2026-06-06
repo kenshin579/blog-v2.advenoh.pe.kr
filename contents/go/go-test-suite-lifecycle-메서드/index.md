@@ -174,7 +174,7 @@ TearDownSuite :: run once
 PASS
 ```
 
-# 참고
+# 1. 참고
 
 - https://brunoscheufler.com/blog/2020-04-12-building-go-test-suites-using-testify
 

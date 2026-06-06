@@ -45,7 +45,7 @@ In addition to `URDF`, several other file formats exist for robot modeling, simu
 
 The robot we will model with URDF is a manipulator. The basic structure of a manipulator consists of a base, links, joints, and an end effector, as shown below.
 
-### Basic Structure of a Manipulator
+## 2.1 Basic Structure of a Manipulator
 
 - Base: the part where the manipulator is fixed
     - Depending on the purpose, it can be the floor within the workspace
@@ -87,7 +87,7 @@ $ cd urdf
 $ vim testbot.urdf
 ```
 
-### 3.1 Full URDF Example
+## 3.1 Full URDF Example
 
   ```bash
   <?xml version="1.0" ?>
@@ -218,7 +218,7 @@ $ vim testbot.urdf
   </robot>
   ```
 
-### 3.2 Screen Rendered in RViz
+## 3.2 Screen Rendered in RViz
 ![Screen rendered in RViz](rviz1.png)
 
 # 4. Writing the URDF
@@ -245,7 +245,7 @@ The `<robot>` tag is the `root` element of the robot description file and must b
 </robot>
 ```
 
-## 4.3 `<link>`
+## 4.2 `<link>`
 The `<link>` tag is generally used to represent each part of the robot (e.g. body, arm, leg, wheel, etc.), and each link is connected to other links through joints.
 
 The base, which is the first component of the manipulator, is represented as a link in URDF. The base is connected to the first link by a joint, and this joint is set to the `fixed` type so that it does not move, fixed in place at the origin (0.0, 0.0, 0.0).
@@ -311,7 +311,7 @@ A `<link>` consists of the visual `<visual>`, collision `<collision>`, and inert
 
   > [Example of 3D inertia tensor values](https://en.wikipedia.org/wiki/List_of_moments_of_inertia#List_of_3D_inertia_tensors)
 
-### 4.3.1 `<material>`
+### 4.2.1 `<material>`
 
 The `<material>` tag is used to specify the color or texture of a link.
 
@@ -329,11 +329,11 @@ The `<material>` tag is used to specify the color or texture of a link.
 </material>
 ```
 
-## 4.4 `<joint>`
+## 4.3 `<joint>`
 
 The `<joint>` tag is used to define the robot's joints, and each joint connects two links and defines how they can move.
 
-### Joint Types Supported by URDF
+### 4.3.1 Joint Types Supported by URDF
 
 ![Joint types](joint.png)
 
@@ -473,7 +473,7 @@ It consists of the `robot_description` parameter containing the URDF, and the `j
     - Subscribed Topic
         - `/joint_states` (`sendor_msgs/msg/JointState`) - the joint states for the robot's position are updated
 
-#### RQT
+### 5.1.1 RQT
 ![RQT](rqt.png)
 
 References
@@ -482,7 +482,7 @@ References
 - https://github.com/ros/robot_state_publisher
 - https://github.com/ros/joint_state_publisher/tree/noetic-devel/joint_state_publisher
 
-# 5.2 Building and Running
+## 5.2 Building and Running
 
 After creating the launch file, you just need to create the rviz display configuration file. All files are in the [github repo](https://github.com/kenshin579/tutorials-ros2), so refer to the original files and add them.
 
@@ -532,9 +532,9 @@ Just like running it with the launch file, you can see the manipulator rendered 
 
 ![Rviz](rviz3.png)
 
-## 6. Tools Needed When Writing URDF
+# 6. Tools Needed When Writing URDF
 
-### 6.1 URDF for VSCode
+## 6.1 URDF for VSCode
 
 - URDF support
     - Supports XML format for `.urdf` and `.xacro` files
@@ -547,13 +547,13 @@ References
 
 - https://marketplace.visualstudio.com/items?itemName=smilerobotics.urdf
 
-### 6.2 ~~ROS: Preview URDF~~ ← this one doesn't work well
+## 6.2 ~~ROS: Preview URDF~~ ← this one doesn't work well
 
 - Marketplace > install the ROS extension
 - How to use: open the urdf file, then select `Command Palette` > `ROS: Preview URDF`
     - It works with ROS, but I suspect it doesn't work with ROS 2
 
-#### Expected screen - doesn't work
+### 6.2.1 Expected screen - doesn't work
 
 - When you run it, a blank screen appears
 
@@ -563,11 +563,11 @@ References
 
 - https://hiro-group.ronc.one/vscode_urdf_previewer.html
 
-### 6.3 URDF File Validation Check
+## 6.3 URDF File Validation Check
 
 There are several commands you can use to verify that the robot model has been written well in URDF.
 
-#### 6.3.1 `check_urdf`
+### 6.3.1 `check_urdf`
 
 In ROS, you can use the `check_urdf` command to check the syntactic errors of the URDF you wrote and the connection relationships of each link.
 
@@ -582,7 +582,7 @@ root Link: base has 1 child(ren)
                 child(1):  link4
 ```
 
-#### 6.3.2 `urdf_to_graphiz`
+### 6.3.2 `urdf_to_graphiz`
 
 You can also represent the model you wrote as a `graphiz` diagram. If you run the `urdf_to_graphiz` command as shown below, a .gv file and a .pdf file are created. You can see at a glance the relationships between links and joints, and the relative coordinate transformations between each joint.
 
@@ -594,12 +594,12 @@ Created file testbot.pdf
 <br>
 <br>
 
-##### The relationship between links and joints in the URDF
+#### 6.3.2.1 The relationship between links and joints in the URDF
 
 ![The relationship between links and joints in the URDF](testbot_pdf.png)
 
 
-#### 6.3.3 `tf2_tools`
+### 6.3.3 `tf2_tools`
 
 `view_frames` is a graphical debugging tool that generates a PDF graph of the current TF tree.
 
@@ -615,11 +615,11 @@ References
 - http://wiki.ros.org/tf2_tools
 - https://docs.ros.org/en/humble/Tutorials/Intermediate/Tf2/Introduction-To-Tf2.html#tf2-tools
 
-### 6.4 RViz
+## 6.4 RViz
 
 RViz (ROS Visualization) is one of ROS's visualization tools that visualizes a robot's position and pose, sensor data, map information, etc., allowing the user to understand and debug the robot system. If RViz is not installed, install it with the command below and run it with `rviz2`.
 
-#### Install and Run
+### 6.4.1 Install and Run
 
 ```bash
 # Install
@@ -633,16 +633,16 @@ References
 
 - http://wiki.ros.org/rviz
 
-## FAQ
+# 7. FAQ
 
-#### 1. What is the difference between `xyz` and `rpy`?
+## 7.1 What is the difference between `xyz` and `rpy`?
 
 ![ChatGPT](chat1.png)
 
 <br>
 <br>
 
-##### RPY angles
+### 7.1.1 RPY angles
 
 ![RPY](rpy.png)
 
@@ -652,14 +652,14 @@ References
 - https://www.youtube.com/watch?v=sFi6i8YzQVA
 - https://www.youtube.com/watch?v=Hg3EGzB3oqQ
 
-#### 2. What is `xacro`?
+## 7.2 What is `xacro`?
 
 - A `xacro` file is short for `XML Macro`, a macro language that lets you load repeated code
 - You can create a URDF by loading XML, but using `xacro` you can define reusable parts to keep the code concise and improve reusability
 
-##### 2.1 Xacro Features
+### 7.2.1 Xacro Features
 
-##### 1. Properties and property blocks
+#### 7.2.1.1 Properties and property blocks
 
 ```xml
 <xacro:property name="the_radius" value="2.1" />
@@ -668,7 +668,7 @@ References
 <geometry type="cylinder" radius="${the_radius}" length="${the_length}" />
 ```
 
-##### 2. Provides mathematical constants and functions
+#### 7.2.1.2 Provides mathematical constants and functions
 - e.g. `pi`, `sqrt(x)`, `radians(x)`
 
 ```xml
@@ -678,7 +678,7 @@ References
 <origin xyz="0.0 0.0 ${height/2+joint_height}" rpy="0.0 0.0 0.0"/>
 ```
 
-##### 3. Conditional blocks
+#### 7.2.1.3 Conditional blocks
 
 - Conditional blocks let you define things differently depending on whether a variable is true (true, 1) or false (false, 0)
 
@@ -693,7 +693,7 @@ References
 </xacro:if>
 ```
 
-##### 4. Macros
+#### 7.2.1.4 Macros
 
 - A macro can take parameters
 
@@ -715,11 +715,11 @@ References
 - http://wiki.ros.org/xacro
 - https://kumoh-irl.tistory.com/77
 
-#### 3. What is the difference between `base_link` and `base_footprint`?
+## 7.3 What is the difference between `base_link` and `base_footprint`?
 
 ![ChatGPT](chat2.png)
 
-#### 4. Manipulator
+## 7.4 Manipulator
 
 - It is a robotic mechanism that performs motions similar to a human arm
 - It usually has multiple degrees of freedom and is a mechanism composed of connected joints that perform relative rotational or sliding motions, for the purpose of gripping or moving an object (a part or tool)
@@ -729,17 +729,17 @@ References
 - https://terms.tta.or.kr/mobile/dictionaryView.do?subject=머니퓰레이터
 - https://roomedia.tistory.com/entry/41일차-매니퓰레이션-소개-및-URDF-작성법
 
-#### 5. What do `ixx` and `ixy` mean when defining inertia?
+## 7.5 What do `ixx` and `ixy` mean when defining inertia?
 
 ![ChatGPT](chat3.png)
 
-## Next Study Topics
+# 8. Next Study Topics
 
 - Controlling the modeled robot
 - Robot modeling with Gazebo
 - Navigation-related study
 
-## References
+# 9. References
 
 - [ROS 2 Course by Yoonseok Pyo](https://cafe.naver.com/openrt/24070)
 - [Building a Visual Robot Model with URDF from Scratch](http://wiki.ros.org/urdf/Tutorials/Building a Visual Robot Model with URDF from Scratch)

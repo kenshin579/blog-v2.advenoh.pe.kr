@@ -21,7 +21,7 @@ tags:
 
 > Alfred Workflow는 macOS의 생산성을 높여주는 `Alfred` 앱의 강력한 기능 중 하나로, 반복적인 작업을 자동화할 수 있도록 도와준다.
 
-## 2FA Read Code란?
+## 1.1 2FA Read Code란?
 
 `2FA Read Code`는 Alfred Workflow 중 하나로, `iMessage`에 수신된 `OTP` 코드를 자동으로 찾아 복사할 수 있도록 도와준다. 이를 통해 `VPN` 로그인, 웹사이트 2FA 입력 등에서 손쉽게 인증을 진행할 수 있다.
 
@@ -40,7 +40,7 @@ tags:
 
 `2FA Read Code` Workflow를 사용하려면 Node.js와 SQLite3가 필요하다. `brew`를 이용해 간단히 설치할 수 있다.
 
-### Homebrew로 Node.js, SQLite3 설치
+### 2.2.1 Homebrew로 Node.js, SQLite3 설치
 
 터미널에서 아래 명령어를 입력한다.
 
@@ -50,13 +50,13 @@ tags:
 
 설치가 완료되면 `2FA Read Code` Workflow가 정상적으로 작동할 준비가 된다.
 
-### Alfred 디스크 권한 설정
+### 2.2.2 Alfred 디스크 권한 설정
 
 `2FA Read Code` Workflow는 디스크 권한이 필요해서 아래 설정에서 `Alfred` 에 디스크 접근 권한을 부여한다.
 
 ![전체 디스크 접근 권한](image-20250308153609186.png)
 
-# 2.3 `2FA Read Code` Workflow 설치
+# 3. `2FA Read Code` Workflow 설치
 
 `2FA Read Code` Workflow를 설치하는 방법은 다음과 같다.
 
@@ -73,7 +73,7 @@ tags:
 
 이제 `Alfred`에서 `2FA Read Code`를 사용할 준비가 완료되었다.
 
-## 2.4 Workflow 사용법
+## 3.1 Workflow 사용법
 
 이제 실제로 `2FA Read Code`를 사용하여 `OTP`를 자동으로 입력하는 방법을 살펴보자.
 
@@ -101,7 +101,7 @@ tags:
 
 ![OTP 코드 입력](image-20250308153829628.png)이제 더 이상 핸드폰을 직접 확인하고 수동으로 OTP를 입력할 필요가 없다!
 
-# 3. 마무리
+# 4. 마무리
 
 2FA Read Code Workflow를 활용하면 OTP 코드 입력을 자동화하여 로그인 과정을 훨씬 편리하게 만들 수 있다. 특히 매일 VPN 접속이나 2FA 인증을 해야 하는 사용자라면, 이 간단한 자동화만으로도 업무 속도를 크게 향상시킬 수 있다.
 
@@ -109,7 +109,7 @@ tags:
 
 > 다시 한번 저에게 소개해주신 회사 동료분께 감사드립니다.
 
-# 4. 참고
+# 5. 참고
 
 - [2FA Read Code](https://alfred.app/workflows/alanhe/2fa-read-code/)
 - [Full Disk Access](https://www.alfredapp.com/help/getting-started/permissions/#full-disk)

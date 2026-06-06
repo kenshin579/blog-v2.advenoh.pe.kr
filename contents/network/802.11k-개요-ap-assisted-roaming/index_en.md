@@ -23,7 +23,7 @@ tags:
 
 # 1. Overview
 
-# 1.1 IEEE 802.11
+# 2. IEEE 802.11
 
 This is the international standard that forms the foundation of the wireless local area network (WLAN) we call Wi-Fi today.
 
@@ -40,7 +40,7 @@ This is the international standard that forms the foundation of the wireless loc
 
 - [802.11 Amendments – The “Alphabet Soup”](https://wifivitae.com/2021/11/30/80211-soup/)
 
-## Major 802.11 Standards (Physical) and Features
+## 2.1 Major 802.11 Standards (Physical) and Features
 
 The table below shows at a glance how Wi-Fi technology has evolved across generations.
 
@@ -70,7 +70,7 @@ Along with `802.11r`, which we covered last time, we will also look at the `802.
 
 Reference: [Roaming in 802.11k/v/r Wi-Fi](https://interline.pl/Information-and-Tips/Roaming-802.11k-v-r-Wi-Fi)
 
-# 2. 802.11k (AP Assisted Roaming)
+# 3. 802.11k (AP Assisted Roaming)
 
 `802.11k` is a Radio Resource Measurement standard that helps mobile devices easily find a neighboring `AP` with a better signal. Thanks to this standard, a device can know the list of nearby `AP`s in advance, so it can roam to the optimal `AP` faster than with the traditional method. In other words, `802.11k` lets a device select an `AP` more efficiently, improving Wi-Fi performance and stability.
 
@@ -91,7 +91,7 @@ Reference: [Roaming in 802.11k/v/r Wi-Fi](https://interline.pl/Information-and-T
   - Compatibility issues (requires both client and `AP`)
     - `802.11k` only works when both the `AP` and the client device (smartphone, laptop, etc.) support this standard
 
-# 2.1 How It Works
+# 4. How It Works
 
 ![802.11k](image-20251212002101551.png)
 
@@ -111,7 +111,7 @@ Reference: https://www.researchgate.net/figure/The-Handover-Concept-using-IEEE-8
 5. **Fast roaming**
    - Because the client knows the optimal `AP` information in advance, roaming latency is reduced and the connection quality of latency-sensitive applications such as VoIP calls is improved
 
-## Reference: Handover Procedure
+## 4.1 Reference: Handover Procedure
 
 ![Handover](image-20251212002121937.png)
 
@@ -164,7 +164,7 @@ Reference: [IEEE 802.11 Specification and Handover Procedure](https://blog.naver
 
 > Who creates the Neighbor List?
 
-## 2.1.1 `WLC` - Centralized Network Management System
+## 4.2 `WLC` - Centralized Network Management System
 
 In most enterprise or large-scale Wi-Fi environments, `AP`s are managed by a central **Wireless LAN Controller (`WLC`)** system.
 
@@ -215,17 +215,17 @@ References
 > | **Operating Class and PHY Type**         | Operational details such as the `AP`'s operating frequency band (e.g., 2.4GHz, 5GHz, 6GHz) and supported physical layer (PHY) types (e.g., 802.11n, 802.11ac, 802.11ax) |
 > | Capability Information                           | Contains information elements (IEs) indicating the features supported by the `AP` (e.g., security methods, roaming support protocols, etc.) |
 
-# 2.3 Performance Comparison
+# 5. Performance Comparison
 
 > Not found
 
-# 3. How to Configure and Use 802.11k
+# 6. How to Configure and Use 802.11k
 
 - It can only be used if both the `AP` and the Client support 802.11k
   - Even if the `AP` supports it, it must be enabled in the `WLC` administrator web UI
   - If the Client Wi-Fi device supports 802.11k, it detects that this feature is enabled on the `AP` and automatically uses it without additional activation
 
-# 3.1 Does the Client Wi-Fi device also support 802.11k?
+# 7. Does the Client Wi-Fi device also support 802.11k?
 
 ```bash
 > sudo lspci -k | grep -A3 -i network
@@ -259,7 +259,7 @@ References
 # RRM stands for Radio Resource Management, meaning it supports the feature set that includes the 802.11k standard
 ```
 
-# 3.2 Does the `AP` support 802.11k?
+# 8. Does the `AP` support 802.11k?
 
 - The `AP` must support it, and it must be enabled in the administrator admin UI
   - Assisted Roaming Prediction Optimization: a feature for clients that do not support 802.11k
@@ -273,13 +273,13 @@ References
 
 ![Capture](https://semfionetworks.com/wp-content/uploads/2020/11/screen-shot-2017-01-02-at-11-25-07-2_orig.png)
 
-# 4. FAQ
+# 9. FAQ
 
-## 4.1 Is it okay to configure and use multiple Wi-Fi roaming standards at the same time?
+## 9.1 Is it okay to configure and use multiple Wi-Fi roaming standards at the same time?
 
 - Most real-world enterprise/industrial Wi-Fi setups use them together, since each has a different role and they complement each other
 
-## 4.2 What kind of network is used at drone events?
+## 9.2 What kind of network is used at drone events?
 
 - At a drone show event, **Wi-Fi is used as the primary network**, but due to stability and bandwidth concerns, it is combined with a **mesh network, dedicated RF (radio frequency), or a multi-radio combination**
   - **Wi-Fi based (primary)**:
@@ -293,7 +293,7 @@ References
     - The entire show file is uploaded in advance, enabling offline flight (minimizing real-time control)
   - **Backup/redundancy**: GNSS/RTK positioning + 5G (the latest trend) for 0ms-latency synchronization
 
-## 4.3 PSK, PMK, PTK - these terms are confusing; how are they actually used in the authentication and roaming authentication flows?
+## 9.3 PSK, PMK, PTK - these terms are confusing; how are they actually used in the authentication and roaming authentication flows?
 
 - A diagram that shows at a glance which keys are created and how they are passed in the robot (client) ↔ `AP` ↔ authentication server (RADIUS) process, and which keys are reused during roaming
 
@@ -393,13 +393,13 @@ References
   ────────── Roaming complete (in ms) ──────────
   ```
 
-## 4.4 How can wireless network packets be captured?
+## 9.4 How can wireless network packets be captured?
 
 - https://www.cisco.com/c/ko_kr/support/docs/wireless-mobility/wireless-mobility/217042-collect-packet-captures-over-the-air-on.html
 
-# 5. Terminology
+# 10. Terminology
 
-## 5.1 What is Wi-Fi roaming?
+## 10.1 What is Wi-Fi roaming?
 
 - Wi-Fi roaming is a technology where a mobile device automatically switches to a stronger `AP`, and enabling 802.11r/k/v can greatly improve the switching speed and stability
 - `802.11r` (Fast BSS Transition: fast `AP` switching)
@@ -422,7 +422,7 @@ References
 - "Move to a better `AP`" request
 - Load balancing | | Robot effect | Ping-pong handover ↓ | Unnecessary scans ↓, battery saving | Escape overloaded `AP`, maintain stable connection | | Requirement | Same Mobility Domain (MDID) | Neighbor table configuration between `AP`s | Client consent required (some can refuse) | | Compatibility | Supported by most iOS/Android | Broadly supported (including legacy) | Mainly newer devices, some limitations |
 
-## 5.2 Wireless Signal Terms
+## 10.2 Wireless Signal Terms
 
 - `RSSI` (Received Signal Strength Indicator)
 
@@ -446,7 +446,7 @@ References
 
   - `RSSI` is the signal itself, while `SNR` is the quality of the signal (relative to noise)
 
-## 5.3 Wi-Fi Encryption/Key Terms
+## 10.3 Wi-Fi Encryption/Key Terms
 
 - `PSK` (Pre-Shared Key)
   - A shared password (= the Wi-Fi password we enter)
@@ -463,7 +463,7 @@ References
 - `PTK` (Pairwise Transient Key)
   - The actual data encryption key derived from the PMK
 
-## 5.4 Wi-Fi Authentication Terms
+## 10.4 Wi-Fi Authentication Terms
 
 - `EAP` (Extensible Authentication Protocol) - a framework of authentication (login) methods
 
@@ -492,7 +492,7 @@ References
 
   - The authentication method used in WPA2-Enterprise environments
 
-## 5.5 Security Protocols
+## 10.5 Security Protocols
 
 - `WPA` (Wi-Fi Protected Access: the overall Wi-Fi encryption standard / security specification)
 
@@ -524,32 +524,32 @@ References
 
 - WPA is the name of the standard that defines "how to apply security in Wi-Fi", and PSK/PMK are the concepts of the encryption keys actually used within it.
 
-## 5.6 BSSID (Basic Service Set Identifier)
+## 10.6 BSSID (Basic Service Set Identifier)
 
 - The MAC address of the `AP`
 - The SSID is the Wi-Fi name, while the BSSID is the `AP` device ID
 
-## 5.7 SSID (Service Set Identifier)
+## 10.7 SSID (Service Set Identifier)
 
 - The name by which a user identifies and connects to their Wi-Fi network
 - What you see when you view the Wi-Fi list on a device is the SSID
 
-## 5.8 Wi-Fi Band
+## 10.8 Wi-Fi Band
 
 - Refers to a specific frequency range allocated for wireless communication; the communication speed, range, and level of interference vary depending on this frequency band. The bands currently in common use are 2.4GHz, 5GHz, and the latest technology, 6GHz
 
-## 5.9 Channel
+## 10.9 Channel
 
 - A channel refers to the specific frequency band that an `AP` uses for communication (e.g., channel 1, 6, 11 or 36, 149, etc.)
 - One `AP` usually uses one channel, or two channels (one in the 2.4GHz band, one in the 5GHz band)
 
-## 5.10 Scanning
+## 10.10 Scanning
 
 - Scanning refers to the process by which a device finds nearby Wi-Fi `AP`s and collects information needed to connect. This process is generally done in two ways
   - Passive Scanning: a method where the client quietly listens for the Beacon frames that an `AP` periodically broadcasts to obtain information. Since it has to check all channels, it can take a long time
   - Active Scanning: a method where the client sends a Probe Request frame on a specific channel and the `AP` sends a Probe Response frame in return to obtain information. It is faster than passive scanning, but time can still be consumed in the process of scanning across multiple channels
 
-## 5.11 WLC (Wireless LAN Controller)
+## 10.11 WLC (Wireless LAN Controller)
 
 - The operating principle of the `WLC` (Wireless LAN Controller) is centered on centralized management: it integrates control of multiple `AP`s (access points) from a single controller, configures SSID, security policies, channels, etc. in bulk, and automates load balancing, RF optimization, client roaming, and fault management to efficiently operate large-scale wireless networks
 
@@ -569,7 +569,7 @@ References
 
   The `WLC` communicates with the `AP`s to exchange control information, and client devices (laptops, smartphones, etc.) connect through the `AP`s to the wired network connected to the `WLC`
 
-# 6. References
+# 11. References
 
 - https://wiki.navercorp.com/pages/viewpage.action?pageId=4265685224&spaceKey=RCWG&title=802.11r%2BFast%2BBSS%2BTransition
 - https://www.cisco.com/c/ko_kr/support/docs/wireless/catalyst-9800-series-wireless-controllers/221671-understand-802-11r-11k-11v-fast-roams-on.html
@@ -580,11 +580,11 @@ References
 - https://www.shixuen.com/router/wifi_network_roaming.html
 - https://www.slideshare.net/slideshow/mobile-devices-v15-final/32403571?from_search=4
 
-# 7. Appendix
+# 12. Appendix
 
-# 7.1 Commands
+# 13. Commands
 
-## 7.1.1 Printing the Wi-Fi Device Connection Status
+## 13.1 Printing the Wi-Fi Device Connection Status
 
 This is a status query command used to check which `AP`/SSID the wlp4s0 interface is currently attached to and in what state.
 

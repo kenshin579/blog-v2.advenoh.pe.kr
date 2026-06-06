@@ -107,7 +107,7 @@ Below the QR code, the following guidance and shortcut menu are also shown.
 
 The `exp://...` address is the location where the Metro bundler is running, and your phone's [Expo Go](https://expo.dev/go) app connects to this address to download and run the app bundle. On iOS, scan the QR above with the default Camera app; on Android, scan it with the scanner inside Expo Go, and the app launches on your phone right away. For the simulator/emulator/web, press the `i`/`a`/`w` keys respectively.
 
-## What If You Don't Have an iOS Simulator?
+## 3.1 What If You Don't Have an iOS Simulator?
 
 The iOS simulator only works with **macOS + Xcode**. If you don't have Xcode, use Windows/Linux, or find the installation burdensome, you can run the app perfectly fine without a simulator.
 
@@ -187,7 +187,7 @@ The screen consists of an input field (`TextInput` + an add button) and a list (
 
 The result after adding 4 todos and marking 2 of them complete (✅, strikethrough) — it works identically in the Web and the Expo Go app.
 
-## Persisting Data (AsyncStorage)
+## 5.1 Persisting Data (AsyncStorage)
 
 Right now, the app loses all its tasks when you close and reopen it. That's because all state lives only in memory. To save data on the device, we use **AsyncStorage** (an asynchronous key-value local storage).
 

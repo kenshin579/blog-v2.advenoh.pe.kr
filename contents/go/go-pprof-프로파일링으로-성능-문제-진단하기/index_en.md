@@ -265,7 +265,7 @@ func main() {
 
 A CPU profile identifies the functions that consume the most CPU time in a program. By default it samples 100 times per second, recording the stack trace of the function running at that moment.
 
-### How to Collect
+### 3.1.1 How to Collect
 
 ```bash
 # collect a CPU profile for 30 seconds
@@ -275,7 +275,7 @@ go tool pprof http://localhost:6060/debug/pprof/profile?seconds=30
 go tool pprof http://localhost:6060/debug/pprof/profile?seconds=10
 ```
 
-### CPU Load Example Code
+### 3.1.2 CPU Load Example Code
 
 ```go
 package cpu
@@ -313,7 +313,7 @@ func increase2000(n int) int {
 }
 ```
 
-### Example Analysis Result
+### 3.1.3 Example Analysis Result
 
 ```bash
 (pprof) top10
@@ -333,14 +333,14 @@ You can see that the `increase2000` function accounts for about 39% of CPU time,
 
 A heap profile shows the current memory allocation state. It is used to find memory leaks or to identify functions that use a lot of memory.
 
-### How to Collect
+### 3.2.1 How to Collect
 
 ```bash
 # collect a heap profile
 go tool pprof http://localhost:6060/debug/pprof/heap
 ```
 
-### Memory Allocation Example Code
+### 3.2.2 Memory Allocation Example Code
 
 ```go
 package memory
@@ -361,7 +361,7 @@ func alloc1000() []byte {
 }
 ```
 
-### inuse_space vs alloc_space
+### 3.2.3 inuse_space vs alloc_space
 
 A heap profile can be analyzed from two perspectives.
 
@@ -382,7 +382,7 @@ go tool pprof -alloc_space http://localhost:6060/debug/pprof/heap
 
 `inuse_space` shows memory that has not been freed by GC and remains in use, so it is mainly used to **detect memory leaks**. `alloc_space` includes already-freed memory as well, so it is useful for finding **code that allocates frequently**.
 
-### Comparing Heap Profiles (diff)
+### 3.2.4 Comparing Heap Profiles (diff)
 
 Comparing heap profiles from two points in time makes a memory leak even clearer.
 
@@ -401,7 +401,7 @@ go tool pprof -base=base.prof current.prof
 
 A goroutine profile shows the stack traces of all currently running goroutines. It is used to detect goroutine leaks or to check which goroutine is blocked where.
 
-### How to Collect
+### 3.3.1 How to Collect
 
 ```bash
 # collect a goroutine profile
@@ -413,7 +413,7 @@ curl http://localhost:6060/debug/pprof/goroutine?debug=2
 
 Using the `debug=2` parameter, you can view the full stack traces of all goroutines in text form, making it easy to see at a glance where each goroutine is waiting.
 
-### Goroutine Leak Example Code
+### 3.3.2 Goroutine Leak Example Code
 
 A goroutine leak is the phenomenon where created goroutines never terminate and keep piling up.
 
@@ -452,7 +452,7 @@ func leakyGoroutine(id int) {
 
 In the code above, `leakyGoroutine` waits on a channel that nobody closes, so 100 goroutines never terminate and keep occupying memory.
 
-### Goroutine Leak Prevention Pattern
+### 3.3.3 Goroutine Leak Prevention Pattern
 
 ```go
 func safeGoroutine(ctx context.Context, id int) {
@@ -473,7 +473,7 @@ Using `context.Context`, you can cancel a goroutine from the outside, which prev
 
 A blocking profile analyzes the time goroutines spend in a blocking state. It includes channel receive waits, mutex lock waits, I/O waits, and so on.
 
-### How to Enable and Collect
+### 3.4.1 How to Enable and Collect
 
 The blocking profile is disabled by default, so it must be explicitly enabled.
 
@@ -489,7 +489,7 @@ The argument to `SetBlockProfileRate` is a threshold in nanoseconds. Setting it 
 go tool pprof http://localhost:6060/debug/pprof/block
 ```
 
-### Blocking Example Code
+### 3.4.2 Blocking Example Code
 
 ```go
 package block
@@ -515,7 +515,7 @@ func PrintWorld() {
 
 A mutex profile analyzes mutex contention. When multiple goroutines compete over the same mutex, it measures the time each goroutine waited to acquire the lock.
 
-### How to Enable and Collect
+### 3.5.1 How to Enable and Collect
 
 ```go
 // enable the mutex profile
@@ -529,7 +529,7 @@ The argument to `SetMutexProfileFraction` is the sampling rate. `1` records all 
 go tool pprof http://localhost:6060/debug/pprof/mutex
 ```
 
-### Mutex Contention Example Code
+### 3.5.2 Mutex Contention Example Code
 
 ```go
 package mutex
@@ -572,7 +572,7 @@ Three goroutines compete over the same `mu` mutex, so the mutex profile records 
 
 A thread creation profile shows the pattern of OS threads the program created. Excessive thread creation wastes system resources, so this is used to monitor it.
 
-### Mass Goroutine Creation Example Code
+### 3.6.1 Mass Goroutine Creation Example Code
 
 The Go runtime multiplexes goroutines on top of OS threads to run them. When a goroutine blocks on a system call and the like, the runtime creates a new OS thread so that other goroutines can keep running. Running a large number of goroutines simultaneously lets you observe this thread creation pattern in the profile.
 
@@ -614,7 +614,7 @@ go tool pprof http://localhost:6060/debug/pprof/profile?seconds=10
 
 When collection finishes, a `(pprof)` prompt appears, and you can analyze the profile data with various commands.
 
-### Key Commands
+### 4.1.1 Key Commands
 
 | Command | Description | Example |
 |--------|------|------|
@@ -627,7 +627,7 @@ When collection finishes, a `(pprof)` prompt appears, and you can analyze the pr
 | `svg` | save the call graph as an SVG file | `svg` |
 | `png` | save the call graph as a PNG image | `png` |
 
-### The top Command
+### 4.1.2 The top Command
 
 ```bash
 (pprof) top10
@@ -638,7 +638,7 @@ Showing nodes accounting for 5.20s, 98.11% of 5.30s total
      0.80s 15.09% 83.02%      3.60s 67.92%  main.IncreaseInt
 ```
 
-### The Difference Between flat and cum
+### 4.1.3 The Difference Between flat and cum
 
 These are the two most important metrics in profile analysis.
 
@@ -662,7 +662,7 @@ func B() {        // flat=2s, cum=2s
 
 A **function with high `flat`** is a direct optimization target, while a **function with high `cum`** requires examining the entire call chain.
 
-### The list Command
+### 4.1.4 The list Command
 
 You can view the source code of a specific function line by line, along with profile information.
 
@@ -695,7 +695,7 @@ go tool pprof -http=:8080 http://localhost:6060/debug/pprof/profile?seconds=10
 
 The web UI provides the following views.
 
-### Graph View
+### 4.2.1 Graph View
 
 Visualizes the call graph. Nodes (rectangles) represent functions, and the size and color of a node are proportional to its resource consumption. Arrows represent call relationships, and the thickness of an arrow is proportional to call frequency.
 
@@ -703,15 +703,15 @@ Visualizes the call graph. Nodes (rectangles) represent functions, and the size 
 - **Thick arrow** → a frequent call path
 - **Red** → high resource consumption
 
-### Flame Graph
+### 4.2.2 Flame Graph
 
 You can view the flame graph in the Flame Graph view. A flame graph visually represents the call stack, letting you grasp performance bottlenecks intuitively.
 
-### Top View
+### 4.2.3 Top View
 
 Shows the same information as the CLI `top` command, in table form. You can change the sort criterion or filter.
 
-### Source View
+### 4.2.4 Source View
 
 Shows profiling results per source line. It's similar to the CLI `list` command, but you can navigate the entire source file.
 
@@ -742,11 +742,11 @@ Let's look step by step at the process of diagnosing a real performance problem.
 
 ## 5.1 Scenario: Diagnosing a CPU Bottleneck
 
-### The Problem
+### 5.1.1 The Problem
 
 A particular API response of a web server is slow. We need to find the cause.
 
-### Diagnosis Steps
+### 5.1.2 Diagnosis Steps
 
 **Step 1: Collect a CPU profile**
 
@@ -783,7 +783,7 @@ Showing nodes accounting for 5.20s, 98.11% of 5.30s total
 
 → visually check the call chain to figure out which path calls the function
 
-### Verification After Optimization
+### 5.1.3 Verification After Optimization
 
 After optimization, run the same profiling to measure the improvement.
 
@@ -794,11 +794,11 @@ go tool pprof -base=before.prof after.prof
 
 ## 5.2 Scenario: Diagnosing a Memory Leak
 
-### The Problem
+### 5.2.1 The Problem
 
 While the service runs in production, memory usage keeps increasing over time.
 
-### Diagnosis Steps
+### 5.2.2 Diagnosis Steps
 
 **Step 1: Collect heap profiles from two points in time**
 
@@ -835,11 +835,11 @@ go tool pprof -base=heap_t1.prof heap_t2.prof
 
 ## 5.3 Scenario: Diagnosing a Goroutine Leak
 
-### The Problem
+### 5.3.1 The Problem
 
 The number of goroutines keeps increasing over time.
 
-### Diagnosis Steps
+### 5.3.2 Diagnosis Steps
 
 **Step 1: Check the current goroutine count**
 
@@ -925,7 +925,7 @@ func helloHandler(ctx echo.Context) error {
 
 A single `echopprof.Wrap(e)` line registers pprof endpoints on the Echo server, accessible at `http://localhost:8080/debug/pprof/`.
 
-### Security Considerations in Production
+## 6.1 Security Considerations in Production
 
 The pprof endpoints expose the internal state of the program, so in production environments you should separate them onto a dedicated port and block external access.
 
@@ -996,7 +996,7 @@ gops pprof-heap <pid>
 
 `go tool trace` is a tool that traces a program's execution flow along a time axis. If pprof focuses on "where time was spent," trace focuses on "what happened in chronological order."
 
-### Collecting Trace Data
+### 7.2.1 Collecting Trace Data
 
 ```bash
 # collect a trace for 5 seconds from an HTTP endpoint
@@ -1006,7 +1006,7 @@ curl -o trace.out http://localhost:6060/debug/pprof/trace?seconds=5
 go tool trace trace.out
 ```
 
-### Collecting a Trace in Code
+### 7.2.2 Collecting a Trace in Code
 
 Basic trace collection can be implemented simply with `trace.Start` and `trace.Stop`.
 
@@ -1029,7 +1029,7 @@ func main() {
 }
 ```
 
-### Per-Section Tracing with Task and Region
+### 7.2.3 Per-Section Tracing with Task and Region
 
 Using `trace.NewTask` and `trace.WithRegion`, you can logically separate specific work sections in the trace viewer. This is useful in complex programs for figuring out which work spends time in which section.
 
@@ -1053,7 +1053,7 @@ func worker(ctx context.Context, id int) {
 }
 ```
 
-### Information You Can See in the Trace Viewer
+### 7.2.4 Information You Can See in the Trace Viewer
 
 - **Goroutine analysis**: distribution of execution/wait time per goroutine
 - **Network/Sync blocking**: network and synchronization blocking events
@@ -1131,7 +1131,7 @@ These tools periodically collect profiles in the background and store them as ti
 
 # 9. Summary
 
-## Use Scenarios by Profile Type
+## 9.1 Use Scenarios by Profile Type
 
 | Symptom | Suspected Cause | Profile to Use | Analysis Point |
 |------|----------|---------------|------------|
@@ -1143,7 +1143,7 @@ These tools periodically collect profiles in the background and store them as ti
 | Too many threads | excessive thread creation | Threadcreate profile | check creation pattern |
 | Understand the overall flow | scheduling/GC issues | Trace | timeline analysis |
 
-## Diagnosis Workflow Summary
+## 9.2 Diagnosis Workflow Summary
 
 ```mermaid
 flowchart TD

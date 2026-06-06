@@ -20,7 +20,7 @@ tags:
 
 Go 1.26 was released in February 2026. The core themes of this version are **improved language expressiveness**, **major performance gains**, and **stronger security**. There are many changes you can apply to real-world work right away, such as `new(expr)` initialization, recursive generic constraints, Green Tea GC enabled by default, and a 30% cgo performance improvement.
 
-# 1.Language Changes
+# 1. Language Changes
 
 ## 1.1 new() Function Extension - Specifying an Initial Value
 
@@ -171,7 +171,7 @@ func TestAdderInterface(t *testing.T) {
 }
 ```
 
-# 2.Performance Improvements
+# 2. Performance Improvements
 
 ## 2.1 Green Tea Garbage Collector (Enabled by Default)
 
@@ -227,7 +227,7 @@ func BenchmarkErrorf_NoFormat(b *testing.B) {
 
 Allocation speed for small objects of 1–512 bytes has improved by up to **30%**. Stack-based slice backing-store allocation has also been extended to more situations.
 
-# 3.Major Standard Library Changes
+# 3. Major Standard Library Changes
 
 ## 3.1 errors.AsType - Type-Safe Error Inspection
 
@@ -452,7 +452,7 @@ func TestNetipPrefixCompare(t *testing.T) {
 
 You can also sort a mix of IPv4 and IPv6, with IPv4 sorted before IPv6.
 
-# 4.Security and Cryptography
+# 4. Security and Cryptography
 
 ## 4.1 crypto/hpke Package (New)
 
@@ -484,7 +484,7 @@ GOEXPERIMENT=norandomizedheapbase64
 - `SecP256r1MLKEM768` and `SecP384r1MLKEM1024` key exchanges are enabled by default
 - Post-quantum hybrid TLS support
 
-# 5.Tooling Improvements
+# 5. Tooling Improvements
 
 ## 5.1 go fix Rewritten
 
@@ -512,7 +512,7 @@ func OldFunc() string {
 
 When you run `go mod init`, the Go version is now set with compatibility against currently supported versions in mind. When run with Go 1.26, it is set to `go 1.24.0`.
 
-# 6.Experimental Features
+# 6. Experimental Features
 
 ## 6.1 SIMD Operations (simd/archsimd)
 
@@ -584,7 +584,7 @@ secret.Do(func() {
 // The key is automatically deleted from memory when the function returns
 ```
 
-# 7.Other Changes
+# 7. Other Changes
 
 ## 7.1 Platform Changes
 
@@ -606,7 +606,7 @@ secret.Do(func() {
 | `runtime/metrics` | Per-goroutine-state metrics added (`/sched/goroutines/running`, etc.) |
 | `os` | `Process.WithHandle()` - access to a process handle (Linux 5.4+, Windows) |
 
-# 8.Summary
+# 8. Summary
 
 Go 1.26 is a release with meaningful improvements across language expressiveness, performance, and security.
 
@@ -630,14 +630,14 @@ Go 1.26 is a release with meaningful improvements across language expressiveness
 
 In particular, `new(expr)` and `errors.AsType` are features you can use immediately in everyday Go development, so adopt them actively. With Green Tea GC becoming the default, GC performance improves significantly without any extra configuration. The goroutine leak profile is experimental, but it is extremely useful for production debugging, so it is recommended to validate it in advance in a test environment.
 
-## Go 1.27 Preview
+## 8.1 Go 1.27 Preview
 
 GODEBUG options scheduled for removal in Go 1.27:
 - `tlsunsafeekm`, `tlsrsakex`, `tls10server`, `tls3des`
 - `x509keypairleaf`, `gotypesalias`, `asynctimerchan`
 - `GOEXPERIMENT=nogreenteagc` (disable option removed)
 
-# 9.References
+# 9. References
 
 - [Go 1.26 Release Notes](https://go.dev/doc/go1.26)
 - [Go 1.26 is released](https://go.dev/blog/go1.26)

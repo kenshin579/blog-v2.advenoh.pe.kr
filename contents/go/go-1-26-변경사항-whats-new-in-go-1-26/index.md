@@ -20,7 +20,7 @@ tags:
 
 Go 1.26은 2026년 2월에 릴리스되었다. 이번 버전의 핵심 테마는 **언어 표현력 향상**, **성능 대폭 개선**, **보안 강화**이다. `new(expr)` 초기값 지정, 제네릭 자기참조, Green Tea GC 기본 활성화, cgo 30% 성능 향상 등 실무에 바로 적용할 수 있는 변경사항이 많다.
 
-# 1.언어 변경사항
+# 1. 언어 변경사항
 
 ## 1.1 new() 함수 확장 - 초기값 지정
 
@@ -171,7 +171,7 @@ func TestAdderInterface(t *testing.T) {
 }
 ```
 
-# 2.성능 개선
+# 2. 성능 개선
 
 ## 2.1 Green Tea 가비지 컬렉터 (기본 활성화)
 
@@ -227,7 +227,7 @@ func BenchmarkErrorf_NoFormat(b *testing.B) {
 
 1~512바이트 소형 객체 할당 속도가 최대 **30% 향상**되었다. 스택 기반 슬라이스 백킹 스토어 할당도 더 많은 상황으로 확대되었다.
 
-# 3.표준 라이브러리 주요 변경
+# 3. 표준 라이브러리 주요 변경
 
 ## 3.1 errors.AsType - 타입 안전한 오류 검사
 
@@ -452,7 +452,7 @@ func TestNetipPrefixCompare(t *testing.T) {
 
 IPv4와 IPv6를 혼합하여 정렬할 수도 있으며, IPv4가 IPv6보다 먼저 정렬된다.
 
-# 4.보안 및 암호화
+# 4. 보안 및 암호화
 
 ## 4.1 crypto/hpke 패키지 (신규)
 
@@ -484,7 +484,7 @@ GOEXPERIMENT=norandomizedheapbase64
 - `SecP256r1MLKEM768`, `SecP384r1MLKEM1024` 키 교환이 기본 활성화
 - 포스트-양자 하이브리드 TLS 지원
 
-# 5.도구 개선
+# 5. 도구 개선
 
 ## 5.1 go fix 재작성
 
@@ -512,7 +512,7 @@ func OldFunc() string {
 
 `go mod init` 실행 시 Go 버전이 현재 지원 버전과의 호환성을 고려하여 설정된다. Go 1.26으로 실행하면 `go 1.24.0`으로 설정된다.
 
-# 6.실험적 기능
+# 6. 실험적 기능
 
 ## 6.1 SIMD 연산 (simd/archsimd)
 
@@ -584,7 +584,7 @@ secret.Do(func() {
 // 함수 종료 시 메모리에서 키 자동 삭제
 ```
 
-# 7.기타 변경사항
+# 7. 기타 변경사항
 
 ## 7.1 플랫폼 변경
 
@@ -606,7 +606,7 @@ secret.Do(func() {
 | `runtime/metrics` | 고루틴 상태별 메트릭 추가 (`/sched/goroutines/running` 등) |
 | `os` | `Process.WithHandle()` - 프로세스 핸들 접근 (Linux 5.4+, Windows) |
 
-# 8.정리
+# 8. 정리
 
 Go 1.26은 언어 표현력, 성능, 보안 전반에 걸친 의미 있는 개선이 이루어진 릴리스다.
 
@@ -630,14 +630,14 @@ Go 1.26은 언어 표현력, 성능, 보안 전반에 걸친 의미 있는 개�
 
 특히 `new(expr)`와 `errors.AsType`은 일상적인 Go 개발에서 즉시 활용할 수 있는 기능이므로 적극적으로 도입해보자. Green Tea GC가 기본값으로 전환되면서 별도 설정 없이 GC 성능이 크게 개선된다. 고루틴 누수 프로필은 실험적이지만 프로덕션 디버깅에 매우 유용하므로 테스트 환경에서 미리 검증해보는 것을 권장한다.
 
-## Go 1.27 예고
+## 8.1 Go 1.27 예고
 
 Go 1.27에서 제거 예정인 GODEBUG 옵션:
 - `tlsunsafeekm`, `tlsrsakex`, `tls10server`, `tls3des`
 - `x509keypairleaf`, `gotypesalias`, `asynctimerchan`
 - `GOEXPERIMENT=nogreenteagc` (비활성화 옵션 제거)
 
-# 9.참고 자료
+# 9. 참고 자료
 
 - [Go 1.26 Release Notes](https://go.dev/doc/go1.26)
 - [Go 1.26 is released](https://go.dev/blog/go1.26)

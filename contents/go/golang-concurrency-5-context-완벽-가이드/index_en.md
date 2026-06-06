@@ -418,7 +418,7 @@ context is the core tool for managing the goroutine lifecycle in Go. It's especi
 
 # 9. FAQ
 
-### Q. How is the cancel() function implemented internally?
+## 9.1 Q. How is the cancel() function implemented internally?
 
 The `cancel()` function returned by `context.WithCancel` is defined on the `cancelCtx` struct in the Go standard library (`go/src/context/context.go`).
 
@@ -478,7 +478,7 @@ The core behavior can be summarized as follows.
 
 `close(d)` is the key — in Go, a **closed channel immediately returns the zero value**, so all goroutines waiting on `<-ctx.Done()` wake up simultaneously. This is why context's cancellation propagation is efficient.
 
-### Q. How should I set the context timeout when calling a DB / external API from an API handler?
+## 9.2 Q. How should I set the context timeout when calling a DB / external API from an API handler?
 
 When an API handler calls a DB query or an external API, if a problem occurs at any layer, the entire request can stall. To prevent this, you need to set context timeouts appropriately.
 
@@ -587,7 +587,7 @@ func handler(w http.ResponseWriter, r *http.Request) {
 > }
 > ```
 
-### Q. How do I manage timeouts in the Echo framework?
+## 9.3 Q. How do I manage timeouts in the Echo framework?
 
 Echo has a built-in `TimeoutMiddleware`, so you can automatically apply a timeout to all handlers.
 

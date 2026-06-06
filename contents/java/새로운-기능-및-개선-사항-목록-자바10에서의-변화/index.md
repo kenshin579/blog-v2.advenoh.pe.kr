@@ -13,7 +13,7 @@ tags:
 ---
 
 
-# 자바10
+# 1. 자바10
 * **언어**
     * JEP 286: Local Variable Type Inference
 * JVM/Compiler
@@ -36,7 +36,7 @@ tags:
 * [https://www.oracle.com/technetwork/java/javase/10-relnote-issues-4108729.html](https://www.oracle.com/technetwork/java/javase/10-relnote-issues-4108729.html)
 * [https://dzone.com/articles/whats-new-in-java-10](https://dzone.com/articles/whats-new-in-java-10)
 
-# JEP 286: Local Variable Type Inference
+# 2. JEP 286: Local Variable Type Inference
 타임 추론이란 자바 컴파일러가 각 메서드 호출과 정의된 메서드 선언문을 보고 인자의 타입을 추론하는 기능을 말한다. 타임 추론(type inference)은 자바5부터 지속적으로 개선해 왔었다.
 
 * Java 5 : 제네릭 메서드와 타입 인지 타입추론
@@ -44,25 +44,25 @@ tags:
 * Java 8 : 람다식 인자 타입
 * Java 10 : 지역변수 타입추론
 
-## **타입추론 개선 내역**
+## 2.1 타입추론 개선 내역
 
 
-### **Java 5 : 제네릭 메서드 타입 추론**
+### 2.1.1 Java 5 : 제네릭 메서드 타입 추론
 ```java
 List<String> cs = Collections.<String>emptyList();
 ```
 
-### **Java 7 : 다이아몬드 연사자(<>)**
+### 2.1.2 Java 7 : 다이아몬드 연사자(<>)
 ```java
 Map<String, List<String>> myMap = new HashMap<String,List<String>>();
 ```
 
-### **Java 8 : 람다식 안자 타입**
+### 2.1.3 Java 8 : 람다식 안자 타입
 ```java
 Predicate<String> nameValidation = (String x) -> x.length() > 0;
 ```
 
-### **Java 10 : 지역변수 타입 추론**
+### 2.1.4 Java 10 : 지역변수 타입 추론
 자바에서도 var를 도입하여 암시적 타이핑을 지원하게 되었다. var는 keyword(ex.abstract)가 아니라 reserved type name이라서 변수, 함수 이름으로도 사용할 수 있다.
 추가로 var의 도입으로 dynamic type을 지원하는 것은 아닙니다. compiler가 알아서 타입을 추론해서 compile 해주는 것이다.
 
@@ -145,7 +145,7 @@ var custList = dbconn.executeQuery(query);
 변수이름에 타입을 추가하여 이름을 사용하여 가독성을 높여주는게 좋다.
 더 자세한 사항은 java.net에서 제공한 가이드라인( [Style Guidlines for Local Variable Type Inference in Java](http://openjdk.java.net/projects/amber/LVTIstyle.html) )을 참조해주세요.
 
-# 참고
+# 3. 참고
 
 * 로컬 변수 타입 추론
     * [https://www.baeldung.com/java-10-local-variable-type-inference](https://www.baeldung.com/java-10-local-variable-type-inference)

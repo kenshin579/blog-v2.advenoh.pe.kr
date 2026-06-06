@@ -354,18 +354,18 @@ Commit the specs/plans together with the PR to leave them as a permanent referen
 
 That's it for the guide-style information. This section is "observations from someone who actually ran one cycle." Please bear with a slightly informal tone.
 
-## What I Liked
+## 7.1 What I Liked
 
 - **The entire development flow connects naturally**: previously, I had to manually write a PRD → implementation plan → todo.md separately and review markdown at each stage, which took quite a bit of time. Superpowers ties brainstorm → spec → plan → implementation → review into one flow, so each stage's output naturally becomes the input to the next, and the documentation and review cost the worker spends drops significantly
 - **Almost zero context contamination**: when a task ends, the context is cleaned up along with the implementer subagent → the reason I could finish a large PR (25 commits) in one session
 - **The two-stage spec/quality review pulls PR review cost inside the cycle**: critical issues that pass compilation/tests (Korean rune count, DueDate aliasing) and a regression gap (a Vitest e2e config bug) were all discovered and fixed mid-cycle
 
-## Costs and Trade-offs
+## 7.2 Costs and Trade-offs
 
 - **Token usage ramps up fast**: each task accumulates 3 dispatches—implementer + spec/quality reviewer—so consumption is heavy. Even on the Claude Max 100x plan, I experienced hitting a rate limit mid-cycle
 - **Plan file checkboxes are not auto-updated**: subagent-driven tracks via an in-memory task list, and plan.md stays `- [ ]` to the end. If you want to use the plan as a permanent tracker, executing-plans is a better fit
 
-## Recommended Application Scenarios
+## 7.3 Recommended Application Scenarios
 
 In short: **most powerful for multi-stage + multi-area work**; for a single-file edit, a regular slash command is faster.
 

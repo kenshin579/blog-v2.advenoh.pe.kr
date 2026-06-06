@@ -203,7 +203,7 @@ In the configuration above, `pre-sync-job-1` runs first, and then `pre-sync-job-
 
 # 3. FAQ
 
-### 3.1 If `PreSync` fails, will the next Hook not run?
+## 3.1 If `PreSync` fails, will the next Hook not run?
 
 If `PreSync` fails, it stops without moving on to the next Phase. In fact, if you force a failure as shown below and run it, you can confirm that `Sync` and `PostSync` also do not run.
 
@@ -236,7 +236,7 @@ In ArgoCD too, you can confirm that PreSync and PostSync are marked as failed, a
 
 ![k9s](image-20241021225344736.png)
 
-### 3.2 If you specify the `HookSucceeded` deletion policy, it is deleted immediately after execution so you can't check the result—is there a way to delete it after, say, 5 minutes?
+## 3.2 If you specify the `HookSucceeded` deletion policy, it is deleted immediately after execution so you can't check the result—is there a way to delete it after, say, 5 minutes?
 
 If you don't specify the `hook-delete-policy` annotation and instead set the `ttlSecondsAfterFinished: 600` value, it will be deleted after 600 seconds.
 
@@ -278,15 +278,15 @@ spec:
 > ![ttlSecondsAfterFinished 스펙](image-20241030180211686.png)
 > Reference: [JobSpec v1 batch (kubernetes v1.18)](https://k8s-dev-ko.netlify.app/docs/reference/generated/kubernetes-api/v1.18/)
 
-### 3.3 The actual App version is the same so deployment isn't needed, but can I run `PreSync` and `PostSync` manually?
+## 3.3 The actual App version is the same so deployment isn't needed, but can I run `PreSync` and `PostSync` manually?
 
 When you press the `Sync` button, it always runs `PreSync` → `Sync` → `PostSync`, so the Hooks are actually executed.
 
-### 3.4 What should I do if Presync failed but the Deployment still needs to be deployed?
+## 3.4 What should I do if Presync failed but the Deployment still needs to be deployed?
 
 If a Pod was not deployed because an error occurred during Presync execution, you can deploy the Pod by selecting the deployment block in ArgoCD and manually starting it.
 
-### 3.5 If it keeps Syncing/Terminating indefinitely, is there a way to forcibly terminate it?
+## 3.5 If it keeps Syncing/Terminating indefinitely, is there a way to forcibly terminate it?
 
 ![무한 Syncing](image-20241031180353715.png)
 

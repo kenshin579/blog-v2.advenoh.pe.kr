@@ -312,7 +312,7 @@ if (now - message.timestamp) > threshold:
 
 # 3. FAQ
 
-### Q: Wildcard로 구독했을 때 실제 매칭된 Topic을 알 수 있나요?
+## 3.1 Q: Wildcard로 구독했을 때 실제 매칭된 Topic을 알 수 있나요?
 
 **A: 네, 알 수 있다. 메시지에 항상 실제 Topic이 포함되어 전달된다.**
 

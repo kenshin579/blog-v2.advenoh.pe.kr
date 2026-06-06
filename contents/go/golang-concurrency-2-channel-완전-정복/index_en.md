@@ -20,7 +20,7 @@ A channel is the **means of communication for exchanging data** between goroutin
 
 In this part, we fully cover channels — from basic behavior to the buffered/unbuffered difference, direction restrictions, and close rules.
 
-## 1. Channel Concept and Creation
+# 1. Channel Concept and Creation
 
 <img src="cover.png" alt="cover" width="75%" />
 
@@ -31,7 +31,7 @@ ch := make(chan int)       // unbuffered channel (int type)
 ch := make(chan string, 5) // buffered channel (string type, buffer size 5)
 ```
 
-## 2. Send / Receive Behavior
+# 2. Send / Receive Behavior
 
 To send a value to a channel, use the `<-` operator.
 
@@ -74,7 +74,7 @@ func TestChannelStructType(t *testing.T) {
 }
 ```
 
-## 3. Understanding Blocking Behavior
+# 3. Understanding Blocking Behavior
 
 The most important characteristic of a channel is **blocking**.
 
@@ -95,9 +95,9 @@ graph LR
     end
 ```
 
-## 4. Unbuffered vs Buffered Channel
+# 4. Unbuffered vs Buffered Channel
 
-### Unbuffered Channel
+## 4.1 Unbuffered Channel
 
 ```go
 ch := make(chan int) // buffer size 0
@@ -120,7 +120,7 @@ func TestUnbufferedChannel(t *testing.T) {
 }
 ```
 
-### Buffered Channel
+## 4.2 Buffered Channel
 
 ```go
 ch := make(chan int, 3) // buffer size 3
@@ -146,7 +146,7 @@ func TestBufferedChannel(t *testing.T) {
 }
 ```
 
-### cap and len
+## 4.3 cap and len
 
 ```go
 func TestBufferedChannelCapLen(t *testing.T) {
@@ -163,7 +163,7 @@ func TestBufferedChannelCapLen(t *testing.T) {
 }
 ```
 
-### When to Use Which?
+## 4.4 When to Use Which?
 
 | Situation | Choice |
 |------|------|
@@ -173,7 +173,7 @@ func TestBufferedChannelCapLen(t *testing.T) {
 | Producer/Consumer pattern | Buffered |
 | high-throughput data transfer where performance matters | Buffered |
 
-## 5. Channel Direction Restrictions
+# 5. Channel Direction Restrictions
 
 You can restrict a channel's direction in a function parameter.
 
@@ -217,13 +217,13 @@ var sendOnly chan<- int = ch  // OK: bidirectional → send-only
 var recvOnly <-chan int = ch  // OK: bidirectional → receive-only
 ```
 
-## 6. Channel Close
+# 6. Channel Close
 
-### The Meaning of close
+## 6.1 The Meaning of close
 
 `close(ch)` is a declaration that "**no more values will be sent** to this channel."
 
-### Receiving from a Closed Channel
+## 6.2 Receiving from a Closed Channel
 
 ```go
 func TestReceiveFromClosedChannel(t *testing.T) {
@@ -243,7 +243,7 @@ func TestReceiveFromClosedChannel(t *testing.T) {
 }
 ```
 
-### Close Rules
+## 6.3 Close Rules
 
 | Rule | Description |
 |------|------|
@@ -252,7 +252,7 @@ func TestReceiveFromClosedChannel(t *testing.T) {
 | **No send on a closed channel** | sending a value to a closed channel causes a **panic** |
 | **Receive from a closed channel is OK** | returns zero value + false |
 
-### Close Responsibility Pattern
+## 6.4 Close Responsibility Pattern
 
 ```go
 // pattern: the sender creates the channel, sends, and closes
@@ -268,7 +268,7 @@ func generator() <-chan int {
 }
 ```
 
-## 7. Range over Channel
+# 7. Range over Channel
 
 Using `range`, values are automatically received **until the channel is closed**.
 
@@ -294,7 +294,7 @@ func TestRangeOverChannel(t *testing.T) {
 
 > For `range ch` to terminate, `close(ch)` must be called. Without close, range blocks forever.
 
-### Signaling Channel
+## 7.1 Signaling Channel
 
 To send only a **completion signal** rather than data, use `chan struct{}`. struct{} takes up no memory.
 
@@ -315,7 +315,7 @@ func TestChannelSignaling(t *testing.T) {
 
 > If you're confused about the difference between `struct{}` and `struct{}{}`, see the [FAQ](#q-whats-the-difference-between-struct-and-struct).
 
-## 8. Practice: Producer / Consumer Pattern
+# 8. Practice: Producer / Consumer Pattern
 
 ```go
 func TestProducerConsumer(t *testing.T) {
@@ -340,7 +340,7 @@ func TestProducerConsumer(t *testing.T) {
 }
 ```
 
-### Multiple Producers
+## 8.1 Multiple Producers
 
 ```go
 func TestMultipleProducers(t *testing.T) {
@@ -373,7 +373,7 @@ func TestMultipleProducers(t *testing.T) {
 }
 ```
 
-## 9. Summary
+# 9. Summary
 
 | Concept | Core |
 |------|------|
@@ -387,9 +387,9 @@ func TestMultipleProducers(t *testing.T) {
 
 In the next part, we'll cover advanced channel patterns such as the **select** statement, which handles multiple channels simultaneously, and **fan-in/fan-out**.
 
-## FAQ
+# 10. FAQ
 
-### Q. What's the difference between `struct{}` and `struct{}{}`?
+## 10.1 Q. What's the difference between `struct{}` and `struct{}{}`?
 
 `struct{}` is a **type**, and `struct{}{}` is a **value (instance)**.
 
@@ -436,7 +436,7 @@ close(done)
 
 Since `struct{}` takes up 0 bytes of memory, it's the most efficient choice when you want to **only deliver a signal** without data.
 
-## References
+# 11. References
 
 - [Go Tour - Channels](https://go.dev/tour/concurrency/2)
 - [Effective Go - Channels](https://go.dev/doc/effective_go#channels)

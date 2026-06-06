@@ -317,7 +317,7 @@ emptyStrings := toSlice[string]()  // 명시적 지정 필요
 
 # 7. FAQ
 
-### Q. 타입 단언(Type Assertion)이란?
+## 7.1 Q. 타입 단언(Type Assertion)이란?
 
 `interface{}` 타입의 값에서 실제 구체적인 타입의 값을 꺼내는 연산이다. `value.(Type)` 형태로 사용한다.
 

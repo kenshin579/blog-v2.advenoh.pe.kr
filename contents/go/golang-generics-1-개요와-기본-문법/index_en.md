@@ -317,7 +317,7 @@ In the next part, we'll cover **Type Constraint**, the core of generics. We'll t
 
 # 7. FAQ
 
-### Q. What Is a Type Assertion?
+## 7.1 Q. What Is a Type Assertion?
 
 It's an operation that extracts a value of a concrete type from a value of `interface{}` type. It's used in the `value.(Type)` form.
 

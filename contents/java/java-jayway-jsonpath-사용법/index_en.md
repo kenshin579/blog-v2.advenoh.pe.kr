@@ -122,7 +122,7 @@ To extract the data you want with Jayway JsonPath, you use parse() and read(). L
 - read() : Reads an XPath expression and extracts the corresponding data
     - <T> T read(String path, Predicate... filters)
 
-## 3.5.1 Searching by Id
+## 3.6 Searching by Id
 
 This is an example of extracting the data whose \_id value is '5c2c3278acd492387a5223d7' from the array.
 
@@ -152,7 +152,7 @@ public void test*id값으로*데이터를_가져오기() {
 ]
 ```
 
-### 3.5.2 Using the Filter API
+### 3.6.1 Using the Filter API
 
 This is the same example as above, written using the Filter API provided by Jayway. To use the Filter API, you have to learn and get familiar with the method names, so I recommend just using JsonPath expressions.
 
@@ -166,7 +166,7 @@ public void test*id값으로*데이터를\_가져오기() {
 }
 ```
 
-### 3.5.3 Finding All People Who Have a Specific Value in Tags
+### 3.6.2 Finding All People Who Have a Specific Value in Tags
 
 This is an example of finding all people who have the value 'pariatur' in the scanned @[’tags’]. When there is a filter predicate, there can be multiple results, so it returns a List.
 
@@ -206,7 +206,7 @@ public void test*tags가*있는*사람은*모두() {
 ]
 ```
 
-### 3.5.4 Automatically Mapping JsonPath Query Results to a Java Object
+### 3.6.3 Automatically Mapping JsonPath Query Results to a Java Object
 
 So far we have stored the results queried with JsonPath as Object, but you can actually map the result into a real class object. If you pass an object (e.g., Person) as the targetType to the read() method, it is automatically cast and returns the typed object (e.g., Person).
 
@@ -220,7 +220,7 @@ public void test*Person객체로*매핑하기() {
 }
 ```
 
-### 3.5.5 Using JsonPath Functions
+### 3.6.4 Using JsonPath Functions
 
 This is an example of calculating the average value of the range attribute of the first person.
 
@@ -245,7 +245,7 @@ public void test*jsonpath*함수() {
 }]
 ```
 
-### 3.5.6 Calculating the Total Account Balance of All People
+### 3.6.5 Calculating the Total Account Balance of All People
 
 This time we again use functions. This is an example that uses \$.length() to get the total number of people, then gets the value of each person's balance attribute and computes the total sum.
 
@@ -265,7 +265,7 @@ public void test*모든*사람의*총*계좌*잔고을*계산하기() throws Par
 }
 ```
 
-### 3.5.7 Finding the Youngest Person
+### 3.6.6 Finding the Youngest Person
 
 The last example is finding the youngest person. In #1, it uses the \$[\*][‘age] expression to collect the ages of all people into a List. In #2, it gets the minimum age, and in #3, it gets the person whose age matches the minimum age found and stores the result.
 

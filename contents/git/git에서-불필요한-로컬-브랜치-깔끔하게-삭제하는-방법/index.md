@@ -12,7 +12,7 @@ tags:
   - 로컬브랜치 정리
 ---
 
-# 개요
+# 1. 개요
 
 `Git`을 사용하여 코드 버전 관리를 하다 보면, 작업을 위해 새로운 브랜치를 생성하고 작업한 후 `Merge` 한 뒤에도 로컬에 사용되지 않는 브랜치들이 계속 남아 있게 된다.
 
@@ -24,9 +24,9 @@ tags:
 
 > 스크립트 작성은 `ChatGPT`의 도움을 받았다. 요세 요구사항만 잘 전달해주면 완벽한 스크립틀 작성해주고 있어서 너무 잘 사용하고 있다.
 
-# Usage
+# 2. Usage
 
-## 명령어 사용법
+## 2.1 명령어 사용법
 
 - `-i` 옵션이 있는 경우에는 `interactive` 하게 실행하도록 되어 있어 로컬 브랜치를 삭제하기전에 `confirm` 확인을 받고 삭제하도록 되어 있다
 
@@ -37,7 +37,7 @@ Usage: cleanup_prune_local_branches.sh [-i]
 -i: Enable interactive mode with confirmation prompt for each branch deletion
 ```
 
-## 실행 예제
+## 2.2 실행 예제
 
 ```bash
 > cleanup_prune_local_branches.sh -i 
@@ -60,7 +60,7 @@ Deleting local branch: feat/#1987-robot-path-order
 =======[WARN] Are you sure you want to delete unused branch ? [y/N]
 ```
 
-# Source Code
+# 3. Source Code
 
 다음은 해당 스크립트의 전체 소스 코드이다.
 

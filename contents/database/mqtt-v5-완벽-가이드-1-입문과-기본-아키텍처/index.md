@@ -43,7 +43,7 @@ MQTT는 "Message Queuing Telemetry Transport"의 약자로 **이벤트 기반 �
   - TCP/IP 스택 위에서 동작하는 경량 메시징 프로토콜로, **WebSocket 지원을 통해 웹 브라우저 환경에서도 활용 가능**하다
 
 
-### Broker 중심 구조
+### 1.1.1 Broker 중심 구조
 
 MQTT의 가장 큰 특징은 **Broker**가 중간에 있다는 것이다. 클라이언트들은 서로 직접 통신하지 않고, 모든 메시지가 중앙의 Broker를 통해 전달된다. 이 구조 덕분에 클라이언트는 다른 클라이언트의 존재나 위치를 알 필요가 없으며, Broker만 알면 된다.
 
@@ -67,7 +67,7 @@ flowchart LR
 
 Publisher와 Subscriber는 서로를 직접 알지 못한다. Broker만 알면 된다. 이러한 느슨한 결합(Loose Coupling) 덕분에 시스템 확장이 용이한다. 새로운 Subscriber를 추가해도 Publisher를 수정할 필요가 없고, 반대로 Publisher를 추가해도 기존 Subscriber에 영향을 주지 않는다.
 
-### HTTP 와의 근본적인 차이
+### 1.1.2 HTTP 와의 근본적인 차이
 
 MQTT를 이해하는 가장 좋은 방법은 익숙한 HTTP와 비교하는 것이다. 두 프로토콜은 근본적으로 다른 통신 패턴을 사용하며, 각각 적합한 사용 사례가 있다.
 

@@ -109,14 +109,14 @@ claude
 
 ## 5.2 Case B: API Key Switching (Hybrid)
 
-### Prerequisite: Issue an API Key
+### 5.2.1 Prerequisite: Issue an API Key
 
 1. Go to [console.anthropic.com](https://console.anthropic.com)
 2. Settings → API Keys → Create Key
 3. Store the key securely (it's only shown once)
 4. **Funding credits in Settings → Billing is required**
 
-### ~/.zshrc configuration
+### 5.2.2 ~/.zshrc configuration
 
 ```bash
 # An Auth conflict occurs if OAuth and the API Key exist at the same time
@@ -140,7 +140,7 @@ claude-oauth() {
 }
 ```
 
-### Usage
+### 5.2.3 Usage
 
 ```bash
 source ~/.zshrc

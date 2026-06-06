@@ -589,7 +589,7 @@ Plan: 7 to add, 0 to change, 0 to destroy.
 
 Terraform으로 클러스터와 ArgoCD가 준비되었으니, 이제 ArgoCD에 애플리케이션을 등록하여 배포해보자. 샘플 코드에 포함된 `bootstrap/sample-apps.yaml`과 `charts/sample-nginx/`를 사용한다.
 
-### Helm 차트 구조
+### 5.6.1 Helm 차트 구조
 
 먼저 배포할 샘플 NGINX 앱의 Helm 차트 구조를 살펴보자.
 
@@ -602,7 +602,7 @@ charts/sample-nginx/
     └── service.yaml     # K8s Service 템플릿
 ```
 
-### ApplicationSet으로 ArgoCD에 앱 등록
+### 5.6.2 ApplicationSet으로 ArgoCD에 앱 등록
 
 ArgoCD에 앱을 등록할 때는 **ApplicationSet**을 사용한다. ApplicationSet은 템플릿 기반으로 여러 Application을 한 번에 정의할 수 있다.
 
@@ -642,7 +642,7 @@ spec:
 - `source.path`: Git 저장소 내 Helm 차트 경로. `{{appName}}`이 실제 앱 이름으로 치환된다
 - `syncPolicy.automated`: Git에 변경이 감지되면 자동으로 K8s에 반영한다
 
-### 배포 실행 및 확인
+### 5.6.3 배포 실행 및 확인
 
 ```bash
 # 1. ApplicationSet 적용
@@ -670,7 +670,7 @@ kubectl port-forward svc/sample-nginx -n study 8081:80
 
 ArgoCD UI(`https://localhost:8080`)에서도 `sample-nginx` 앱이 Synced/Healthy 상태로 등록된 것을 확인할 수 있다.
 
-### 설정 변경 테스트
+### 5.6.4 설정 변경 테스트
 
 ArgoCD의 자동 동기화를 확인해보자. `values.yaml`에서 replica 수를 변경하고 Git push하면 ArgoCD가 자동으로 반영한다.
 
@@ -809,7 +809,7 @@ sequenceDiagram
 
 앱 설정을 변경하려면 **Helm 차트의 `values.yaml`만 수정**하면 된다. Terraform 코드는 건드릴 필요가 없다.
 
-### ApplicationSet 예제
+### 6.3.1 ApplicationSet 예제
 
 ArgoCD에 앱을 등록할 때는 ApplicationSet을 사용한다. 아래는 샘플 코드에 포함된 예제이다.
 
@@ -845,7 +845,7 @@ spec:
 - `generators.list`: 배포할 앱 목록. 새 앱을 추가하려면 여기에 항목만 추가하면 된다
 - `syncPolicy.automated`: ArgoCD가 Git 변경을 감지하면 자동으로 K8s에 반영한다
 
-### Helm 차트 예제
+### 6.3.2 Helm 차트 예제
 
 각 앱의 Kubernetes 리소스는 Helm 차트로 정의한다.
 
@@ -890,7 +890,7 @@ replica 수를 변경하고 싶다면 `values.yaml`의 `replicaCount`만 수정�
 - **Module**: 리소스를 재사용 가능한 단위로 분리하여 코드를 구조화한다
 - **실전 구조**: Terraform(클러스터) + ArgoCD(배포 자동화) + Helm(앱 설정) 조합으로 역할을 분리하면 관리가 훨씬 수월해진다
 
-## 참고
+## 7.1 참고
 
 - [Terraform 공식 문서](https://developer.hashicorp.com/terraform/docs)
 - [Terraform Registry - Provider 목록](https://registry.terraform.io/browse/providers)

@@ -166,7 +166,7 @@ That covers the tmux fundamentals. Now let's come back to what I mentioned at th
 - **Long autonomous work survives via detach.** If you hand Claude Code a long task and step out with `Ctrl+b d`, the work keeps running even after you close the terminal
 - **You can work in parallel on one screen.** Splitting Claude Code, the dev server, and logs into Panes and viewing them at once keeps your workflow from breaking
 
-## Creating and Naming a Session per Folder
+## 7.1 Creating and Naming a Session per Folder
 
 When you move between several projects using Claude Code, it's convenient to keep one tmux Session running per project (folder). On top of that, if you use multiple machines (laptop, desktop, mini PC, etc.), Session names can collide, so naming them with the **`<machine>-<folder>` rule** keeps things from getting confusing no matter where you attach. For example, if you open the `blog` folder on your desktop (`m4`), the Session name becomes `m4-blog`.
 

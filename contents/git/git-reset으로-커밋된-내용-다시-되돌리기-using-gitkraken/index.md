@@ -13,7 +13,7 @@ tags:
   - 리셋
 ---
 
-# 1.Git Reset
+# 1. Git Reset
 
 Git으로 작업하다 보면 커밋된 이력을 다시 되돌려야 할 때가 종종 발생한다. Git Reset에서는 아래와 같이 3가지 옵션을 제공한다. 각 옵션의 차이점에 대해서 알아보자.
 
@@ -150,7 +150,7 @@ nothing to commit, working tree clean
 
 Git Reset는 이제 마스터했으니 적절하게 사용하면 된다. 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-git)에서 확인할 수 있다.
 
-# 3.  참고
+# 3. 참고
 
 - [https://www.devpools.kr/2017/02/05/%EC%B4%88%EB%B3%B4%EC%9A%A9-git-%EB%90%98%EB%8F%8C%EB%A6%AC%EA%B8%B0-reset-revert](https://www.devpools.kr/2017/02/05/초보용-git-되돌리기-reset-revert)/
 - https://backlog.com/git-tutorial/kr/stepup/stepup6_3.html
