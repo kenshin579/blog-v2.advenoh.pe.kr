@@ -27,6 +27,12 @@ interface Manifest {
 let manifestCache: Manifest | null = null;
 const articleCache = new Map<string, Article>();
 
+const BIWEEKLY_SERIES_PREFIX = "Frank's IT News";
+
+export function isBiweeklySeries(series?: string | null): boolean {
+  return !!series && series.startsWith(BIWEEKLY_SERIES_PREFIX);
+}
+
 /**
  * Manifest 로드 (캐싱)
  */
