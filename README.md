@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-06-05
+Updated 2026-06-10
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -45,6 +45,7 @@ Updated 2026-06-05
 * [Frank's IT Biweekly News (2026-04-01 ~ 2026-04-15)](https://blog.advenoh.pe.kr/news-2026-04-15/)
 * [Frank's IT Biweekly News (2026-04-17 ~ 2026-05-01)](https://blog.advenoh.pe.kr/news-2026-05-01/)
 * [Frank's IT Biweekly News (2026-05-01 ~ 2026-05-15)](https://blog.advenoh.pe.kr/news-2026-05-15/)
+* [Frank's IT Biweekly News (2026-05-18 ~ 2026-06-01)](https://blog.advenoh.pe.kr/news-2026-06-01/)
 
 ## Cloud
 * [(Docker-1) Docker Command Cheat Sheet](https://blog.advenoh.pe.kr/docker-도커-명령어-모음/)
@@ -68,9 +69,9 @@ Updated 2026-06-05
 * [Installing Kafka with Helm](https://blog.advenoh.pe.kr/헬름으로-kafka-설치하기/)
 * [Installing an SSL Certificate on an Nginx Server (Issuing a Free Let's Encrypt Certificate)](https://blog.advenoh.pe.kr/ssl-인증서-ngnix-서버에-설치하기/)
 * [Introducing Jaeger](https://blog.advenoh.pe.kr/jaeger에-대한-소개-en/)
-* [Introducing ksqlDB](https://blog.advenoh.pe.kr/ksqldb-소개/)
 * [Introduction to Jaeger](https://blog.advenoh.pe.kr/jaeger에-대한-소개/)
 * [Introduction to Kafka Connect](https://blog.advenoh.pe.kr/kafka-connect에-대한-소개/)
+* [Introduction to ksqlDB](https://blog.advenoh.pe.kr/ksqldb-소개/)
 * [Jaeger에 대한 소개](https://blog.advenoh.pe.kr/jaeger에-대한-소개/)
 * [Kafka CLI Collection](https://blog.advenoh.pe.kr/kafka-cli-명령어-모음-en/)
 * [Kafka CLI Commands Cheat Sheet](https://blog.advenoh.pe.kr/kafka-cli-명령어-모음/)
