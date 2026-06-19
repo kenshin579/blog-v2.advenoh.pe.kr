@@ -188,6 +188,7 @@ Updated 2026-06-19
 * [Golang Concurrency 4편 - sync 패키지 완벽 가이드](https://blog.advenoh.pe.kr/golang-concurrency-4-sync-패키지/)
 * [Golang Concurrency 5편 - Context 완벽 가이드](https://blog.advenoh.pe.kr/golang-concurrency-5-context-완벽-가이드/)
 * [Golang Concurrency Part 1 - Overview and Goroutine Basics](https://blog.advenoh.pe.kr/golang-concurrency-1-goroutine-기초/)
+* [Golang Concurrency Part 11 - The Complete Guide to Visualization with go tool trace](https://blog.advenoh.pe.kr/golang-concurrency-11-시각화-go-tool-trace-완벽-가이드/)
 * [Golang Concurrency Part 2 - Mastering Channels](https://blog.advenoh.pe.kr/golang-concurrency-2-channel-완전-정복/)
 * [Golang Concurrency Part 3 - Advanced select and Channel Patterns](https://blog.advenoh.pe.kr/golang-concurrency-3-select와-channel-심화/)
 * [Golang Concurrency Part 4 - The Complete sync Package Guide](https://blog.advenoh.pe.kr/golang-concurrency-4-sync-패키지/)
