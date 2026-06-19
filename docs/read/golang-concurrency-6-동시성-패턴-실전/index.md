@@ -62,6 +62,12 @@ func TestWorkerPool(t *testing.T) {
 	jobs := make(chan Job, numJobs)
 	results := make(chan Result, numJobs)
 
+	// 실제 작업 단위. 예제라서 제곱 연산이지만, 실무에선 이 함수 안에
+	// HTTP 요청 / 이미지 리사이징 / 로그 파싱 같은 진짜 처리 로직이 들어간다.
+	process := func(input int) int {
+		return input * input
+	}
+
 	var wg sync.WaitGroup
 	for w := range numWorkers {
 		wg.Add(1)
@@ -71,7 +77,7 @@ func TestWorkerPool(t *testing.T) {
 			for job := range jobs {
 				results <- Result{
 					JobID:  job.ID,
-					Output: job.Input * job.Input,
+					Output: process(job.Input), // ← Output은 "작업 함수가 만들어내는 값"
 				}
 				t.Logf("worker %d processed job %d", w, job.ID)
 			}
@@ -104,7 +110,7 @@ func TestWorkerPool(t *testing.T) {
 
 1. **Worker 미리 생성**: `numWorkers(3)`개의 goroutine을 먼저 띄워둔다. 각 worker는 `for job := range jobs`로 대기 상태에 진입한다.
 2. **Job 투입**: 메인 goroutine이 `jobs` channel에 작업 10개를 넣는다. buffered channel(크기 10)이라 한 번에 다 넣어도 블로킹되지 않는다.
-3. **Worker 처리**: jobs에 값이 들어오는 즉시 대기 중이던 worker가 깨어나 처리한다. 3개 worker가 경쟁적으로 꺼내 가므로 어느 worker가 어떤 job을 처리할지는 비결정적이다.
+3. **Worker 처리**: jobs에 값이 들어오는 즉시 대기 중이던 worker가 깨어나 `process(job.Input)`로 처리한다. 여기서 `process`가 **실제 일하는 함수**다. 예제는 제곱 연산이지만, 실무에선 이 함수를 `fetch(url)`, `resize(path)`처럼 교체하면 channel·WaitGroup 골격은 그대로 두고도 worker pool을 그대로 재사용할 수 있다. 3개 worker가 경쟁적으로 꺼내 가므로 어느 worker가 어떤 job을 처리할지는 비결정적이다.
 4. **`close(jobs)`로 종료 신호**: 모든 job을 투입한 후 channel을 close한다. 이후 worker들의 `range`가 자연스럽게 종료된다.
 5. **`results` close는 별도 goroutine에서**: `wg.Wait()`은 모든 worker가 끝나기를 기다려야 하는데, 메인 goroutine이 결과를 수집하는 중이므로 별도 goroutine에서 처리한다.
 
