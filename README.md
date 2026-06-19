@@ -84,6 +84,7 @@ Updated 2026-06-19
 * [SSL 인증서 Ngnix 서버에 설치하기 (무료 Lets Encrypt 인증서 발급)](https://blog.advenoh.pe.kr/ssl-인증서-ngnix-서버에-설치하기/)
 * [Securely Managing Secrets in a Kubernetes Environment](https://blog.advenoh.pe.kr/kubernetes-환경에서-secret-안전하게-관리하기/)
 * [Setting Up a Personal Docker Registry on a MacBook and Managing Images](https://blog.advenoh.pe.kr/맥북에서-개인용-docker-registry-구축하고-이미지-관리하기/)
+* [Switching Kubernetes context and namespace quickly with kx and ns (with fzf)](https://blog.advenoh.pe.kr/kx-ns로-kubernetes-context-namespace-빠르게-전환하기/)
 * [Terraform 완벽 가이드: 기본 개념부터 GitOps 실전까지](https://blog.advenoh.pe.kr/terraform-완벽-가이드-기본-개념부터-gitops-실전까지/)
 * [The Complete Terraform Guide: From Basic Concepts to GitOps in Practice](https://blog.advenoh.pe.kr/terraform-완벽-가이드-기본-개념부터-gitops-실전까지/)
 * [Understanding ArgoCD Resource Hooks (PreSync, PostSync, SyncWaves)](https://blog.advenoh.pe.kr/argocd-resource-hooks에-대해서-알아보자/)
