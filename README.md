@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-06-10
+Updated 2026-06-19
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -181,6 +181,7 @@ Updated 2026-06-10
 * [Go Test Suite (Lifecycle 메서드)](https://blog.advenoh.pe.kr/go-test-suite-lifecycle-메서드/)
 * [Go Wails로 데스크톱 앱 만들기](https://blog.advenoh.pe.kr/go-wails-desktop-app/)
 * [Go pprof 프로파일링으로 성능 문제 진단하기 (Profiling Go Programs with pprof)](https://blog.advenoh.pe.kr/go-pprof-프로파일링으로-성능-문제-진단하기/)
+* [Golang Concurrency 11편 - 시각화 go tool trace 완벽 가이드](https://blog.advenoh.pe.kr/golang-concurrency-11-시각화-go-tool-trace-완벽-가이드/)
 * [Golang Concurrency 1편 - 개요와 Goroutine 기초](https://blog.advenoh.pe.kr/golang-concurrency-1-goroutine-기초/)
 * [Golang Concurrency 2편 - Channel 완전 정복](https://blog.advenoh.pe.kr/golang-concurrency-2-channel-완전-정복/)
 * [Golang Concurrency 3편 - Select와 Channel 심화 패턴](https://blog.advenoh.pe.kr/golang-concurrency-3-select와-channel-심화/)
