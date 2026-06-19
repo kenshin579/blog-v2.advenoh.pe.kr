@@ -1,10 +1,9 @@
 ---
 title: "Golang Concurrency 11편 - 시각화 go tool trace 완벽 가이드"
 description: "go tool trace, Flight Recorder, GODEBUG schedtrace 등 Go 동시성 코드를 시각화하고 분석하는 도구를 실습과 함께 정리합니다."
-date: 2026-02-28
+date: 2026-06-19
 tags: ["golang", "go", "concurrency", "trace", "visualization", "go-tool-trace", "flight-recorder", "pprof", "시각화", "트레이싱"]
 series: "Golang Concurrency"
-draft: false
 ---
 
 동시성 버그는 `fmt.Println`만으로는 원인을 찾기 어렵다. goroutine이 언제 실행되고 언제 블로킹되는지, 채널을 통해 데이터가 어떤 순서로 흐르는지를 **눈으로 확인**할 수 있다면 디버깅이 훨씬 쉬워진다. 이 글에서는 Go가 제공하는 동시성 시각화/분석 도구들을 실습과 함께 정리한다.
@@ -43,9 +42,13 @@ draft: false
 
 ```go
 func TestBasicTrace_Start_Stop(t *testing.T) {
-    f, err := os.CreateTemp(t.TempDir(), "trace_basic_*.out")
+    // tmp 폴더에 영속 저장 (t.TempDir()과 달리 테스트 후에도 남아 go tool trace로 분석 가능)
+    err := os.MkdirAll("tmp", 0o755)
     assert.NoError(t, err)
-    defer f.Close()
+
+    f, err := os.Create("tmp/trace_basic.out")
+    assert.NoError(t, err)
+    defer func() { _ = f.Close() }()
 
     // trace 수집 시작
     err = rttrace.Start(f)
@@ -103,33 +106,78 @@ import _ "net/http/pprof"
 수집된 trace 파일은 다음 명령으로 브라우저에서 열 수 있다.
 
 ```bash
-go tool trace trace.out
+go tool trace tmp/trace_basic.out
 ```
 
-브라우저에 여러 분석 뷰 링크가 표시된다. 각 뷰가 제공하는 정보는 다음 섹션에서 설명한다.
+명령을 실행하면 로컬 웹 서버(예: `http://127.0.0.1:52022`)가 뜨고, 브라우저에 여러 분석 뷰 링크가 표시된다. 각 뷰의 실제 화면과 해석은 다음 섹션에서 자세히 다룬다.
 
 # 3. go tool trace 핵심 뷰 해석
 
+이 섹션의 화면은 앞의 `TestBasicTrace_Start_Stop`(goroutine 5개가 각각 100만 번 카운트하는 CPU 바운드 작업) trace를 실제로 열어본 것이다. 각 뷰를 **어떻게 읽어야 하는지**를 이 예제 기준으로 살펴본다.
+
+> **먼저 알아둘 것 — Go 스케줄러의 GMP 모델**
+>
+> trace 뷰를 읽으려면 Go 런타임 스케줄러를 구성하는 세 요소를 알아야 한다. Go는 수천 개의 goroutine을 소수의 OS 스레드 위에서 돌리기 위해 다음 세 가지를 조합한다.
+>
+> | 약자 | 정식 명칭 | 정체 |
+> |------|----------|------|
+> | **G** | Goroutine | Go가 관리하는 경량 실행 단위(`go func()`로 생성). 처리할 *작업* |
+> | **M** | Machine | 실제 OS 스레드. 코드를 물리적으로 실행하는 *일꾼* |
+> | **P** | Processor | 논리 프로세서. G를 M에 배분하는 스케줄링 컨텍스트(로컬 실행 큐 보유). 일감을 나눠주는 *작업대* |
+>
+> goroutine(G)이 실행되려면 **M이 P를 잡고**, P의 로컬 큐에서 G를 꺼내 M 위에서 실행한다. P의 개수는 `GOMAXPROCS`(기본값은 CPU 코어 수)로 정해지며, 이것이 동시에 실제 코드를 실행할 수 있는 goroutine 수의 상한이 된다. 이 G/M/P 개념은 이후 5장의 `schedtrace`/`scheddetail` 출력 해석에서도 그대로 쓰인다.
+
 ## 3.1 View Trace (타임라인)
 
-타임라인 뷰는 시간 축을 따라 프로그램의 모든 이벤트를 보여주는 핵심 뷰다.
+타임라인 뷰는 시간 축을 따라 프로그램의 모든 이벤트를 보여주는 핵심 뷰다. 상단에는 전체 추이 그래프가, 하단에는 실행 주체별 막대가 표시된다.
 
 - **Heap**: 메모리 할당 패턴. GC 후 힙이 줄어드는 패턴이 보인다
 - **Goroutines**: running(실행 중) vs runnable(실행 가능하지만 대기 중) 개수. runnable이 높으면 P가 부족하거나 스케줄링 경합이 있다는 의미
 - **OS Threads**: 활성 스레드 수. syscall로 블로킹된 스레드가 많으면 네트워크/디스크 I/O 병목 가능
 - **PROCS**: 각 P(Processor)별 goroutine 실행 상황. GC STW(Stop-The-World) 이벤트도 여기서 확인 가능
 
+타임라인 하단은 **P(논리 프로세서) 기준** 또는 **OS 스레드(M) 기준**으로 볼 수 있다.
+
+**View by proc — P별 타임라인**
+
+<img src="go-tool-trace-view-proc.png" alt="go tool trace view by proc" width="100%" />
+
+- 5개의 `TestBasicTrace_Start_Stop.func2` 막대가 **서로 다른 P에 분산되어 거의 동시에** 실행됐다 → 멀티코어 병렬성이 잘 활용되고 있다는 의미다.
+- 막대가 중간에 끊기지 않고 짧게 끝나는 것은, 카운트 루프가 블로킹 없이 CPU만 사용하는 작업이기 때문이다.
+- 특정 P에만 막대가 몰리거나 막대 사이 빈 구간(idle)이 길면 부하 불균형이나 스케줄링 경합을 의심한다.
+
+**View by thread — OS 스레드(M)별 타임라인**
+
+<img src="go-tool-trace-view-thread.png" alt="go tool trace view by thread" width="100%" />
+
+- 같은 실행을 P가 아닌 OS 스레드(M) 기준으로 본 화면이다(`Thread 6171537408` 등). `syscall`로 표시된 구간은 해당 스레드가 시스템 콜에 묶여 있던 시간이다.
+- `syscall` 구간이 많고 길면 네트워크/디스크 I/O 병목을, 스레드(M) 개수가 급증하면 블로킹 syscall 때문에 런타임이 스레드를 추가로 만들고 있다는 신호로 본다. 이번 예제는 순수 CPU 작업이라 syscall 구간이 거의 없다.
+
 ## 3.2 Goroutine Analysis
 
-goroutine을 유형별로 그룹화하여 시간 분포를 보여준다.
+goroutine을 유형별로 그룹화하여 시간 분포를 보여준다. 먼저 시작 위치별 요약 표가 나오고, 그룹을 클릭하면 goroutine별 상세 분해로 이어진다.
 
-- **Execution**: 실제 CPU 실행 시간
+**요약 — 시작 위치별 그룹**
+
+<img src="go-tool-trace-goroutine-analysis.png" alt="go tool trace goroutine analysis" width="100%" />
+
+- goroutine을 **시작 위치(start location)** 기준으로 묶어 개수(Count)와 총 실행 시간을 보여준다.
+- 이번 예제에서는 `...TestBasicTrace_Start_Stop.func2`가 **Count 5, 총 2.14ms**로 가장 큰 비중을 차지한다 → 우리가 띄운 5개 워커가 작업 대부분을 수행했다는 뜻이다. 나머지 `testing.tRunner`, `runtime.*`는 테스트 하네스와 Go 런타임이 만든 보조 goroutine이다.
+- 어떤 함수에서 시작된 goroutine이 시간을 많이 쓰는지로 병목 후보를 좁힌다.
+
+**상세 — 그룹별 시간 분해**
+
+<img src="go-tool-trace-goroutine-breakdown.png" alt="go tool trace goroutine breakdown" width="100%" />
+
+요약 표에서 그룹을 클릭하면 goroutine별로 시간이 **어디에 쓰였는지** 항목별로 분해해서 보여준다. 이번 그룹은 실행 시간이 전체 프로그램의 **86.20%**를 차지한다.
+
+- **Execution**: 실제 CPU 실행 시간 (여기선 86%로 압도적 → 전형적인 CPU 바운드 작업)
 - **Network wait**: 네트워크 I/O 대기
-- **Sync block**: 뮤텍스, 채널 등 동기화 대기
+- **Sync block**: 뮤텍스, 채널 등 동기화 대기 (여기선 0에 가까움 — `WaitGroup` 외 경합 없음)
 - **Blocking syscall**: 시스템 콜 블로킹
-- **Scheduler wait**: 실행 가능하지만 P를 기다리는 시간
+- **Scheduler wait**: 실행 가능하지만 P를 기다리는 시간 (값이 크면 P 부족이나 스케줄링 경합)
 
-goroutine 유형별로 어디서 시간을 가장 많이 소비하는지 파악할 수 있어, 병목 원인을 빠르게 식별할 수 있다.
+Execution 비중이 높으면 연산/알고리즘 최적화 대상, Sync block이 크면 락 설계 재검토, Scheduler wait가 크면 `GOMAXPROCS`나 goroutine 수 조정을 고려한다.
 
 ## 3.3 Blocking Profiles
 
@@ -141,7 +189,13 @@ goroutine이 runnable 상태가 된 후 실제로 P에서 실행될 때까지의
 
 # 4. User-Defined Tasks와 Regions
 
-기본 trace만으로도 goroutine 수준의 분석이 가능하지만, 비즈니스 로직 수준의 분석을 위해서는 **Task**, **Region**, **Log**를 활용해야 한다.
+기본 trace만으로도 goroutine 수준의 분석이 가능하지만, 비즈니스 로직 수준의 분석을 위해서는 **Task**, **Region**, **Log**를 활용해야 한다. 본격적으로 들어가기 전에 세 용어를 간단히 정리하면 다음과 같다.
+
+- **Task**: 여러 goroutine에 걸친 논리적 작업 단위. "주문 처리"처럼 하나의 흐름을 묶는 컨테이너다. (`trace.NewTask`)
+- **Region**: 단일 goroutine 내에서 특정 구간의 실행 시간을 측정하는 단위. Task 안에서 "DB 조회", "검증" 같은 세부 구간을 나눈다. (`trace.WithRegion` / `trace.StartRegion`)
+- **Log**: trace 타임라인의 특정 시점에 key-value 형태로 이벤트를 남기는 마킹. 측정이 아니라 "이 순간 무슨 일이 있었는지"를 기록한다. (`trace.Log`)
+
+세 가지를 한 문장으로 요약하면, **Task는 작업을 묶고, Region은 구간을 재고, Log는 순간을 표시한다.**
 
 ## 4.1 Task: 논리적 작업 단위
 
@@ -445,7 +499,17 @@ go install honnef.co/go/gotraceui/cmd/gotraceui@latest
 gotraceui trace.out
 ```
 
+실제로 worker pool trace를 열어보면 Processor별/goroutine별 타임라인과 실행 상태(sync, blocked, inactive)가 한눈에 들어온다.
+
+<img src="gotraceui-timelines.png" alt="gotraceui Timelines 뷰 - Processor별 goroutine별 타임라인" width="100%" />
+
+`Goroutines` 탭에서는 goroutine별 시작/종료 시각과 실행 시간을 표로 확인할 수 있다.
+
+<img src="gotraceui-goroutines.png" alt="gotraceui Goroutines 분석 뷰 - goroutine별 실행 시간 테이블" width="100%" />
+
 > 메모리 요구사항: trace 파일 크기의 약 30배. 100MB trace → 약 3GB RAM 필요.
+
+> ⚠️ **trace 포맷 버전 호환성 주의**: gotraceui 최신 릴리스(v0.4.0)는 **Go 1.21 이하의 구(舊) trace 포맷만** 지원한다. [2장](#2-go-tool-trace-기본-사용법)에서 다룬 것처럼 Go 1.22에서 trace 포맷이 새로 설계되었는데, gotraceui는 아직 이 신포맷을 읽지 못해 최신 Go로 생성한 trace를 열면 `unsupported trace file version` 에러가 발생한다. 또한 수 밀리초로 끝나는 짧은 trace는 `trace too short`로 거부된다. 따라서 gotraceui로 분석하려면 **Go 1.21로 생성한, 수백 ms 이상 실행되는 프로그램의 trace**가 필요하다. 최신 Go를 쓴다면 신포맷을 지원하는 공식 뷰어 `go tool trace`를 사용하거나, gotraceui의 신포맷 지원 릴리스를 기다려야 한다.
 
 ## 7.2 divan/gotrace (교육용 3D 시각화)
 
@@ -454,7 +518,9 @@ WebGL 기반 3D 애니메이션으로 goroutine과 채널 통신을 시각화한
 - 파란 선 = goroutine 생명주기
 - 빨간 화살표 = 채널을 통한 메시지 전달
 
-fan-in, fan-out, worker pool 같은 동시성 패턴을 직관적으로 이해할 수 있어 **교육 목적**에 적합하다. 다만 짧은 프로그램만 시각화할 수 있고, 현재는 유지보수가 중단된 상태이므로 프로덕션 분석에는 적합하지 않다.
+fan-in, fan-out, worker pool 같은 동시성 패턴을 직관적으로 이해할 수 있어 **교육 목적**에 적합하다. 다만 채널 이벤트까지 기록하도록 **패치된 옛 Go 런타임**(Docker 이미지)을 요구하고, 짧은 프로그램만 시각화할 수 있다.
+
+> ⚠️ **현재는 실행 불가**: 2016년 이후 유지보수가 중단되어 지금 환경에서는 동작하지 않는다. 공식 Docker 이미지의 Go 버전(1.8)과 도구에 내장된 trace 파서(`go 1.5 trace` 포맷 전용)가 어긋나 `not a trace file` 에러가 발생하고, 옛 런타임으로 빌드한 바이너리도 최신 macOS에서는 실행되지 않는다. 따라서 아래 내용은 개념 이해용 참고로만 보고, 실제 시각화가 필요하다면 `go tool trace`나 gotraceui를 사용한다.
 
 # 8. pprof와 trace 조합 활용
 
@@ -496,10 +562,11 @@ pprof CPU 프로파일과 trace를 동시에 수집할 수 있다.
 
 ```go
 func TestPprof_Trace_동시수집(t *testing.T) {
-    traceFile, _ := os.CreateTemp(t.TempDir(), "trace_combo_*.out")
+    _ = os.MkdirAll("tmp", 0o755)
+    traceFile, _ := os.Create("tmp/trace_combo.out")
     defer traceFile.Close()
 
-    cpuFile, _ := os.CreateTemp(t.TempDir(), "cpu_combo_*.prof")
+    cpuFile, _ := os.Create("tmp/cpu_combo.prof")
     defer cpuFile.Close()
 
     // trace + CPU 프로파일 동시 시작
@@ -513,8 +580,8 @@ func TestPprof_Trace_동시수집(t *testing.T) {
     pprof.StopCPUProfile()
 
     // 분석:
-    // go tool trace trace_combo.out
-    // go tool pprof cpu_combo.prof
+    // go tool trace tmp/trace_combo.out
+    // go tool pprof tmp/cpu_combo.prof
 }
 ```
 
@@ -560,7 +627,8 @@ flowchart LR
 
 ```go
 func TestCrawler_Task_Region_계측(t *testing.T) {
-    f, _ := os.CreateTemp(t.TempDir(), "trace_crawler_*.out")
+    _ = os.MkdirAll("tmp", 0o755)
+    f, _ := os.Create("tmp/trace_crawler.out")
     defer f.Close()
 
     rttrace.Start(f)
@@ -612,14 +680,50 @@ for url := range urls {
 }
 ```
 
-## 9.3 trace 분석 포인트
+## 9.3 예제 실행하기
 
-수집된 trace를 `go tool trace`로 열면 다음을 확인할 수 있다.
+위 코드는 [tutorials-go 저장소](https://github.com/kenshin579/tutorials-go/blob/master/golang/concurrency/trace/crawler_trace_test.go)에 테스트 형태로 들어 있다. 직접 실행해 trace를 수집하고 뷰어로 여는 과정은 다음과 같다.
 
-1. **Task별 latency**: "crawl-page" Task의 latency 히스토그램으로 각 URL 크롤링에 걸린 시간 분포를 확인
-2. **Region별 시간 비교**: "http-fetch" vs "parse-html" 구간의 시간 비교로 네트워크 I/O와 파싱 중 어느 쪽이 병목인지 파악
-3. **Worker 활용률**: Goroutine Analysis에서 Worker goroutine이 실행 중인 시간 대비 채널 대기 시간의 비율 확인
-4. **스케줄링 효율**: Scheduler Latency Profile에서 Worker가 runnable이지만 P를 기다리는 시간 확인
+```bash
+# 1. 저장소 클론 후 trace 예제 디렉토리로 이동
+git clone https://github.com/kenshin579/tutorials-go.git
+cd tutorials-go/golang/concurrency/trace
+
+# 2. 크롤러 테스트 실행 → tmp/trace_crawler.out 생성
+go test -v -run TestCrawler_Task_Region_계측
+
+# 3. 수집된 trace를 공식 뷰어로 열기 (브라우저 자동 실행)
+go tool trace tmp/trace_crawler.out
+```
+
+테스트가 통과하면 `tmp/trace_crawler.out` 파일이 만들어지고, `go tool trace`가 로컬 웹 서버를 띄워 브라우저로 trace 뷰어를 연다. 브라우저가 자동으로 열리지 않으면 포트를 지정해 직접 접속할 수도 있다.
+
+```bash
+go tool trace -http=:6060 tmp/trace_crawler.out   # http://localhost:6060 접속
+```
+
+> 이 예제는 `httptest` 서버를 사용하므로 외부 네트워크 없이 동작한다. trace를 다 보고 나면 `go tool trace`는 `Ctrl+C`로 종료한다.
+
+## 9.4 trace 분석 포인트
+
+수집된 trace를 `go tool trace`로 열면, 인덱스 페이지에서 **User-defined tasks**와 **User-defined regions** 링크로 비즈니스 로직 수준의 분석에 바로 접근할 수 있다.
+
+**① Task별 latency** — `User-defined tasks` 페이지에서는 Task 종류별로 latency 히스토그램을 보여준다.
+
+<img src="go-tool-trace-usertasks.png" alt="go tool trace User-defined tasks - crawl-page Task latency 분포" width="100%" />
+
+`crawl-page` Task는 4번 실행되었고, 그중 1건은 1.5ms대, 3건은 6.3~10ms 구간에 몰려 있다. 이 예제의 테스트 서버는 URL 경로 길이에 비례해 응답을 지연시키도록 만들었기 때문에, 경로가 긴 페이지일수록 느리게 나타난 것이다. 전체 크롤링을 감싼 `web-crawler` Task는 1건으로 10~15.8ms가 걸렸다.
+
+**② Region별 시간 비교** — `User-defined regions` 페이지에서 `http-fetch`와 `parse-html` 구간을 나란히 비교할 수 있다.
+
+<img src="go-tool-trace-userregions.png" alt="go tool trace User-defined regions - http-fetch vs parse-html 시간 비교" width="100%" />
+
+결과는 명확하다. `http-fetch`는 1.5~10ms인 반면, `parse-html`은 **251ns~1µs**에 불과하다. 즉 크롤링 시간의 거의 전부가 네트워크 I/O(`http-fetch`)에서 소비되고 파싱 비용은 무시할 수준이라는 것을, trace만 보고도 단정할 수 있다. 최적화한다면 파싱이 아니라 동시 요청 수나 커넥션 재사용 같은 네트워크 쪽을 손대야 한다는 결론이 바로 나온다.
+
+이 외에도 다음 뷰가 유용하다.
+
+- **Worker 활용률**: `Goroutine analysis`에서 Worker goroutine이 실행 중인 시간 대비 채널 대기 시간의 비율을 확인
+- **스케줄링 효율**: `Scheduler latency profile`에서 Worker가 runnable이지만 P를 기다리는 시간을 확인
 
 # 10. 정리
 
@@ -634,7 +738,7 @@ for url := range urls {
 | gotraceui | 대용량 trace 분석 GUI | Chrome 없이 대용량 trace 분석 |
 | pprof + trace 조합 | CPU 핫스팟 + 동시성 인과관계 | 복합적 성능 문제 분석 |
 
-동시성 코드의 성능 문제와 버그는 로그와 추측만으로는 해결하기 어렵다. `go tool trace`와 FlightRecorder를 적극 활용하여 **데이터 기반**으로 분석하는 습관을 들이자. 특히 Go 1.21 이후 trace 오버헤드가 1-2%로 크게 줄었으므로, 테스트 환경에서는 항상 trace를 수집하는 것을 권장한다.
+동시성 코드의 성능 문제와 버그는 로그와 추측만으로는 해결하기 어렵다. `go tool trace`를 활용해 **데이터 기반**으로 분석하는 습관을 들이자. Go 1.21 이후 trace 오버헤드가 1-2%로 크게 줄어든 만큼, 개발·테스트 단계에서 병목이 의심될 때 부담 없이 trace를 수집해 들여다보면 된다.
 
 > 예제 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/concurrency/trace)에서 확인할 수 있다.
 
