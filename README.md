@@ -89,6 +89,7 @@ Updated 2026-06-19
 * [Understanding ArgoCD Resource Hooks (PreSync, PostSync, SyncWaves)](https://blog.advenoh.pe.kr/argocd-resource-hooks에-대해서-알아보자/)
 * [kcat 사용방법](https://blog.advenoh.pe.kr/kcat-사용방법/)
 * [ksqlDB 소개](https://blog.advenoh.pe.kr/ksqldb-소개/)
+* [kx, ns로 Kubernetes context·namespace 빠르게 전환하기 (with fzf)](https://blog.advenoh.pe.kr/kx-ns로-kubernetes-context-namespace-빠르게-전환하기/)
 * [도커 이미지 다른 도커 registry로 복사하기 - Skopeo](https://blog.advenoh.pe.kr/도커-이미지-다른-도커-registry로-복사하기-skopeo/)
 * [라즈베리파이에 도커 설치하기](https://blog.advenoh.pe.kr/라즈베리파이에-도커-설치하기/)
 * [로컬환경에서 Kafka 실행하기 (with AKHQ)](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/)
