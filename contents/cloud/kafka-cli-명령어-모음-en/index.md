@@ -1,6 +1,6 @@
 ---
 title: "Kafka CLI Collection"
-description: "Kafka CLI Collection"
+description: "A cheat sheet of frequently used Kafka CLI commands for topics, producers, consumers, and consumer groups"
 date: 2023-03-06
 update: 2023-03-06
 tags:
@@ -32,9 +32,9 @@ $ tar -jxvf kafka_2.13-3.2.1.tgz
 
 # 2. Kafka CLI
 
-The default port number for Kafka is 9092. If you running the Kafka in different port,  make sure to use the number instead.
+The default port number for Kafka is 9092. If you are running the Kafka in different port, make sure to use the number instead.
 
-> In Kafka v2.2 and earlier version uses the Zookeeper URL and port number (e.g. `localhost:2181`), but since  the Kafka v2.2 higher version, `--bootstrap-server` the option should be used. After v3, the Zoopkeeper option will be removed.
+> In Kafka v2.2 and earlier version uses the Zookeeper URL and port number (e.g. `localhost:2181`), but since the Kafka v2.2 higher version, `--bootstrap-server` the option should be used. After v3, the Zookeeper option will be removed.
 
 If you use the Kafka CLI frequently, I recommend adding it to your `PATH` environment variable. This way you won't have to navigate to the Kafka binary folder and type the command every time.
 
@@ -65,7 +65,7 @@ frank
 test
 ```
 
-## 2.2 Creating a Topic
+### 2.1.2 Creating a Topic
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --replication-factor 1 --partitions 1 --topic my_topic --create
@@ -74,7 +74,7 @@ Created topic my_topic.
 
 
 
-### 2.2.1 View Topic Information
+### 2.1.3 View Topic Information
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --describe
@@ -82,7 +82,7 @@ Topic: my_topic	TopicId: Zlpf9YfsSRO07grMU3MZlA	PartitionCount: 1	ReplicationFac
 	Topic: my_topic	Partition: 0	Leader: 0	Replicas: 0	Isr: 0
 ```
 
-### 2.2.2 Deleting a Topic
+### 2.1.4 Deleting a Topic
 
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --delete
@@ -228,7 +228,7 @@ The new offset is reset to 0 for all partitions. When you restart the consumer, 
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic --group my-first-application
 hello world
 asdf
-...생략...
+...skip...
 value
 ```
 

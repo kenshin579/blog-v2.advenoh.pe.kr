@@ -58,7 +58,7 @@ tags:
 Deploy a sample application for testing.
 
 ```bash
-> kubectl apply -f <https://raw.githubusercontent.com/kubenetworks/kubevpn/master/samples/bookinfo.yaml>
+> kubectl apply -f https://raw.githubusercontent.com/kubenetworks/kubevpn/master/samples/bookinfo.yaml
 ```
 
 ## 2.1 Installing KubeVPN

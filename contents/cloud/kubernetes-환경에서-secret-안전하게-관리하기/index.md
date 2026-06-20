@@ -1,6 +1,6 @@
 ---
 title: "Kubernetes 환경에서 Secret 안전하게 관리하기"
-description: "Kubernetes 환경에서 Secret 안전하게 관리하기"
+description: "Sealed Secrets와 kubeseal로 민감한 정보를 암호화해 Git에 안전하게 저장하고 쿠버네티스에 적용하는 방법을 살펴본다"
 date: 2024-09-29
 update: 2024-09-29
 tags:
@@ -16,14 +16,13 @@ tags:
   - charts
   - 보안
   - git
-  - vault
 ---
 
 # 1. 개요
 
 개발한 애플리케이션을 쿠버네티스에 배포하기 위해 helm charts로 애플리케이션에 필요한 설정을 저장한다. Git 저장소에 id와 password와 같은 민감한 정보를 저장하므로 Git 접근 권한이 있는 사용자에게 그대로 노출이 되는 보안 이슈가 있다.
 
-이런 해결하기 위해 Sealed Secrets에 대해서 알아보자.
+이를 해결하기 위해 Sealed Secrets에 대해서 알아보자.
 
 # 2. 동작 원리
 
@@ -64,7 +63,7 @@ Helm을 사용하여 Sealed Secrets 컨트롤러를 설치한다.
 
 ```bash
 # sealed-secrets helm repo 추가
-> helm repo add sealed-secrets <https://bitnami-labs.github.io/sealed-secrets>
+> helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
 > helm repo update
 ```
 
@@ -80,7 +79,7 @@ sealed-secrets-697689447c-f6dkv   1/1     Running   0          93s
 
 Sealed Secrets를 사용하여 비밀 데이터를 생성하고 암호화하는 방법을 알아보자.
 
-# 7. 샘플 Secret YAML 생성하기
+## 6.1 샘플 Secret YAML 생성하기
 
 먼저 평문 비밀 데이터를 포함한 YAML 파일을 생성한다.
 
@@ -102,7 +101,7 @@ metadata:
   namespace: frank
 ```
 
-`yaml`을 수동을 작성할 때 암호로 표시해야 하는 값은 base64로 엔코딩이 되어야 sealed secret를 생성할 수 있다. base64로 엔코딩할 때 꼭 `-n` 옵션 추가해서 실행을 해야 한다. 없이 실행하면 newline이 추가가 된다는 것을 기억하자.
+`yaml`을 수동으로 작성할 때 암호로 표시해야 하는 값은 base64로 인코딩이 되어야 sealed secret를 생성할 수 있다. base64로 인코딩할 때 꼭 `-n` 옵션 추가해서 실행을 해야 한다. 없이 실행하면 newline이 추가가 된다는 것을 기억하자.
 
 > `-n` 옵션으로 실행해야 newline 없이 추가된다
 >
@@ -110,13 +109,13 @@ metadata:
 > echo -n "string" | base64
 > ```
 
-# 8. Secrets 암호화하기
+## 6.2 Secrets 암호화하기
 
 kubeseal CLI 도구를 사용하여 Secret을 암호화된 SealedSecret으로 변환한다.
 
 ```bash
 # kubeseal 명령어로 secret 파일에서 sealed-secret을 생성한다
-> kubeseal --controller-name=sealed-secrets \\
+> kubeseal --controller-name=sealed-secrets \
  --controller-namespace=kube-system --format yaml < mysecret.yaml > mysealed_secret.yaml
 ---
 apiVersion: bitnami.com/v1alpha1
@@ -135,7 +134,7 @@ spec:
       namespace: frank
 ```
 
-# 9. 쿠버네티스에 Sealed Secrets 적용하기
+# 7. 쿠버네티스에 Sealed Secrets 적용하기
 
 암호화된 SealedSecret을 Kubernetes 클러스터에 적용한다.
 
@@ -147,7 +146,7 @@ namespace/frank created
 sealedsecret.bitnami.com/mysecret created
 ```
 
-# 10. 적용 잘 되었는지 확인해보기
+# 8. 적용 잘 되었는지 확인해보기
 
 `kubectl` 명령어로 `secrets`이 잘 생성이 되었는지 확인할 수 있다.
 
@@ -174,7 +173,7 @@ mysecret              Opaque                                1      3m20s
 
 ![OpenLens - Secret](image-20240929070103980.png)
 
-# 11. 참고
+# 9. 참고
 
 - [How to create an actually safe secrets for GitOps](https://jaehong21.com/posts/k3s/06-sealed-secrets/)
 - [Managing secrets deployment in Kubernetes using Sealed Secrets](https://aws.amazon.com/ko/blogs/opensource/managing-secrets-deployment-in-kubernetes-using-sealed-secrets/)

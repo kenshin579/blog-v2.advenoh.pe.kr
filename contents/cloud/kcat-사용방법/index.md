@@ -1,12 +1,12 @@
 ---
 title: "kcat 사용방법"
-description: "kcat 사용방법"
+description: "kcat 명령어로 아파치 카프카에 메시지를 보내고 받고 메타데이터를 조회하는 기본 사용법을 예제와 함께 정리한다."
 date: 2021-07-20
 update: 2021-07-20
 tags:
   - kcat
   - kafka
-  - kafkacat 
+  - kafkacat
   - 카프카
   - 브로커
   - 메시지
@@ -29,7 +29,7 @@ $ brew install kcat
 
 # 2. kcat 기본 사용방법
 
-## 2.1 기본 Synatx
+## 2.1 기본 Syntax
 
 `kcat` 의 기본 명령어 포맷은 아래와 같다.
 
@@ -110,7 +110,7 @@ $ kubectl exec -it my-kafka-client -- /bin/bash
 
 # 현재 파티션 수를 확인한다
 $ kafka-topics.sh --describe --zookeeper my-kafka-zookeeper:2181 --topic test
-\Topic: test	TopicId: sLitGkHfRSyg261FxMoGCA	PartitionCount: 1	ReplicationFactor: 1	Configs:
+Topic: test	TopicId: sLitGkHfRSyg261FxMoGCA	PartitionCount: 1	ReplicationFactor: 1	Configs:
 	Topic: test	Partition: 0	Leader: 1	Replicas: 1	Isr: 1
 ```
 
@@ -130,11 +130,11 @@ Topic: test	TopicId: sLitGkHfRSyg261FxMoGCA	PartitionCount: 3	ReplicationFactor:
 
 > 카프카에서는 파티션을 한번 늘리면 줄일 수 있는 방법은 없기 때문에 Real 환경에서는 늘려주기 전에 꼭 필요한 상황인지 판단할 필요가 있다.
 
-# 4. 메시지 받기 (-D)
+# 4. 메시지 받기 (-C)
 
 ## 4.1 토픽에서 모든 메시지 받기
 
-`kcat`은 기본적으로 추가 옵선 지정없이 토픽에서 처음부터 모든 메시지를 가져온다.
+`kcat`은 기본적으로 추가 옵션 지정없이 토픽에서 처음부터 모든 메시지를 가져온다.
 
 ```bash
 $ kcat -b localhost:29092 -t test -P
@@ -171,9 +171,9 @@ $ kcat -b localhost:29092 -t test -C -o 1
 44
 ```
 
-> 오프셋을 절대 값으로 지정할 수도 있지만, 처음과 끝은 `begining`이나 `end`  로 지정할 수 있다.
+> 오프셋을 절대 값으로 지정할 수도 있지만, 처음과 끝은 `beginning`이나 `end`  로 지정할 수 있다.
 >
-> `$ kcat -b my-kafka.default.svc.cluster.local:9092 -t test -C -o begining`
+> `$ kcat -b my-kafka.default.svc.cluster.local:9092 -t test -C -o beginning`
 
 오프셋 값을 음수로 지정하면 끝에서부터 메시지를 가져온다.
 

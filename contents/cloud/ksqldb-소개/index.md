@@ -1,6 +1,6 @@
 ---
 title: "ksqlDB 소개"
-description: "SaksqlDB 소개mple"
+description: "Kafka를 위한 스트리밍 SQL 엔진 ksqlDB의 아키텍처, 활용 사례, Stream/Table 및 쿼리 사용법을 알아본다"
 date: 2022-10-28
 update: 2022-10-28
 tags:
@@ -19,9 +19,9 @@ ksqlDB (formerly Kafka SQL, KSQL)는 Kafka를 위한 스트리밍 SQL 엔진이�
 
 ## 1.1 Feature
 
-- 친숙하고 가벼운 SQL 구문을 통해 관계형 데이터베이스에 유사하게 접근하는 방식과 비슷하게 실시간 스트리밍 처리를 가능
+- 친숙하고 가벼운 SQL 구문을 통해 관계형 데이터베이스에 유사하게 접근하는 방식과 비슷하게 실시간 스트리밍 처리를 가능하다
 - ksqlDB는 fault-tolerant, scale이 가능하도록 설계
-- ksqlDB 내에서 Kafka Connect를 관리기능 제공
+- ksqlDB 내에서 Kafka Connect를 관리 기능을 제공
 - 데이터 필터링, 변환, 집계, 조인, 윈도우 및 세션화를 포함하여 광범위한 스트리밍 작업을 위해 여러 함수 지원
     - ex. `SUM`, `COUNT`, `UCASE`, `REPLACE`, `TRIM`
 - KSQL 사용자 정의 함수도 구현 가능하도록 지원
@@ -124,7 +124,7 @@ ksqlDB는 Confluent 회사에 의해서 2017년부터 개발되었다.
 
 **Kafka Connect**
 
-- 2015년 Kafka 0.9.0.0 relealse 버전에 포함
+- 2015년 Kafka 0.9.0.0 release 버전에 포함
 
 **Kafka Stream**
 
@@ -132,7 +132,7 @@ ksqlDB는 Confluent 회사에 의해서 2017년부터 개발되었다.
 
 **ksqlDB**
 - 2017년 KSQL Developer Preview로 공개
-- 2019년 KSQL (Kafka SQL) -> ksqlDB 재브랜딩을 위해 새로운 이름올 변경
+- 2019년 KSQL (Kafka SQL) -> ksqlDB 재브랜딩을 위해 새로운 이름으로 변경
 
 
 참고
@@ -153,7 +153,7 @@ ksqlDB는 Confluent 회사에 의해서 2017년부터 개발되었다.
     - 기존 시스템 구조에서는 Redis에 저장된 event log를 가져와 join window를 구현함
     - ksqlDB를 사용해서 아키텍쳐가 단순화됨 (join two streams without redis)
 - [ticketmaster](https://www.ticketmaster.com/) - 티켓 판매 회사
-- [Nuuly](https://www.nuuly.com/) - 옷 렌탈 및 재판재 서비스
+- [Nuuly](https://www.nuuly.com/) - 옷 렌탈 및 재판매 서비스
 - [ACERTUS](https://acertusdelivers.com/) - 자동차 픽업/배달 서비스
 - [optimove](https://www.optimove.com/) - CRM 마케팅 소프트웨어 (w/ AI)를 서비스로 개발 및 판매하는 비상장 회사
 - [Bosch](https://www.bosch.com/): 자동차 및 산업 기술, 소비재 및 빌딩 기술 분야의 선도적 기업
@@ -226,7 +226,7 @@ ksql>
 - 영속적으로 무제한의 스트리밍 되는 이벤트 컬렉션이다
     - Partition으로 데이터가 관리
 
-- Row은 일단 생성된 후에는 변경이 불가능하다 (immutable, append-only)
+- Row는 일단 생성된 후에는 변경이 불가능하다 (immutable, append-only)
     - 각 Row는 특정 partition에 저장된다
     - INSERT만 가능하다
 - Stream, Table 또는 Kafka Topic에서 새 Stream를 생성할 수 있다
@@ -247,7 +247,7 @@ WHERE profileId = 'c2309eec'
 ```
 
 - `kafka_topic` - 기존 Kafka topic에서 Stream을 생성하거나 Topic이 없는 경우에는 자동 생성된다
-- `value_format` - Kafka topci에 저장된 메시지의 인코딩 방식을 지정한다
+- `value_format` - Kafka topic에 저장된 메시지의 인코딩 방식을 지정한다
 - `partitions` - Kafka topic의 partition 수를 지정한다
 
 
@@ -255,7 +255,7 @@ WHERE profileId = 'c2309eec'
 ### 5.3.2 Table (Materialized view)
 
 - Table 데이터는 현재 최신 상태를 가지고 mutable한 이벤트 컬렉션이다
-- Row은 변경 가능하며 Primary Key가 있어야 한다
+- Row는 변경 가능하며 Primary Key가 있어야 한다
 - INSERT, UPDATE, DELETE이 가능하다
 - Stream, Table 또는 Kafka Topic 에서 새 Table 생성 가능하다
 
@@ -300,11 +300,11 @@ SELECT ROUND(GEO_DISTANCE(la, lo, 37.4133, -122.1162), -1) AS distanceInMiles,
 
 
 
-### 5.4.1 Push Query (Continous Query)
+### 5.4.1 Push Query (Continuous Query)
 
 - Push query는 실시간 변경 되는 결과를 구독할 수 있다
 - EMIT 절은 쿼리를 영속적으로 계속 실행시킨다
-- CLI에서 시작한 push query를 종료하려면 `ctrl+C`를 눌러야한다
+- CLI에서 시작한 push query를 종료하려면 `ctrl+C`를 눌러야 한다
 
 ```sql
 # Stream의 데이터를 지속적으로 조회하고 쿼리가 계속 실행된다

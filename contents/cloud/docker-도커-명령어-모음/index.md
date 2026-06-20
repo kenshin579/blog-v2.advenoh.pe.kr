@@ -1,8 +1,8 @@
 ---
 title: "(Docker-1) Docker 도커 명령어 모음"
-description: "(Docker-1) Docker 도커 명령어 모음"
+description: "자주 사용하는 도커 이미지/컨테이너 명령어를 예제와 함께 정리한다"
 date: 2019-12-08
-update: 
+update: 2019-12-08
 tags:
   - 도커
   - 컨테이너
@@ -141,9 +141,9 @@ Status: Downloaded newer image for redis:latest
 docker.io/library/redis:latest
 ```
 
-### 2.2.3 이미지  빌드하기
+### 2.2.3 이미지 빌드하기
 
-docker image built 명령어로 도커 이미지를 생성하고 Dockerfile 파일에 정의된 내용에 따라서 이미지가 생성된다.
+docker image build 명령어로 도커 이미지를 생성하고 Dockerfile 파일에 정의된 내용에 따라서 이미지가 생성된다.
 
 - -t 옵션은 이미지명과 태그명을 같이 붙이는 옵션이다. 거의 필수 옵션으로 쓰인다
 
@@ -168,7 +168,7 @@ RUN chmod +x /usr/local/bin/helloworld.sh
 
 CMD ["helloworld.sh"]
 ```
-> 참고로 이미지가 한번 다운로드되어 있으면 로컬에 저장된 이미지를 사용한다. --pull =true 옵션을 추가하면 매번 베이스 이미지를 강제로 새로 다운로드받는다.
+> 참고로 이미지가 한번 다운로드되어 있으면 로컬에 저장된 이미지를 사용한다. --pull=true 옵션을 추가하면 매번 베이스 이미지를 강제로 새로 다운로드받는다.
 
 ```bash
 $ docker image build -t helloworld:latest .
@@ -309,7 +309,7 @@ redis 이미지를 백그라운드에서 실행하려면 -d 옵션을 주고 다
 $ docker container run --name redis_test -d -p 7000:6379 redis
 ```
 
--p 옵션으로 호스트 포트 7000 -> 컨테이너 포트 6379으로 포트 포워딩했으므로 다음과 같이 redis에 접속할  때 포트 번호를 7000으로 해서 접속해야 한다.
+-p 옵션으로 호스트 포트 7000 -> 컨테이너 포트 6379으로 포트 포워딩했으므로 다음과 같이 redis에 접속할 때 포트 번호를 7000으로 해서 접속해야 한다.
 
 ```bash
 $ redis-cli -p 7000
@@ -327,8 +327,8 @@ OK
 | -d     | 백그라운드로 실행한다                                        |
 | -p     | 외부포트:컨테이터포트 (ex. 9000:8080)<br />포트를 지정하지 않는 경우 임의의 포트가 자동으로 할당된다 |
 | -t     | 유닉스 터미널 연결 활성화를 시킨다<br />-i 옵션과 같이 많이 사용되어 -it 옵션으로 합쳐서 실행한다 |
-| -i     | 컨테이너 쪽 표준 입력(stdout)과 연결을 유지한다. 컨테이너 쪽 셀에 들어가려면 이 옵션을 추가해야 한다. |
-| -rm    | 컨테이터가 종료시 컨테이너를 파기한다.                       |
+| -i     | 컨테이너 쪽 표준 입력(stdin)과 연결을 유지한다. 컨테이너 쪽 셀에 들어가려면 이 옵션을 추가해야 한다. |
+| --rm   | 컨테이터가 종료시 컨테이너를 파기한다.                       |
 | --name | 컨테이너에 원하는 이름을 붙일 수 있다. 이름으로 조회하거나 삭제할 수 있다. |
 
 #### 2.3.1.1 명령 인자로 실행하기
@@ -343,7 +343,7 @@ $ docker container run -it redis
 
 ```
 
-위 명령어는 redis 디몬이 실행되는 반면에 'uname -a' 인자를 추가한 명령어는 인자 명령어를 실행한 값이 출력된다.
+위 명령어는 redis 데몬이 실행되는 반면에 'uname -a' 인자를 추가한 명령어는 인자 명령어를 실행한 값이 출력된다.
 
 ```bash
 $ docker container run -it redis uname -a 
@@ -403,7 +403,7 @@ $ docker container restart 컨테이너ID_OR_컨테이너명
 
 ### 2.3.5 실행중인 컨테이너 삭제하기
 
-컨테이너를 정지시키면 정시된 시점의 상태를 계속 유지한 체 디스크에 남아 있다. 완전히 파기하려면 rm 명령어를 추가하여 삭제한다.
+컨테이너를 정지시키면 정지된 시점의 상태를 계속 유지한 채 디스크에 남아 있다. 완전히 파기하려면 rm 명령어를 추가하여 삭제한다.
 
 ```bash
 $ docker container rm 컨테이너ID_OR_컨테이너명
@@ -466,7 +466,7 @@ $ docker container cp [OPTIONS] SRC_PATH CONTAINER:DEST_PATH # 호스트 -> 컨�
 ```bash
 $ echo "hello world" > /tmp/test.txt
 $ docker container cp /tmp/test.txt echo:/tmp
-$ docker container exec cat echo:/tmp/test.txt
+$ docker container exec echo cat /tmp/test.txt
 hello world
 ```
 
@@ -529,7 +529,7 @@ $ docker system prune
 
 ### 3.2.2 컨테이너 시스템 리소스 사용 현황 확인하기
 
-현재 실행 중인 컨테이너 시스템 리소스 사용 현황을 확인할 수 있다. Linux의 top 명령어처럼 실시간으로 현환을 업데이트해서 보여줍니다.
+현재 실행 중인 컨테이너 시스템 리소스 사용 현황을 확인할 수 있다. Linux의 top 명령어처럼 실시간으로 현황을 업데이트해서 보여줍니다.
 
 ```bash
 $ docker container stats [옵션] [컨테이너ID ...]

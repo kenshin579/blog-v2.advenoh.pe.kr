@@ -1,6 +1,6 @@
 ---
 title: "도커 이미지 다른 도커 registry로 복사하기 - Skopeo"
-description: "도커 이미지 다른 도커 registry로 복사하기 - Skopeo"
+description: "Skopeo CLI로 도커 엔진 없이 이미지를 다른 레지스트리로 복사하고 검사·삭제·태그 조회하는 방법을 정리한다."
 date: 2024-08-26
 update: 2024-08-26
 tags:
@@ -28,7 +28,7 @@ tags:
 DOCKER_REGISTRY_SRC_ADDR="docker.io"
 DOCKER_REGISTRY_DST_ADDR="demo.goharbor.io"
 
-# download dockker image
+# download docker image
 docker pull --platform=linux $DOCKER_REGISTRY_SRC_ADDR/library/mariadb:latest
 
 # tag docker image
@@ -142,7 +142,7 @@ Writing manifest to image destination
 > skopeo login demo.goharbor.io
 ```
 
-> `—creds` 명령어 옵션 사용하기
+> `--creds` 명령어 옵션 사용하기
 
 ```bash
 $ skopeo inspect --creds=testuser:testpassword docker://demo.goharbor.io/frank-test/mariadb:latest

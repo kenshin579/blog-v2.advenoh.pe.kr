@@ -136,9 +136,8 @@ namespace=$(kubectl get ns \
 if [[ $namespace != "" ]]; then
   echo $namespace > ~/.ns
   cat ~/.ns
+  kubectl config set-context --current --namespace=$namespace
 fi
-
-kubectl config set-context --current --namespace=$namespace
 ```
 
 `kx`와 거의 같다.

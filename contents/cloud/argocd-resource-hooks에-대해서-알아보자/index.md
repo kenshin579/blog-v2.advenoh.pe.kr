@@ -1,6 +1,6 @@
 ---
 title: "ArgoCD Resource Hooks (PreSync, PostSync, SyncWaves)에 대해서 알아보자"
-description: "ArgoCD Resource Hooks (PreSync, PostSync, SyncWaves)에 대해서 알아보자"
+description: "ArgoCD의 PreSync, PostSync, SyncFail 훅과 Sync Wave로 배포 전후 작업과 실행 순서를 제어하는 방법을 정리한다."
 date: 2024-10-21
 update: 2024-10-31
 tags:
@@ -135,7 +135,7 @@ spec:
             - "Content-Type: application/json"
             - "-d"
             - "payload={\\"status\\": \\"Failed\\"}"
-            - "<http://echo-server:8080/echo>"
+            - "http://echo-server:8080/echo"
       restartPolicy: Never
   backoffLimit: 2
 ```
@@ -166,7 +166,7 @@ spec:
 
 ![ArgoCD Hook Logs](image-20241021225149722.png)
 
-`PreSync`, `PostSync`로 실행된 Pod는 `hook-delete-policy`가 설정이 안되어서 삭제가 안되었다. `HookSucceeded`로 설명하면 실행후 ArgoCD나 Pod가 살아지기 때문에 실제 결과를 UI 상에서 확인할수가 없어서 삭제 정책 없이 실행하였다.
+`PreSync`, `PostSync`로 실행된 Pod는 `hook-delete-policy`가 설정이 안되어서 삭제가 안되었다. `HookSucceeded`로 설정하면 실행후 ArgoCD나 Pod가 사라지기 때문에 실제 결과를 UI 상에서 확인할수가 없어서 삭제 정책 없이 실행하였다.
 
 ![k9s](image-20241021225208594.png)
 
@@ -174,14 +174,14 @@ spec:
 
 Sync Wave는 여러 리소스를 동기화할 때 실행 순서를 제어하는 기능이다. 예를 들어, 네트워크 설정 리소스가 먼저 적용된 후 애플리케이션이 배포되기를 원할 때, 각 리소스에 Sync Wave 값을 설정해 순차적으로 실행되게 할 수 있다.
 
-- 각 리소스는 기본적으로 `sync-wave: “0”` 을 가진다
+- 각 리소스는 기본적으로 `sync-wave: "0"` 을 가진다
 - Wave 번호가 낮은 리소스가 먼저 실행된다
 
 > 여러 개의 Pre Job이 있는 경우
 
 여러 개의 `PreSync` Job을 정의하는 경우, 각각의 Job에 대해 `SyncWave`를 설정해 순서를 지정할 수 있다. 만약 동일한 Wave 값을 가진 Job이 여러 개 있으면, 병렬로 실행된다. 예를 들어 다음과 같이 설정할 수 있다.
 
-```bash
+```yaml
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -298,7 +298,7 @@ Application을 선택하고 `TERMINATE` 버튼을 클릭해서 강제로 종료�
 
 # 4. 마무리
 
-Argo CD의 Resource Hook은 배포 과정에서 유연한 작업을 설정할 수 있는 강력한 도구이다다. 이를 통해 배포 이전, 배포 중, 배포 이후의 작업을 체계적으로 관리할 수 있으며, 복잡한 환경에서도 안정적인 배포를 구현할 수 있다.
+Argo CD의 Resource Hook은 배포 과정에서 유연한 작업을 설정할 수 있는 강력한 도구이다. 이를 통해 배포 이전, 배포 중, 배포 이후의 작업을 체계적으로 관리할 수 있으며, 복잡한 환경에서도 안정적인 배포를 구현할 수 있다.
 
 Hook과 Sync Wave를 적절히 활용하면 배포의 순서를 세밀하게 제어할 수 있으며, 이를 통해 팀 전체의 배포 속도와 안정성을 높일 수 있다.
 

@@ -1,6 +1,6 @@
 ---
 title: "맥북에서 개인용 Docker Registry 구축하고 이미지 관리하기"
-description: "맥북에서 개인용 Docker Registry 구축하고 이미지 관리하기"
+description: "맥북 로컬에서 인증을 적용한 Docker Registry 컨테이너를 띄우고 이미지를 푸시·실행·조회하는 방법을 정리한다."
 date: 2025-05-05
 update: 2025-05-05
 tags:
@@ -28,7 +28,7 @@ tags:
 ### 2.1.1 사용자 로그인 인증 파일 생성
 
 ```bash
-> brew install http
+> brew install httpd
 > mkdir -p /Users/user/data/docker/auth
 
 # 사용자 인증 파일 생성 (username: admin, password: password)
@@ -40,13 +40,13 @@ tags:
 ### 2.1.2 Docker Registry 컨테이너 실행
 
 ```bash
-> docker run -d --name private-registry -p 7001:5000 \\
-  --restart=always \\
-  -v /Users/user/data/docker/private-registry:/var/lib/registry \\
-  -v /Users/user/data/docker/auth:/auth \\
-  -e "REGISTRY_AUTH=htpasswd" \\
-  -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \\
-  -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \\
+> docker run -d --name private-registry -p 7001:5000 \
+  --restart=always \
+  -v /Users/user/data/docker/private-registry:/var/lib/registry \
+  -v /Users/user/data/docker/auth:/auth \
+  -e "REGISTRY_AUTH=htpasswd" \
+  -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+  -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \
   registry:2
 ```
 
@@ -84,11 +84,11 @@ Hello World
 
 ```bash
 # Docker Registry API v2를 사용하여 저장된 모든 이미지 저장소 목록을 조회
-> curl <http://localhost:7001/v2/_catalog>
+> curl http://localhost:7001/v2/_catalog
 {"repositories":["helloworld"]}
 
 # helloworld 이미지의 모든 태그를 조회
-curl <http://localhost:7001/v2/helloworld/tags/list>
+curl http://localhost:7001/v2/helloworld/tags/list
 {"name":"helloworld","tags":["latest"]}
 ```
 
@@ -100,5 +100,5 @@ curl <http://localhost:7001/v2/helloworld/tags/list>
 
 # 4. 참고
 
-- [[Docker\] Docker Registry(Private Repository, Http)](https://lucas-owner.tistory.com/89)
+- [[Docker] Docker Registry(Private Repository, Http)](https://lucas-owner.tistory.com/89)
 - [Private Docker Registry 구축 및 보안 강화](https://velog.io/@luckyprice1103/Private-Docker-Registry-구축-및-보안-강화-2)

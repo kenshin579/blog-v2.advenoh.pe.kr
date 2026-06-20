@@ -1,6 +1,6 @@
 ---
 title: "Introducing Jaeger"
-description: "Introducing Jaeger"
+description: "An introduction to the distributed tracing system Jaeger, covering its concepts, architecture, and a hands-on OpenTelemetry example"
 date: 2023-03-07
 update: 2023-03-07
 tags:
@@ -75,7 +75,7 @@ Jaeger is an open source Distributed Tracing System created by Uber in 2015. Jae
 
 - Jaeger (Uber)
 
-    - Developed by Uber in 2015 and release in 2017 as an open-source project
+    - Developed by Uber in 2015 and released in 2017 as an open-source project
     - Adopted as a CNCF Incubation project in September 2017
     - Jaeger was approved as a Graduated project in 2019
 
@@ -225,11 +225,11 @@ When you click the button on the HotROD to request a ride, you'll see a trace of
 
 ### 3.2.1 System Architecture > DAG
 
-- This screen gives you a entire view of all your components
+- This screen gives you an entire view of all your components
 
 ![System Architecture DAG](image-20220717104614304.png)
 
-If an error occurs, it's not easy to find in the logs which service it occured.
+If an error occurs, it's not easy to find in the logs in which service it occurred.
 
 ![Console Log](image-20220717104917246.png)
 

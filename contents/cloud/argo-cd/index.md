@@ -1,6 +1,6 @@
 ---
 title: "Argo CD"
-description: "Argo CD"
+description: "GitOps 기반 CD 도구인 Argo CD의 구조와 로컬 설치, Application 생성 및 동기화 방법을 살펴본다."
 date: 2022-03-04
 update: 2022-03-04
 tags:
@@ -41,7 +41,7 @@ Argo CD는 GitOps 기반의 CD 도구이고 다음과 같은 여러 기능을 �
 
 ![Argo CD Architecture](image-20220305010552026.png)
 
-Argo CD는 **3가지 컨포넌트**로 이루어져 있다. Argo CD가 하는 역할은 다음과 같다.
+Argo CD는 **3가지 컴포넌트**로 이루어져 있다. Argo CD가 하는 역할은 다음과 같다.
 
 - 실행 중인 애플리케이션을 **지속적으로 모니터링**
 - **현재 라이브 상태를 원하는 대상 상태(Git 저장소에 지정된 대로)와 비교**를 주기적으로 한다
@@ -230,10 +230,10 @@ Application 배포시 원하는 namespace를 자동으로 생성해주는 옵션
 
 Applications > New App 버튼 클릭해서 생성할 수 있다.
 
-## 6.3 kubenetes manifest 파일로 생성하기
+## 6.3 kubernetes manifest 파일로 생성하기
 
 ```bash
-$ cat applcation.yaml
+$ cat application.yaml
 
 apiVersion: argoproj.io/v1alpha1
 kind: Application
@@ -252,7 +252,7 @@ spec:
     syncOptions:
       - CreateNamespace=true
 
-$ kubectl -n argotest application.yaml
+$ kubectl apply -n argotest -f application.yaml
 ```
 
 

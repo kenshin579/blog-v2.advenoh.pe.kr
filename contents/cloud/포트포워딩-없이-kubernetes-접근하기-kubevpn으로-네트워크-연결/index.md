@@ -1,6 +1,6 @@
 ---
 title: "포트포워딩 없이 Kubernetes 접근하기 - KubeVPN으로 네트워크 연결"
-description: "포트포워딩 없이 Kubernetes 접근하기 - KubeVPN으로 네트워크 연결"
+description: "KubeVPN으로 Kubernetes 클러스터와 로컬 환경을 VPN 터널로 연결해 Pod IP와 DNS에 직접 접근하는 방법을 알아본다"
 date: 2025-04-03
 update: 2025-04-03
 tags:
@@ -58,7 +58,7 @@ tags:
 테스트를 위해 샘플 애플리케이션을 배포한다.
 
 ```bash
-> kubectl apply -f <https://raw.githubusercontent.com/kubenetworks/kubevpn/master/samples/bookinfo.yaml>
+> kubectl apply -f https://raw.githubusercontent.com/kubenetworks/kubevpn/master/samples/bookinfo.yaml
 ```
 
 ## 2.1 KubeVPN 설치하기
@@ -172,7 +172,7 @@ PING 10.244.0.3 (10.244.0.3): 56 data bytes
 
 # 3. 마무리
 
-여러 pod에 연결하려면 매번 port forwarding을 해줘야해지만, `KubeVPN` 을 활용하면서 클러스터에 전체 pod에 접속할 수 있어서 원활한 개발 및 디버깅이 가능해졌다
+여러 pod에 연결하려면 매번 port forwarding을 해줘야 하지만, `KubeVPN` 을 활용하면서 클러스터에 전체 pod에 접속할 수 있어서 원활한 개발 및 디버깅이 가능해졌다.
 
 # 4. 참고
 
