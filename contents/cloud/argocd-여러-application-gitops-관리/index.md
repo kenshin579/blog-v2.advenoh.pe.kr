@@ -391,7 +391,7 @@ kubectl apply -f bootstrap/application-set/appset-matrix.yaml -n argocd
 **장점**
 
 - `DRY` 원칙 준수 (중복 코드 최소화)
-- 새 애플리케이션 추가가 간편 (**Git Generator**사용 시 자동 탐지)
+- 새 애플리케이션 추가가 간편 (**Git Generator** 사용 시 자동 탐지)
 - 다중 환경 배포가 용이 (**Matrix Generator**)
 
 **단점**

@@ -135,7 +135,7 @@ spec:
             - "Content-Type: application/json"
             - "-d"
             - "payload={\\"status\\": \\"Failed\\"}"
-            - "<http://echo-server:8080/echo>"
+            - "http://echo-server:8080/echo"
       restartPolicy: Never
   backoffLimit: 2
 ```

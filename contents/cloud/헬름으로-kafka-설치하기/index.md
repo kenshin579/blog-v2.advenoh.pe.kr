@@ -1,6 +1,6 @@
 ---
 title: "헬름으로 Kafka 설치하기"
-description: "헬름으로 Kafka 설치하기"
+description: "Bitnami 헬름 차트로 Kafka를 설치하고 client pod에서 메시지 송수신을 테스트하는 방법을 정리한다."
 date: 2021-07-18
 update: 2021-07-18
 tags:
@@ -25,7 +25,7 @@ series: "Apache Kafka"
 
 ## 2.1 Helm repo 추가 및 helm으로 설치
 
-Helm Repository에 Bitnami가 없은 경우 아래 명령어로 repository를 추가한다. `helm install` 명령어로 kafka를 설치하면 간단하게 설치가 끝난다.
+Helm Repository에 Bitnami가 없는 경우 아래 명령어로 repository를 추가한다. `helm install` 명령어로 kafka를 설치하면 간단하게 설치가 끝난다.
 
 ```bash
 $ helm repo add bitnami https://charts.bitnami.com/bitnami
@@ -35,7 +35,7 @@ $ helm install my-kafka bitnami/kafka
 ```
 
 
-> 추가 옵션 없이 설치하면 기본적으로 1개의 broker만 생성이 된다. Broker의 개수를 늘리려면 `replicateCount` 옵션에 개수를 입력해서 여러 브로커로 Kakfa를 설치한다.
+> 추가 옵션 없이 설치하면 기본적으로 1개의 broker만 생성이 된다. Broker의 개수를 늘리려면 `replicaCount` 옵션에 개수를 입력해서 여러 브로커로 Kafka를 설치한다.
 
 ```bash
 $ helm install my-kafka --set replicaCount=3 bitnami/kafka
@@ -92,7 +92,7 @@ world
 
 ## 3.2 Consumer - 브로커로부터 메시지 받기
 
-브로커로부터 메시지를 받기 위해서 별도 터머널에서 kafka client pod에 접속한다.
+브로커로부터 메시지를 받기 위해서 별도 터미널에서 kafka client pod에 접속한다.
 
 ```bash
 $ kubectl exec --tty -i my-kafka-client --namespace default -- bash
@@ -109,7 +109,7 @@ $ kafka-console-consumer.sh \
 
 # 4. 정리
 
-본 포스팅에서는 헬름 차트로 쉽게 Kafka를 설치해보고 kafka client pod에 포함된 여러 script를 사용해서 메시지를 보내고 받는 테스트까지 해보았다. 다음 시간에 `kafkacat` utility 명령어로도 동일하게 아래와 같이 테스트가 가능한다. `kafkacat`에 대한 사용 방법은 다음 포스팅에서 기다려주세요.
+본 포스팅에서는 헬름 차트로 쉽게 Kafka를 설치해보고 kafka client pod에 포함된 여러 script를 사용해서 메시지를 보내고 받는 테스트까지 해보았다. 다음 시간에 `kafkacat` utility 명령어로도 동일하게 아래와 같이 테스트가 가능하다. `kafkacat`에 대한 사용 방법은 다음 포스팅에서 기다려주세요.
 
 ```bash
 $ kafkacat -b my-kafka.default.svc.cluster.local:9092 -t test -C

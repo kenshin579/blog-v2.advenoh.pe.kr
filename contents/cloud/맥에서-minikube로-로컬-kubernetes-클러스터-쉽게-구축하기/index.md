@@ -1,6 +1,6 @@
 ---
 title: "맥에서 Minikube로 로컬 Kubernetes 클러스터 쉽게 구축하기"
-description: "맥에서 Minikube로 로컬 Kubernetes 클러스터 쉽게 구축하기"
+description: "Mac에서 Homebrew로 Minikube를 설치하고 클러스터를 띄워 Echo Server를 배포한 뒤 외부 접속까지 확인하는 과정을 정리한다."
 date: 2025-03-29
 update: 2025-03-29
 tags:
@@ -151,7 +151,7 @@ spec:
 
 ```bash
 > cd /Users/user/GolandProjects/tutorials-go/cloud/kubernetes/echo-server
-> kc --namespace=echoserver apply -f echo.kube.yaml
+> kubectl --namespace=echoserver apply -f echo.kube.yaml
 namespace/echoserver unchanged
 deployment.apps/echoserver created
 service/echoserver created
@@ -161,7 +161,7 @@ service/echoserver created
 배포가 정상적으로 이루어졌는지 확인한다. 
 
 ```bash
-> kc get pod -o wide
+> kubectl get pod -o wide
 NAME                          READY   STATUS    RESTARTS   AGE   IP           NODE       NOMINATED NODE   READINESS GATES
 echoserver-6c45798fdc-b8kcr   1/1     Running   0          36s   10.244.0.3   minikube   <none>           <none>
 
@@ -255,7 +255,7 @@ Minikube `stop`으로 `minikube`를 중지시킬 수 있다.
 
 # 3. 마무리
 
-이번 포스트에서는 Mac 환경에서 `Minikube`를 사용하여 `Kubernetes` 클러스터를 구성하는 방법을 살펴보았다. `Minikube`는 로컬환경에서 가장 쉽게 `k8s` 클러스터를 구축하기 테스트하기 좋아서 가장 선호하는 도구중에 하나이다. 
+이번 포스트에서는 Mac 환경에서 `Minikube`를 사용하여 `Kubernetes` 클러스터를 구성하는 방법을 살펴보았다. `Minikube`는 로컬환경에서 가장 쉽게 `k8s` 클러스터를 구축하고 테스트하기 좋아서 가장 선호하는 도구중에 하나이다. 
 
 # 4. 참고
 

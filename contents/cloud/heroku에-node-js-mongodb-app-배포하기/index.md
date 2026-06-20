@@ -1,6 +1,6 @@
 ---
 title: "Heroku에 Node.js+MongoDB App 배포하기"
-description: "Heroku에 Node.js+MongoDB App 배포하기"
+description: "Heroku CLI로 Node.js 앱을 배포하고 MongoDB 애드온을 연동하는 과정을 단계별로 정리한다."
 date: 2018-08-21
 update: 2018-08-21
 tags:
@@ -117,7 +117,7 @@ https://nameless-falls-97478.herokuapp.com/ | https://git.heroku.com/nameless-fa
 * Heroke Git 저장소
     * [https://git.heroku.com/nameless-falls-97478.git](https://git.heroku.com/nameless-falls-97478.git)
 
-create 옵션에 이름을 지정하지 않으면 임의의 이름(ex. 여기서는 nameless-falls-97478로 생성)으로 생성한다. 앱 생성 이후에도 apps:rename 옵션으로 앱 이름 변경이 가능한다.
+create 옵션에 이름을 지정하지 않으면 임의의 이름(ex. 여기서는 nameless-falls-97478로 생성)으로 생성한다. 앱 생성 이후에도 apps:rename 옵션으로 앱 이름 변경이 가능하다.
 
 ```bash
 $ heroku apps:rename newname
@@ -137,7 +137,7 @@ $ cat Procfile
 web: node index.js
 ```
 
-Procfile이 없은 경우에는 package.json에 정의된 start script로 시작한다.
+Procfile이 없는 경우에는 package.json에 정의된 start script로 시작한다.
 
 # 4. 배포된 사이트 오픈하기
 
@@ -160,7 +160,7 @@ $ heroku open
 ```bash
 $ npm start
 $ git add .
-$ git commit -m “Update index.”
+$ git commit -m "Update index."
 [master cd8508b] Update index.
 2 files changed, 1003 insertions(+), 1 deletion(-)
 create mode 100644 package-lock.json
@@ -175,7 +175,7 @@ $ heroku open
 
 ![Sample WebApp](D9D5222B-0850-42E7-A92E-844DDE63B0B0.png)
 
-웹 앱이 Heroku에서 구동될 때 로그를 확인하고 싶으면, logs 옵션으로 확인이 가능한다.
+웹 앱이 Heroku에서 구동될 때 로그를 확인하고 싶으면, logs 옵션으로 확인이 가능하다.
 
 ```bash
 $ heroku logs --tail
@@ -207,7 +207,7 @@ mLab MongoDB를 추가하면 Heroku 환경변수에 MONGODB_URI가 추가된다.
 
 ```bash
 $ heroku config:get MONGODB_URI
-mongodb://heroku_vfwj5vcl:spb8kerqhucborfd974cdbiqe8@ds125862.mlab.com:25862/heroku_vfwj5vcl
+mongodb://<username>:<password>@ds125862.mlab.com:25862/heroku_vfwj5vcl
 ```
 
 명령어로 MongoDB에 접속할 수도 있지만, 개인적으로 MongoDB GUI client(Studio 3T)로 접속해보았다. 아래는 Studio 3T에서 새로운 연결 정보를 입력하는 화면이다.
@@ -216,7 +216,7 @@ mongodb://heroku_vfwj5vcl:spb8kerqhucborfd974cdbiqe8@ds125862.mlab.com:25862/her
 
 DB에 연결이후 앱에 필요한 데이터를 입력한다. dummy 데이터로는 기존에 작성된 데이터를 사용하였다. ([데이터 링크](https://github.com/kenshin579/app-keep-countdown-timer/blob/master/data/data.json))
 
-```json
+```javascript
 db.timers.insert([
 {
   "timer_description": "한글 단어 공부",
@@ -294,7 +294,7 @@ const PORT = process.env.PORT || 5000
 const mongoose = require('mongoose');
 
 // CONNECT TO MONGODB SERVER
-MONGODB_URI='mongodb://heroku_vfwj5vcl:spb8kerqhucborfd974cdbiqe8@ds125862.mlab.com:25862/heroku_vfwj5vcl'
+MONGODB_URI='mongodb://<username>:<password>@ds125862.mlab.com:25862/heroku_vfwj5vcl'
 mongoose.connect(MONGODB_URI);
 
 // DEFINE MODEL
@@ -338,7 +338,7 @@ $ heroku open
 
 ## 6.1 기존 App Heroku에 배포하기
 
-기존에 작성한 Node.js 프로젝트에 Heroku를 배포해보았다. 실제 적용 과정은 위 샘플 프로젝트와 크게 다르지 않는다.
+기존에 작성한 Node.js 프로젝트에 Heroku를 배포해보았다. 실제 적용 과정은 위 샘플 프로젝트와 크게 다르지 않다.
 
 * [https://github.com/kenshin579/app-keep-countdown-timer](https://github.com/kenshin579/app-keep-countdown-timer)
 

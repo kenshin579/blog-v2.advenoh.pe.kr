@@ -1,6 +1,6 @@
 ---
 title: "Kafka Connect에 대한 소개"
-description: "Kafka Connect에 대한 소개"
+description: "Kafka Connect의 개념과 Worker, Connector, Task 등 내부 구성요소 및 데이터 스트리밍 동작 원리를 살펴본다"
 date: 2022-08-27
 update: 2022-08-27
 tags:
@@ -60,7 +60,7 @@ Kafka Connect는 Kafka를 사용하여 다른 시스템과 데이터를 주고 �
 
 다른 시스템에서 Kafka로 Kafka에서 다른 시스템으로 데이터를 스트리밍할 방법은 여러 가지가 있겠지만, 직접 개발하기보다는 Kafka Connect로 쉽게 해결될 수 있는지 첫 번째로 고려해보면 좋을 것이다. 몇 가지 사례를 통해서 어떻게 다양하게 사용될 수 있는지 알아보자.
 
-### 1.2.1 멀티 타겟 시스템에 스트리밍하기개
+### 1.2.1 멀티 타겟 시스템에 스트리밍하기
 
 ![Streaming Data Pipelines](streaming-data-pipelines-kafka-connect.png)
 
@@ -70,7 +70,7 @@ Kafka Connect를 사용하면 이미 여러 타겟 시스템 대상으로 connec
 
 ### 1.2.2 다양한 외부 시스템에서 다른 곳으로 데이터 전달이 필요한 경우
 
-한 컨포넌트에서 다른 컨포넌트로 전달할 수 있는 방법은 여러 가지가 있다.
+한 컴포넌트에서 다른 컴포넌트로 전달할 수 있는 방법은 여러 가지가 있다.
 
 - A component -> db (ex. mysql) -> (mysql sink connect) -> kafka -> B component (consume)
 
@@ -79,7 +79,7 @@ Kafka Connect를 사용하면 이미 여러 타겟 시스템 대상으로 connec
 
 - A component (http API 노출) -> (http source connect) -> kafka -> (mongo sink connector) -> db (ex.mongo) -> B component
 
-    - B component는 mongodb로 read/write 할 수 있는 application이지만, A component의 역할과 domain에 따라서 직접 db에 접근하는 건 부절적한 경우가 있어 kafka를 이용해서 event 기반으로 개발한다
+    - B component는 mongodb로 read/write 할 수 있는 application이지만, A component의 역할과 domain에 따라서 직접 db에 접근하는 건 부적절한 경우가 있어 kafka를 이용해서 event 기반으로 개발한다
 
     - A component에서 직접 kafka로 write 할 수도 있지만, http API로 노출해서 http source connector를 이용해서 kafka로 전달하고 mongo sink connector를 이용해서 db에 넣으면 각 component에서 추가 개발 없이도 B component로 데이터를 전달할 수 있다
 
@@ -104,7 +104,7 @@ Kafka Connect는 크게 5가지 요소로 되어 있다.
     - 2가지 모드를 지원한다
         - standalone : 하나의 process가 connector와 task 실행을 시킨다
         - distributed
-            - 분사 모드는 kafka connect의 확장성과 자동 결함 허용 기능을 제공한다
+            - 분산 모드는 kafka connect의 확장성과 자동 결함 허용 기능을 제공한다
             - 여러 worker 프로세스로 실행시킬 수 있다
 - Connector
     - Connector는 파이프라인에 대한 추상 객체이고 Task들을 관리하는 역할을 한다
@@ -112,7 +112,7 @@ Kafka Connect는 크게 5가지 요소로 되어 있다.
         - Worker로부터 Task를 위한 설정 값을 가져오고 Task에게 전달하는 작업
     - 실제 Worker가 Task를 구동시킨다
 - Task
-    - Kafka로부터 데이터를 가져오고나 넣는 작업을 하고 실제 파이프라인 동작 요소이다
+    - Kafka로부터 데이터를 가져오거나 넣는 작업을 하고 실제 파이프라인 동작 요소이다
     - Source Task는 source system으로 부터 데이터를 poll하고 worker는 가져온 데이터를 Kafka topic으로 보낸다
     - Sink Task는 Kafka로부터 Worker를 통해 record를 가져오고 sink system에 record를 쓴다
     - Task Rebalancing 기능도 제공한다
@@ -197,7 +197,7 @@ Kafka에서 write, read 할 때 특정 데이터 형식을 지원하기 위해�
 - StringConverter
     - `org.apache.kafka.connect.storage.StringConverter`: string 데이터
 - ByteArrayConverter
-    - `org.apache.kafka.connect.converters.ByteArrayConverter`: 변환 없은 옵션을 제공
+    - `org.apache.kafka.connect.converters.ByteArrayConverter`: 변환 없는 옵션을 제공
 
 ## 2.5 Transforms
 

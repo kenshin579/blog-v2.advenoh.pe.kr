@@ -1,6 +1,6 @@
 ---
 title: "Argo Projects"
-description: "Argo Projects"
+description: "Argo Workflows, Events, CD, Rollouts 등 쿠버네티스용 Argo 프로젝트 4종의 개요와 등장 배경을 정리한다."
 date: 2022-03-04
 update: 2022-03-04
 tags:
@@ -35,17 +35,17 @@ Argo Project란 쿠버네티스 환경에서 application이나 job을 실행하�
 
         - Events Source (20+):
 
-            - Github, NATS, File, NATS, MQTT, Slack, Webhooks, HDFS, K8s Resources, Kafka, Redis, etc
+            - Github, NATS, File, MQTT, Slack, Webhooks, HDFS, K8s Resources, Kafka, Redis, etc
 
         - Triggers (10+)
 
-            - Argo Workflow, Argo Rollouts, k8s Object, AWS Lambda, AWS Lamda, NATS message, Kafka message, Log, Slack Notification, etc
+            - Argo Workflow, Argo Rollouts, k8s Object, AWS Lambda, NATS message, Kafka message, Log, Slack Notification, etc
 
 - [`Argo CD`](https://blog.advenoh.pe.kr/argo-cd/)
     - 선언적인 GitOps 기반의 CD (Continuous Deployment) 도구
 
 - `Argo Rollouts`
-    - Progress Delivery 를 지원하는 도구
+    - Progressive Delivery 를 지원하는 도구
 
     - 여러 배포 방식을 지원한다
 

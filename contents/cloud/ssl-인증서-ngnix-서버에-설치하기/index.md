@@ -1,6 +1,6 @@
 ---
-title: "SSL 인증서 Ngnix 서버에 설치하기 (무료 Lets Encrypt 인증서 발급)"
-description: "SSL 인증서 Ngnix 서버에 설치하기 (무료 Lets Encrypt 인증서 발급)"
+title: "SSL 인증서 Nginx 서버에 설치하기 (무료 Lets Encrypt 인증서 발급)"
+description: "certbot으로 Let's Encrypt 무료 SSL 인증서를 발급받아 Nginx에 HTTPS를 설정하고 자동 갱신까지 구성하는 방법"
 date: 2020-10-01
 update: 2020-10-01
 tags:
@@ -26,11 +26,11 @@ tags:
 - 웹 서버 : Nginx 서버
 - 적용 사이트 : http://quote.advenoh.pe.kr
 
-#2.  도구 설치 및 환경 설정
+# 2. 도구 설치 및 환경 설정
 
 ## 2.1 Certbot로 인증서 설치하기
 
-Let's Encrypt에서는 certbot 명령어를 제공하여 Let's Encrypt 인증서를 자동으로 발급받거나 개신 할 수 있다.
+Let's Encrypt에서는 certbot 명령어를 제공하여 Let's Encrypt 인증서를 자동으로 발급받거나 갱신 할 수 있다.
 
 먼저 certbot 명령어를 설치한다.
 
@@ -45,9 +45,9 @@ $ cd letsencrypt
 $ ./certbot-auto certonly --standalone --debug -d quote.advenoh.pe.kr
 ```
 
-standalone 방식은 certbot이 간이 웹 서버를 돌려 도메인 인증 요청을 처리하는 방식이다. 간이 서버가 80, 443번 포트를 사용하기 때문에 ngnix 서버가 같은 포트를 사용하면 인증서 발급이 안된다.
+standalone 방식은 certbot이 간이 웹 서버를 돌려 도메인 인증 요청을 처리하는 방식이다. 간이 서버가 80, 443번 포트를 사용하기 때문에 nginx 서버가 같은 포트를 사용하면 인증서 발급이 안된다.
 
-certbot 실행하기 전에 ngnix 서비스를 종료시켜두자.
+certbot 실행하기 전에 nginx 서비스를 종료시켜두자.
 
 ```bash
 $ sudo service nginx stop
@@ -57,12 +57,12 @@ $ sudo service nginx stop
 
 ![인증서 생성](image-2020101112345678.png)
 
-## 2.2 Ngnix 서버 설정 변경하기
+## 2.2 Nginx 서버 설정 변경하기
 
-이제 ngnix 웹 서버에 HTTPS 설정을 추가해보자.
+이제 nginx 웹 서버에 HTTPS 설정을 추가해보자.
 
 ```bash
-$ vim /etc/ngnix/nginx.conf
+$ vim /etc/nginx/nginx.conf
 ```
 
 80 관련 server 설정 아래 추가로 아래를 넣어주자.
@@ -102,7 +102,7 @@ server {
 
 ```
 
-Ngnix 서버를 재시작하고 https 주소로 접속해보자.
+Nginx 서버를 재시작하고 https 주소로 접속해보자.
 
 ```bash
 $ sudo service nginx restart
@@ -116,19 +116,19 @@ $ sudo service nginx restart
 
 ### 2.3.1 Let's Encrypt 인증서 자동으로 갱신하기
 
-Let's Encrypt 인증서는 3개월마다 개신을 해줘야 한다. cron 설정으로 자동으로 개신할 수 있도록 설정해두자.
+Let's Encrypt 인증서는 3개월마다 갱신을 해줘야 한다. cron 설정으로 자동으로 갱신할 수 있도록 설정해두자.
 
 ```bash
 $ sudo crontab -e 
 0 10 9 */3 * /home/ec2-user/letsencrypt/certbot-auto renew
-0 10 9 */3 * service ngnix restart
+0 10 9 */3 * service nginx restart
 ```
 
 
 
 ### 2.3.2 Problem binding to port 80 오류 메시지
 
-ngnix 서버를 종료시키고 다시 certbot을 실행하면 된다.
+nginx 서버를 종료시키고 다시 certbot을 실행하면 된다.
 
 ```bash
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
@@ -177,7 +177,7 @@ Please see the logfiles in /var/log/letsencrypt for more details.
 
 ### 2.3.3 http -> https redirect 시키기
 
-http 접속시 https로 redirect 하도록 ngnix 설정을 변경하자.
+http 접속시 https로 redirect 하도록 nginx 설정을 변경하자.
 
 ```bash
 server {
@@ -190,7 +190,7 @@ server {
 
 # 3. 마무리
 
-letsencrypt에서 SSL 인증서를 무료로 제공하고 쉽게 설치할 수 있는 certbot도 제공한다. certbot 명령어로 거의 5분 안에 https를 설정할 수 있었다. 전체 ngnix은 [gist](https://gist.github.com/kenshin579/489a13d194e310ec741f64f508c1f987)를 참고해주세요.
+letsencrypt에서 SSL 인증서를 무료로 제공하고 쉽게 설치할 수 있는 certbot도 제공한다. certbot 명령어로 거의 5분 안에 https를 설정할 수 있었다. 전체 nginx은 [gist](https://gist.github.com/kenshin579/489a13d194e310ec741f64f508c1f987)를 참고해주세요.
 
 # 4. 참고
 

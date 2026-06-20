@@ -29,7 +29,7 @@ kubectl describe deploy -n web-dev my-app
 
 특히 namespace는 명령어마다 `-n`을 붙여야 해서 번거롭다. `kubectl config set-context --current --namespace=...`로 기본 namespace를 바꿀 수는 있지만, 이것도 namespace 이름을 정확히 알아야 하고 명령어가 길다.
 
-이걸 매번 손으로 하는 게 번거로워서, `fzf`로 **목록에서 골라 전환**하는 두 줄짜리 스크립트 `kx`(context 전환)와 `ns`(namespace 전환)를 만들어 쓰고 있다. 이 글에서 그 워크플로우를 공유한다.
+이걸 매번 손으로 하는 게 번거로워서, `fzf`로 목록에서 골라 전환하는 두 줄짜리 스크립트 `kx`(context 전환)와 `ns`(namespace 전환)를 만들어 쓰고 있다. 이 글에서 그 워크플로우를 공유한다.
 
 > 참고로 kubeconfig는 여러 파일로 나누지 않고 `~/.kube/config` 하나로 합쳐서 쓴다. 여러 클러스터의 context가 이 파일 하나에 다 들어있다는 전제로 글을 읽으면 된다.
 
@@ -50,7 +50,7 @@ brew install fzf
 ls | fzf
 ```
 
-즉 **"목록을 만드는 명령" + `fzf` + "고른 값으로 실행할 명령"** 조합이면 어떤 대화형 선택기도 만들 수 있다. `kx`와 `ns`가 정확히 이 패턴이다.
+즉 "목록을 만드는 명령" + `fzf` + "고른 값으로 실행할 명령" 조합이면 어떤 대화형 선택기도 만들 수 있다. `kx`와 `ns`가 정확히 이 패턴이다.
 
 # 2. fzf로 쉽게 k8s context, namespace 설정하기
 
@@ -75,11 +75,11 @@ fi
 
 파이프라인을 한 단계씩 뜯어보자.
 
-- `kubectl config get-contexts` — 등록된 context 목록을 테이블로 출력한다. 첫 줄은 `CURRENT NAME CLUSTER ...` 헤더이고, 현재 context 앞에는 `*` 표시가 붙는다.
-- `grep -v CURRENT` — `CURRENT`라는 단어가 들어간 **헤더 줄을 제거**한다.
-- `sed 's/\*//'` — 현재 context를 가리키는 `*` 기호를 지운다. 이게 없으면 context 이름에 `*`가 섞여 들어간다.
-- `awk '{print $1}'` — 각 줄의 **첫 번째 컬럼(context 이름)**만 뽑는다.
-- `fzf ...` — 그 이름 목록을 `fzf`로 넘겨 대화형으로 고른다.
+- `kubectl config get-contexts`: 등록된 context 목록을 테이블로 출력한다. 첫 줄은 `CURRENT NAME CLUSTER ...` 헤더이고, 현재 context 앞에는 `*` 표시가 붙는다.
+- `grep -v CURRENT`: `CURRENT`라는 단어가 들어간 헤더 줄을 제거한다.
+- `sed 's/\*//'`: 현재 context를 가리키는 `*` 기호를 지운다. 이게 없으면 context 이름에 `*`가 섞여 들어간다.
+- `awk '{print $1}'`: 각 줄의 첫 번째 컬럼(context 이름)만 뽑는다.
+- `fzf ...`: 그 이름 목록을 `fzf`로 넘겨 대화형으로 고른다.
 
 `fzf` 옵션도 정리해두면:
 
@@ -91,7 +91,7 @@ fi
 | `--bind=left:page-up,right:page-down` | ←/→ 키를 페이지 이동에 매핑 |
 | `--no-mouse` | 마우스 비활성화 (터미널 스크롤이 `fzf`에 먹히지 않게) |
 
-마지막으로 `[[ $context != "" ]]` 가드는 **`fzf`에서 `ESC`로 취소했을 때**(빈 값) `use-context`가 실행되지 않게 막아준다.
+마지막으로 `[[ $context != "" ]]` 가드는 `fzf`에서 `ESC`로 취소했을 때(빈 값) `use-context`가 실행되지 않게 막아준다.
 
 이제 클러스터 전환은 이렇게 끝난다.
 
@@ -136,17 +136,16 @@ namespace=$(kubectl get ns \
 if [[ $namespace != "" ]]; then
   echo $namespace > ~/.ns
   cat ~/.ns
+  kubectl config set-context --current --namespace=$namespace
 fi
-
-kubectl config set-context --current --namespace=$namespace
 ```
 
 `kx`와 거의 같다.
 
-- `kubectl get ns` — namespace 목록(`NAME STATUS AGE`)을 출력한다.
-- `awk '{print $1}'` — 첫 컬럼(namespace 이름)만 뽑는다.
-- `grep -v NAME` — `NAME` 헤더 줄을 제거한다.
-- `fzf ...` — 대화형으로 고른다.
+- `kubectl get ns`: namespace 목록(`NAME STATUS AGE`)을 출력한다.
+- `awk '{print $1}'`: 첫 컬럼(namespace 이름)만 뽑는다.
+- `grep -v NAME`: `NAME` 헤더 줄을 제거한다.
+- `fzf ...`: 대화형으로 고른다.
 
 여기서 `kx`와 다른 핵심이 하나 있다.
 
@@ -154,7 +153,7 @@ kubectl config set-context --current --namespace=$namespace
 echo $namespace > ~/.ns
 ```
 
-고른 namespace를 **`~/.ns` 파일에 저장**한다. 이게 다음 섹션에서 진짜 빛을 발하는 부분이다. 동시에 `kubectl config set-context --current --namespace=$namespace`로 현재 context의 기본 namespace도 바꿔준다.
+고른 namespace를 `~/.ns` 파일에 저장한다. 이 값은 2.3절의 alias에서 다시 쓴다. 동시에 `kubectl config set-context --current --namespace=$namespace`로 현재 context의 기본 namespace도 바꿔준다.
 
 `ns`를 실행하면 현재 클러스터의 namespace 목록이 `fzf`로 뜬다.
 
@@ -188,13 +187,13 @@ Context "..." modified.
 
 ## 2.3 alias로 완성하기
 
-`ns`가 선택한 namespace를 `~/.ns`에 저장해두는 이유는, 그 값을 **단일 소스(single source of truth)**로 삼아 alias와 엮기 위해서다. `~/.zshrc`(또는 `~/.bashrc`)에 다음 alias를 둔다.
+`ns`가 선택한 namespace를 `~/.ns`에 저장해두는 이유는, 그 값을 단일 소스(single source of truth)로 삼아 alias와 엮기 위해서다. `~/.zshrc`(또는 `~/.bashrc`)에 다음 alias를 둔다.
 
 ```bash
 alias kc='kubectl -n $(cat ~/.ns)'
 ```
 
-`kc`는 `kubectl -n $(cat ~/.ns)` — 즉 **`ns`로 골라둔 namespace를 자동으로 `-n`에 끼워 넣는다.** alias가 실행될 때마다 `~/.ns`를 읽으므로, `ns`로 namespace를 바꾸면 `kc`의 대상도 따라 바뀐다.
+`kc`는 `kubectl -n $(cat ~/.ns)`, 즉 `ns`로 골라둔 namespace를 자동으로 `-n`에 끼워 넣는다. alias가 실행될 때마다 `~/.ns`를 읽으므로, `ns`로 namespace를 바꾸면 `kc`의 대상도 따라 바뀐다.
 
 이제 워크플로우 전체는 이렇게 흐른다.
 
@@ -207,23 +206,24 @@ $ kc logs my-pod-xxxx    # = kubectl -n web-dev logs my-pod-xxxx
 $ kc describe deploy x   # = kubectl -n web-dev describe deploy x
 ```
 
-`-n web-dev`를 매번 붙일 필요가 사라진다. `set-context --namespace`로 기본 namespace를 바꾸는 방법도 있지만, `~/.ns` + `kc` 조합은 **"지금 작업 중인 namespace"를 파일 하나로 명시적으로 들고 다닌다**는 점에서 더 직관적이다. 어느 namespace를 보고 있는지 헷갈리면 `cat ~/.ns` 한 번이면 된다.
+`-n web-dev`를 매번 붙일 필요가 사라진다. `~/.ns` + `kc` 조합은 지금 작업 중인 namespace를 파일 하나로 명시적으로 들고 다닌다. 어느 namespace를 보고 있는지 헷갈리면 `cat ~/.ns` 한 번이면 된다.
 
 ## 2.4 kx는 왜 `~/.kx`를 만들지 않을까?
 
 여기서 한 가지 의문이 들 수 있다. `ns`는 선택값을 `~/.ns`에 저장하는데, `kx`는 왜 `~/.kx` 같은 파일을 만들지 않을까? 비대칭처럼 보이지만 이유가 있다.
 
-핵심은 **`kubectl`이 "현재 상태"를 어디에 기억하느냐**의 차이다.
+핵심은 `kubectl`이 "현재 상태"를 어디에 기억하느냐의 차이다.
 
-- **context**: `kubectl config use-context`를 실행하면 그 선택이 kubeconfig(`~/.kube/config`)의 `current-context` 필드에 영속적으로 저장된다. 이후 모든 `kubectl` 명령이 자동으로 그 context를 사용한다. 현재 값이 궁금하면 `kubectl config current-context` 한 줄이면 충분하니, 별도 파일이 필요 없다.
-- **namespace**: namespace도 kubeconfig에 저장되긴 하지만, `kc='kubectl -n $(cat ~/.ns)'` alias가 그 값을 **셸에서 텍스트로 꺼내** `-n` 뒤에 끼워 넣어야 한다. kubeconfig 안의 값은 `kubectl` 내부에서만 쓰여 `$(...)`로 간단히 꺼내기 어렵다. 그래서 `~/.ns`라는 평범한 텍스트 파일에 따로 적어두고 alias가 `cat`으로 읽는다.
+context는 `kubectl config use-context`를 실행하면 그 선택이 kubeconfig(`~/.kube/config`)의 `current-context` 필드에 영속적으로 저장된다. 이후 모든 `kubectl` 명령이 자동으로 그 context를 사용한다. 현재 값이 궁금하면 `kubectl config current-context` 한 줄이면 충분하니, 별도 파일이 필요 없다.
+
+namespace도 kubeconfig에 저장되긴 하지만, `kc='kubectl -n $(cat ~/.ns)'` alias가 그 값을 셸에서 텍스트로 꺼내 `-n` 뒤에 끼워 넣어야 한다. kubeconfig 안의 값은 `kubectl` 내부에서만 쓰여 `$(...)`로 간단히 꺼내기 어렵다. 그래서 `~/.ns`라는 평범한 텍스트 파일에 따로 적어두고 alias가 `cat`으로 읽는다.
 
 | | 현재 상태 저장 위치 | 셸에서 값을 꺼내 쓸 일 | 별도 파일 |
 | --- | --- | --- | --- |
-| **context** | kubeconfig `current-context` (`kubectl`이 자동 사용) | 없음 | ❌ |
-| **namespace** | kubeconfig + `~/.ns` | `kc` alias가 `$(cat ~/.ns)`로 사용 | ✅ |
+| context | kubeconfig `current-context` (`kubectl`이 자동 사용) | 없음 | 불필요 |
+| namespace | kubeconfig + `~/.ns` | `kc` alias가 `$(cat ~/.ns)`로 사용 | 필요 |
 
-즉 `~/.ns`는 namespace를 "저장"한다기보다, **셸에서 꺼내 쓰기 좋은 형태로 복제**해두는 용도에 가깝다. context는 그럴 필요가 없으니 `~/.kx`도 없는 것이다.
+`~/.ns`는 namespace를 셸에서 꺼내 쓰기 좋은 형태로 복제해두는 파일이다. context는 그럴 필요가 없으니 `~/.kx`도 없다.
 
 # 3. 개인 스크립트는 ~/bin에 모아두자
 
@@ -241,7 +241,7 @@ chmod +x ~/bin/kx ~/bin/ns
 export PATH="$HOME/bin:$PATH"
 ```
 
-`~/bin`을 git 저장소로 만들어두면 스크립트의 변경 이력도 남고, 여러 머신 간 동기화도 쉽다. 개인 자동화 스크립트가 쌓이기 시작하면 한 번쯤 정리해둘 가치가 있다.
+`~/bin`을 git 저장소로 만들어두면 스크립트의 변경 이력도 남고, 여러 머신 간 동기화도 쉽다.
 
 # 4. 마치며
 
@@ -253,4 +253,4 @@ export PATH="$HOME/bin:$PATH"
 | `kubectl config set-context --current --namespace=web-dev` | `ns` |
 | `kubectl -n web-dev get pods` | `kc get pods` |
 
-핵심은 거창한 도구가 아니라 **`목록 명령 | fzf | 실행 명령`** 이라는 단순한 패턴이다. 이 패턴은 context/namespace뿐 아니라 pod 선택, git 브랜치 전환 등 "목록에서 골라 실행"하는 거의 모든 작업에 응용할 수 있다. 매일 반복하는 명령어가 있다면, 두 줄짜리 `fzf` 스크립트로 한번 묶어보길 권한다.
+핵심은 `목록 명령 | fzf | 실행 명령`이라는 단순한 패턴이다. 이 패턴은 context/namespace뿐 아니라 pod 선택, git 브랜치 전환 등 "목록에서 골라 실행"하는 거의 모든 작업에 응용할 수 있다.

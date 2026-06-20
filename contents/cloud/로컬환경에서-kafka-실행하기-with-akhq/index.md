@@ -1,6 +1,6 @@
 ---
 title: "로컬환경에서 Kafka 실행하기 (with AKHQ)"
-description: "로컬환경에서 Kafka 실행하기 (with AKHQ)"
+description: "M1 맥북에서 docker-compose로 Kafka와 관리 UI인 AKHQ를 함께 띄우는 방법을 정리한다."
 date: 2022-08-07
 update: 2022-08-07
 tags:
@@ -119,7 +119,7 @@ AKHQ에서 제공하는 `docker-compose.yml`를 실행하면 아래 컴포넌트
 $ docker-compose up
 ```
 
-Kafka 서버도 로컬환경에서 접속 가능한지 `telnet` 명령어로 확인하다.
+Kafka 서버도 로컬환경에서 접속 가능한지 `telnet` 명령어로 확인한다.
 
 ```bash
 $ telnet localhost 29092

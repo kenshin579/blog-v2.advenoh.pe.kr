@@ -40,13 +40,13 @@ The `username` and `password` you enter are saved in the `/Users/user/data/docke
 ### 2.1.2 Run the Docker Registry Container
 
 ```bash
-> docker run -d --name private-registry -p 7001:5000 \\
-  --restart=always \\
-  -v /Users/user/data/docker/private-registry:/var/lib/registry \\
-  -v /Users/user/data/docker/auth:/auth \\
-  -e "REGISTRY_AUTH=htpasswd" \\
-  -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \\
-  -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \\
+> docker run -d --name private-registry -p 7001:5000 \
+  --restart=always \
+  -v /Users/user/data/docker/private-registry:/var/lib/registry \
+  -v /Users/user/data/docker/auth:/auth \
+  -e "REGISTRY_AUTH=htpasswd" \
+  -e "REGISTRY_AUTH_HTPASSWD_REALM=Registry Realm" \
+  -e "REGISTRY_AUTH_HTPASSWD_PATH=/auth/htpasswd" \
   registry:2
 ```
 
@@ -84,11 +84,11 @@ You can confirm that it ran with the uploaded version, but you can also verify i
 
 ```bash
 # Use the Docker Registry API v2 to query the list of all stored image repositories
-> curl <http://localhost:7001/v2/_catalog>
+> curl http://localhost:7001/v2/_catalog
 {"repositories":["helloworld"]}
 
 # Query all tags of the helloworld image
-curl <http://localhost:7001/v2/helloworld/tags/list>
+curl http://localhost:7001/v2/helloworld/tags/list
 {"name":"helloworld","tags":["latest"]}
 ```
 

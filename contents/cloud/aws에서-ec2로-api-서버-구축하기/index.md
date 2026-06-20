@@ -1,6 +1,6 @@
 ---
 title: "AWS에서 EC2로 API 서버 구축하기"
-description: "AWS에서 EC2로 API 서버 구축하기"
+description: "AWS 무료 플랜으로 EC2 인스턴스를 생성하고 Elastic IP, ssh 설정, 타임존 변경을 거쳐 Go 기반 API 서버를 배포하는 과정을 정리한다."
 date: 2023-03-18
 update: 2023-03-18
 tags:
@@ -10,7 +10,6 @@ tags:
   - server
   - 구축
   - 가상머신
-  - api
   - heroku
   - gcp
   - amazon
@@ -32,7 +31,7 @@ API 서버를 구축하기 위해 사용할 수 있는 서비스는 아래와 �
 
 ## 1.1 AWS 계정 생성하기
 
-AWS 계정은 12개월 무료로 사용할 수 있지만, 이메일 주소로 계정을 생성해야 한다. 매번 새로운 이메일 주소를 생성하기보다는 구글의 [별칙 기능](https://blog.advenoh.pe.kr/하나의-구글-계정으로-여러-이메일-주소-사용하기/)을 사용하기를 추천한다.
+AWS 계정은 12개월 무료로 사용할 수 있지만, 이메일 주소로 계정을 생성해야 한다. 매번 새로운 이메일 주소를 생성하기보다는 구글의 [별칭 기능](https://blog.advenoh.pe.kr/하나의-구글-계정으로-여러-이메일-주소-사용하기/)을 사용하기를 추천한다.
 
 AWS 계정을 생성하고 콘솔에 로그인한다.
 
@@ -55,7 +54,7 @@ AWS 서비스 중에 인스턴스를 찾아들어가 EC2 AWS에서 가상머신�
 
 - 키 페어 (로그인): `echo-server`
 
-    - 키 페어는 나중에 EC2 인스턴스 생성후 ssh로 로그인하기 위해 필요한다
+    - 키 페어는 나중에 EC2 인스턴스 생성후 ssh로 로그인하기 위해 필요하다
     - 일단 새 키 페어 생성 클릭해서 생성하고
 
 - 네트워크 설정
@@ -81,7 +80,7 @@ AWS 서비스 중에 인스턴스를 찾아들어가 EC2 AWS에서 가상머신�
 
 ## 2.2 Elastic IP 설정하기
 
-EC2 인스턴스를 재시작하게 되면 매번 새 IP가 할당된다. IP가 변경되면 PC에서 접근할 때마다 IP 주소를 확인해야 하는 번거로운지 존재한다. 매번 IP가 변경되지 않고 고정 IP를 할당받으려면 Elastic IP를 설정해야 한다.
+EC2 인스턴스를 재시작하게 되면 매번 새 IP가 할당된다. IP가 변경되면 PC에서 접근할 때마다 IP 주소를 확인해야 하는 번거로움이 존재한다. 매번 IP가 변경되지 않고 고정 IP를 할당받으려면 Elastic IP를 설정해야 한다.
 
 `EC2 메뉴` > `네트워크 및 보안` > `탄력적 IP` > `탄력적 IP 주소 할당` 버튼을 클릭한다. 아래와 같은 설정으로 할당한다.
 
@@ -145,7 +144,7 @@ Run "sudo yum update" to apply all updates.
 
 ### 2.4.1 타임존 변경
 
-EC2 서버의 기본 타입 존은 UTC이다. 한국시간에 맞게 타임존을 변경한다.
+EC2 서버의 기본 타임존은 UTC이다. 한국시간에 맞게 타임존을 변경한다.
 
 ```bash
 $ sudo rm /etc/localtime
@@ -158,7 +157,7 @@ $ sudo ln -s /usr/share/zoneinfo/Asia/Seoul /etc/localtime
 
 여러 서버를 관리하고 있다면 IP 주소만으로는 어떤 서비스의 서버인지 확인이 어렵기 때문에 `Hostname` 이름을 변경해준다.
 
-Amazon Linux AMI 2 이미지 기존으로 hostname을 변경하는 방법이다.
+Amazon Linux AMI 2 이미지 기준으로 hostname을 변경하는 방법이다.
 
 ```bash
 $ sudo hostnamectl set-hostname echo-server
@@ -283,7 +282,7 @@ ____________________________________O/_______
 
 먼저 EC2 공개 주소를 알아야 접근할 수 있기 때문에 EC2 인스턴스 세부 정보에서 확인한다.
 
-`인스턴스` > `인스턴스` > `인스턴스 목록에서 인스턴스 ID 를 선택하면 IP 주소나 DNS 주소를 확인할 수 있다.
+`인스턴스` > `인스턴스` > `인스턴스 목록에서 인스턴스 ID 를 선택하면` IP 주소나 DNS 주소를 확인할 수 있다.
 
 ![외부로 접근할 수 있는 DNS 확인](image-20230318174426135.png)
 
@@ -292,7 +291,7 @@ ____________________________________O/_______
 `curl` 명령어로 API을 호출해보면 잘 되는 걸 확인할 수 있다. 끝!!
 
 ```bash
-$ curl --location 'https://ec1-3-30-20-2342.ap-northeast-2.compute.amazonaws.com/ping'
+$ curl --location 'https://ec2-3-30-20-2342.ap-northeast-2.compute.amazonaws.com/ping'
 Pong
 ```
 
@@ -301,5 +300,4 @@ Pong
 - https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/go-devenv.html
 - https://ryanwoo.tistory.com/8
 - https://technoracle.com/how-to-install-git-on-amazon-linux-2/
-- https://chat.openai.com/chat
 - http://www.yes24.com/Product/Goods/83849117

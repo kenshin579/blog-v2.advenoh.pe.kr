@@ -1,6 +1,6 @@
 ---
 title: "Kafka CLI 명령어 모음"
-description: "Kafka CLI 명령어 모음"
+description: "Topic, Producer, Consumer, Consumer Group 등 자주 쓰는 Kafka CLI 명령어를 정리한 치트시트"
 date: 2022-08-14
 update: 2022-08-14
 tags:
@@ -37,7 +37,7 @@ $ tar -jxvf kafka_2.13-3.2.1.tgz
 
 Kafka 기본 포트번호는 9092로 시작하지만, [로컬환경에서 Kafka 실행하기](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/)에서 설정한 포트번호로 실행한다.
 
-> Kafka v2.2이하에서는 Zookeeper URL과 port 번호 (ex. `localhost:2181`)를 사용했지만, Kafka v2.2+ 부터는 `--bootstrap-server` 옵션을 사용을 추천하낟. v3부터는 Zoopkeeper 옵션을 제거될 예정이다.
+> Kafka v2.2이하에서는 Zookeeper URL과 port 번호 (ex. `localhost:2181`)를 사용했지만, Kafka v2.2+ 부터는 `--bootstrap-server` 옵션을 사용을 추천한다. v3부터는 Zookeeper 옵션을 제거될 예정이다.
 
 Kafka CLI를 자주사용하는 경우라면 `PATH` 환경변수에 추가하는 걸 추천한다. 매번 Kafka binary 폴더로 이동해서 명령어를 입력하지 않아도 된다.
 
@@ -126,7 +126,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic 
 - Topic이 생성되지 않았을 경우에는 기본적으로 topic을 자동으로 생성한다
 - 쉼표로 여러 topic을 지정하면 한 번에 여러 topic을 consume 할 수 있다
 - consumer group을 지정하지 않는 경우 `kafka-console-consumer`는 임의 consumer group을 생성한다
-- 메서지의 순서는 보장이 안될 수도 있다
+- 메시지의 순서는 보장이 안될 수도 있다
     - 메시지의 순서는 topic 레벨이 아니라 partition 레벨에서만 순서를 보장한다
 
 `kafka-console-consumer.sh` 명령어 옵션은 다음과 같다.
@@ -136,7 +136,7 @@ $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic 
 - `--group`
     - Consumer group을 지정하지 않으면 기본적으로 임의의 consumer group ID가 자동으로 생성이 된다
 - `--partition`
-    - 특전 partition에서만 consumer하려면 이 옵션을 사용한다
+    - 특정 partition에서만 consume하려면 이 옵션을 사용한다
 
 ```bash
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic
@@ -183,7 +183,7 @@ $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic 
 $ kafka-console-consumer.sh --bootstrap-server localhost:29092 --topic my_topic --group my-first-application 
 ```
 
-Topic에 메시지를 보내보면 번갈라 가면서 consume 을 하는 것을 볼 수 있다.
+Topic에 메시지를 보내보면 번갈아 가면서 consume 을 하는 것을 볼 수 있다.
 
 ```bash
 $ kafka-console-producer.sh --bootstrap-server localhost:29092 --topic my_topic
@@ -289,7 +289,7 @@ Topic: my_topic	TopicId: ufrRaY-tTyqcHjFAY-q0ew	PartitionCount: 1	ReplicationFac
 $ kafka-topics.sh --bootstrap-server localhost:29092 --alter --topic my_topic --partitions 3
 ```
 
-잘 반영이 되었는지 확인하다
+잘 반영이 되었는지 확인한다
 ```bash
 $ kafka-topics.sh --bootstrap-server localhost:29092 --topic my_topic --describe
 Topic: my_topic	TopicId: ufrRaY-tTyqcHjFAY-q0ew	PartitionCount: 3	ReplicationFactor: 1	Configs: compression.type=gzip

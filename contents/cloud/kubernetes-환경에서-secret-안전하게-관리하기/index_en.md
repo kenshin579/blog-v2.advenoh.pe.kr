@@ -64,7 +64,7 @@ Install the Sealed Secrets controller using Helm.
 
 ```bash
 # Add the sealed-secrets helm repo
-> helm repo add sealed-secrets <https://bitnami-labs.github.io/sealed-secrets>
+> helm repo add sealed-secrets https://bitnami-labs.github.io/sealed-secrets
 > helm repo update
 ```
 
@@ -116,7 +116,7 @@ Use the kubeseal CLI tool to convert the Secret into an encrypted SealedSecret.
 
 ```bash
 # Generate a sealed-secret from the secret file with the kubeseal command
-> kubeseal --controller-name=sealed-secrets \\
+> kubeseal --controller-name=sealed-secrets \
  --controller-namespace=kube-system --format yaml < mysecret.yaml > mysealed_secret.yaml
 ---
 apiVersion: bitnami.com/v1alpha1

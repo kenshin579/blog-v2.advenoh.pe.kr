@@ -1,6 +1,6 @@
 ---
 title: "라즈베리파이에 도커 설치하기"
-description: "라즈베리파이에 도커 설치하기"
+description: "라즈베리파이(Raspbian OS)에 설치 스크립트로 도커를 설치하고 non-root 사용자 설정과 동작 확인까지 정리한다."
 date: 2021-07-18
 update: 2021-07-18
 tags:
@@ -49,7 +49,7 @@ $ sudo usermod -aG docker pi
 지금까지 도커 설치가 잘 되었는지 도커 명령어를 실행해보자. 잘 설치가 되었으면 도커 버전과 추가 정보를 확인할 수 있다.
 
 ```bash
-$ docker verion
+$ docker version
 ```
 
 
