@@ -15,40 +15,22 @@ tags:
 
 ## 1.1 KubeVPN 란?
 
-`KubeVPN`은 `Kubernetes` 클러스터와 로컬 환경 간의 원활한 네트워크 연결을 제공하는 도구이다. 기존의 port forwarding 방식과는 다음과 같은 차이점이 있다.
+`KubeVPN`은 `Kubernetes` 클러스터와 로컬 환경을 네트워크로 연결해주는 도구이다. 기존의 port forwarding 방식과는 다음과 같은 차이점이 있다.
 
 | 방식                | 설명                                                         |
 | ------------------- | ------------------------------------------------------------ |
 | **Port Forwarding** | 특정 포트를 로컬로 전달하여 단일 서비스에 접근 가능하지만, 여러 포트나 복잡한 네트워크 설정이 필요할 경우 불편함 |
 | **KubeVPN**         | 전체 네트워크를 클러스터 내부처럼 확장하여 Pod IP 및 네이티브 DNS를 직접 사용 가능 |
 
-## 1.2 KubeVPN의 Technical Architecture
+## 1.2 KubeVPN의 아키텍처
 
 ![KubeVPN Architecture](image-20250403231528867.png)
 
-`KubeVPN`의 아키텍처는 클러스터 내부와 로컬 환경을 VPN 터널을 통해 연결하여 원활한 통신이 가능하도록 구성된다. 주요 구성 요소는 다음과 같다.
-
-- **Proxy Pod**: 클러스터 내부에서 네트워크 터널링 역할 수행
-- **VPN Client**: 로컬 머신에서 클러스터 네트워크로 접근할 수 있도록 설정
-- **Traffic Routing**: HTTP 헤더 조건 등을 기반으로 로컬 환경으로 트래픽을 리디렉션
+`KubeVPN`은 클러스터 내부와 로컬 환경을 VPN 터널로 연결한다. 클러스터 안에서는 Proxy Pod가 네트워크 터널링을 담당하고, 로컬 머신에는 VPN Client를 설정해 클러스터 네트워크에 접근한다. 그리고 HTTP 헤더 같은 조건을 기준으로 클러스터의 트래픽을 다시 로컬 환경으로 보내는 트래픽 라우팅도 지원한다.
 
 ## 1.3 KubeVPN의 주요 특징
 
-1. Direct Cluster Networking
-
-- Pod IP 주소로 직접 통신 가능: 클러스터 내부처럼 Pod 간 네트워크 통신 가능
-- Native Kubernetes DNS Resolution: 클러스터에서 제공하는 DNS를 그대로 활용 가능
-
-2. Route Traffic from Cluster to Local Machine
-
-- HTTP 요청 헤더 조건에 따라 트래픽을 로컬 환경으로 리디렉션 가능
-- 원활한 디버깅 및 개발을 위한 로컬 환경과 클러스터 간의 네트워크 연결 지원
-
-3. Multi-Cluster 연결 지원
-
-- 여러 개의 `Kubernetes` 클러스터를 동시에 연결하여 통합 네트워크 환경 구성 가능
-
-------
+`KubeVPN`을 쓰면 클러스터 내부에 있는 것처럼 Pod IP로 직접 통신할 수 있고, 클러스터가 제공하는 DNS도 그대로 활용할 수 있다. 또 HTTP 요청 헤더 조건에 따라 클러스터 트래픽을 로컬 환경으로 돌릴 수 있어서, 로컬에서 코드를 띄워 놓고 디버깅하기에 편하다. 여러 개의 `Kubernetes` 클러스터를 동시에 연결해 하나의 네트워크처럼 다루는 것도 가능하다.
 
 # 2. KubeVPN 사용하는 방법
 
@@ -84,7 +66,7 @@ KubeVPN: CLI
     Built Go version: go1.24.0
 ```
 
-> 💡 Tip: Alias 설정하기 `KubeVPN` 명령어가 길게 느껴진다면 아래와 같이 `alias`를 설정하면 편리하다.
+> Tip: `KubeVPN` 명령어가 길게 느껴진다면 아래와 같이 `alias`를 설정하면 편리하다.
 
 ```bash
 > echo 'alias kv="kubevpn"' >> ~/.zshrc
@@ -172,7 +154,7 @@ PING 10.244.0.3 (10.244.0.3): 56 data bytes
 
 # 3. 마무리
 
-여러 pod에 연결하려면 매번 port forwarding을 해줘야 하지만, `KubeVPN` 을 활용하면서 클러스터에 전체 pod에 접속할 수 있어서 원활한 개발 및 디버깅이 가능해졌다.
+여러 pod에 연결하려면 매번 port forwarding을 해줘야 하지만, `KubeVPN`을 쓰면 클러스터의 전체 pod에 한 번에 접속할 수 있어서 개발과 디버깅이 한결 편해졌다.
 
 # 4. 참고
 
