@@ -780,7 +780,7 @@ In this part, we covered the advanced features and security of `MQTT` v5.
 In the next part, we will look at how to actually implement these features in the `Go` language.
 
 
-> **Next part preview**: In [MQTT v5 Complete Guide Part 5: Go + Paho Hands-on Implementation and Operations](/database/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영), we cover how to implement an `MQTT` v5 client in the Go language and production operation strategies.
+> **Next part preview**: In [MQTT v5 Complete Guide Part 5: Go + Paho Hands-on Implementation and Operations](/mqtt-v5-완벽-가이드-5-go-paho-실전-구현과-운영), we cover how to implement an `MQTT` v5 client in the Go language and production operation strategies.
 
 # 4. References
 

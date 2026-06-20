@@ -17,7 +17,7 @@ series: "Claude Code Complete Guide"
 
 # 1. Overview
 
-In the previous article, [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/article/claude-code-확장-기능-완벽-가이드-command-skill-subagent), we covered the concepts and practical usage of Claude Code's three core extension features: Command, Skill, and Subagent. In this article, **without overlap**, we organize new content centered on the next steps: **Hooks** (event-driven automation) and the **Plugin system** (packaging and distributing extensions).
+In the previous article, [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/claude-code-확장-기능-완벽-가이드-command-skill-subagent), we covered the concepts and practical usage of Claude Code's three core extension features: Command, Skill, and Subagent. In this article, **without overlap**, we organize new content centered on the next steps: **Hooks** (event-driven automation) and the **Plugin system** (packaging and distributing extensions).
 
 ## 1.1 Standalone Configuration vs Plugin
 
@@ -942,4 +942,4 @@ Summarizing the growth path in practice:
 - [Improving your coding workflow with Claude Code Plugins](https://composio.dev/blog/claude-code-plugin)
 - [Claude Code Agent Teams - Addy Osmani](https://addyosmani.com/blog/claude-code-agent-teams/)
 - [From Tasks to Swarms: Agent Teams](https://alexop.dev/posts/from-tasks-to-swarms-agent-teams-in-claude-code/)
-- [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/article/claude-code-확장-기능-완벽-가이드-command-skill-subagent)
+- [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/claude-code-확장-기능-완벽-가이드-command-skill-subagent)

@@ -356,7 +356,7 @@ In v5, you can pass metadata via User Properties and automatically expire old me
 
 Because Topic design is difficult to change after going into operation, be sure to review it thoroughly in the early stages.
 
-> **Next up**: In [MQTT v5 Complete Guide Part 3: QoS, Session, and Reconnection Strategy](/database/mqtt-v5-완벽-가이드-3-qos-session-재연결-전략), we cover how `QoS` works, session management, and the reconnection strategy that matters most in practice.
+> **Next up**: In [MQTT v5 Complete Guide Part 3: QoS, Session, and Reconnection Strategy](/mqtt-v5-완벽-가이드-3-qos-session-재연결-전략), we cover how `QoS` works, session management, and the reconnection strategy that matters most in practice.
 
 
 # 5. References

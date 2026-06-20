@@ -28,13 +28,13 @@ Claude Code로 코드를 작성하다 보면 한 가지 답답함이 있다. 처
 
 이 글에서는 superpowers 핵심 skill을 한 번에 정리하고, 실제로 Echo + React 기반 Todo 웹앱을 처음부터 PR/머지까지 진행한 사례를 단계별로 따라가본다. 마지막에는 직접 써보고 느낀 솔직한 후기 섹션도 별도로 두어, 도입을 고민하는 동료가 비용 vs 가치를 판단할 수 있게 한다.
 
-> 본 글은 Claude Code 자체와 Skill/Plugin 개념에 어느 정도 익숙한 독자를 가정한다. 처음 듣는 개념이 있다면 [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/articles/claude-code-확장-기능-완벽-가이드-command-skill-subagent), [Claude Code Plugin Hooks 완벽 가이드](/articles/claude-code-plugin-hooks-완벽-가이드)를 먼저 읽으면 도움이 된다.
+> 본 글은 Claude Code 자체와 Skill/Plugin 개념에 어느 정도 익숙한 독자를 가정한다. 처음 듣는 개념이 있다면 [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/claude-code-확장-기능-완벽-가이드-command-skill-subagent), [Claude Code Plugin Hooks 완벽 가이드](/claude-code-plugin-hooks-완벽-가이드)를 먼저 읽으면 도움이 된다.
 
 # 2. Superpowers란
 
 Superpowers는 [Anthropic이 운영하는 Claude Code plugin marketplace](https://www.anthropic.com/engineering/claude-code-plugins)에 공식 등록된 plugin이다. 단일 기능을 제공하는 보통의 plugin과 달리, **여러 skill의 묶음 + skill끼리 정해진 순서로 호출되는 워크플로우**를 함께 제공한다는 게 특징이다.
 
-기존 [Skill 가이드](/articles/claude-code-확장-기능-완벽-가이드-command-skill-subagent)가 "각 skill이 무엇이고 언제 호출되는가"를 설명한다면, 본 글은 한 단계 위에서 **여러 skill이 어떤 순서로 엮여 한 사이클을 이루는가**를 다룬다.
+기존 [Skill 가이드](/claude-code-확장-기능-완벽-가이드-command-skill-subagent)가 "각 skill이 무엇이고 언제 호출되는가"를 설명한다면, 본 글은 한 단계 위에서 **여러 skill이 어떤 순서로 엮여 한 사이클을 이루는가**를 다룬다.
 
 # 3. 핵심 Skill 카탈로그
 
@@ -401,6 +401,6 @@ Superpowers를 한 사이클 돌려보면 한 가지가 분명해진다. **AI �
 - [Anthropic Claude Code 공식 문서](https://docs.claude.com/en/docs/claude-code)
 - [Claude Code Plugin Marketplace 안내](https://www.anthropic.com/engineering/claude-code-plugins)
 - 본 사례 PR: [tutorials-go #701 (Todo 풀 구현)](https://github.com/kenshin579/tutorials-go/pull/701), [#702 (FE 테마 리디자인)](https://github.com/kenshin579/tutorials-go/pull/702)
-- [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/articles/claude-code-확장-기능-완벽-가이드-command-skill-subagent)
-- [Claude Code Plugin Hooks 완벽 가이드](/articles/claude-code-plugin-hooks-완벽-가이드)
-- [Claude Code MCP 추천 가이드](/articles/claude-code-mcp-추천-가이드)
+- [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/claude-code-확장-기능-완벽-가이드-command-skill-subagent)
+- [Claude Code Plugin Hooks 완벽 가이드](/claude-code-plugin-hooks-완벽-가이드)
+- [Claude Code MCP 추천 가이드](/claude-code-mcp-추천-가이드)

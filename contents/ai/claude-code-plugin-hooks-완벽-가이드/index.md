@@ -17,7 +17,7 @@ series: "Claude Code 완벽 가이드"
 
 # 1. 개요
 
-이전 글 [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/article/claude-code-확장-기능-완벽-가이드-command-skill-subagent)에서는 Claude Code의 세 가지 핵심 확장 기능인 Command, Skill, Subagent의 개념과 실전 활용법을 다뤘다. 이번 글에서는 **중복 없이** 다음 단계인 **Hooks**(이벤트 기반 자동화)와 **Plugin 시스템**(확장 기능 패키징 및 배포)을 중심으로 새로운 내용을 정리한다.
+이전 글 [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/claude-code-확장-기능-완벽-가이드-command-skill-subagent)에서는 Claude Code의 세 가지 핵심 확장 기능인 Command, Skill, Subagent의 개념과 실전 활용법을 다뤘다. 이번 글에서는 **중복 없이** 다음 단계인 **Hooks**(이벤트 기반 자동화)와 **Plugin 시스템**(확장 기능 패키징 및 배포)을 중심으로 새로운 내용을 정리한다.
 
 ## 1.1 단독 설정 vs Plugin의 차이
 
@@ -942,4 +942,4 @@ flowchart TD
 - [Improving your coding workflow with Claude Code Plugins](https://composio.dev/blog/claude-code-plugin)
 - [Claude Code Agent Teams - Addy Osmani](https://addyosmani.com/blog/claude-code-agent-teams/)
 - [From Tasks to Swarms: Agent Teams](https://alexop.dev/posts/from-tasks-to-swarms-agent-teams-in-claude-code/)
-- [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/article/claude-code-확장-기능-완벽-가이드-command-skill-subagent)
+- [Claude Code 확장 기능 완벽 가이드: Command, Skill, Subagent](/claude-code-확장-기능-완벽-가이드-command-skill-subagent)
