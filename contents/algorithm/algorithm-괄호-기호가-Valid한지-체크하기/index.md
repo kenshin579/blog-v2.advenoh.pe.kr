@@ -1,6 +1,6 @@
 ---
 title: "Algorithm 괄호 기호가 Valid한지 체크하기"
-description: "Algorithm 괄호 기호가 Valid한지 체크하기"
+description: "괄호 문자열이 올바르게 여닫혔는지 스택 자료구조로 O(n)에 검증하는 방법을 정리한다."
 date: 2018-07-29
 update: 2018-07-29
 tags:
@@ -35,8 +35,8 @@ public boolean solution(String str) {
 기본 아이디어는 다음과 같다.
 
 1. String의 한 char씩 스킨한다
-1. OPEN\_괄호 ‘(‘ 을 만나면 스택에 push하고
-1. CLOSE\_괄호 ‘)’를 만나면 스택에서 pop을 한다.
+1. OPEN_괄호 ‘(‘ 을 만나면 스택에 push하고
+1. CLOSE_괄호 ‘)’를 만나면 스택에서 pop을 한다.
 1. 스택에 아무것도 남아 있지 않으면, valid한 괄호인것으로 판단할 수 있다
 
 ```java
