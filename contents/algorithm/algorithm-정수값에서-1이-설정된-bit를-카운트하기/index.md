@@ -1,6 +1,6 @@
 ---
 title: "Algorithm 정수값에서 1이 설정된 bit를 카운트하기"
-description: "Algorithm 정수값에서 1이 설정된 bit를 카운트하기"
+description: "정수에서 1로 설정된 비트 개수를, 단순 반복부터 브라이언 커니핸 알고리즘(O(log n))까지 정리한다."
 date: 2018-10-28
 update: 2018-10-28
 tags:

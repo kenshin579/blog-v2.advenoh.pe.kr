@@ -1,11 +1,11 @@
 ---
 title: "Algorithm 2개의 array에서 common value 찾기"
-description: "Algorithm 2개의 array에서 common value 찾기"
+description: "2개의 정수 배열에서 중복 없이 공통으로 등장하는 값을 HashTable로 O(n)에 찾는 방법을 정리한다."
 date: 2018-07-29
 update: 2018-07-29
 tags:
   - array
-  - common,
+  - common
   - 알고리즘
   - 인터뷰
   - 면접
@@ -37,7 +37,7 @@ unit test를 미리 작성해서 쉽게 실행하면서 로직을 짜는게 좋�
 
 ```java
 @Test
-public void test_find_common_values() 
+public void test_find_common_values() {
     int[] A = {1, 1, 1, 1, 2, 2};
     int[] B = {3, 3, 4, 1, 2};
 
