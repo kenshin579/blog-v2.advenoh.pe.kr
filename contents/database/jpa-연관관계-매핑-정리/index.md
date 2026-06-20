@@ -1,6 +1,6 @@
 ---
 title: "JPA 연관관계 매핑 정리"
-description: "JPA 연관관계 매핑 정리"
+description: "JPA에서 엔티티 간의 관계를 매핑할 때 알아야 할 방향성, 연관관계 종류, 연관관계의 주인 개념을 정리한다."
 date: 2019-12-04
 update: 2019-12-04
 tags:
@@ -33,7 +33,7 @@ JPA에서 테이블 간의 관계를 엔티티의 연관관계로 매핑하는 �
 > - 포스트 (Post) -> 댓글 (Comment)
 > - 댓글 (Comment) -> 포스트 (Post)
 
-테이블은 외래 키 하나로 테이블을 조인해서 양쪽으로 쿼리가 가능한다.
+테이블은 외래 키 하나로 테이블을 조인해서 양쪽으로 쿼리가 가능하다.
 
 ```sql
 SELECT * FROM post AS p INNER JOIN comment AS c ON p.id = c.post_id
@@ -67,17 +67,17 @@ SELECT * FROM comment AS c INNER JOIN post AS P ON p.id = c.post_id
 
 테이블은 외래 키가 한쪽에 하나만 존재하여 외래 키 하나로 연관관계를 맺는다. 하지만, 양방향으로 맺어진 엔티티의 경우에는 양쪽에 서로 참조하는 필드가 존재하게 된다.
 
-두 엔티티 중에 하나만 외래 키를 관리하는 곳을 연관관계의 주인이라고 한다. 추후 업로드할 시리즈 포스팅에서 더 자세히 다루겠지만, 연관*관계의* 주인의 특징은 다음과 같다.
+두 엔티티 중에 하나만 외래 키를 관리하는 곳을 연관관계의 주인이라고 한다. 추후 업로드할 시리즈 포스팅에서 더 자세히 다루겠지만, 연관관계의 주인의 특징은 다음과 같다.
 
 - mappedBy 속성을 사용하는 엔티티는 연관관계의 주인이 아니다
     - mappedBy 속성으로 연관관계의 주인이 필드 이름을 지정한다
-- 보통 외래 키를 가진 테이블과 매핑한 언티티(ex. Comment)가 외래 키ㅐ를 관리하는 주인으로 선택한다
+- 보통 외래 키를 가진 테이블과 매핑한 엔티티(ex. Comment)가 외래 키를 관리하는 주인으로 선택한다
     - 다대일 양방향에서는 다(N)이 연관관계의 주인이 된다
 
 # 5. 참고
 
 - JPA 관계
-    - [[https://minwan1.github.io/2018/12/21/2018-12-26-jpa-%EA%B4%80%EA%B3%84%EC%84%A4%EC%A0%95/](https://minwan1.github.io/2018/12/21/2018-12-26-jpa-관계설정/)](https://minwan1.github.io/2018/12/21/2018-12-26-jpa-%EA%B4%80%EA%B3%84%EC%84%A4%EC%A0%95/)
+    - [https://minwan1.github.io/2018/12/21/2018-12-26-jpa-관계설정/](https://minwan1.github.io/2018/12/21/2018-12-26-jpa-%EA%B4%80%EA%B3%84%EC%84%A4%EC%A0%95/)
     - [https://siyoon210.tistory.com/27](https://siyoon210.tistory.com/27)
     - [https://howtodoinjava.com/hibernate/how-to-define-association-mappings-between-hibernate-entities/](https://howtodoinjava.com/hibernate/how-to-define-association-mappings-between-hibernate-entities/)
 - 책 : 자바 ORM 표준 JPA 프로그래밍

@@ -1,6 +1,6 @@
 ---
 title: "M1 맥북에서 Memongo 실행하기"
-description: "M1 맥북에서 Memongo 실행하기"
+description: "arm64 아키텍처 오류로 막힌 memongo를 M1 맥북에서 실행하는 두 가지 해결책을 소개한다."
 date: 2023-02-25
 update: 2023-02-25
 tags:

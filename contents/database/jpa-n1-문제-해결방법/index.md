@@ -1,6 +1,6 @@
 ---
 title: "JPA N+1 문제 및 해결방법"
-description: "JPA N+1 문제 및 해결방법"
+description: "JPA에서 N+1 문제가 발생하는 원인과 페치 조인, 배치 사이즈로 해결하는 방법을 예제로 정리한다."
 date: 2019-12-10
 update: 2019-12-10
 tags:
@@ -34,7 +34,7 @@ JPA로 작업하다 보면 N+1 문제에 맞닥뜨리게 되는데요. N+1은 �
 
 # 3. N+1 문제 및 해결 방법
 
-JPA에서 N+1 발생 시 성능에 큰 영향을 줄 수 있기 때문에 JPA로 개발하고 있다면 꼭 알아두어야 하자. N+1은 언제 발생할 수 있는 같이 알아보자.
+JPA에서 N+1 발생 시 성능에 큰 영향을 줄 수 있기 때문에 JPA로 개발하고 있다면 꼭 알아두어야 하자. N+1은 언제 발생하는지 같이 알아보자.
 
 `Post`와 `Comment` 엔티티는 다음과 같다.
 
@@ -44,7 +44,7 @@ JPA에서 N+1 발생 시 성능에 큰 영향을 줄 수 있기 때문에 JPA로
 
 ### 3.1.1 즉시 로딩 (fetchType.EAGER) 변경후 findAll()로 조회하는 경우
 
-`Post`와 `Comment` 엔티티 간에 다대일 양방향 연관 관계이다. @OneToMany 언노테이션의 fetch의 기본값은 지연 로딩이지만, 즉시 로딩으로 변경하면 N+1 문제가 발생할 수 있다.
+`Post`와 `Comment` 엔티티 간에 다대일 양방향 연관 관계이다. @OneToMany 어노테이션의 fetch의 기본값은 지연 로딩이지만, 즉시 로딩으로 변경하면 N+1 문제가 발생할 수 있다.
 
 ```java
 @Table(name = "post")
@@ -70,7 +70,7 @@ public class Comment extends DateAudit {
     @Column(name = "comment_id")
     private Long commentId;
 
-    //연관관계 매팽
+    //연관관계 매핑
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "post_id", nullable = false)
     private Post post;
@@ -173,7 +173,7 @@ public void test_N1_문제_발생_지연로딩설정_loop으로_조회하는_경
 
 ```
 
-[3.1.1]()에서와 같이 동일하게 N+1 이슈가 발생한다.
+3.1.1에서와 같이 동일하게 N+1 이슈가 발생한다.
 
 ```sql
 Hibernate: select post0_.post_id as post_id1_1_, post0_.create_dt as create_d2_1_, post0_.updated_dt as updated_3_1_, post0_.author as author4_1_, post0_.content as content5_1_, post0_.like_count as like_cou6_1_, post0_.title as title7_1_ from post post0_
@@ -191,7 +191,7 @@ Hibernate: select commentlis0_.post_id as post_id6_0_0_, commentlis0_.comment_id
 
 `JpaRepository`에 정의한 인터페이스 메서드를 실행하면 JPA는 메서드 이름을 분석해서 JPQL를 생성하여 실행하게 된다.  JPQL은 SQL을 추상화한 객체지향 쿼리 언어로서 특정 SQL에 종속되지 않고 엔티티 객체와 필드 이름을 가지고 쿼리를 한다.
 
-그면 지연 로딩 + loop으로 조회 시 왜 N+1 쿼리가 생성이 되어 실행되는지 알아보자.
+그러면 지연 로딩 + loop으로 조회 시 왜 N+1 쿼리가 생성이 되어 실행되는지 알아보자.
 
 ```java
 @Transactional
@@ -276,10 +276,10 @@ public class Post extends DateAudit {
 }
 ```
 
-```sql
+```java
 @Transactional
 @Test
-public void test_N1_문제_해결방법_증시로딩설정_loop으로_조회하는_경우() throws JsonProcessingException {
+public void test_N1_문제_해결방법_즉시로딩설정_loop으로_조회하는_경우() throws JsonProcessingException {
 		savePostWithComments(4, 2);
 		List<Post> posts = postRepository.findAll(); //배치 사이즈만큼 조회해온다
 }
@@ -295,10 +295,11 @@ Hibernate: select commentlis0_.post_id as post_id6_0_1_, commentlis0_.comment_id
 
 `findAll()`로 호출할 때마다 where in 쿼리를 이용해서 배치 사이즈만큼 조회해옵니다. 배치 사이즈를 넘는 경우에는 추가로 조회해오는 쿼리가 생성된다.
 
-Batch 사이즈 지정으로 해결하는 방법은 글로벌 패치 전략을 즉시 로딩으로 변경해야 하고 또한 배치 사이즈만큼만 조회할 수 있어서 N+1 문제를 완벽하게 해결하지 않아 권장하는 해결방법은 아닙니다.
+Batch 사이즈 지정으로 해결하는 방법은 글로벌 페치 전략을 즉시 로딩으로 변경해야 하고 또한 배치 사이즈만큼만 조회할 수 있어서 N+1 문제를 완벽하게 해결하지 않아 권장하는 해결방법은 아닙니다.
 
 # 4. FAQ
-# 5. JPA의 글로벌 페치 전략 기본 값은 어떻게 되나요?
+
+## 4.1 JPA의 글로벌 페치 전략 기본 값은 어떻게 되나요?
 
 - 즉시 로딩 (EAGER)
     - @OneToOne
@@ -307,13 +308,13 @@ Batch 사이즈 지정으로 해결하는 방법은 글로벌 패치 전략을 �
     - @OneToMany
     - @ManyToMany
 
-## 5.1 페치 조인 사용시 주의사항은 없나?
+## 4.2 페치 조인 사용시 주의사항은 없나?
 
 페치 조인은 연관된 엔티티를 한번에 조회할 수 있어서 조회 횟수를 줄여 성능 최적화시 많이 사용된다. 하지만, 페치 조인은 다음과 같은 한계점이 존재한다.
 
 참고 - 책 : 자바 ORM 표준 JPA 프로그래밍
 
-- 페체 조인에 alias 별칭을 사용할 수 없다
+- 페치 조인에 alias 별칭을 사용할 수 없다
 - 둘 이상의 컬렉션을 페치할 수 없다
     - 콜렉션 구현체에 따라서 페치도 가능하지만, 안되는 경우도 있어서 주의가 필요하다
 - 컬렉션을 페치 조인하면 paging API를 사용할 수 없다
@@ -322,11 +323,11 @@ Batch 사이즈 지정으로 해결하는 방법은 글로벌 패치 전략을 �
     - 컬렉션(일대다)는  페이징 API를 사용할 수 없다
         - 단일 값 연관 필드(일대일, 다대일)에서는 페치 조인을 사용할 수 있다.
 
-# 6. 참고
+# 5. 참고
 
 - JPA N+1
     - https://cheese10yun.github.io/jpa-nplus-1
     - https://lng1982.tistory.com/298
     - https://tech.wheejuni.com/2018/06/16/jpa-cartesian/
-- 책 : 자바 ORM 표준 JPA 프로그래맹
-    - <a href="http://www.yes24.com/Product/Goods/19040233?scode=032&OzSrank=2">![책: 자바 ORM 표준 JPA 프로그래맹](jpa_book1.jpg)</a>
+- 책 : 자바 ORM 표준 JPA 프로그래밍
+    - <a href="http://www.yes24.com/Product/Goods/19040233?scode=032&OzSrank=2">![책: 자바 ORM 표준 JPA 프로그래밍](jpa_book1.jpg)</a>

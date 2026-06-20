@@ -47,7 +47,7 @@ Google Finance 함수에서는 금현물 시세를 제공하지 않아 다른 AP
 
 ## 2.1 Apps Script 작성하기
 
-Google Apps Script는 Google 여러 서비스 (ex. Google Sheets, Docs, Gmail 등)를 자동화하고 확장 가능하도록 JavaScript 플랫폼을 제공하여 구글 서비스와 상호 작용이 가능하다.
+Google Apps Script는 Google Sheets, Docs, Gmail 같은 여러 서비스를 자동화하고 확장할 수 있는 JavaScript 플랫폼이다. 이걸로 구글 서비스를 코드로 다룰 수 있다.
 
 구글 시트에서 Apps Script를 작성하려면, `확장 프로그램` > `Apps Script` 클릭해서 실행한다. 아래 코드를 작성하고 실행 버튼을 클릭하면 최소 한번은 인증 절차를 거쳐야 한다.
 

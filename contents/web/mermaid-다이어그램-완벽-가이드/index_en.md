@@ -613,7 +613,7 @@ mmdc -i diagram.mmd -o diagram.png
 
 # 11. Conclusion
 
-Mermaid is a powerful tool that lets you easily create various diagrams using a text-based approach. It is especially useful for visually expressing complex concepts in technical documentation, READMEs, blog posts, and more.
+Mermaid lets you create diagrams from plain text, which means they live in version control next to your docs. That makes it a good fit for technical documentation, READMEs, and blog posts, where keeping a diagram in sync with the code is otherwise a chore.
 
 ## 11.1 References
 

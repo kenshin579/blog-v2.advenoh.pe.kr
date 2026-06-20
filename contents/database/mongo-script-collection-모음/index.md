@@ -1,6 +1,6 @@
 ---
 title: "Mongo Script Collection 모음"
-description: "Mongo Script Collection 모음"
+description: "MongoDB 데이터 마이그레이션에서 자주 쓰는 쉘 스크립트를 정리한다."
 date: 2023-02-25
 update: 2023-02-25
 tags:
@@ -32,9 +32,9 @@ db.inventory.updateMany({}, {$rename: {"item": "item_id"}}, false, true)
 ```
 
 
-# 2. 매칭이 item의 특정 값을 업데이트
+# 2. 매칭된 item의 특정 값을 업데이트
 
-SQL에서 where와 같이 `$eq` operator로 특정 값이 매칭되는 item을 선택해서 값을 `$se`t operator로 변경한다.
+SQL에서 where와 같이 `$eq` operator로 특정 값이 매칭되는 item을 선택해서 값을 `$set` operator로 변경한다.
 
 ```javascript
 db.inventory.updateMany(

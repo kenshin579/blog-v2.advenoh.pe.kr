@@ -1,10 +1,15 @@
 ---
 title: "Mongodb Collection Cloning하는 방법"
-description: "Mongodb Collection Cloning하는 방법"
+description: "MongoDB 스크립트로 기존 collection을 빠르게 복제하는 두 가지 방법을 정리한다."
 date: 2022-07-16
 update: 2022-07-16
 tags:
-  - mongo, mongodb, clone, collection, script, 몽고
+  - mongo
+  - mongodb
+  - clone
+  - collection
+  - script
+  - 몽고
 ---
 
 종종 기존의 데이터를 수정하지 않고 테스트를 위해서 기존 collection을 clone을 해서 테스트해보고 싶을 때가 있다. MongoDB 스크립트로 쉽게 clone 하는 방법에 대해서 알아보자
@@ -32,7 +37,7 @@ db.inventory.find().forEach(
 
 # 2. db.collection.aggregate()
 
-`aggregate`의 `$out operator`를 사용하면 조금 더 빠르게 clone이 가능하다.
+`aggregate`의 `$out` operator를 사용하면 조금 더 빠르게 clone이 가능하다.
 
 ## 2.1 Syntax
 

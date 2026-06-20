@@ -123,7 +123,7 @@ Quartz Scheduler에 익숙해지기 위해서 자주 사용하는 용어들을 �
 
 # 3. Quartz 구성요소
 
-[Java Articles](https://www.javarticles.com/2016/03/quartz-scheduler-model.html) 블로그에서 가져온 다이어그램이다. Quartz의 전체 구조와 흐름을 잘 보여주는 그림이다. Quartz의 세밀한 설정을 이해하는데 공식 문서도 도움이 되지만, 실제 [소스코드](https://github.com/quartz-scheduler) 를 보면 Quartz의 동작과 전체 아키텍처 구조를 이해하는데 많은 도움이 된다.
+[Java Articles](https://www.javarticles.com/2016/03/quartz-scheduler-model.html) 블로그에서 가져온 다이어그램이다. Quartz의 전체 구조와 흐름을 잘 보여주는 그림이다. Quartz의 세밀한 설정을 이해하려면 공식 문서도 참고할 만하고, 실제 [소스코드](https://github.com/quartz-scheduler) 를 직접 따라가면 동작 방식과 전체 아키텍처를 훨씬 빠르게 파악할 수 있다.
 
 ![](image_8.png)
 

@@ -312,7 +312,7 @@ public JobStatusResponse getAllJobs() {
 
 메서드 이름으로 쉽게 알 수 있듯이 이벤트(ex. triggerFire, triggerMisfired) 발생시 호출되는 메서드들이다.
 
-vetoJobExecution 메서드는 해당 Trigger를 veto(거부, 금지) 시킬지 결정할 수 있는 메서드로 true이면 veto를 시켜서 Job이 실행되지 않고 false이면 veto를 시키지 않아 Job을 실행시킬 수 있어서 특정 조건을 넣어서 실행 여부를 결정 짓을 수 있는 메서드이다.
+vetoJobExecution 메서드는 해당 Trigger를 veto(거부)할지 결정한다. true를 반환하면 Job이 실행되지 않고, false를 반환하면 실행된다. 특정 조건에 따라 Job 실행 여부를 제어할 때 이 메서드를 활용하면 된다.
 
 ```java
 @Component
@@ -376,7 +376,7 @@ public class JobsListener implements JobListener {
 
 # 4. 정리
 
-Quartz에서는 Scheduler의 여러 기능을 (scheduler, unschedule, pause, resume, stop) 제공하고 있어서 애플리케이션 내에 스케줄링 기능을 잘 구현할 수 있다. 이 포스팅에서는 스프링에서 Quartz를 어떻게 설정해서 사용할 수 있는지 알아보았다. RAMJobStore를 기본으로 사용해서 스케줄링 정보가 메모리에 저장되기 때문에 다중 서버 환경에서는 적합하지 않는다. 서버 이중화를 Quartz를 어떻게 설정해야 하는지 다음 포스팅에서 알아보자.
+Quartz는 scheduler, unschedule, pause, resume, stop 등 스케줄링에 필요한 기능을 갖추고 있다. 이 포스팅에서는 스프링에서 Quartz를 설정해서 사용하는 방법을 살펴보았다. RAMJobStore는 스케줄링 정보를 메모리에 저장하기 때문에 다중 서버 환경에는 맞지 않는다. 서버 이중화 환경에서 Quartz를 어떻게 설정하는지는 다음 포스팅에서 다루겠다.
 
 # 5. 참고
 

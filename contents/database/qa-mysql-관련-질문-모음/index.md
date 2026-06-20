@@ -1,6 +1,6 @@
 ---
 title: "Q&A MySql 관련 질문 모음"
-description: "Q&A MySql 관련 질문 모음"
+description: "InnoDB, COUNT, IFNULL, Slow Query 등 MySQL을 다루며 마주친 질문과 답변을 Q&A 형식으로 정리했다."
 date: 2018-07-29
 update: 2018-07-29
 tags:
@@ -12,7 +12,7 @@ tags:
 ---
 
 개인적으로 모르는 부분 적어두고 알게 되는 부분에 대해서 간단하게 정리해둔 자료이다.
-미 답변중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사한다.
+미답변 중에 알고 계신 부분 있으면 코멘트 달아주세요. 감사합니다.
 
 # Q&A 전체 목록
 
@@ -35,7 +35,7 @@ MySQL의 Storage Engine에는 여러 가지가 존재한다. 제일 많이 사�
 기본 설정은 1씩 증가하지만 auto_increment_increment 값을 다르게 설정하면 지정한 값만큼 증가하게 된다.
 
 ```sql
-mysql> show variables like 'auto_inc%’;
+mysql> show variables like 'auto_inc%';
 ```
 
 ![](image_6.png)
@@ -44,7 +44,7 @@ mysql> show variables like 'auto_inc%’;
 * [https://dba.stackexchange.com/questions/60295/why-does-auto-increment-jumps-by-more-than-the-number-of-rows-inserted](https://dba.stackexchange.com/questions/60295/why-does-auto-increment-jumps-by-more-than-the-number-of-rows-inserted)
 * [https://stackoverflow.com/questions/206751/mysql-autoincrement-column-jumps-by-10-why](https://stackoverflow.com/questions/206751/mysql-autoincrement-column-jumps-by-10-why)
 
-## <span style="color:brown">3. Sql 문구에서 가끔씩 '@변수 := …’ 를 발견했다. 무슨 의미일까? </span>
+## <span style="color:brown">3. Sql 문구에서 가끔씩 '@변수 := …' 를 발견했다. 무슨 의미일까? </span>
 
 ![](image_7.png)
 
@@ -63,21 +63,21 @@ mysql> show variables like 'auto_inc%’;
     * 행의 개수를 카운트하지만, 하나의 테이블에 대해서만 쿼리가 되고 JOIN한 Table 쿼리를 안된다
     * 사용하지 말라는 의견이 있다
 * COUNT(pk)
-    * NULL아 아닌것만 카운트한다
+    * NULL이 아닌 것만 카운트한다
 
 참고
 * [https://stackoverflow.com/questions/2710621/count-vs-count1-vs-countpk-which-is-better](https://stackoverflow.com/questions/2710621/count-vs-count1-vs-countpk-which-is-better)
 
 ## <span style="color:brown">5. IFNULL() 함수?</span>
 
-IFNULL(expression, alt_value) 형식으로 expressoin이 NULL이면 alt_value를 반환한다.
+IFNULL(expression, alt_value) 형식으로 expression이 NULL이면 alt_value를 반환한다.
 
 ![](image_2.png)
 
 참고
 * [https://www.w3schools.com/sql/func_mysql_ifnull.asp](https://www.w3schools.com/sql/func_mysql_ifnull.asp)
 
-## <span style="color:brown">6. 'order by 2,1’는 어떻게 정렬을 하라는 건가? <span>
+## <span style="color:brown">6. 'order by 2,1'는 어떻게 정렬을 하라는 건가? </span>
 
 두번째 컬럼으로 정렬하고 중복 값이 있는 경우에는 첫번째 컬럼으로 정렬하라는 의미이다.
 
@@ -85,7 +85,7 @@ IFNULL(expression, alt_value) 형식으로 expressoin이 NULL이면 alt_value를
 
 * [http://www.itmembers.net/board/view.php?id=oracle&page=2&sn1=&divpage=1&sn=off&ss=on&sc=on&select_arrange=headnum&desc=asc&no=29](http://www.itmembers.net/board/view.php?id=oracle&amp;page=2&amp;sn1=&amp;divpage=1&amp;sn=off&amp;ss=on&amp;sc=on&amp;select_arrange=headnum&amp;desc=asc&amp;no=29)
 
-## <span style="color:brown">6. MySQL Error 1093 : You can’t specify target table ..for update in FROM clause가 발생하는 경우, 어떻게 처리하면 되나? </span>
+## <span style="color:brown">7. MySQL Error 1093 : You can't specify target table ..for update in FROM clause가 발생하는 경우, 어떻게 처리하면 되나? </span>
 
 아래 SQL 실행시 오류가 발생하였다.
 
@@ -96,7 +96,7 @@ WHERE trans_seqno IN (SELECT trans_seqno FROM media_external_trans as t where t.
 
 ```
 
-원인은 MySQL은 Oracle과 달리게 UPDATE나 DELETE 할때 자기 테이블의 데이터를 바로 사용하지 못하는 이슈가 있어서 서브 쿼리를 하나 더 생성하여 임시 테이블을 만들어서 해결하면 된다.
+원인은 MySQL은 Oracle과 달리 UPDATE나 DELETE 할때 자기 테이블의 데이터를 바로 사용하지 못하는 이슈가 있어서 서브 쿼리를 하나 더 생성하여 임시 테이블을 만들어서 해결하면 된다.
 
 해결
 
@@ -112,13 +112,13 @@ MySql 설정에서 general_log을 활성화시켜면 된다.
 
 ```sql
 mysql> set global general_log=ON;
-mysql> show variables like ‘general%’;
+mysql> show variables like 'general%';
 ```
 
 참고
 * [https://skibis.tistory.com/75](https://skibis.tistory.com/75)
 
-## <span style="color:brown">8. MySql에서 general_log가 활성화되어 있지 않는 경우 query를 확인하는 방법은 없나? </span>
+## <span style="color:brown">9. MySql에서 general_log가 활성화되어 있지 않는 경우 query를 확인하는 방법은 없나? </span>
 
 MySql 실행시 모든 명령문을 bin log로 저장한다면 확인할 수 있다. bin log 로그 분석에 대한 자세한 사항은 아래 링크를 참조해주세요.
 
@@ -127,7 +127,7 @@ MySql 실행시 모든 명령문을 bin log로 저장한다면 확인할 수 있
 * [http://www.mysqlkorea.com/sub.html?mcode=manual&scode=01_1&m_no=22368&cat1=752&cat2=799&cat3=927&lang=k](http://www.mysqlkorea.com/sub.html?mcode=manual&amp;scode=01_1&amp;m_no=22368&amp;cat1=752&amp;cat2=799&amp;cat3=927&amp;lang=k)
 * [http://blog.naver.com/PostView.nhn?blogId=ncloud24&logNo=221055112009&parentCategoryNo=&categoryNo=79&viewDate=&isShowPopularPosts=false&from=postView](http://blog.naver.com/PostView.nhn?blogId=ncloud24&amp;logNo=221055112009&amp;parentCategoryNo=&amp;categoryNo=79&amp;viewDate=&amp;isShowPopularPosts=false&amp;from=postView)
 
-## <span style="color:brown">9. Slow Query란?</span>
+## <span style="color:brown">10. Slow Query란?</span>
 
 Slow Query란 말 그래도 query 수행시 오래 걸리는 쿼리를 의미한다.
 
@@ -135,7 +135,7 @@ Slow Query란 말 그래도 query 수행시 오래 걸리는 쿼리를 의미한
 
 * [https://itstudyblog.tistory.com/384](https://itstudyblog.tistory.com/384)
 
-## <span style="color:brown">10. 페이징에서 offset과 limit은 어떻게 사용되나?</span>
+## <span style="color:brown">11. 페이징에서 offset과 limit은 어떻게 사용되나?</span>
 
 많은 데이터를 한번에 가져올 수 없기 때문에 페이징으로 부분적으로 데이터를 가져올 때 LIMIT과 OFFSET을 사용한다.
 
@@ -146,7 +146,7 @@ Slow Query란 말 그래도 query 수행시 오래 걸리는 쿼리를 의미한
 * [https://needjarvis.tistory.com/259](https://needjarvis.tistory.com/259)
 * [http://avilos.codes/database/mysql/mysql-pagination/](http://avilos.codes/database/mysql/mysql-pagination/)
 
-## <span style="color:brown">11. Server time zone value ‘KST’ is unrecognized… 오류 메시지가 나는 경우 해결책은?</span>
+## <span style="color:brown">12. Server time zone value 'KST' is unrecognized… 오류 메시지가 나는 경우 해결책은?</span>
 
 여러 사항에 따라서 해결 방법이 다를 것으로 판단된다. 저희 경우에는 pom.xml에서 mysql-connector-java의 버전(ex. 8.0.13 —> 5.1.47)을 변경해서 해결했다.
 
@@ -155,7 +155,7 @@ Slow Query란 말 그래도 query 수행시 오래 걸리는 쿼리를 의미한
 참고
 * [https://offbyone.tistory.com/318](https://offbyone.tistory.com/318)
 
-## <span style="color:brown">12. JOIN시 ON과 WHERE의 차이점은?</span>
+## <span style="color:brown">13. JOIN시 ON과 WHERE의 차이점은?</span>
 
 내부 조인일 경우 ON 절은 WHERE 절을 사용 할 때와 결과가 같아서 외부 조인일 때만 ON을 사용하면 된다.
 
@@ -164,7 +164,7 @@ Slow Query란 말 그래도 query 수행시 오래 걸리는 쿼리를 의미한
 - https://eddyplusit.tistory.com/52
 - https://blog.leocat.kr/notes/2017/07/28/sql-join-on-vs-where
 
-## <span style="color:brown">13. 변수에 지정한 값 출력을 어떻게 하나?</span>
+## <span style="color:brown">14. 변수에 지정한 값 출력을 어떻게 하나?</span>
 
 `SELECT @variable`을 사용하면 된다.
 

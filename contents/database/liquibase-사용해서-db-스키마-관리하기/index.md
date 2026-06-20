@@ -1,11 +1,11 @@
 ---
 title: "Liquibase 사용해서 DB 스키마 관리하기"
-description: "Liquibase 사용해서 DB 스키마 관리하기"
+description: "CLI 설치부터 Changelog 작성, update와 rollback, diff까지 Liquibase로 DB 스키마를 코드처럼 관리하는 방법을 실습으로 정리한다"
 date: 2024-09-20
 update: 2024-09-20
 tags:
   - Liquibase
-  - Flyaway
+  - Flyway
   - rollback
   - migration
   - 롤백
@@ -41,7 +41,7 @@ tags:
 - 데이터베이스 무관성
   - `Liquibase`는 다양한 데이터베이스 시스템(`MySQL`, `PostgreSQL`, `Oracle`, `SQL Server` 등)을 지원하여 여러 데이터베이스에 동일한 변경 사항을 적용할 수 있다
 - 데이터베이스 변경 이력 추적
-  - `Liquibase`는 언제, 누가, 어떤 변경을 적용했는 지 추적할 수 있다
+  - `Liquibase`는 언제, 누가, 어떤 변경을 적용했는지 추적할 수 있다
 
 ## 1.2 기본 개념
 
@@ -98,7 +98,7 @@ make mysql-create
 
 DB 서버에 로그인을 해서 아래 데이터베이스를 생성한다.
 
-```sql
+```bash
 > create database liquibase_quickstart;
 ```
 
@@ -154,7 +154,7 @@ Liquibase command 'init project' was executed successfully.
 
 ### 3.1.2 수동으로 생성하기
 
-`Liquibase` 프로젝트의 디렉토리 구조는 아래와 같이 구성할 수 있다. `Liquibase` 프로젝트 구성에 대한 내용은 [Design Your LIquibase Project](https://docs.liquibase.com/start/design-liquibase-project.html)를 참고해 주세요.
+`Liquibase` 프로젝트의 디렉토리 구조는 아래와 같이 구성할 수 있다. `Liquibase` 프로젝트 구성에 대한 내용은 [Design Your Liquibase Project](https://docs.liquibase.com/start/design-liquibase-project.html)를 참고한다.
 
 ```bash
 ❯ tree .
@@ -178,7 +178,7 @@ liquibase.command.password=password
 classpath=lib/mysql-connector-j-8.0.33.jar
 ```
 
-> mysql connector jar 파일은 [[mysql.com](http://mysql.com)](http://mysql.comhttps://downloads.mysql.com/archives/c-j/) 사이트에서 다운로드할 수 있다
+> mysql connector jar 파일은 [MySQL Connector/J 다운로드](https://downloads.mysql.com/archives/c-j/) 사이트에서 다운로드할 수 있다
 
 # 4. SQL Changelog 생성하기
 
@@ -188,6 +188,9 @@ classpath=lib/mysql-connector-j-8.0.33.jar
 databaseChangeLog:
   - include:
       file: db/changelog/1_init.sql
+```
+
+```sql
 --liquibase formatted sql
 
 --changeset your.name:1 labels:example-label context:example-context
@@ -229,7 +232,7 @@ create table person
 
 ### 4.1.1 Liquibase 명령어로 실행하기
 
-```sql
+```bash
 ❯ liquibase --defaultsFile=liquibase.properties update
 ...생략...
 Running Changeset: db/changelog/1_init.sql::1::your.name
@@ -293,7 +296,7 @@ liquibase.command.url=jdbc:mysql://go-mysql:3306/liquibase_quickstart
 
 # 5. Liquibase 명령어
 
-`Liquibase`는 아래처럼 다양한 명령어를 제공한다. 자주 사용할 것 같은 명령어 위주로 정리한다. 더 자세한 내용은 Liquibase Commands를 참고해 주세요.
+`Liquibase`는 아래처럼 다양한 명령어를 제공한다. 자주 사용할 것 같은 명령어 위주로 정리한다. 더 자세한 내용은 Liquibase Commands를 참고한다.
 
 ## 5.1 Update 명령어
 
@@ -634,12 +637,6 @@ UPDATE liquibase_quickstart.employee SET email = 'user2@naver.com' WHERE id = 2;
 
 ```
 
-
-
-
-
-
-
 # 7. 마무리
 
 `Liquibase`는 다양한 환경에서 안전하고 효율적으로 데이터베이스 변경을 관리할 수 있는 강력한 도구이다. `Context`와 `Label`을 사용해 환경별 맞춤 실행을 제어하고, `rollback`을 통해 실수나 변경사항을 쉽게 되돌릴 수 있다. 또한, Docker를 통해 쉽게 설정 및 실행할 수 있어 개발자에게 편리한 옵션을 제공한다.
@@ -649,9 +646,9 @@ UPDATE liquibase_quickstart.employee SET email = 'user2@naver.com' WHERE id = 2;
 - `validate`: `Changelog`의 유효성을 검사하여 오류를 사전에 방지한다
 - `diff`: 두 데이터베이스 간의 스키마 차이를 비교해볼 수 있다
 - `update`: 변경사항을 데이터베이스에 적용한다
-- `rollback` : rollback 스크립트가 동작하는지 확인하기 위해 롤백도 실행해보는 걸 추천한다. 미리 잘 못 작성된 스크립트도 확인할 수 있어서 꼭 rollback도 테스트해야 한다
+- `rollback` : rollback 스크립트가 동작하는지 확인하기 위해 롤백도 실행해보는 걸 추천한다. 미리 잘못 작성된 스크립트도 확인할 수 있어서 꼭 rollback도 테스트해야 한다
 
-`Liquibase` 를 통해서 SQL schema도 코드와 같이 리뷰도 가능하고 환경 별로 직접 DB에 수동으로 SQL을 실행하는 경우로 인해서 DB 스키마가 조금씩 달라지고 관리가 안 되는 이슈들이 있었는데, `Liquibase` 활용하여 DB 관리가 간편해져서 좋다.
+`Liquibase`를 통해서 SQL schema도 코드처럼 리뷰할 수 있다. 그동안은 환경마다 직접 DB에 수동으로 SQL을 실행하다 보니 DB 스키마가 조금씩 달라지고 관리가 안 되는 이슈들이 있었는데, `Liquibase`를 활용하니 DB 관리가 간편해져서 좋다.
 
 # 8. 참고
 

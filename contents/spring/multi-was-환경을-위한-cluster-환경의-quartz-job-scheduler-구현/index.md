@@ -219,7 +219,7 @@ GET /scheduler/jobs API로 조회해보면 잘 등록된 것을 확인할 수 �
     - Job Workload Type에 따라서 Quartz 설정 튜닝이 필요하다
     - Long Jobs - 장시간 실행되는 Job (ex. CPU intensive)
     - Short Jobs - 짧게 실행되는 Job (ex. 1초마다 실행)
-    - 특히 Short Job과 같은 경우에는 1초마다 실행되는 것을 보장해야 한다. 한 서버가 셧다운 되면 실행 중인 Job이 misfire 되고 다른 서버가 바로 이어서 실행해야 하는 조건이 있다면 튜닝은 필수이다
+    - 특히 Short Job의 경우 한 서버가 셧다운 되면 실행 중인 Job이 misfire 되고 다른 서버가 바로 이어서 실행해야 한다면 튜닝은 필수이다
         - 참고로 현재 운용 중인 서버에서 Short Jobs이 많아 아래와 같이 튜닝을 했다
 
 ```
@@ -261,7 +261,7 @@ Quartz에서는 현재 실행되는 Job에 대해서만 관리하고 Job History
 
 Quartz Cluster 구성은 DB에 대한 dataSource 속성과 Cluster 관련 설정만 해주면 어렵지 않게 구성할 수 있다.
 
-Quartz는 Cluster 환경으로 DB를 사용하고 DB에 접근할 때마다 lock을 걸고 정보를 업데이트한다. Quartz 서버나 Short Jobs의 수가 많은 경우에는 lock이 더 많이 발생할 수 있어서 실행하려는 Job이 misfire 될 가능성이 커집니다. 이런 경우에는 Redis와 같은 다른 저장소를 사용하면 좋지 않을까 생각한다.
+Quartz는 Cluster 환경에서 DB를 사용하고, DB에 접근할 때마다 lock을 걸고 정보를 업데이트한다. Quartz 서버 수나 Short Job 수가 많으면 lock 경합이 늘어 Job이 misfire 될 가능성도 커진다. 이런 경우 Redis 같은 저장소로 교체를 고려해볼 만하다.
 
 Quartz에서는 기본적으로 2가지 저장소만 (Memory, DB) 제공하지만, Github에 Redis나 MongoDB와 같은 저장소에 저장할 수 있도록 구현체들이 있다. DB 실행 시 문제가 된다면 다른 저장소로 저장해보는 것도 좋을 듯해요.
 

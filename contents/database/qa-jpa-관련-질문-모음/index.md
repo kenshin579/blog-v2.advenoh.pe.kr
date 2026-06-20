@@ -1,6 +1,6 @@
 ---
 title: "Q&A JPA 관련 질문 모음"
-description: "Q&A JPA 관련 질문 모음"
+description: "JPA를 사용하며 마주친 @EntityListeners, @DynamicUpdate, @Transactional, @Convert 등에 대한 궁금증과 답변을 정리한 Q&A 모음이다."
 date: 2019-10-21
 update: 2019-10-21
 tags:
@@ -35,7 +35,6 @@ tags:
 
 참고
 * [https://docs.jboss.org/hibernate/orm/4.0/hem/en-US/html/listeners.html](https://docs.jboss.org/hibernate/orm/4.0/hem/en-US/html/listeners.html)
-* [https://docs.jboss.org/hibernate/orm/4.0/hem/en-US/html/listeners.html](https://docs.jboss.org/hibernate/orm/4.0/hem/en-US/html/listeners.html)
 
 ## <span style="color:brown">3. 자동으로 schema 생성하려면 설정을 어떻게 바꿔야 하나?</span>
 
@@ -58,7 +57,7 @@ persistence.xml 파일에서 hibernate 설정에 hiberate.hbm2ddl.auto 속성을
 
 클래스나 메서드에 어노테이션을 선언하면 외부에서 클래스의 메서드를 호출 할때 트랜잭션을 시작하고 메서드 실행이 끝나면 트랜잭션을 커밋해주는 어노테이션이다.
 
-@Transactional은 Unchecked Exception(ex. RuntimeException 하위 예외)인 겨우에만 rollback을 하고 Checked Exception 예외에도 롤백을 적용하려면 @Transactional(rollbackFor = Exception.class) 처럼 rollback을 직접 지정해줘야 한다.
+@Transactional은 Unchecked Exception(ex. RuntimeException 하위 예외)인 경우에만 rollback을 하고 Checked Exception 예외에도 롤백을 적용하려면 @Transactional(rollbackFor = Exception.class) 처럼 rollback을 직접 지정해줘야 한다.
 
 @Transactional 어노테이션은 보통 비지니스 로직이 있는 서비스 계층에서 사용한다. 이 어노테이션을 유닛테스트 작성시 사용하면 각각의 테스트를 실행 할 때마다 트랜잭션을 시작하고 테스트가 끝나면 트랜잭션을 강제로 롤백한다.
 
@@ -70,7 +69,7 @@ persistence.xml 파일에서 hibernate 설정에 hiberate.hbm2ddl.auto 속성을
 
 JPA에서 convertor를 사용해서 엔티티의 데이터를 변환해서 DB에 저장하고 저장한 데이터를 조회할 때도 convertor를 통해서 변환해서 값을 가져올 수 있다.
 
-아래 예를 보면 MediaInfoLive 엔티티의 movieRatioTp 필드에 @Convert 어노테이션을 적용해서 DB에 저장되기 직전에 LiveMovieRatioConvertor 클래스가 동작하도록 선언하였다. 필드뿐만이 아니라 클래스나 글로벌하게도 적용 가능한다.
+아래 예를 보면 MediaInfoLive 엔티티의 movieRatioTp 필드에 @Convert 어노테이션을 적용해서 DB에 저장되기 직전에 LiveMovieRatioConvertor 클래스가 동작하도록 선언하였다. 필드뿐만이 아니라 클래스나 글로벌하게도 적용 가능하다.
 
 ![](image_4.png)
 
@@ -104,7 +103,7 @@ JPA에서 convertor를 사용해서 엔티티의 데이터를 변환해서 DB에
 
 ![](image_1.png)
 
-- 이름기반 파라미터를 바인디할 때 사용하는 어노테이션임?
+- 이름기반 파라미터를 바인딩할 때 사용하는 어노테이션임?
 
 ![](image_3.png)
 

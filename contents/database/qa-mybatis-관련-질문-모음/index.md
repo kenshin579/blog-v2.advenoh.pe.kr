@@ -1,6 +1,6 @@
 ---
 title: "Q&A Mybatis 관련 질문 모음"
-description: "Q&A Mybatis 관련 질문 모음"
+description: "MyBatis를 사용하며 마주친 association, foreach, 트랜잭션 테스트 등 자잘한 궁금증과 답변을 정리한 Q&A 모음이다."
 date: 2018-07-29
 update: 2018-07-29
 tags:
@@ -45,7 +45,7 @@ IN에 들어갈 (…) 값을 <foreach> 태그로 값을 생성할 수 있다.
 
 
 
-## <span style="color:brown">3. association columnPrefix 중첩으로 사용할 때 매핑아 인되는 이슈?</span>
+## <span style="color:brown">3. association columnPrefix 중첩으로 사용할 때 매핑이 안 되는 이슈?</span>
 
 association을 중첩으로 columnPrefix로 매핑하는 경우에는 prefix가 중첩으로 append 되기 때문에 v_r_file_nm 형식으로 작성을 해야 한다.
 
@@ -61,7 +61,7 @@ association을 중첩으로 columnPrefix로 매핑하는 경우에는 prefix가 
 <resultMap id="vodInfo" type="domain.entity.MediaVod" >
   <result column="vod_seqno" property="vodNo"/>
   <result column="vod_title" property="vodTitle"/>
-  <association property="resourceInfo" resultMap="mediaResource" columnPrefix="r_"/>
+  <association property="resourceInfo" resultMap="mediaResourceMap" columnPrefix="r_"/>
 </resultMap>
 
 <resultMap id="mediaResourceMap" type="domain.entity.resource.MediaResource">
@@ -113,8 +113,8 @@ association을 중첩으로 columnPrefix로 매핑하는 경우에는 prefix가 
 * [https://mycup.tistory.com/185](https://mycup.tistory.com/185)
 
 ### - mybatis에서 association 속성은 뭔가?
-- resultMap에 다른 객체가 있는 경우에 사용하고 assocation은 has one 타입의 관계를 다룬다.
-- collection인 경우에는 has many 타입의 관계를 다룰 떄 사용한다.
+- resultMap에 다른 객체가 있는 경우에 사용하고 association은 has one 타입의 관계를 다룬다.
+- collection인 경우에는 has many 타입의 관계를 다룰 때 사용한다.
   ![](image_1.png)
 
 참고

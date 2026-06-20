@@ -16,7 +16,7 @@ tags:
 
 # 1. What Is Postman Flows?
 
-Postman Flows is a tool used to define and automate workflows by connecting several types of building blocks together. Flows provides a UI that lets you define a workflow without writing a single line of code, so anyone—not just developers—can easily use Flows. Let's take a look at the main features and capabilities of Postman Flows below.
+Postman Flows lets you define and automate workflows by connecting building blocks together. You build the workflow in a UI without writing any code, so anyone can use it, not only developers. Here are its main features.
 
 ![Postman Flows](postman-flows-overview.gif)
 
@@ -28,7 +28,7 @@ Postman Flows is a tool used to define and automate workflows by connecting seve
 - [Various Postman Flows Usecase Example](https://learning.postman.com/docs/postman-flows/gs/flows-overview/#what-can-you-do-with-flows)
 
 
-> Postman provides various forms of documentation, making it easy to learn Postman Flows.
+> Postman has plenty of documentation, so Postman Flows is easy to pick up.
 >
 
 ## 1.2 Postman Flows Features and Capabilities
@@ -106,7 +106,7 @@ Flows provides several block types as shown below.
 
 ## 1.5 Organize a Flow
 
-When a Flow accumulates many blocks, it becomes complex, so the following features seem to help you understand a built Flow a little more easily.
+Once a Flow has a lot of blocks, it gets hard to read. These features help.
 
 - Colors
     - You can select a block and assign a different color to it
@@ -117,7 +117,7 @@ When a Flow accumulates many blocks, it becomes complex, so the following featur
 
 ## 1.6 Webhook Feature
 
-You can deploy a Flow to the cloud and trigger it via a Webhook to run the Flow. As shown below, when you create a Flow as a Webhook, an API address is generated, and calling the API can trigger the Flow.
+You can deploy a Flow to the cloud and trigger it with a Webhook. When you set up a Flow as a Webhook, Postman generates an API address, and calling that address runs the Flow.
 
 ![Publish to the cloud](flows-create-webhook-v10-1.gif)
 
@@ -208,7 +208,7 @@ In the Postman Flow UI, you cannot connect flows to each other. However, you can
 
 - You cannot connect flows to each other in the UI
     - A possible workaround is to deploy the Flow to the Cloud and trigger it by calling it as an API
-    - Debugging is not easy when running a Flow deployed to the Cloud—it seems debugging only works locally
+    - Debugging is not easy once a Flow is deployed to the Cloud; debugging seems to work only locally
 - When a Flow gets long, it is somewhat difficult to view the whole thing
     - It would be nice to have a feature that hides grouped parts via folding
 - For somewhat complex logic, using a flow's FQL felt a bit frustrating

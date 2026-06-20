@@ -44,7 +44,7 @@ tags:
 
 # 3. 파일 업로드을 위한 설정
 
-파일 업로드를 위해 스프링에서 필요한 기본 설정에 대해서 알아봅시다. 언급했던 것처럼 스프링에서는 2가지 방법으로 파일 업로드를 설정할 수 있다. 본 포스팅에서는 첫 번째 StandardServletMultipartResolver 리졸뷰 위주로 설명을 하도록 하자. 두 번째인 CommonsMultipartResolver 리졸뷰를 사용해도 된다. 스프링 설정하는 경험이 있으면 어느 것을 사용하던 큰 어려움이 없을 것으로 생각된다. 필요한 내용은 참고 링크들을 참조해주시면 될 것 같아요.
+파일 업로드를 위해 스프링에서 필요한 기본 설정을 알아보자. 앞서 언급했듯이 스프링에서는 2가지 방법으로 파일 업로드를 설정할 수 있다. 본 포스팅에서는 첫 번째인 StandardServletMultipartResolver 위주로 설명한다. 두 번째인 CommonsMultipartResolver를 사용해도 무방하며, 스프링 설정 경험이 있다면 어느 쪽을 선택하든 어렵지 않을 것이다. 자세한 내용은 참고 링크를 확인해주세요.
 
 - Servlet 3.0 Multipart Request (이 방법 위주로 설명)
     - standardServletMultipartResolver
@@ -237,7 +237,7 @@ public class WebConfig extends WebMvcConfigurerAdapter {
 
 ![](/media/spring/스프링-파일-업로드-처리/image_8.png)
 
-컨트롤러에서 업로드한 파일은 MultipartFile 변수를 사용하여 전달받는다. MultipartFile 클래스는 파일에 대한 정보(파일 이름, 크기등)와 파일 관련 메서드(ex. 파일 저장)를 제공한다. 대표적으로 사용하는 메서드는 다음과 같고 더 자세한 사항은 API를 참고해주세요.
+컨트롤러에서 업로드한 파일은 MultipartFile 변수로 전달받는다. MultipartFile 클래스는 파일 이름·크기 등의 정보와 파일 저장 메서드를 제공한다. 주요 메서드는 다음과 같으며, 더 자세한 내용은 API를 참고해주세요.
 
 - transferTo() : 파일을 저장한다
 - getOriginalFilename() : 파일 이름을 String 값으로 반환한다
@@ -260,7 +260,7 @@ throws IOException {
 }
 ```
 
-Request parameter로 넘겨주는 파일 이름이 mediaFile로 넘겨줘서 @RequestRaram(“mediaFile”) 어노테이션으로 지정하였다. 그리고 파일이 빈파일이 아니면 정해진 다운로드 경로에 저장하고 결과 메시지는 fileUploadForm 뷰에 Model 클래스를 통해서 전달한다.
+Request parameter로 넘어오는 파일 이름이 mediaFile이므로 `@RequestParam(“mediaFile”)` 어노테이션으로 지정했다. 파일이 비어 있지 않으면 지정된 경로에 저장하고, 결과 메시지는 Model을 통해 fileUploadForm 뷰로 전달한다.
 
 > 번외 Tips
 > Rest API 구현을 할 때 데이터 형식을 JSON으로 많이 사용해서 클라이언트와 서버 간에 주고받는다. JSON 타입으로 주고받을때 기본적으로 encoding을 해서 보냅니다. 보내는 데이터가 적은 양이면 문제가 되지 않지만, 대용량의 JSON인 경우에는 성능에 큰 영향을 주게 된다. 이런 경우에 JSON 데이터를 stream으로 보내고 컨트롤러에서 MultipartFile로 받으면 스트림형식으로그냥 받기 때문에 성능이 많이 좋아집니다. 프로젝트 진행 시고려해볼 만한 부분이다.
@@ -365,7 +365,7 @@ public String singleFileUploadWith(@RequestParam("mediaFile") MultipartFile **fi
 
 ## 4.4 파일 업로드 + 추가 정보 by @ModelAttribute
 
-4.3 예제에서는 입력 데이터를 개별 변수에 저장하는 방식이었다. 하지만, 입력하는 데이터가 많을 때는 메서드인자가 많이 늘어나는 단점이 있다. @ModelAttribute어노테이션을 이용하면 입력한 데이터를 클래스로 한 번에 매핑 할 수 있다.
+4.3 예제는 입력 데이터를 개별 변수로 받는 방식이었다. 입력 항목이 많아지면 메서드 인자가 그만큼 늘어나는 단점이 있다. `@ModelAttribute` 어노테이션을 사용하면 입력 데이터를 클래스 하나에 한 번에 매핑할 수 있다.
 
 클래스 매핑을 위해 Form에서 입력하는 데이터 이름과 같은 변수를 포함하는 클래스를 아래와 같이 생성한다.
 

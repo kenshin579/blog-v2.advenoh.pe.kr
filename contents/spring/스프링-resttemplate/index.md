@@ -17,7 +17,7 @@ tags:
 
 # 1. 들어가며
 
-스프링 프레임워크에서는 REST 서비스의 Endpoint를 호출할 수 있도록 크게 **2가지 방식인 동기, 비동기 REST Client을 제** 공한다. 이번 포스팅에서는 동기방식인 RestTemplate에 대해서 알아보자.
+스프링 프레임워크에서는 REST 서비스의 Endpoint를 호출할 수 있도록 동기, 비동기 REST Client를 제공한다. 이번 포스팅에서는 동기 방식인 RestTemplate에 대해서 알아보자.
 
 - **RestTemplate**
     - Spring 3부터 지원 되었고 REST API 호출이후 응답을 받을 때까지 기다리는 동기방식이다
@@ -28,7 +28,7 @@ tags:
     - Spring 5에 추가된 논블럭, 리엑티브 웹 클리이언트로 동기, 비동기 방식을 지원한다
 
 
-RestTemplate은 스프링에서 제공하는 다른 여러 **Template 클래스 (ex. JdbcTemplate, RedisTemplate)와 동일한 원칙에 따라 설계되어 단순한 방식의 호출로 복잡한 작업을 쉽게 하도록 제공** 한다. RestTemplate 클래스는 REST 서비스를 호출하도록 설계되어 HTTP 프로토콜의 메서드 (ex. GET, POST, DELETE, PUT)에 맞게 여러 메서드를 제공한다.
+RestTemplate은 스프링에서 제공하는 다른 Template 클래스(ex. JdbcTemplate, RedisTemplate)와 동일한 원칙으로 설계되어 있으며, 간단한 호출로 HTTP 통신을 처리할 수 있다. RestTemplate 클래스는 REST 서비스를 호출하도록 설계되어 HTTP 프로토콜의 메서드(ex. GET, POST, DELETE, PUT)에 맞게 여러 메서드를 제공한다.
 
 | 메서드 | HTTP | 설명 |
 | ------------- | ------------- | ------------- |
@@ -55,7 +55,7 @@ RestTemplate은 스프링에서 제공하는 다른 여러 **Template 클래스 
 
 예제 프로젝트는 스프링 부트로 작성되어 기본 스프링 부트 의존성을 추가하면 RestTemplate 관련 의존성은 자동으로 추가된다.
 
-기본 스프링을 사용 중이라면 spring-webmvc 의존성만 추가하여 작업하시면 된다. 실제로 RestTemplate은 spring-web 의존성에 포함된 클래스이지만, **spring-webmvc 의존성에 spring-web이 포함되어 있어 같이 의존성이 포함** 된다.
+기본 스프링을 사용 중이라면 spring-webmvc 의존성만 추가하면 된다. RestTemplate은 spring-web 의존성에 포함된 클래스이고, spring-webmvc가 spring-web을 transitive 의존성으로 포함하므로 별도로 추가할 필요는 없다.
 
 ```xml
 <dependency>
@@ -95,7 +95,7 @@ public void test_getForObject() {
 
 Controller에서는 getEmployee() 호출 시 응답으로 Employee 객체를 JSON 형태로 변환한다. 예제를 실행해 보면 추가 설정 없이 자동으로 JSON 형태로 잘 받는 것을 알 수 있다.
 
-스프링 부트에서는 Controller 단에 **@RestController 어노테이션을 추가하면 클래스패스에 Jackson2 (jackson-databind)가 있는 한 기본적으로 JSON 응답을 처리** 한다. spring-boot-starter-web 의존성을 추가했다면 jackson-databind은 transitive 의존성에 의해서 같이 포함된다.
+스프링 부트에서는 Controller에 `@RestController` 어노테이션을 추가하면 클래스패스에 Jackson2(jackson-databind)가 있는 한 기본적으로 JSON 응답을 처리한다. spring-boot-starter-web 의존성을 추가했다면 jackson-databind는 transitive 의존성으로 자동 포함된다.
 
 **Controller Code**
 
@@ -421,7 +421,7 @@ public ResponseEntity<Employee> getEmployeeByExchangeMethod(
 
 ### 4.5.2 exchange()로 객체 컬렉션을 받아보기
 
-단순히 하나의 객체(ex. 직원) 정보를 반환하는 메서드를 Controller에서 정의하지만, 전체 직원을 조회해서 List<Employee> 형태로 반환하는 EndPoint가 필요할 때가 있다.
+앞선 예제들은 단일 객체를 반환했지만, 전체 직원을 조회해서 `List<Employee>` 형태로 반환하는 EndPoint가 필요할 때도 있다.
 
 **Controller Code**
 
@@ -570,7 +570,7 @@ public void test_patchForObject() {
 
 ## 4.9 Execute()
 
-마지막으로 Execute() 메서드에 대해서 알아보자. Execute()는 콜백을 통해 요청 준비와 응답 추출을 완벽하게 제어하여 요청을 수행하는 가장 일반적인 메서드를 RestTemplate에서 제공한다. 그래서 실제 지금까지 언급했던 메서드 getForObject(), put()등은 내부적으로 execute() 메서드를 호출하게 되어 있다.
+마지막으로 Execute() 메서드에 대해서 알아보자. Execute()는 콜백을 통해 요청 준비와 응답 추출을 직접 제어할 수 있는 가장 하위 수준의 메서드다. 지금까지 다룬 getForObject(), put() 등은 내부적으로 모두 execute()를 호출한다.
 
 아래 코드는 getForObject()와 put() 메서드의 구현 부분이다. 인자로 넘겨진 파라미터로 execute()를 호출한다.
 
