@@ -709,7 +709,7 @@ In practice, reconnection logic accounts for a significant portion of the entire
 
 ---
 
-> **Next part**: In [MQTT v5 Complete Guide Part 4: Advanced Features and Security](/database/mqtt-v5-완벽-가이드-4-고급-기능과-보안), we cover Shared Subscriptions, the Request/Response pattern, Reason Codes, and TLS security configuration.
+> **Next part**: In [MQTT v5 Complete Guide Part 4: Advanced Features and Security](/mqtt-v5-완벽-가이드-4-고급-기능과-보안), we cover Shared Subscriptions, the Request/Response pattern, Reason Codes, and TLS security configuration.
 
 ---
 

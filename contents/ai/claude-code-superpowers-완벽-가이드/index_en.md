@@ -28,13 +28,13 @@ When you write code with Claude Code, there's one recurring frustration. You sta
 
 In this article, I'll lay out the core superpowers skills all at once, then walk step by step through an actual case where I built an Echo + React Todo web app from scratch all the way to PR/merge. At the end, I've added a separate honest-review section based on actually using it, so colleagues considering adoption can weigh cost vs. value.
 
-> This article assumes a reader who is reasonably familiar with Claude Code itself and the Skill/Plugin concepts. If any concept is new to you, it helps to first read [Complete Guide to Claude Code Extensions: Command, Skill, Subagent](/articles/claude-code-확장-기능-완벽-가이드-command-skill-subagent) and [Complete Guide to Claude Code Plugin Hooks](/articles/claude-code-plugin-hooks-완벽-가이드).
+> This article assumes a reader who is reasonably familiar with Claude Code itself and the Skill/Plugin concepts. If any concept is new to you, it helps to first read [Complete Guide to Claude Code Extensions: Command, Skill, Subagent](/claude-code-확장-기능-완벽-가이드-command-skill-subagent) and [Complete Guide to Claude Code Plugin Hooks](/claude-code-plugin-hooks-완벽-가이드).
 
 # 2. What Is Superpowers
 
 Superpowers is a plugin officially registered in the [Claude Code plugin marketplace run by Anthropic](https://www.anthropic.com/engineering/claude-code-plugins). Unlike an ordinary plugin that provides a single function, its distinguishing feature is that it provides **a bundle of multiple skills + a workflow in which the skills are invoked in a defined order**.
 
-Where the existing [Skill guide](/articles/claude-code-확장-기능-완벽-가이드-command-skill-subagent) explains "what each skill is and when it's invoked," this article steps up one level to cover **in what order multiple skills are woven together to form a single cycle**.
+Where the existing [Skill guide](/claude-code-확장-기능-완벽-가이드-command-skill-subagent) explains "what each skill is and when it's invoked," this article steps up one level to cover **in what order multiple skills are woven together to form a single cycle**.
 
 # 3. Core Skill Catalog
 
@@ -401,6 +401,6 @@ These three are the parts missing from this case, so I'll cover them separately 
 - [Anthropic Claude Code official docs](https://docs.claude.com/en/docs/claude-code)
 - [Claude Code Plugin Marketplace guide](https://www.anthropic.com/engineering/claude-code-plugins)
 - This case's PRs: [tutorials-go #701 (full Todo implementation)](https://github.com/kenshin579/tutorials-go/pull/701), [#702 (FE theme redesign)](https://github.com/kenshin579/tutorials-go/pull/702)
-- [Complete Guide to Claude Code Extensions: Command, Skill, Subagent](/articles/claude-code-확장-기능-완벽-가이드-command-skill-subagent)
-- [Complete Guide to Claude Code Plugin Hooks](/articles/claude-code-plugin-hooks-완벽-가이드)
-- [Claude Code MCP Recommendation Guide](/articles/claude-code-mcp-추천-가이드)
+- [Complete Guide to Claude Code Extensions: Command, Skill, Subagent](/claude-code-확장-기능-완벽-가이드-command-skill-subagent)
+- [Complete Guide to Claude Code Plugin Hooks](/claude-code-plugin-hooks-완벽-가이드)
+- [Claude Code MCP Recommendation Guide](/claude-code-mcp-추천-가이드)

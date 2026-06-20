@@ -32,7 +32,7 @@ This article walks through how to configure multiple Telegram bots as OpenClaw m
 3. **Pass bot tokens** - Hand the tokens to OpenClaw to auto-configure the bindings
 4. **Verify and run** - Check the agent list and channel status
 
-> For OpenClaw's basic concepts and installation, refer to the [Complete OpenClaw Guide](/article/openclaw-완벽-가이드) article.
+> For OpenClaw's basic concepts and installation, refer to the [Complete OpenClaw Guide](/openclaw-완벽-가이드) article.
 
 # 2. Multi-Agent Architecture
 

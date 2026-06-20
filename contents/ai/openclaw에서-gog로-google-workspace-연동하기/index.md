@@ -29,7 +29,7 @@ OpenClaw에 Google Workspace를 연동하면 Telegram 채팅만으로 Gmail, Cal
 - Google Cloud Console에서 OAuth 설정 (웹 브라우저)
 - JSON credential 파일을 Telegram으로 전송한 이후부터는 모두 Telegram으로 진행했고, CLI 명령어를 직접 입력하지 않았다.
 
-> OpenClaw 기본 설치와 Telegram 봇 연동은 [OpenClaw 완벽 가이드](/article/openclaw-완벽-가이드) 글을 참고하자.
+> OpenClaw 기본 설치와 Telegram 봇 연동은 [OpenClaw 완벽 가이드](/openclaw-완벽-가이드) 글을 참고하자.
 
 # 2. gog란?
 
@@ -132,7 +132,9 @@ APIs 및 서비스 → OAuth 동의 화면 클릭 하면 OAuth 개요 페이지�
 
 연락처 정보 입력 후 완료한다.
 
-![최종 확인](oauth-consent-confirm.png)## 6.3 OAuth Client ID 생성
+![최종 확인](oauth-consent-confirm.png)
+
+## 6.3 OAuth Client ID 생성
 
 APIs & Services → Credentials → **사용자 인증 정보 만들기** → **OAuth 클라이언트 ID**를 선택한다.
 
@@ -387,5 +389,5 @@ gog drive files list                  # → Drive API 정상 확인
 
 - [gog 공식 문서 (ClaWHub)](https://clawhub.ai/steipete/gog)
 - [Google Cloud Console](https://console.cloud.google.com/)
-- [OpenClaw 완벽 가이드](/article/openclaw-완벽-가이드)
-- [OpenClaw Telegram 멀티 에이전트 구성하기](/article/openclaw-telegram-멀티-에이전트-구성하기)
+- [OpenClaw 완벽 가이드](/openclaw-완벽-가이드)
+- [OpenClaw Telegram 멀티 에이전트 구성하기](/openclaw-telegram-멀티-에이전트-구성하기)

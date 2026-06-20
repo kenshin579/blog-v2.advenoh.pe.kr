@@ -29,7 +29,7 @@ Connecting Google Workspace to OpenClaw lets you control Gmail, Calendar, and Dr
 - OAuth setup in the Google Cloud Console (web browser)
 - After sending the JSON credential file to Telegram, everything was done through Telegram, without typing any CLI command directly
 
-> For the basic OpenClaw installation and Telegram bot integration, see the [Complete OpenClaw Guide](/article/openclaw-완벽-가이드).
+> For the basic OpenClaw installation and Telegram bot integration, see the [Complete OpenClaw Guide](/openclaw-완벽-가이드).
 
 # 2. What is gog?
 
@@ -387,5 +387,5 @@ After setup, you just make requests in natural language from Telegram. Say thing
 
 - [gog official docs (ClaWHub)](https://clawhub.ai/steipete/gog)
 - [Google Cloud Console](https://console.cloud.google.com/)
-- [Complete OpenClaw Guide](/article/openclaw-완벽-가이드)
-- [Setting Up OpenClaw Telegram Multi-Agent](/article/openclaw-telegram-멀티-에이전트-구성하기)
+- [Complete OpenClaw Guide](/openclaw-완벽-가이드)
+- [Setting Up OpenClaw Telegram Multi-Agent](/openclaw-telegram-멀티-에이전트-구성하기)
