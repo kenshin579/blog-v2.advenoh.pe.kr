@@ -32,7 +32,7 @@ type Person struct {
 
 - `Setter`는 `SetFoo()`와 같이 만들면 된다
     - 외부에서 메서드를 호출하기 위해서 메서드 첫글자는 대문자로 한다
-- `Setter`에서는 리시버 인자는 포이터 리시버(`Pointer receiver`)가 필요하다
+- `Setter`에서는 리시버 인자는 포인터 리시버(`Pointer receiver`)가 필요하다
     - 메서드 실행후 변경된 값을 반환해야 하기 때문이다
 - `Setter`에서 data validation 로직을 넣어 유효성 체크를 할 수 있다
 
@@ -53,7 +53,7 @@ func (p *Person) SetName(name string) error {
 - `Getter`는 Get을 붙이지 않고 변수 이름으로만 지정한다
     - ex. `GetName()` - X
     - ex. `Name()` - O
-    - `GetName()`을 붙혀서 코드를 작성해도 동작하는데는 이상이 없지만, go convension에 의해서 get은 쓰지 않는다
+    - `GetName()`을 붙여서 코드를 작성해도 동작하는데는 이상이 없지만, go convention에 의해서 get은 쓰지 않는다
 
 ```go
 func (p Person) Name() string {

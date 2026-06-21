@@ -17,7 +17,7 @@ tags:
 
 회사에서 [Zencoder API](https://support.brightcove.com/zencoder) 을 사용하게 되어 자바에서 작업을 시작하려는데, 아래와 같이 SSLHandshakeException이 발생해서 뭔가 문제인지 구글링을 하게 되었다. 이미 아시는 분들도 많지만, 다시 한번 정리를 해봤다.
 
-- Zencoder API 작업 요청 주소 \* [https://app.zencoder.com/api/v2/jobs](https://app.zencoder.com/api/v2/jobs)
+- Zencoder API 작업 요청 주소 : [https://app.zencoder.com/api/v2/jobs](https://app.zencoder.com/api/v2/jobs)
 
 **Exception 발생 화면**
 
@@ -129,7 +129,7 @@ $ sudo java -jar portecle.jar
 
 **4. 자바 keystore에 등록하기**
 
-원하는 자바 버전의 **\$JAVA_HOME_lib_security/cacerts** 파일을 열어서 새로운 인증서를 추가하고 저장하면 끝납니다.
+원하는 자바 버전의 `$JAVA_HOME/lib/security/cacerts` 파일을 열어서 새로운 인증서를 추가하고 저장하면 끝납니다.
 
 설치된 자바 홈 폴더를 확인하고 싶으면 **java_home 명령어** 로 확인할 수 있다.
 
@@ -155,7 +155,7 @@ $ /usr/libexec/java_home -V
 
 ![](image_4.png)
 
-다시 유닛 테스트를 실행하면 Exception 없이 잘 실행되는 것을 확인할 수 있다. 자 그면, 명령어 창에서 등록하는 방법을알아보자.
+다시 유닛 테스트를 실행하면 Exception 없이 잘 실행되는 것을 확인할 수 있다. 자 그럼, 명령어 창에서 등록하는 방법을 알아보자.
 
 ### 3.2.2 명령어창에서 자바 keystore에 인증서 임포트하기
 

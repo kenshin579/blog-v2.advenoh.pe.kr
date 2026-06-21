@@ -88,13 +88,13 @@ API로도 호출해보기 위해서 BookController과 BookRepository 파일도 �
 
 ### 3.2.1 In-Memory
 
-datasource 값은 다른 DB 설정할 때와 유사한다.
+datasource 값은 다른 DB 설정할 때와 유사하다.
 
 - spring.datasource.url
     - Connection URL - 참고 : [Database URL](https://www.h2database.com/html/features.html)
         - H2에서는 다양한 url 형식을 지원하여 여러 모드와 세팅을 할 수 있다
     - 예제.
-        - 엠비디드 연결 : ```jdbc:h2:[file:][<path>][databaseName]```
+        - 임베디드 연결 : ```jdbc:h2:[file:][<path>][databaseName]```
         - 인 메모리 : ```jdbc:h2:mem:<databaseName>```
         - 서버 모드 : ```jdbc:h2:tcp://<server>[:<port>]/[<path>]<databaseName>```
     - 추가 옵션 - 옵션에 대한 자세한 사항은  [H2 홈페이지](https://www.h2database.com/html/features.html)를 참고해주세요
@@ -117,7 +117,7 @@ spring:
 
 ### 3.2.2 File로 설정
 
-DataSource 을 파일로 설정하면 애플리케이션이 종료되어도 데이터를 계속 남아 있다. Connection URL 형식은 파일 형식으로 작성하면 파일로 저장된다.
+DataSource 을 파일로 설정하면 애플리케이션이 종료되어도 데이터가 계속 남아 있다. Connection URL 형식은 파일 형식으로 작성하면 파일로 저장된다.
 
 ```yml
 # Database Settings

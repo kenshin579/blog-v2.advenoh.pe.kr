@@ -18,9 +18,9 @@ tags:
 
 # 1. 개요
 
-`JWT`(JSON Web Token)는 웹 애플리케이션에서 인증 및 정보 교환을 안전하게 수행하기 위해 사용된다. `JWT`는 자체적으로 정보를 담고 있으며, 일반적으로 사용자 식별 및 권한 정보를 포함한다. `JWT`는 보통 사용자 인증, 사용자 정보에 사용되고 웹 애플리케이션에서 안전한 인증을 위해 사용할 수 있는 도구이다.
+`JWT`(JSON Web Token)는 웹 애플리케이션에서 인증 및 정보 교환을 안전하게 수행하기 위해 사용된다. `JWT`는 자체적으로 정보를 담고 있으며, 일반적으로 사용자 식별 및 권한 정보를 포함한다.
 
-`JWT`의 핵심은 서명을 통해 토큰의 무결성을 보장하는 것이다. JWT의 서명에는 대칭 암호화(`HMAC`) 와 비대칭 암호화(`RSA`, EC`)` 방식을 사용할 수 있다.
+`JWT`의 핵심은 서명을 통해 토큰의 무결성을 보장하는 것이다. JWT의 서명에는 대칭 암호화(`HMAC`)와 비대칭 암호화(`RSA`, `EC`) 방식을 사용할 수 있다.
 
 - 대칭 암호화(`HMAC`, 예: `HS256`): 같은 비밀 키(secret key)를 사용하여 서명과 검증을 수행한다
 - 비대칭 암호화(`RSA`, `EC`, 예: RS256, ES256): 개인 키로 서명하고 공개 키로 검증한다
@@ -76,7 +76,7 @@ tags:
   - 이 파라미터는 공개 키(public key) 사용 목적을 식별한다. `sig`(signature), `enc`(encryption) 같은 값을 갖는다
   - `OPTIONAL`
 - `alg` (algorithm)
-  - 이 파라미터는 키와 함께 사용되는 알고리즘 정보를 식별할 때 사용한
+  - 이 파라미터는 키와 함께 사용되는 알고리즘 정보를 식별할 때 사용한다
   - `OPTIONAL`
 - `kid` (key id)
   - JWKS 객체에 담긴 JWK 객체들은 자신을 구분할 수 있도록 서로 다른 `kid` 값을 가져야 한다
@@ -119,9 +119,9 @@ tags:
 
 ### 2.3.2 JWKS 생성하기
 
-JWKS 생성은 [JWKSet (MicahParks)](https://github.com/MicahParks/jwkset) 라이브러리를 사용하면 쉽게 구현이 가능하다. 실제로 API endpoint로 구현은 하지 안호 간단한 예제로 unit test 형식으로 작성했다.
+JWKS 생성은 [JWKSet (MicahParks)](https://github.com/MicahParks/jwkset) 라이브러리를 사용하면 쉽게 구현이 가능하다. 실제로 API endpoint로 구현은 하지 않고 간단한 예제로 unit test 형식으로 작성했다.
 
-```bash
+```go
 func (suite *jwksTestSuite) generateJWKS() (jwkset.JWKSMarshal, error) {
 	pubKey, err := parsePublicKey(suite.publicKey)
 	if err != nil {
@@ -169,7 +169,7 @@ func (suite *jwksTestSuite) generateJWKS() (jwkset.JWKSMarshal, error) {
 
 `JWKS` 생성한 데이터를 보면 위와 같이 나온다.
 
-### 2.3.3 [jwset.com](http://jwset.com) 소개
+### 2.3.3 [jwkset.com](https://jwkset.com) 소개
 
 `JWKSet` 라이브러리를 개발한 개발자가 추가로 만든 사이트이기도 하다. 웹 상에서 `JWKS`를 직접 생성하고 테스트해볼 수 있는 사이트이다.
 
@@ -192,7 +192,7 @@ func (suite *jwksTestSuite) generateJWKS() (jwkset.JWKSMarshal, error) {
 
 # 4. 마무리
 
-`JWS`와 `JWKS`는 `JWT`를 활용한 인증 시스템에서 필수적인 구성 요소이다. 특히 `JWKS`를 통해 키 관리와 서명 검증을 효율적으로 처리할 수 있다. 본 글이 `JWS`와 `JWKS`의 이해와 구현에 도움이 되길 바란다.
+`JWK`와 `JWKS`는 `JWT`를 활용한 인증 시스템에서 키 관리와 서명 검증을 담당하는 구성 요소이다. 특히 `JWKS`를 통해 공개 키를 공유하고 `JWT`의 서명을 검증할 수 있다.
 
 # 5. 참고
 - [Understanding JWKS: JSON Web Key Set Explained](https://stytch.com/blog/understanding-jwks/)

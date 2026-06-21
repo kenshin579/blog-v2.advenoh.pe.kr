@@ -101,7 +101,7 @@ $ ./run_agent.sh
 
 ### 2.3.2 Performance Test 생성하기
 
-Performanc Test > Create Test 클릭후 원하는 테스트 설정을 한다.
+Performance Test > Create Test 클릭후 원하는 테스트 설정을 한다.
 
 ![](image-20201025215810490.png)
 

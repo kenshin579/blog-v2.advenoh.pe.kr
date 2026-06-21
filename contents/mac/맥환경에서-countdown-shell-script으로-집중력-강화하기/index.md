@@ -20,7 +20,7 @@ tags:
 
 스터디나 블로그 작성을 시작하려고 노트북을 켜면 바로 스터디나 블로그 작성보다는 먼저 가는 곳이 인터넷 뉴스나 유튜브 동영상을 먼저 보게 된다. 그리고 30분 정도 보다 보면 이제 시작해야지 하고 에버노트를 킵니다.
 
-그리고 집중해서 뭔가 시작하려고 하면 10분 정도 하다가도 다시 뉴스나 유튜브 동영상을 보고 있는 저 자신을 보게 된다. 스터디했다가 뉴스 봤다가 이걸 반복하다 보면 몇 시간이 훌쩍 지나가 있는 경우가 허다한다. 그래서 그런지 매주 하나씩 블로그 작성하려고 하는 게 잘 안되는 게 아닌가 싶다.
+그리고 집중해서 뭔가 시작하려고 하면 10분 정도 하다가도 다시 뉴스나 유튜브 동영상을 보고 있는 저 자신을 보게 된다. 스터디했다가 뉴스 봤다가 이걸 반복하다 보면 몇 시간이 훌쩍 지나가 있는 경우가 허다하다. 그래서 그런지 매주 하나씩 블로그 작성하려고 하는 게 잘 안되는 게 아닌가 싶다.
 
 김민식 PD님이 쓰신 <영어 책 한권 외워봤니?> 책을 보면서 뽀모드로(pomodoro) 기법에 대해서 알게 되어 이걸 적용해보기로 했다.
 
@@ -30,7 +30,7 @@ tags:
 
 # 2. 실행화면
 
-1분 동안 키운다운후 Pop-up이 실행되는 화면이다.
+1분 동안 카운트다운 후 Pop-up이 실행되는 화면이다.
 
 ![](countdown_clip.gif)
 
@@ -59,14 +59,14 @@ $ source ~/.zshrc
 효과음 파일을 사용자 Library 폴더로 복사한다.
 
 ```bash
-$ cp Clock-chimes.mp3 ~\_Library_Sounds
+$ cp Clock-chimes.mp3 ~/Library/Sounds
 ```
 
 <a href='Clock-chimes.mp3'>Clock-chimes.mp3</a>
 
 # 4. 시스템 알람 설정하기
 
-알람을 별도로 설정하지 않으면 기본으로 **배너 알람 스타일** 이라서 알람이 나왔다가 자동으로 사라집니다. 그래서 다른 화면을 보고 있으면 알람 창이 뜬지도 모르는 경우가 종종 발생한다. 알람창이 자동으로 사라지지 않고 닫기 버튼을 둘러야 사라지는 알람 스타일로 변경하는 게 좋다.
+알람을 별도로 설정하지 않으면 기본으로 **배너 알람 스타일** 이라서 알람이 나왔다가 자동으로 사라집니다. 그래서 다른 화면을 보고 있으면 알람 창이 뜬지도 모르는 경우가 종종 발생한다. 알람창이 자동으로 사라지지 않고 닫기 버튼을 눌러야 사라지는 알람 스타일로 변경하는 게 좋다.
 
 시스템환경 > 알림 > 스트립트 편집기 선택후 아래와 같이 알람 스타일을 변경한다.
 
@@ -84,4 +84,4 @@ $ countdown 1
 
 # 5. 참고
 
-- Display Notification from Mac \* [https://code-maven.com/display-notification-from-the-mac-command-line](https://code-maven.com/display-notification-from-the-mac-command-line)
+- Display Notification from Mac - [https://code-maven.com/display-notification-from-the-mac-command-line](https://code-maven.com/display-notification-from-the-mac-command-line)

@@ -52,7 +52,7 @@ Flow에서는 아래와 같은 여러 block 타입을 제공한다.
     - `Select`
         - JSON 결과 특정 값을 선택할 수 있는 필터 역할을 한다
     - `Start`
-        - Flow기 실행될 때 실행되는 첫 번째 block이다
+        - Flow가 실행될 때 실행되는 첫 번째 block이다
 
 - **Decision blocks**
     - `If`
@@ -85,7 +85,7 @@ Flow에서는 아래와 같은 여러 block 타입을 제공한다.
 
 ## 1.4 Flows Query Language (FQL)
 
-`Flows Query Language` (`FQL`)을 사용하여 JSON 데이터를 파싱하고 JSON 데이터를 변환하여 원하는 필드나 구조를 가져올 수 언어이다.
+`Flows Query Language` (`FQL`)을 사용하여 JSON 데이터를 파싱하고 변환하여 원하는 필드나 구조를 가져올 수 있는 언어이다.
 
 - FQL으로 할 수 있는 작업
     - 기본 값 가져오기 (ex. nested field, specific index)
@@ -143,15 +143,15 @@ Postman에서 변수는 여러 곳, Global, Collection, Environment 등에서 �
 ### 3.1.1 Postman Variables Scope
 
 - Global
-    - Global 변수는 전역 변수로 어디서나 사용 가능한다
+    - Global 변수는 전역 변수로 어디서나 사용 가능하다
     - ex. Collection, Envrionment, Request, Test Script
 - Collection
-    - Collection 변수는 Collection의 Request 전체에서 사용할 수 있고 Environment과는 무관한다
+    - Collection 변수는 Collection의 Request 전체에서 사용할 수 있고 Environment과는 무관하다
     - 환경이 하나인 경우에는 Collection 변수를 사용하는 게 적합하다
 - Environment
-    - Environment 변수르르 사용하면 로컬 개발 환경, 테스트, 프로덕션 환경 등 다양한 환경으로 작업 범위를 지정할 수 있다
+    - Environment 변수를 사용하면 로컬 개발 환경, 테스트, 프로덕션 환경 등 다양한 환경으로 작업 범위를 지정할 수 있다
 - Data
-    - Data 변수는 newman 이나 Collection Runner를 실행할 때 사용할 수 있는 데이터 집합을 정의할 기 위해 외부 CSV, JSON 파일에서 가져온다
+    - Data 변수는 newman 이나 Collection Runner를 실행할 때 사용할 수 있는 데이터 집합을 정의하기 위해 외부 CSV, JSON 파일에서 가져온다
     - Data  변수는 현재 값을 가지며, 요청 또는 컬렉션 실행 이후에는 지속되지 않는다
 - Local
     - Local 변수는 Test Script에서 생성하는 임시 변수이다
@@ -190,7 +190,7 @@ Postman Flow UI 상에서는 flow 간에 연결해서 사용할 수는 없다. �
 
 ## 3.5 Postman Flows는 언제 release 되었나?
 
-- 정확한 날짜는 확인이 안되고 Eary Access는 2022년 말쯤에 릴리스된 것으로 판단됨
+- 정확한 날짜는 확인이 안되고 Early Access는 2022년 말쯤에 릴리스된 것으로 판단됨
     - https://blog.postman.com/announcing-postman-flows-early-access/
 
 ## 3.6 FQL는 표준화 언어인가?
@@ -202,7 +202,7 @@ Postman Flow UI 상에서는 flow 간에 연결해서 사용할 수는 없다. �
 ## 4.1 장점
 
 - Postman에서 기본적으로 사용하는 API Collection, Environment 등을 Flows에서 바로 사용할 수 있음
-- Git 기반의 Fork를 사용해서 다른 사람이 작성한 여러 Flow, Collecttion을 Fork해서 테스트해볼 수 있어서 좋았음
+- Git 기반의 Fork를 사용해서 다른 사람이 작성한 여러 Flow, Collection을 Fork해서 테스트해볼 수 있어서 좋았음
 - 간단한 로직인 경우에는 비개발자가 flow를 사용해서 작성해서 자동화나 통합 테스트도 가능해짐
 
 ## 4.2 아쉬운 점

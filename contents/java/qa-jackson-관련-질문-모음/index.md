@@ -45,7 +45,7 @@ tags:
 
 ![](image_7.png)
 
-객체에는 속성이 없지만, JSON에 포함되면 Exception이 발생하는데 무시하도록 하는 어노테이션이빈다.
+객체에는 속성이 없지만, JSON에 포함되면 Exception이 발생하는데 무시하도록 하는 어노테이션이다.
 
 참고
 * [https://www.javacodegeeks.com/2018/01/ignore-unknown-properties-parsing-json-java-jackson-jsonignoreproperties-annotation-example.html](https://www.javacodegeeks.com/2018/01/ignore-unknown-properties-parsing-json-java-jackson-jsonignoreproperties-annotation-example.html)

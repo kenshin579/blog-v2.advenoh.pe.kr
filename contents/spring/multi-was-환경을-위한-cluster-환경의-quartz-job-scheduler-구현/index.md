@@ -22,7 +22,7 @@ series: "Spring Quartz"
 
 # 1. 들어가며
 
-Quartz에서는 메모리 기반의 스케줄러뿐만이 아니라 DB 기반의 스케줄러도 지원한다. DB 기반의 스케줄러의 경우에는 스케줄러 정보를 메모리가 아닌 DB에 저장하기 때문에 다중 서버 간의 스케줄링이 가능한다. Quartz는 master-slave 형태로 서로 간의 통신을 하지 않고 단순히 DB 업데이트 정보를 기반으로 각각의 스케줄 인스턴스가 자기가 실행해야 하는 Job을 실행한다.
+Quartz에서는 메모리 기반의 스케줄러뿐만이 아니라 DB 기반의 스케줄러도 지원한다. DB 기반의 스케줄러의 경우에는 스케줄러 정보를 메모리가 아닌 DB에 저장하기 때문에 다중 서버 간의 스케줄링이 가능하다. Quartz는 master-slave 형태로 서로 간의 통신을 하지 않고 단순히 DB 업데이트 정보를 기반으로 각각의 스케줄 인스턴스가 자기가 실행해야 하는 Job을 실행한다.
 
 ![](quartz.jpg)
 
@@ -109,7 +109,7 @@ Quartz Cluster 구성을 위해 스프링 부트에서 필요한 라이브러리
 
 ### 3.3.1 DataSource 및 Quartz 속성값 설정하기
 
-Spring Boot에서 dataSource 설정은 간단한다. @EnableAutoConfiguration 어노테이션(@SpringBootApplication 어노테이션에 의해 포함됨)에 의해서 application.properties 내의 spring.datasource.\* 속성은 정의하면 자동으로 인식이 된다.
+Spring Boot에서 dataSource 설정은 간단하다. @EnableAutoConfiguration 어노테이션(@SpringBootApplication 어노테이션에 의해 포함됨)에 의해서 application.properties 내의 spring.datasource.\* 속성은 정의하면 자동으로 인식이 된다.
 
 하지만, JavaConfig로 별도의 DataSource를 구현하여 Bean을 등록했다면 spring.datasource.\* 속성은 적용되지 않는다.
 
@@ -127,14 +127,14 @@ Quartz 속성에 대한 자세한 내용은 [Quartz 공식 페이지](http://www
 ```
 #Quartz
 spring.quartz.scheduler-name=QuartzScheduler
-[spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO](http://spring.quartz.properties.org.quartz.scheduler.instanceid=auto/)
-[spring.quartz.properties.org.quartz.threadPool.threadCount=20](http://spring.quartz.properties.org.quartz.threadpool.threadcount=20/)
-[spring.quartz.properties.org.quartz.jobStore.tablePrefix=QRTZ](http://spring.quartz.properties.org.quartz.jobstore.tableprefix=qrtz/) _
-[spring.quartz.properties.org.quartz.jobStore.isClustered=true](http://spring.quartz.properties.org.quartz.jobstore.isclustered=true/)
-[spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX](http://spring.quartz.properties.org.quartz.jobstore.class=org.quartz.impl.jdbcjobstore.jobstoretx/)
-[spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.StdJDBCDelegate](http://spring.quartz.properties.org.quartz.jobstore.driverdelegateclass=org.quartz.impl.jdbcjobstore.stdjdbcdelegate/)
-[spring.quartz.properties.org.quartz.jobStore.useProperties=true](http://spring.quartz.properties.org.quartz.jobstore.useproperties=true/)
-[spring.quartz.properties.org.quartz.jobStore.misfireThreshold=60000](http://spring.quartz.properties.org.quartz.jobstore.misfirethreshold=60000/)
+spring.quartz.properties.org.quartz.scheduler.instanceId=AUTO
+spring.quartz.properties.org.quartz.threadPool.threadCount=20
+spring.quartz.properties.org.quartz.jobStore.tablePrefix=QRTZ_
+spring.quartz.properties.org.quartz.jobStore.isClustered=true
+spring.quartz.properties.org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreTX
+spring.quartz.properties.org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.StdJDBCDelegate
+spring.quartz.properties.org.quartz.jobStore.useProperties=true
+spring.quartz.properties.org.quartz.jobStore.misfireThreshold=60000
 ```
 
 - jobStore.useProperties=true
@@ -185,7 +185,7 @@ $ cp -r springboot-quartz-cluster/ springboot-quartz-cluster2
 
 ```bash
 $ cd springboot-quartz-cluster2
-$ code src_main_resources/application.properties
+$ code src/main/resources/application.properties
 server.port=7070
 
 $ mvn spring-boot:run
@@ -247,7 +247,7 @@ org.quartz.jobStore.class=org.quartz.impl.jdbcjobstore.JobStoreCMT
 org.quartz.jobStore.driverDelegateClass=org.quartz.impl.jdbcjobstore.StdJDBCDelegate
 org.quartz.jobStore.useProperties=true
 org.quartz.jobStore.misfireThreshold=1100
-org.quartz.jobStore.tablePrefix=QRTZ\_
+org.quartz.jobStore.tablePrefix=QRTZ_
 org.quartz.jobStore.isClustered=true
 org.quartz.jobStore.clusterCheckinInterval=15000
 org.quartz.jobStore.acquireTriggersWithinLock=true

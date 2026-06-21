@@ -28,7 +28,7 @@ public void testOldJavStyle_throw_NPE() {
 }
 ```
 
-NPE를 해결하기 위해서는 null에 대한 조건문을 추가해야 한다. Null은 값이 없음을 나타내려는 의도로 개발되었지만, null를도입함으로써 코드의 가독성이 많이 떨어지고 유지보수가 어렵다는 문제점만 가지게 되었다. Optional 클래스를 사용하면 코드가 어떻게 달라지는지 확인해보자. Null 체크하는 조건문이 없어지면서 코드가 훨씬 깔끔해집니다.
+NPE를 해결하기 위해서는 null에 대한 조건문을 추가해야 한다. Null은 값이 없음을 나타내려는 의도로 개발되었지만, null을 도입함으로써 코드의 가독성이 많이 떨어지고 유지보수가 어렵다는 문제점만 가지게 되었다. Optional 클래스를 사용하면 코드가 어떻게 달라지는지 확인해보자. Null 체크하는 조건문이 없어지면서 코드가 훨씬 깔끔해집니다.
 
 ```java
 //null 조건문
@@ -90,7 +90,7 @@ String str = "test";
 Optional<String> optStr1 = Optional.ofNullable(str);
 ```
 
-null인지 아닌지 확신할 수 없는 객체를 담고자 할 때Optional.ofNullable()를 통해서 Optional 객체를 생성한다.
+null인지 아닌지 확신할 수 없는 객체를 담고자 할 때 Optional.ofNullable()를 통해서 Optional 객체를 생성한다.
 
 null이 넘어 올 경우에는 empty Optional 객체를 생성한다.
 
@@ -230,7 +230,7 @@ public void test_1_stream_usage_filter_with_optional() {
 
 
 
-Stream의 여러 API를 더 잘 이해하기 위해서는 실제 구현 코드를 보면 람다 함수가 내부적으로 어떻게 호출되는지 이해하기가 더 쉽다. filter는 Predicate 함수를 인자로 넘겨주고 스트림에서Predicate으로 넘긴 함수를 실행하고 그 결과가 true이면 스트림의 this를 넘기고 아닌 경우에는 실제 반환하는 결과는 Optional 타입임을 확인할 수 있다.
+Stream의 여러 API를 더 잘 이해하기 위해서는 실제 구현 코드를 보면 람다 함수가 내부적으로 어떻게 호출되는지 이해하기가 더 쉽다. filter는 Predicate 함수를 인자로 넘겨주고 스트림에서 Predicate으로 넘긴 함수를 실행하고 그 결과가 true이면 스트림의 this를 넘기고 아닌 경우에는 실제 반환하는 결과는 Optional 타입임을 확인할 수 있다.
 
 ```java
 @Test
@@ -324,7 +324,7 @@ JDK9에서 3가지 메서드가 추가되었다. 각각 기존 사용을 알아�
 
 ## 4.1 or() : Optional이 empty인 경우에 다른 Optional을 반환
 
-JDK9 이전에는 Optional 객체가 empty이면 orElse()나orElseGet()을 사용해서 default 값을 반환했다. JDK9부 터는 or() 메서드로 Optional이 empty이면 값 대신 다른 Optional을 반환하는 메서드가 추가되었다. 예제를 보면 더 쉽게 이해할 수 있다.
+JDK9 이전에는 Optional 객체가 empty이면 orElse()나 orElseGet()을 사용해서 default 값을 반환했다. JDK9부터는 or() 메서드로 Optional이 empty이면 값 대신 다른 Optional을 반환하는 메서드가 추가되었다. 예제를 보면 더 쉽게 이해할 수 있다.
 
 ```java
 @Test
@@ -358,7 +358,7 @@ public void test_jdk9_ifPresentOrElse() {
 
 # 5. stream() : Optional 객체를 Stream 객체로 변환하기 위해 사용
 
-JDK8에 추가된 Stream은 여러 API를 통해 collection을 함수형 방식으로 쉽게 조작이 가능하게 하는 기능이다. Optional에 stream()을 추가함으로써 기존의 Stream API를 사용 할 수 있게 되었다. 이 예제에서는 Optional을 Stream으로 변경한이후 Stream의 함수를 사용한 예제이다.
+JDK8에 추가된 Stream은 여러 API를 통해 collection을 함수형 방식으로 쉽게 조작이 가능하게 하는 기능이다. Optional에 stream()을 추가함으로써 기존의 Stream API를 사용 할 수 있게 되었다. 이 예제에서는 Optional을 Stream으로 변경한 이후 Stream의 함수를 사용한 예제이다.
 
 ```java
 @Test

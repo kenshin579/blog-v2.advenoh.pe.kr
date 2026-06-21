@@ -16,7 +16,7 @@ tags:
 
 # 1. 들어가며
 
-Travis CI로 빌드 이후 notification을 Slack으로 받는 방법에 대해서 알아보자. Git*hub* 소스를 Travis CI로 배포하는 방법에 대한 설명은 다른 곳에 이미 많이 있기 때문에 부여 설명은 생략한다.
+Travis CI로 빌드 이후 notification을 Slack으로 받는 방법에 대해서 알아보자. Github 소스를 Travis CI로 배포하는 방법에 대한 설명은 다른 곳에 이미 많이 있기 때문에 부연 설명은 생략한다.
 
 사전에 필요한 작업들이다. 간단하게 언급만 하고 넘어간다.
 
@@ -73,7 +73,7 @@ $ travis encrypt "<슬랙도메인명>:<travis APP의 token>#<채널명>" --add 
 
 ### 2.2.2 travis.yml 설정에 Slack 설정 추가
 
-빌드 성공 + 실패시에도 메시지를 항상 받도록 설정해 두었다. Travis 빌드 설정에 대한 부여 설명은 [Travis 문서](https://docs.travis-ci.com/user/notifications/)를 참고하세요.
+빌드 성공 + 실패시에도 메시지를 항상 받도록 설정해 두었다. Travis 빌드 설정에 대한 부연 설명은 [Travis 문서](https://docs.travis-ci.com/user/notifications/)를 참고하세요.
 
 ```yaml
 notifications:

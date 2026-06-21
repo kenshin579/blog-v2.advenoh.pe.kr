@@ -163,7 +163,7 @@ master 브랜치에 커밋된 내용이 통째로 GIT-6-working-branch-merge-tes
 
 # 4. 결론
 
-Git Client와 터미널상에서 rebase 병합을 진행해보았다. 둘 다 쉽게 rebase를 할 수 있고 개인적인 취향에 맞게 가장 익숙한 방식으로 진행하면 될 것 같다. 추가로 병합 시 merge와 rebase의 차이점도 간단하게 알아보았는데요. master의 커밋 history를 남기는 상태에서 병합하고 싶은 경우에는 merge 대신에 같이 알아보았던 rebase 방식으로 병합을 하면 되자.
+Git Client와 터미널상에서 rebase 병합을 진행해보았다. 둘 다 쉽게 rebase를 할 수 있고 개인적인 취향에 맞게 가장 익숙한 방식으로 진행하면 될 것 같다. 추가로 병합 시 merge와 rebase의 차이점도 간단하게 알아보았는데요. master의 커밋 history를 남기는 상태에서 병합하고 싶은 경우에는 merge 대신에 같이 알아보았던 rebase 방식으로 병합을 하면 되겠다.
 
 # 5. 참고
 

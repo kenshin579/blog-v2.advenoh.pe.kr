@@ -24,7 +24,7 @@ tags:
 
 파일에 쓰려면 기본적으로 파일 스트림을 열고 텍스트를 쓰고 나서 파일 스트림을 닫아야 한다. 파일 스트림을 여닫는 부분을 전후처리로 만들어봅시다.
 
-writeLineToFile 메서드는 3개의 인자로 받는다. 파일 이름, 스트링 값, 그리고 람다 함수를 인자로 넘겨주고 있다. 람다 함수로 넘겨주는 메서는 전후처리 중간에 실행될 부분이다.
+writeLineToFile 메서드는 3개의 인자로 받는다. 파일 이름, 스트링 값, 그리고 람다 함수를 인자로 넘겨주고 있다. 람다 함수로 넘겨주는 메서드는 전후처리 중간에 실행될 부분이다.
 
 ```java
 @Test
@@ -144,7 +144,7 @@ private interface Task {
 }
 ```
 
-인터페이스는 인자도 없고 반환 값도 없는 void 이여서 Runnable 인터페이스를 그냥 사용해도 무방한다.
+인터페이스는 인자도 없고 반환 값도 없는 void 이여서 Runnable 인터페이스를 그냥 사용해도 무방하다.
 
 ```java
 private static void executeAndPrePostProcessWithRunnable(int newSize, Runnable r) throws NoSuchFieldException, IllegalAccessException {
@@ -162,7 +162,7 @@ private static void executeAndPrePostProcessWithRunnable(int newSize, Runnable r
 }
 ```
 
-- 지금까지 작성된 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java8)에 올려줘 있다.
+- 지금까지 작성된 코드는 [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java8)에 올려두었다.
 
     - com.java.examples.prepost
 

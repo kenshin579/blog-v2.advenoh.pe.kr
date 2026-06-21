@@ -30,7 +30,6 @@ Python 패키지를 설치할 때 일반적으로 `pip`를 사용하지만, 일�
 - 각 패키지를 별도의 가상환경에 설치하여 시스템 Python 환경을 오염시키지 않음
 - `pipx run`을 사용해 별도 설치 없이 CLI 패키지 실행 가능
 - 설치된 모든 패키지를 한 번에 업데이트하는 기능 제공
-- 에 등록
 
 # 2. pipx 설치 및 기본 사용법
 
@@ -117,7 +116,7 @@ manual pages are exposed at /Users/user/.local/share/man
 
 # 3. 마무리
 
-`pipx`를 사용하면 CLI 도구를 격리된 환경에서 안전하게 관리할 수 있다. 특히, `poetry`, `black`, `httpie` 같은 글로벌 CLI 도구를 관리할 때 매우 유용하다. 앞으로 전역적으로 설치할 CLI 패키지는 `pip` 대신 `pipx`를 활용해 보자! 🚀
+`pipx`를 사용하면 CLI 도구를 격리된 환경에서 안전하게 관리할 수 있다. 특히, `poetry`, `black`, `httpie` 같은 글로벌 CLI 도구를 관리할 때 매우 유용하다. 앞으로 전역적으로 설치할 CLI 패키지는 `pip` 대신 `pipx`를 써보면 좋겠다.
 
 # 4. 참고
 

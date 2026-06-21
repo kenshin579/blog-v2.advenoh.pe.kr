@@ -22,7 +22,7 @@ JUnit Rules은 테스트 케이스를 실행하기 전후에 추가 코드를 �
 | ----------------- | ------------------------------------------------------------ |
 | TemporaryFolder   | 테스트 전후로 임시 폴더 및 파일을 자동으로 생성하고 삭제한다 |
 | ExternalResource  | 외부 리소스에 대한 전후처리를 한다                           |
-| ExpectedException | 테스트 클래스 전체에 적용되며 예외 발생에 대해 직접 확인이 가능한다 |
+| ExpectedException | 테스트 클래스 전체에 적용되며 예외 발생에 대해 직접 확인이 가능하다 |
 | ErrorCollector    | 여러 테스트 실패시에도 연속적으로 테스트가 진행되며 발생한 오류를 수집한다 |
 | Verifier          | 테스트 실행시 추가 검증을 하도록 도와준다.                   |
 | TestName          | 실행하는 테스트 메서드 이름을 알려준다                       |
@@ -255,7 +255,7 @@ public class TestNameRuleTest {
 
 RuleChain Rule은 테스트 실행 시 여러 Rule을 순차적으로 실행하도록 도와주는 Rule이다.
 
-예제에서는 사용자 정의로 생성한 LoggingRule을 체인형식으로 적용하였다. LoggingRule은 각 테스트 전후로 시작… 끝…. 로그 메시지를 출력하는 Rule로 이해하시면 되고 더 자세한 내용은 #3.2에서 다루도록 하자.
+예제에서는 사용자 정의로 생성한 LoggingRule을 체인형식으로 적용하였다. LoggingRule은 각 테스트 전후로 시작… 끝…. 로그 메시지를 출력하는 Rule로 이해하시면 되고 더 자세한 내용은 #3.3에서 다루도록 하자.
 
 ```java
 public class RuleChainTest {
@@ -364,7 +364,7 @@ TestWatcher Rule은 테스트 실행에 대한 성공 실패를 모니터링 하
 ```java
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestWatcherRuleTest {
-   private static String watchedLog = "\n”;
+   private static String watchedLog = "\n";
 
    @Rule
    public TestRule watchman = new TestWatcher() {
@@ -415,7 +415,7 @@ public class TestWatcherRuleTest {
 }
 ```
 
-@FixMethodOrder는 테스트 실행 순서를 결정해주는 어노테이션으로 이 예제에서는 NAME_ASCENDING으로설정되어 메서드 이름의 순서대로 실행된다. TestWatcher에 정의된 starting(), finished(), succeeded(), failed() 메서드을 오버라이트하면 메서드 이름에 맞게 테스트 시작, 끝, 성공, 실패에 따라서 메서드들이 호출된다. 이 예제에서는 매번 실행할 때마다 watchedLog 스트링값에 로그형식으로 저장하여 화면에 출력한다.
+@FixMethodOrder는 테스트 실행 순서를 결정해주는 어노테이션으로 이 예제에서는 NAME_ASCENDING으로 설정되어 메서드 이름의 순서대로 실행된다. TestWatcher에 정의된 starting(), finished(), succeeded(), failed() 메서드을 오버라이트하면 메서드 이름에 맞게 테스트 시작, 끝, 성공, 실패에 따라서 메서드들이 호출된다. 이 예제에서는 매번 실행할 때마다 watchedLog 스트링값에 로그형식으로 저장하여 화면에 출력한다.
 
 **테스트 결과**
 
@@ -529,7 +529,7 @@ base.evaluate()은 테스트가 실행되는 시점이고 전후로 생성자로
 ```java
 public class CustomRuleTest {
    @Rule
-   public LoggingRule rule = new LoggingRule("custom rule”);
+   public LoggingRule rule = new LoggingRule("custom rule");
 
    @Test
    public void test() {
@@ -553,5 +553,6 @@ JUnit에 Rule이라는 여러 기능을 있는지는 이번 스터디 기회를 
     - [https://github.com/junit-team/junit4/wiki/rules](https://github.com/junit-team/junit4/wiki/rules)
     - [https://www.swtestacademy.com/junit-rules/](https://www.swtestacademy.com/junit-rules/)
     - [https://www.alexecollins.com/tutorial-junit-rule/](https://www.alexecollins.com/tutorial-junit-rule/)
-    - [https://stefanbirkner.github.io/system-rules/](https://stefanbirkner.github.io/system-rules/) \* [http://kwonnam.pe.kr/wiki/java/junit/rule](http://kwonnam.pe.kr/wiki/java/junit/rule)
+    - [https://stefanbirkner.github.io/system-rules/](https://stefanbirkner.github.io/system-rules/)
+    - [http://kwonnam.pe.kr/wiki/java/junit/rule](http://kwonnam.pe.kr/wiki/java/junit/rule)
 

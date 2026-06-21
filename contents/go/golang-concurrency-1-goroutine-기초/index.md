@@ -77,7 +77,7 @@ Go는 **channel을 통한 데이터 전달**을 권장한다. 데이터의 소�
 ```mermaid
 graph LR
     subgraph "전통적 방식 (Shared Memory + Lock)"
-        TA[Thread A] --> SD[Shared Data<br/>+ Lock]
+        TA[Thread A] --> SD["Shared Data + Lock"]
         TB[Thread B] --> SD
     end
 ```
@@ -85,7 +85,7 @@ graph LR
 ```mermaid
 graph LR
     subgraph "Go 방식 (Message Passing)"
-        GA[Goroutine A<br/>데이터 소유] -- "channel (전달)" --> GB[Goroutine B<br/>데이터 수신]
+        GA["Goroutine A (데이터 소유)"] -- "channel (전달)" --> GB["Goroutine B (데이터 수신)"]
     end
 ```
 

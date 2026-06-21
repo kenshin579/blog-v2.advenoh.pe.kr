@@ -117,7 +117,7 @@ private void interruptJobs(SchedulerFactoryBean schedulerFactoryBean) throws Sch
 
 3.2 Quartz Job에 InterruptableJob 인터페이스를 implements하여 구현하기
 
-Interrupt 가능한 Job을 구현하려면 InterrutableJob 인터페이스를 구현하고 interrupt() 메서드를 구현해주면 된다. 이미 짐작 하셨겠지만, 셧다운시 3.1에서 정의한 SmartLifeCycle의 stop() 메서드에 의해 호출이 되고 현재 실행 중인 Job의 쓰레드를 interrupt 시킵니다.
+Interrupt 가능한 Job을 구현하려면 InterruptableJob 인터페이스를 구현하고 interrupt() 메서드를 구현해주면 된다. 이미 짐작하셨겠지만, 셧다운시 3.1에서 정의한 SmartLifeCycle의 stop() 메서드에 의해 호출이 되고 현재 실행 중인 Job의 쓰레드를 interrupt 시킵니다.
 
 ```java
 public class CronJob2 extends QuartzJobBean implements InterruptableJob {
@@ -145,7 +145,7 @@ public class CronJob2 extends QuartzJobBean implements InterruptableJob {
 
 # 5. 정리
 
-실행 중인 Job을 Gracefully 하게 셧다운 시키는 방법에 대해서 알아보았다. 다음 포스팅은 Quartz 튜터리얼 시리지로의 마지막으로 Quartz 어드민 UI 구현에 대해서 알아보자.
+실행 중인 Job을 Gracefully 하게 셧다운 시키는 방법에 대해서 알아보았다. 다음 포스팅은 Quartz 튜터리얼 시리즈의 마지막으로 Quartz 어드민 UI 구현에 대해서 알아보자.
 
 # 6. 참고
 

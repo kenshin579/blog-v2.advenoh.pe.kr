@@ -19,7 +19,7 @@ tags:
 
 # 1. 여러 JDK 버전 설치하기
 
-일단, 먼저 여러 JDK 버전을 설치해 볼까요? brew 명령어로 3가지 JDK 버전을 설치하도록 하자.
+일단 여러 JDK 버전을 설치해 보자. brew 명령어로 3가지 JDK 버전을 설치한다.
 
 ```bash
 $ brew cask install java java8 zulu8

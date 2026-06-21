@@ -18,7 +18,7 @@ tags:
 
 ## 1.1 들어가면
 
-`HandlerMethodArgumentResolver`에 대해서 알아보자. 아래와 같이 컨트롤러 메서드에 여러 인자 값(ex. `@PathVariable`)을 추가하여 자주 작업을 한다. 이런 인자는 `HandlerMethodArgumentHandler`에 의해서 처리가 된다.
+`HandlerMethodArgumentResolver`에 대해서 알아보자. 아래와 같이 컨트롤러 메서드에 여러 인자 값(ex. `@PathVariable`)을 추가하여 자주 작업을 한다. 이런 인자는 `HandlerMethodArgumentResolver`에 의해서 처리가 된다.
 
 ```java
 @GetMapping
@@ -29,7 +29,7 @@ public ResponseEntity<?> getStudentList(
 }
 ```
 
-`HandlerMethodArgumentHandler`는 어노테이션이나 타입에 따라서 실제 값을 컨트롤러에 넘겨주는 역할을 한다. 스프링에서도 기본적으로 여러 Argument Resolver가 구현되어 있다.
+`HandlerMethodArgumentResolver`는 어노테이션이나 타입에 따라서 실제 값을 컨트롤러에 넘겨주는 역할을 한다. 스프링에서도 기본적으로 여러 Argument Resolver가 구현되어 있다.
 
 - `PathVariableMethodArgumentResolver`
     - `@PathVariable` 어노테이션으로 선언된 인자를 처리하는 Argument Resolver이다
@@ -38,7 +38,7 @@ public ResponseEntity<?> getStudentList(
 - RequestHeaderMapMethodArgumentResolver
     - `@RequestHeader` 어노테이션으로 선언된 인자의 실제 값을 지정해 준다
 
-`HandlerMethodArgumentHandler`을 사용하면 중복 코드를 줄이고 공통 기능으로 분리할 수 있다. 이제 Custom `HandlerMethodArgumentResolver`를 직접 구현해보자.
+`HandlerMethodArgumentResolver`을 사용하면 중복 코드를 줄이고 공통 기능으로 분리할 수 있다. 이제 Custom `HandlerMethodArgumentResolver`를 직접 구현해보자.
 
 
 # 2. Custom Argument Resolver 만들기

@@ -129,7 +129,7 @@ public class AnnotationPlacement {
 
 - **자바 코드에 적용되는 어노테이션**
     - @Override
-        - 어버라이드되는 메서드로 표시하는 역할을 한다
+        - 오버라이드되는 메서드로 표시하는 역할을 한다
         - 어노테이션을 추가한 메서드가 부모 클래스나 인터페이스에 존재하지 않으면 컴파일 오류를 발생시킨다
     - @Deprecated
         - 메서드를 더 이상 사용하지 않음으로 표시한다
@@ -143,7 +143,7 @@ public class AnnotationPlacement {
         - 메서드가 가변인자인 경우에 잘 못 실행될 수 있는 경고 문구를 무시하도록 하는 어노테이션이다.
           ![](image_2.png)
 
-            * 어버라이드가 안되는 메서드에만 사용 가능하다
+            * 오버라이드가 안되는 메서드에만 사용 가능하다
                 * final, static 메서드, 생성자, private 메서드 (자바9부터)
             * [예제 코드 참조](https://beginnersbook.com/2018/05/java-9-safevarargs-annotation/)
         * @FunctionalInterface
@@ -164,7 +164,7 @@ public class AnnotationPlacement {
 
 # 4. 커스텀 어노테이션
 
-## 4.1 메사 어노테이션
+## 4.1 메타 어노테이션
 
 ```java
 @Retention(RetentionPolicy.RUNTIME)
@@ -201,7 +201,8 @@ public class TheClass {
     - 어노테이션이 어느레벨까지 유지되는지를 결정짓는다.
     - RetentionPolicy Enum에 선언된 값
     - SOURCE : 자바 컴파일에 의해서 어노테이션은 삭제된다
-    - CLASS : 어노테이션은 .class 파일에 남아 있지만, runtime에는 제공되지 않는 어노테이션으로 Retention policy의 기본 값이다 \* RUNTIME : runtime에도 어노테이션이 제공되어 자바 reflection으로 선언한 어노테이션에 접근할 수 있다
+    - CLASS : 어노테이션은 .class 파일에 남아 있지만, runtime에는 제공되지 않는 어노테이션으로 Retention policy의 기본 값이다
+    - RUNTIME : runtime에도 어노테이션이 제공되어 자바 reflection으로 선언한 어노테이션에 접근할 수 있다
 - @Inherited
     - 이 어노테이션을 선언하면 자식클래스가 어노테이션을 상속 받는다
 - @Documented
@@ -302,7 +303,7 @@ public class MethodAnnotationExecutor {
 
 커스텀 어노테이션을 어떻게 생성하고 사용하는지 간단하게 알아보았다. 커스텀 어노테이션을 생성해서 사용하면 반복적으로 코딩해야 하는 부분들도 많이 줄일 수 있고 더 비즈니스로직에 집중할 수 있는 장점이 있다. 스프링에서도 자주 사용되고 또한 요사이 많이 뜨고 있는 롬보크( [Lombok](http://wonwoo.ml/index.php/post/1607) )도 여러 어노테이션을 많이 지원하는 라이브러리이다.
 
-지금 개발하는 프로젝트가 있다면 한번 커스컴 어노테이션으로 적용해보는 것도 좋을 것 같다.
+지금 개발하는 프로젝트가 있다면 한번 커스텀 어노테이션으로 적용해보는 것도 좋을 것 같다.
 
 # 5. 참고
 

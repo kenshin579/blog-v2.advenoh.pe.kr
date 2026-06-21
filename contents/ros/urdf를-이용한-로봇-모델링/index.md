@@ -51,7 +51,7 @@ URDF 으로 모델링할 로봇은 매니플레이터이다. 매니플레이터�
     - 목적에 따라 작업 공간내 바닥이 될 수 있음
     - 동적으로 움직이는 모바일 로봇이 될 수도 있음
 - 링크(link) : 기저, 조인트, 말단 장치를 연결해주는 강체 역할
-    - \- 쉽게 말해 프레임이라고 보면 됨
+    - 쉽게 말해 프레임이라고 보면 됨
 - 조인트(joint) : 로봇의 움직임을 만들어내는 부분
     - 회전(revolute) 운동형과 병진(prismatic) 운동형 등의 동적 움직임을 가짐
 - 말단 장치 (end effector) : 사람의 손에 해당하는 부분 또는 장비
@@ -503,7 +503,7 @@ $ ros2 launch testbot_description testbot.launch.py
 <br>
 <br>
 
-> 자주 사용하는 명령어는 alias로 생성해두면 따르게 ros 관련 명령어를 빠르게 실행할 수 있다.
+> 자주 사용하는 명령어는 alias로 생성해두면 ros 관련 명령어를 빠르게 실행할 수 있다.
 >
 > ```bash
 > alias cba='colcon build --symlink-install'

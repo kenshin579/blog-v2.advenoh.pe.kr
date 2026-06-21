@@ -37,7 +37,7 @@ tags:
 * [https://dzone.com/articles/whats-new-in-java-10](https://dzone.com/articles/whats-new-in-java-10)
 
 # 2. JEP 286: Local Variable Type Inference
-타임 추론이란 자바 컴파일러가 각 메서드 호출과 정의된 메서드 선언문을 보고 인자의 타입을 추론하는 기능을 말한다. 타임 추론(type inference)은 자바5부터 지속적으로 개선해 왔었다.
+타입 추론이란 자바 컴파일러가 각 메서드 호출과 정의된 메서드 선언문을 보고 인자의 타입을 추론하는 기능을 말한다. 타입 추론(type inference)은 자바5부터 꾸준히 개선해 왔다.
 
 * Java 5 : 제네릭 메서드와 타입 인지 타입추론
 * Java 7 : 다이아몬드 연산자(<>)
@@ -57,7 +57,7 @@ List<String> cs = Collections.<String>emptyList();
 Map<String, List<String>> myMap = new HashMap<String,List<String>>();
 ```
 
-### 2.1.3 Java 8 : 람다식 안자 타입
+### 2.1.3 Java 8 : 람다식 인자 타입
 ```java
 Predicate<String> nameValidation = (String x) -> x.length() > 0;
 ```
@@ -129,7 +129,7 @@ var userChannels = new HashMap<User, List<String>>();
 	  var p = (String str) -> str.length() > 1;
 	  ```
 
-var를 사용할때는 주의가 필요한다. var를 사용하면 어떤 타입인지를 알수 없게 되어 가속성이 떨어지게 된다.
+var를 사용할 때는 주의가 필요하다. var를 사용하면 어떤 타입인지를 알 수 없게 되어 가독성이 떨어진다.
 
 ```java
 //ORIGINAL

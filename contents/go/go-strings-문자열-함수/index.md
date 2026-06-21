@@ -81,7 +81,7 @@ func TestStrings(t *testing.T) {
 }
 ```
 
-> `strings.Builde`r에서 제공하는 메서드를 통해서 문자열 조합을 더 빠르고 효과적으로 할수 있는 기능을 제공한다
+> `strings.Builder`에서 제공하는 메서드를 통해서 문자열 조합을 더 빠르고 효과적으로 할수 있다
 
 # 2. Join (Join, Repeat)
 

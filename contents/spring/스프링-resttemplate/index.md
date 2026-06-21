@@ -124,7 +124,7 @@ public Employee getEmployee(@PathVariable Long id) {
 
 ### 4.1.2 getForEntity()
 
-getForEntity() 메서드의 경우에는 응답을 ResponseEntity 객체로 받게 된다. getForObject()와 달리 HTTP 응답에 대한 추가 정보를 담고 있어서 GET 요청에 대한 응답 코드, 실제 데이터를 확인할 수 있다. 또한 ResponseEntity<T> 제네릭 타입에 따라서 응답을 String이나 Object 객체로 받을 수 있다.
+getForEntity() 메서드의 경우에는 응답을 ResponseEntity 객체로 받게 된다. getForObject()와 달리 HTTP 응답에 대한 추가 정보를 담고 있어서 GET 요청에 대한 응답 코드, 실제 데이터를 확인할 수 있다. ResponseEntity<T> 제네릭 타입에 따라서 응답을 String이나 Object 객체로 받을 수 있다.
 
 예제에서는 응답 값을 JSON 스트링 형태로 받고 있다.
 
@@ -453,7 +453,7 @@ public List<Employee> getAllEmployees() {
 
 **Client Code - Unit Test**
 
-RestTemplate에서 리스트 형태의 객체 목록을 얻으려면 ResponseEntity와 ParameterizedTypeReference 객체를 사용하면 된다. ParameterizedTypeReference 객체를 사용하면 응답을 Class 대신 제네릭한 타입을 지정할 수 있다. 예제에서는 응답을 List<Employee> 타입으로 지정하였다. ParameterizedTypeReference 객체는 abstract 클래스이여서 바로 사용하기 위해 익명 인라인 클래스를 사용하였고 더 자세한 내용은 슈터 타입 토큰을 참조해주세요.
+RestTemplate에서 리스트 형태의 객체 목록을 얻으려면 ResponseEntity와 ParameterizedTypeReference 객체를 사용하면 된다. ParameterizedTypeReference 객체를 사용하면 응답을 Class 대신 제네릭한 타입을 지정할 수 있다. 예제에서는 응답을 List<Employee> 타입으로 지정하였다. ParameterizedTypeReference 객체는 abstract 클래스이여서 바로 사용하기 위해 익명 인라인 클래스를 사용하였고 더 자세한 내용은 슈퍼 타입 토큰을 참조해주세요.
 
 ```java
 @Test

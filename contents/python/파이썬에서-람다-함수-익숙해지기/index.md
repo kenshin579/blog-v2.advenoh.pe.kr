@@ -17,7 +17,7 @@ tags:
 
 # 1. 람다란?
 
-파이쎤에서도 이름 없는 함수인 람다 표현식을 지원한다. syntax는 아래와 같다. 파이썬에서는 bracket (ex. { })을 지원하지 않아 single line으로만 작성해야 한다. 람다에서 multi-line을 작성하려면 별도 함수로 빼서 작성하면 된다.
+파이썬에서도 이름 없는 함수인 람다 표현식을 지원한다. syntax는 아래와 같다. 파이썬에서는 bracket (ex. { })을 지원하지 않아 single line으로만 작성해야 한다. 람다에서 multi-line을 작성하려면 별도 함수로 빼서 작성하면 된다.
 
 ```python
 lambda 인자 : 표현식
@@ -57,13 +57,13 @@ def test_lambda_multiple_parameters(self):
 
 ## 1.3 map
 
-`map` 함수는 `입력함수`를 `입력리스트`의 `item`에 적용하는 함수이고 리스트의 데이터 형태를 변경할 때 자주사용하는 함수이다. syntax는 다음과 같다.
+`map` 함수는 `입력함수`를 `입력리스트`의 `item`에 적용하는 함수이고 리스트의 데이터 형태를 변경할 때 자주 사용하는 함수이다. syntax는 다음과 같다.
 
 ```python
 map(입력함수, 입력리스트)
 ```
 
-0 ~ 4값의 리시트의 각 `item`에 +1을 하는 예제이다.
+0 ~ 4값의 리스트의 각 `item`에 +1을 하는 예제이다.
 
 ```python
 def test_map(self):

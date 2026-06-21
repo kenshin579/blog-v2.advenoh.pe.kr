@@ -139,7 +139,7 @@ public void array_str에서_가장_긴_string의_길이_찾기() {
 
 # 3. 정리
 
-이 포스팅에서는 자바*8* 스트림 API의 `max(), min()` 메서드를 사용하여 List나 Array에서 최댓값을 찾는 방법을 살펴보았다.
+이 포스팅에서는 자바8 스트림 API의 `max(), min()` 메서드를 사용하여 List나 Array에서 최댓값을 찾는 방법을 살펴보았다.
 
 예제는 [Github](https://github.com/kenshin579/tutorials-java/blob/master/java8/src/test/java/com/advenoh/streams/MinMaxValueFromListTest.java) 소스를 참고해주세요.
 

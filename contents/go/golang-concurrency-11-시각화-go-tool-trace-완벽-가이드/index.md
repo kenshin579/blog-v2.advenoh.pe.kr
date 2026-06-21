@@ -462,7 +462,7 @@ func TestFlightRecorder_HTTP서버_Latency_감지(t *testing.T) {
             var buf bytes.Buffer
             n, _ := fr.WriteTo(&buf)
             snapshots = append(snapshots, n)
-            t.Logf("스냅샷 캡처\! (크기: %d bytes, latency: %v)", n, elapsed)
+            t.Logf("스냅샷 캡처! (크기: %d bytes, latency: %v)", n, elapsed)
         }
     }
 

@@ -23,10 +23,7 @@ series: "Go 디자인 패턴"
 
 Strategy 패턴은 **행위(Behavioral) 디자인 패턴**으로, 알고리즘 군을 정의하고 각각을 캡슐화하여 런타임에 교체 가능하게 만드는 패턴이다.
 
-핵심 아이디어는 간단하다:
-- **변하는 로직을 분리**한다
-- **행위를 인터페이스로 추상화**한다
-- **런타임에 전략을 교체**할 수 있다
+핵심 아이디어는 변하는 로직을 분리하고, 그 행위를 인터페이스로 추상화한 뒤, 런타임에 전략을 교체하는 것이다.
 
 ## 1.2 왜 Go에서 Strategy 패턴이 중요한가?
 
@@ -36,7 +33,7 @@ Go는 명시적인 상속이 없고, **인터페이스 기반의 다형성**을 
 - 작은 인터페이스를 선호하는 Go 철학과 일치
 - 상속 대신 **합성(composition)**을 사용하는 Go 스타일에 적합
 
-> 이 포스트에서 사용된 샘플 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/pattern)에서 확인할 수 있습니다.
+> 이 포스트에서 사용된 샘플 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/golang/pattern)에서 확인할 수 있다.
 
 ## 1.3 Strategy 패턴이 필요한 상황
 

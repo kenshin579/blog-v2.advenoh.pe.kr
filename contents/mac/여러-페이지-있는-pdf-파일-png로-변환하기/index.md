@@ -28,7 +28,7 @@ $ ls
 test.pdf   test_0.png test_1.png test_2.png test_3.png test_4.png
 ```
 
-`convert` 명령어로 여러 페이지가 있는 PDF를 png 파일로 변환했다. `convert` 옵션은 man page에서 참고 가능한다.
+`convert` 명령어로 여러 페이지가 있는 PDF를 png 파일로 변환했다. `convert` 옵션은 man page에서 참고 가능하다.
 
 ```bash
 $ man convert
@@ -78,5 +78,4 @@ DESCRIPTION
 
 # 1. 참고
 
-- https://superuser.com/questions/1469592/how-can-i-convert-a-pdf-into-a-series-of-images-jpgs-or-pngs-via-the-terminal
 - https://superuser.com/questions/1469592/how-can-i-convert-a-pdf-into-a-series-of-images-jpgs-or-pngs-via-the-terminal
