@@ -18,7 +18,7 @@ tags:
 
 # 1. 들어가며
 
-존재하지 않는 API를 접속하게 되면 아래와 같은 Whitelabel Error Page를 자주 접하게 된다. 별도 설정을 하지 않았다면 스프링부트에서는 기본적으로 Whitelabel Error Page를 보여줍니다.
+존재하지 않는 API를 접속하면 아래와 같은 Whitelabel Error Page를 자주 보게 된다. 별도 설정을 하지 않았다면 스프링부트는 기본적으로 Whitelabel Error Page를 보여준다.
 
 <img src="image-20200905170917741.png" style="zoom: 67%;" />
 
@@ -37,7 +37,7 @@ public class BasicErrorController extends AbstractErrorController {
 
 ### 1.1.1 Whitelabel error page
 
-브라우져에서 접속하면 Whitelabel Error Page 보여줍니다.
+브라우저에서 접속하면 Whitelabel Error Page를 보여준다.
 
 
 ```html
@@ -75,7 +75,7 @@ public ModelAndView errorHtml(HttpServletRequest request, HttpServletResponse re
 
 ### 1.1.2 Json 응답
 
-Accept 값이 `application/json`인 경우에는 응답 값을 JSON 형태로도 내려줍니다.
+Accept 값이 `application/json`인 경우에는 응답 값을 JSON 형태로 내려준다.
 
 ```json
 GET http://localhost:8080/notfound
@@ -95,7 +95,7 @@ Response code: 404; Time: 221ms; Content length: 110 bytes
 
 ```
 
-Json 응답 값은 `error(HttpServletRequest request)` 메서드에서 처리하여 응답 값을 내려줍니다.
+Json 응답 값은 `error(HttpServletRequest request)` 메서드에서 처리하여 내려준다.
 
 ```java
 @RequestMapping
@@ -145,7 +145,7 @@ public class DefaultErrorAttributes implements ErrorAttributes, HandlerException
 
 ## 3.1 특정 응답코드에 대한 Custom Error 페이지 만들기
 
-Custom Error 페이지 만들어서 사용하는 건 간단한다. 아래 폴더중에 한 곳에 `error/{응답코드}.<확장명>` 형식으로 파일을 생성하면, 스프링 부트에서 Http 상태 값에 다라서 해당 파일을 로딩해줍니다.
+Custom Error 페이지를 만들어서 사용하는 건 간단하다. 아래 폴더 중 한 곳에 `error/{응답코드}.<확장명>` 형식으로 파일을 생성하면, 스프링 부트에서 Http 상태 값에 따라 해당 파일을 로딩해준다.
 
 - 폴더
     - `/templates/error`
@@ -190,7 +190,7 @@ Custom Error 페이지 만들어서 사용하는 건 간단한다. 아래 폴더
 </html>
 ```
 
-브라우져에서 존재하지 않는 path로 접속을 하면 404 응답 오류가 발생하여 위 view 파일이 응답으로 처리된다.
+브라우저에서 존재하지 않는 path로 접속하면 404 응답 오류가 발생하여 위 view 파일이 응답으로 처리된다.
 
 ![](image-20200907230948266.png)
 
@@ -227,7 +227,7 @@ public class CustomErrorController implements ErrorController {
 
 ```
 
-`handleError()`에서는 `errors/404-custom` 뷰를 반환한다. 404 오류가 발생하면, 별도 뷰를 보여줍니다.
+`handleError()`에서는 `errors/404-custom` 뷰를 반환한다. 404 오류가 발생하면 별도 뷰를 보여준다.
 
 # 4. 마치며
 

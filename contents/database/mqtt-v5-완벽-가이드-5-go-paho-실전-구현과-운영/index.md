@@ -23,7 +23,7 @@ series: "MQTT v5 완벽 가이드"
 
 <img src="thumbnail.png" alt="MQTT v5 Basic Architecture" width="75%" /> 
 
-이 장에서는 `Go` 언어로 `MQTT` v5 클라이언트를 구현하는 방법을 다룬다. Eclipse Paho 프로젝트에서 제공하는 `paho.golang` 패키지를 사용하며, 특히 자동 재연결을 지원하는 `autopaho` 패키지의 사용법을 중심으로 설명한다. 앞서 배운 개념들을 실제 코드로 구현하는 방법을 익히면 바로 프로덕션에 적용할 수 있다.
+이 장에서는 `Go` 언어로 `MQTT` v5 클라이언트를 구현하는 방법을 다룬다. Eclipse Paho 프로젝트에서 제공하는 `paho.golang` 패키지를 사용하며, 특히 자동 재연결을 지원하는 `autopaho` 패키지의 사용법을 중심으로 설명한다. 앞서 배운 개념들을 실제 코드로 어떻게 옮기는지 살펴본다.
 
 ## 1.1 Paho v5 구조 이해
 
@@ -341,7 +341,7 @@ func handler(msg *paho.Publish) {
 
 # 2. 운영 관점 MQTT v5
 
-`MQTT` 시스템을 프로덕션에서 안정적으로 운영하려면 적절한 모니터링과 장애 대응 전략이 필요한다. 이 장에서는 반드시 모니터링해야 할 핵심 지표와 흔히 발생하는 장애 시나리오별 대응 방법을 다룬다. 사전에 이러한 상황들을 준비해두면 장애 발생 시 빠르게 대응할 수 있다.
+`MQTT` 시스템을 프로덕션에서 안정적으로 운영하려면 적절한 모니터링과 장애 대응 전략이 필요하다. 이 장에서는 반드시 모니터링해야 할 핵심 지표와 흔히 발생하는 장애 시나리오별 대응 방법을 다룬다.
 
 ## 2.1 Mosquitto 모니터링 도구
 
@@ -349,7 +349,7 @@ func handler(msg *paho.Publish) {
 
 ### 2.1.1 $SYS Topic (내장 기능)
 
-`Mosquitto`는 자체 상태 정보를 `$SYS/#` `Topic`으로 발행한다. 별도 설치 없이 바로 사용할 수 있어 빠른 상태 확인에 유용한다.
+`Mosquitto`는 자체 상태 정보를 `$SYS/#` `Topic`으로 발행한다. 별도 설치 없이 바로 사용할 수 있어 빠른 상태 확인에 유용하다.
 
 ```bash
 # 모든 시스템 메트릭 구독
@@ -379,7 +379,7 @@ sys_interval 10
 
 ### 2.1.2 MQTT Explorer (GUI 도구)
 
-개발 및 테스트 환경에서 가장 쉽게 사용할 수 있는 데스크톱 앱이다.
+개발 및 테스트 환경이라면 데스크톱 앱으로 가장 손쉽게 시작할 수 있다.
 
 - **다운로드**: https://mqtt-explorer.com
 - **주요 기능**:
@@ -518,7 +518,7 @@ func handleSysMessage(msg *paho.Publish) {
 
 ### 3.1.1 프로젝트 목적
 
-이 프로젝트는 `MQTT` v5의 핵심 개념들을 실제 동작하는 코드로 확인하기 위해 만들어졌다. 단순히 "Hello World" 수준이 아니라, 실무에서 마주치는 패턴들을 최소한의 코드로 구현했다.
+이 프로젝트는 `MQTT` v5의 핵심 개념들을 실제 동작하는 코드로 확인하기 위해 만들어졌다. 예제 수준에 그치지 않도록, 실무에서 마주치는 패턴들을 최소한의 코드로 구현했다.
 
 **학습 목표:**
 - `Go`에서 autopaho를 사용한 `MQTT` 클라이언트 구현
@@ -536,8 +536,8 @@ func handleSysMessage(msg *paho.Publish) {
 
 ```mermaid
 flowchart LR
-    F["Frontend<br/>(React + TS)"] <-->|"WebSocket:9001"| B["Mosquitto<br/>MQTT Broker"]
-    G["Backend<br/>(Go + autopaho)"] <-->|"TCP:1883"| B
+    F["Frontend (React + TS)"] <-->|"WebSocket:9001"| B["Mosquitto MQTT Broker"]
+    G["Backend (Go + autopaho)"] <-->|"TCP:1883"| B
 ```
 
 **왜 두 가지 프로토콜을 사용하는가:**
@@ -558,20 +558,20 @@ flowchart LR
 
 ```mermaid
 sequenceDiagram
-    participant F as Frontend<br/>(React + mqtt.js)
-    participant B as Broker<br/>(Mosquitto)
-    participant G as Backend<br/>(Go + autopaho)
+    participant F as Frontend (React + mqtt.js)
+    participant B as Broker (Mosquitto)
+    participant G as Backend (Go + autopaho)
 
     G->>B: 1. TCP 연결 + SUBSCRIBE device/1/command
     F->>B: 2. WebSocket 연결 + SUBSCRIBE device/1/state
 
-    F->>B: 3. PUBLISH device/1/command<br/>payload: {"command":"start"}
+    F->>B: 3. PUBLISH device/1/command payload: {"command":"start"}
     B->>G: 명령 전달
 
     Note right of G: 상태를 "running"으로 변경
 
     loop 2초마다
-        G->>B: 5. PUBLISH device/1/state<br/>payload: {"status":"running","temperature":37.5}
+        G->>B: 5. PUBLISH device/1/state payload: {"status":"running","temperature":37.5}
         B->>F: 6. 상태 전달 → UI 업데이트
     end
 ```
@@ -1139,7 +1139,7 @@ WebSocket connection to 'ws://localhost:9001/' failed
 - `Mosquitto`의 `$SYS` `Topic`, `Prometheus` + `Grafana` 등으로 `Broker` 상태를 모니터링할 수 있다
 - 실전 프로젝트에서는 `Go` Backend(`TCP`)와 `React` Frontend(`WebSocket`)가 `Mosquitto` `Broker`를 통해 양방향 통신하는 구조를 구현했다
 
-이 시리즈를 통해 `MQTT` v5의 개념부터 실전 구현까지 전체적인 흐름을 살펴보았다. 실무에 적용할 때 참고가 되길 바란다.
+이 시리즈를 통해 `MQTT` v5의 개념부터 실전 구현까지 전체적인 흐름을 살펴보았다.
 
 # 5. 참고
 

@@ -1,6 +1,6 @@
 ---
 title: "Mongodb 원격 서버에 있는 Collection을 로컬환경 서버로 복사하기"
-description: "Mongodb 원격 서버에 있는 Collection을 로컬환경 서버로 복사하기"
+description: "mongodump와 mongoimport로 원격 서버의 collection을 로컬로 복제하는 방법을 알아본다."
 date: 2022-07-24
 update: 2022-07-24
 tags:
@@ -18,7 +18,7 @@ tags:
 `mongodump` 명령어는 `mongo` shell 명령어가 아니라 MongoDB 설치 시 같이 설치되는 command line 명령어이다. `mongodump`는 mongodb의 data를 export 해주는 도구이다.
 
 - `--host` : 호스트 명
-- `--por`t : 포터
+- `--port` : 포트
 - `-u` : 사용자
 - `-p` : 암호
 - `--db` : database 이름
@@ -66,7 +66,3 @@ $ mongoimport --uri "mongodb://localhost:27017" -d clone2 -c inventory inventory
 # 4. 참고
 
 - https://www.mongodb.com/docs/database-tools/mongodump/
-
-  
-
-  

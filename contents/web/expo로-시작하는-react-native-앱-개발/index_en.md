@@ -19,7 +19,7 @@ tags:
 
 Have you ever built a web app with React but felt lost about where to even start with a mobile app? With React Native, you can build iOS/Android apps using the same React syntax you already know. But when you actually try to get started, you run into barriers like Xcode, Android Studio, and native build configuration.
 
-The thing that almost completely removes these barriers is **Expo**. In this article, we'll set up a development environment with Expo and build a simple **Todo app** from start to finish. The features we'll build are:
+**Expo** removes almost all of those barriers. In this article, we'll set up a development environment with Expo and build a simple **Todo app** from start to finish. The features we'll build are:
 
 - Add a task / toggle completion / delete
 - Persist data so the list survives even after closing and reopening the app
@@ -41,7 +41,7 @@ The problem is that to start with pure React Native, you have to install Xcode a
 - **Rich SDK**: you can use native features like camera, location, notifications, and local storage just by installing a package
 - **EAS Build**: later, when you want to build a real app and publish it to the stores, you can use the cloud build service
 
-The relationship between your code and the runtime environment looks like this in a diagram.
+Here's how your code relates to the runtime environment.
 
 ```mermaid
 flowchart TD
@@ -197,7 +197,7 @@ Here is where Expo's real strength shows. When adding a native module, you use *
 npx expo install @react-native-async-storage/async-storage
 ```
 
-`expo install` automatically picks and installs a version **compatible** with the current project's Expo SDK version. Native modules are sensitive to compatibility depending on the SDK version, and Expo takes care of matching this for you. On top of that, you don't need to touch native code directly or eject the project.
+`expo install` automatically picks and installs a version **compatible** with the current project's Expo SDK version. Native modules are sensitive to compatibility depending on the SDK version, and Expo takes care of matching this for you. And you don't have to touch native code directly or eject the project.
 
 Now, with `useEffect`, we (1) load the saved list when the app starts and (2) save it whenever the list changes.
 

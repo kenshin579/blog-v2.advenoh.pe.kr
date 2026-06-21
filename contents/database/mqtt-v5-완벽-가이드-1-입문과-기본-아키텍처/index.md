@@ -1,6 +1,6 @@
 ---
 title: "MQTT v5 완벽 가이드 1편: 개념과 아키텍처 이해하기"
-description: "MQTT v5의 기본 개념, Broker 중심 아키텍처, HTTP와의 차이점을 알아봅니다. MQTT를 처음 접하는 개발자를 위한 입문 가이드이다."
+description: "MQTT v5의 기본 개념, Broker 중심 아키텍처, HTTP와의 차이점을 알아본다. MQTT를 처음 접하는 개발자를 위한 입문 가이드이다."
 date: 2026-02-04
 update: 2026-02-04
 tags:
@@ -31,16 +31,9 @@ series: "MQTT v5 완벽 가이드"
 
 ## 1.1 MQTT란 무엇인가
 
-MQTT는 "Message Queuing Telemetry Transport"의 약자로 **이벤트 기반 메시징 프로토콜**이다. 경량 프로토콜로 설계되어 헤더 크기가 최소 2바이트에 불과하며, 이는 HTTP 헤더(수백 바이트)와 비교하면 매우 작은 크기이다.
+MQTT는 "Message Queuing Telemetry Transport"의 약자로 이벤트 기반 메시징 프로토콜이다. 경량 프로토콜로 설계되어 헤더 크기가 최소 2바이트에 불과하며, 이는 HTTP 헤더(수백 바이트)와 비교하면 매우 작은 크기이다.
 
-- **이벤트 기반 (Event-driven)**
-  - 상태를 주기적으로 확인하는 폴링 방식과 달리, **변경이 발생했을 때만 이벤트를 발생시켜 효율적으로 데이터를 전달**한다
-
-- **메시징 (Messaging)**
-  - 데이터는 메시지 단위로 교환되며, **Topic 기반 라우팅**을 통해 송신자와 수신자를 느슨하게 결합한다
-
-- **프로토콜 (Protocol)**
-  - TCP/IP 스택 위에서 동작하는 경량 메시징 프로토콜로, **WebSocket 지원을 통해 웹 브라우저 환경에서도 활용 가능**하다
+이름을 하나씩 풀어보면 MQTT의 성격이 드러난다. 우선 이벤트 기반(Event-driven)이라는 건, 상태를 주기적으로 확인하는 폴링 방식과 달리 변경이 발생했을 때만 이벤트를 보내 데이터를 효율적으로 전달한다는 뜻이다. 데이터는 메시지 단위로 교환되며 Topic 기반 라우팅을 통해 송신자와 수신자를 느슨하게 결합한다. 마지막으로 TCP/IP 스택 위에서 동작하는 경량 프로토콜이라 WebSocket을 지원하면 웹 브라우저 환경에서도 쓸 수 있다.
 
 
 ### 1.1.1 Broker 중심 구조
@@ -55,17 +48,10 @@ flowchart LR
     B -->|deliver| S3[Subscriber]
 ```
 
-- **Publisher**
-  - 데이터를 생성하여 **특정 Topic으로 메시지를 발행(publish)**하는 주체이다
-
-- **Subscriber**
-  - 관심 있는 **Topic을 구독**하고, 해당 Topic으로 전달되는 메시지를 수신하는 주체이다
-
-- **Broker**
-  - 메시지 중계 서버로서, **Publisher로부터 수신한 메시지를 Topic 기준으로 분류하여 적절한 Subscriber에게 전달**한다
+여기엔 세 주체가 등장한다. Publisher는 데이터를 생성해 특정 Topic으로 메시지를 발행(publish)하고, Subscriber는 관심 있는 Topic을 구독해 그 Topic으로 오는 메시지를 받는다. 그 사이에서 Broker는 메시지 중계 서버 역할을 맡아, Publisher가 보낸 메시지를 Topic 기준으로 분류해 알맞은 Subscriber에게 전달한다.
 
 
-Publisher와 Subscriber는 서로를 직접 알지 못한다. Broker만 알면 된다. 이러한 느슨한 결합(Loose Coupling) 덕분에 시스템 확장이 용이한다. 새로운 Subscriber를 추가해도 Publisher를 수정할 필요가 없고, 반대로 Publisher를 추가해도 기존 Subscriber에 영향을 주지 않는다.
+Publisher와 Subscriber는 서로를 직접 알지 못하고 Broker만 알면 된다. 이러한 느슨한 결합(Loose Coupling) 덕분에 시스템을 확장하기 쉽다. 새로운 Subscriber를 추가해도 Publisher를 수정할 필요가 없고, 반대로 Publisher를 추가해도 기존 Subscriber에 영향을 주지 않는다.
 
 ### 1.1.2 HTTP 와의 근본적인 차이
 
@@ -143,9 +129,9 @@ MQTT 시스템에서 메시지를 보내거나 받는 모든 것이 Client이다
 ```mermaid
 flowchart LR
     subgraph Clients["모든 연결 주체 = Client"]
-        A["📱 모바일 앱<br/>(Subscriber)"]
-        B["🌡️ 온도 센서<br/>(Publisher)"]
-        D["🖥️ 백엔드 서버<br/>(Pub + Sub)"]
+        A["모바일 앱 (Subscriber)"]
+        B["온도 센서 (Publisher)"]
+        D["백엔드 서버 (Pub + Sub)"]
     end
 
     Broker -->|subscribe| A
@@ -202,7 +188,7 @@ Publisher가 메시지를 발행하면 Broker가 이를 수신하여 해당 Topi
 
 ```mermaid
 flowchart LR
-    S["센서"] -->|"PUBLISH<br/>topic: home/temp<br/>payload: 25"| B[Broker]
+    S["센서"] -->|"PUBLISH (topic: home/temp, payload: 25)"| B[Broker]
 ```
 
 ### 2.2.2 Subscribe 흐름 (메시지 받기)
@@ -218,11 +204,11 @@ Subscriber는 관심 있는 Topic을 구독하고, 해당 Topic으로 메시지�
 flowchart TB
     subgraph subscribe[" "]
         direction LR
-        A1[앱] -->|"SUBSCRIBE<br/>topic: home/temp"| B1[Broker]
+        A1[앱] -->|"SUBSCRIBE (topic: home/temp)"| B1[Broker]
     end
     subgraph message[" "]
         direction LR
-        B2[Broker] -->|"MESSAGE<br/>topic: home/temp<br/>payload: 25"| A2[앱]
+        B2[Broker] -->|"MESSAGE (topic: home/temp, payload: 25)"| A2[앱]
     end
 ```
 
@@ -232,7 +218,13 @@ flowchart TB
 flowchart LR
     P[Publisher] --> B
 
-    B["Broker<br/>───────────<br/>1. 메시지 수신<br/>2. Topic 매칭<br/>3. 구독자 탐색<br/>4. 메시지 전달<br/>5. ACK 처리"]
+    subgraph B["Broker"]
+        direction TB
+        R1["1. 메시지 수신"] --> R2["2. Topic 매칭"]
+        R2 --> R3["3. 구독자 탐색"]
+        R3 --> R4["4. 메시지 전달"]
+        R4 --> R5["5. ACK 처리"]
+    end
 
     B --> SA[Subscriber A]
     B --> SB[Subscriber B]

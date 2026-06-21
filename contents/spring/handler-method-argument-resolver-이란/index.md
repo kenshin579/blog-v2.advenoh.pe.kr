@@ -20,8 +20,6 @@ tags:
 
 `HandlerMethodArgumentResolver`에 대해서 알아보자. 아래와 같이 컨트롤러 메서드에 여러 인자 값(ex. `@PathVariable`)을 추가하여 자주 작업을 한다. 이런 인자는 `HandlerMethodArgumentHandler`에 의해서 처리가 된다.
 
-필요에 따라서 컨트롤러 메서드에 여러 인자 값을 추가하는데 이런 인자는 `HandlerMethodArgumentHandler`에 의해서 처리가 된다.
-
 ```java
 @GetMapping
 public ResponseEntity<?> getStudentList(
@@ -40,7 +38,7 @@ public ResponseEntity<?> getStudentList(
 - RequestHeaderMapMethodArgumentResolver
     - `@RequestHeader` 어노테이션으로 선언된 인자의 실제 값을 지정해 준다
 
-`HandlerMethodArgumentHandler`을 사용하게 되면 중복 코드를 줄이고 공통 기능으로 빼서 사용할 수 있는 장점이 있다. 이제 Custom `HandlerMethodArgumentResolver`를 직접 구현해보도록 하자.
+`HandlerMethodArgumentHandler`을 사용하면 중복 코드를 줄이고 공통 기능으로 분리할 수 있다. 이제 Custom `HandlerMethodArgumentResolver`를 직접 구현해보자.
 
 
 # 2. Custom Argument Resolver 만들기
@@ -207,7 +205,7 @@ private HandlerMethodArgumentResolver getArgumentResolver(MethodParameter parame
 
 # 4. 마무리
 
-`HandlerMethodArgumentResolver`는 컨트롤러 메서드에서 인자 값에 대한 처리를 위해 사용된다. 이미 스프링에서 공통기능으로 많이 제공하고 있지만, 사용자용 메서드도 쉽게 작성하여 중복 로직을 많이 줄일 수 있어 용의하게 사용된다.
+`HandlerMethodArgumentResolver`는 컨트롤러 메서드에서 인자 값을 처리할 때 사용한다. 스프링이 기본으로 제공하는 것도 많지만, 직접 작성해서 중복 로직을 줄이기에도 어렵지 않다.
 
 관련 소스는 [github](https://github.com/kenshin579/tutorials-java/tree/master/springboot-handler-method-argument-resolver)에 올려두어서 참고하시면 된다.
 

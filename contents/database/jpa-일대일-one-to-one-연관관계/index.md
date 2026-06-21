@@ -1,6 +1,6 @@
 ---
 title: "JPA 일대일(1:1) @One-To-One 연관관계"
-description: "JPA 일대일(1:1) @One-To-One 연관관계"
+description: "JPA에서 일대일(1:1) 연관관계를 단방향과 양방향, 외래 키 위치별로 매핑하는 방법을 예제로 살펴본다."
 date: 2019-12-27
 update: 2019-12-27
 tags:
@@ -34,9 +34,9 @@ series: "Spring JPA"
 * Source code :
     * 주 테이블에 외래 키
         * [단방향](https://github.com/kenshin579/tutorials-java/tree/master/springboot-jpa-one-to-one-unidirectional)
-        * [양반향](https://github.com/kenshin579/tutorials-java/tree/master/springboot-jpa-one-to-one-bidirectional)
+        * [양방향](https://github.com/kenshin579/tutorials-java/tree/master/springboot-jpa-one-to-one-bidirectional)
     * 대상 테이블에 외래 키
-        * [양반향](https://github.com/kenshin579/tutorials-java/tree/master/springboot-jpa-one-to-one-bidirectional-target)
+        * [양방향](https://github.com/kenshin579/tutorials-java/tree/master/springboot-jpa-one-to-one-bidirectional-target)
 * Software management tool : Maven
 
 # 3. 일대일 (1:1) 연관관계
@@ -49,7 +49,7 @@ series: "Spring JPA"
 
 - 주 테이블 : `User`
     - 외래 키(phone_id)가 있는 경우
-- 대상 테이블 : `CelluarPhone`
+- 대상 테이블 : `CellularPhone`
 
 <img src="image_1.png" style="zoom:50%;" />
 
@@ -124,9 +124,9 @@ public void save_user_phone() {
 
 
 
-### 3.1.2 일대일 양반향
+### 3.1.2 일대일 양방향
 
-이제 양반향으로 설정해볼까요? `CellularPhone` 객체에도 `User` 객체를 가지도록 한다.
+이제 양방향으로 설정해볼까요? `CellularPhone` 객체에도 `User` 객체를 가지도록 한다.
 
 <img src="image_4.png" style="zoom:50%;" />
 
@@ -184,7 +184,7 @@ public void save_user_phone() {
 >
 > - `User.cellularPhone` : 지연 로딩이 된다
 > - `CellularPhone.user` : 지연 로딩이 안된다
-    >   - 프록시의 한계로 인해서 외래 키를 직접 관리하지 않는 일대일 관계에서는 지연 로딩으로 설정을 해도 즉시 로딩이 된다
+>     - 프록시의 한계로 인해서 외래 키를 직접 관리하지 않는 일대일 관계에서는 지연 로딩으로 설정을 해도 즉시 로딩이 된다
 >
 > 참고로 @OneToOne 어노테이션의 기본 fetch 타입은 즉시 로딩(EAGER)이다.
 >
@@ -200,14 +200,14 @@ public void save_user_phone() {
 > }
 > ```
 >
-> - (1) `users.get(0).getCelluarPhone().getModel()`을 호출 할때 SQL 구문이 실행되어 지연로딩이 잘 되는 것을 확인할 수 있다
-> - (2) `CelluarPhone.user`는 지연로딩으로 설정되어 있지만, `findAll()` 호출시 즉시 로딩되는 것을 확인할 수 있다
+> - (1) `users.get(0).getCellularPhone().getModel()`을 호출 할때 SQL 구문이 실행되어 지연로딩이 잘 되는 것을 확인할 수 있다
+> - (2) `CellularPhone.user`는 지연로딩으로 설정되어 있지만, `findAll()` 호출시 즉시 로딩되는 것을 확인할 수 있다
 
 
 
 ## 3.2 대상 테이블에 외래 키가 있는 경우
 
-외래 키가 주 테이블이 아니라 대상 테이블에 존재하는 경우에는 어떻게 달라지는 알아보자.
+외래 키가 주 테이블이 아니라 대상 테이블에 존재하는 경우에는 어떻게 달라지는지 알아보자.
 
 - 주 테이블 : `User`
 - 대상 테이블 : `CellularPhone`
@@ -221,7 +221,7 @@ public void save_user_phone() {
 
 <img src="image_2.png" style="zoom:50%;" />
 
-### 3.2.2 일대일 양반향
+### 3.2.2 일대일 양방향
 
 <img src="image_4.png" style="zoom:50%;" />
 
@@ -270,4 +270,4 @@ public class User extends DateAudit {
     * [https://riptutorial.com/ko/jpa/example/22229/%EC%A7%81%EC%9B%90%EA%B3%BC-%EC%B1%85%EC%83%81-%EA%B0%84%EC%9D%98-%EC%9D%BC%EB%8C%80%EC%9D%BC-%EA%B4%80%EA%B3%84](https://riptutorial.com/ko/jpa/example/22229/직원과-책상-간의-일대일-관계)
     * [https://www.popit.kr/spring-boot-jpa-step-08-onetoone-%EA%B4%80%EA%B3%84-%EC%84%A4%EC%A0%95-%ED%8C%81/](https://www.popit.kr/spring-boot-jpa-step-08-onetoone-관계-설정-팁/)
 * 책 : 자바 ORM 표준 JPA 프로그래밍
-    * <a href="http://www.yes24.com/Product/Goods/19040233?	scode=032&OzSrank=2">![책: JPA 프로그래밍](jpa_book1.jpg)</a>
+    * <a href="http://www.yes24.com/Product/Goods/19040233?scode=032&OzSrank=2">![책: JPA 프로그래밍](jpa_book1.jpg)</a>

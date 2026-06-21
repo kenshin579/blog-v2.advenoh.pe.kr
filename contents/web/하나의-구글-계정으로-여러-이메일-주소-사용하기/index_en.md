@@ -18,7 +18,7 @@ tags:
 
 Did you know that you can use multiple email addresses with a single Google email account?
 
-An AWS account can be used for free for 12 months, so personally I mainly use Google's alias feature whenever I create a new AWS account every year. No additional configuration is needed—you just add a dot or a plus sign as shown below.
+An AWS account can be used for free for 12 months, so personally I mainly use Google's alias feature whenever I create a new AWS account every year. No extra setup is needed. You just add a dot or a plus sign as shown below.
 
 # 1. Using the Email Alias Feature
 

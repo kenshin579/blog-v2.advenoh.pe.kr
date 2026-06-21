@@ -1,6 +1,6 @@
 ---
 title: "JPA 다대일(N:1)+일대다(1:N) @ManyToOne, @OneToMany 연관관계"
-description: "JPA 다대일(N:1)+일대다(1:N) @ManyToOne, @OneToMany 연관관계"
+description: "@ManyToOne, @OneToMany로 다대일·일대다 연관관계를 단방향·양방향으로 매핑하고 연관관계 주인, fetch, optional 옵션을 정리한다."
 date: 2019-12-06
 update: 2019-12-06
 tags:
@@ -24,7 +24,7 @@ JPA 연관관계 매핑에 대한 내용은 [JPA 연관관계 매핑 정리](htt
 
 > - Post (일)
 > - Comment (다)
-    >   - 테이블에서는 다쪽에 외래 키가 존재한다
+>   - 테이블에서는 다쪽에 외래 키가 존재한다
 >   - 양방향 관계에서는 다쪽이 연관관계의 주인이 된다
 >
 
@@ -88,7 +88,7 @@ public class Comment extends DateAudit {
     private Long commentId;
 		...(생략)...
 
-    //연관관계 매팽
+    //연관관계 매핑
     @ManyToOne
     @JoinColumn(name = "post_id")
     private Post post;
@@ -141,7 +141,7 @@ Post와 Comment관계에서는 별도로 cascade 설정은 하지 않았다. Pos
 | DETACH  | 부모 엔티티가 detach 상태로 되면 자식 엔터티도 같이 detach 되어 변경사항이 반영되지 않는다. |
 | REFRESH | 부모 엔터티가 DB로부터 데이터를 다시 로드하면 자식 엔터티도 DB로부터 데이터를 다시 로딩한다 |
 | MERGE   | 부모 엔티티가 detach 상태에서 자식 엔터티를 추가/변경한 이후에 부모 엔티티가 merge를 수행하면 자식 엔터티도 변경사항이 적용된다. |
-| ALL     | 모두 cascade 옵셕이 전용된다.                                |
+| ALL     | 모두 cascade 옵션이 적용된다.                                |
 
 지금까지 ManyToOne 어노테이션에서 적용할 수 있는 여러 옵션을 알아보았다. 다대일로 설계한 엔터티가 제대로 저장/조회가 잘되는지 Unit Test에서 확인한다.
 
@@ -223,7 +223,7 @@ public class Comment extends DateAudit {
     private Long commentId;
 		...(생략)...
 
-    //연관관계 매팽
+    //연관관계 매핑
     @ManyToOne
     @JoinColumn(name = "post_id", nullable = false)
     private Post post; //연관관계의 주인이 된다
@@ -325,7 +325,7 @@ public class Post extends DateAudit {
 
 ### 3.2.1 무한 루프에 빠지는 경우
 
-영방향 매핑때에는 무한 루프에 빠질 수 있어서 주의가 필요한다. 예를 들어 Comment.toString()에서 getPost()를 호출하게 되면 무한 루프에 빠질 수 있다.
+양방향 매핑때에는 무한 루프에 빠질 수 있어서 주의가 필요하다. 예를 들어 Comment.toString()에서 getPost()를 호출하게 되면 무한 루프에 빠질 수 있다.
 
 - 엔티티를 JSON으로 변환하는 경우
     - [Jackson에서 Infinite Recursion에 해결하는 방법](https://blog.advenoh.pe.kr/jackson에서-infinite-recursion-이슈-해결방법/)을 참고해주세요
@@ -334,21 +334,21 @@ public class Post extends DateAudit {
 
 # 4. FAQ
 
-## 4.1 언제 양반향, 단방향을 사용해야 하나?
+## 4.1 언제 양방향, 단방향을 사용해야 하나?
 
-비지니스 로직에 따라서 무엇을 사용할 지 결정하면 된다.
+비즈니스 로직에 따라서 무엇을 사용할 지 결정하면 된다.
 
-- 단반향
+- 단방향
 
     - ex. 주문상품(고객이 주문한 상품 정보) -> 상품 (상품에 대한 정보)
-    - 주문상품에서 상품에 대한 정보를 참조할 일은 많지만, 상품이 주문상품에 대해서 참조할 일은 거의 없어서 단반향으로 설정할 수 있다
+    - 주문상품에서 상품에 대한 정보를 참조할 일은 많지만, 상품이 주문상품에 대해서 참조할 일은 거의 없어서 단방향으로 설정할 수 있다
 
-- 양반향
+- 양방향
 
     - ex. 부서 -> 직원, 직원 -> 부서
-    - 직원이 어느 부서에서 근무하는 지를 알기 위해서 알고 싶고 또한 한 부서에 어떤 직원이 있는지 도 알고 싶은 경우에는 양반향으로 설정할 수 있다
+    - 직원이 어느 부서에서 근무하는 지를 알기 위해서 알고 싶고 또한 한 부서에 어떤 직원이 있는지 도 알고 싶은 경우에는 양방향으로 설정할 수 있다
 
-어느 것을 사용할지 확실하지 않을 때는 우선 단방향으로 매핑을 사용하고 반대 반향으로 객체 그래프 탐색이 필요한 경우에는 양방향으로 변경해서 사용하면 된다.
+어느 것을 사용할지 확실하지 않을 때는 우선 단방향으로 매핑을 사용하고 반대 방향으로 객체 그래프 탐색이 필요한 경우에는 양방향으로 변경해서 사용하면 된다.
 
 ## 4.2 fetch = FetchType.LAZY로 설정하면 언제 데이터를 로딩해서 가져오게 되는가?
 
@@ -478,7 +478,7 @@ Hibernate: select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as
 
 ### 4.3.2 @ManyToOne(optional=false) 인 경우 - 필수적인 관계
 
-optional=true로 지정하면 Post 객체는 null이 될 수 없기 때문에 필수적으로 포함되어야 한다. @JoinColumn(nullable=false) 어노테이션 사용하는 경우에도 같다.
+optional=false로 지정하면 Post 객체는 null이 될 수 없기 때문에 필수적으로 포함되어야 한다. @JoinColumn(nullable=false) 어노테이션 사용하는 경우에도 같다.
 
 ```java
 @Table(name = "comment")
@@ -495,7 +495,7 @@ select 쿼리 구문을 보면 INNER JOIN으로 생성이 된다.
 select comment0_.comment_id as comment_1_0_0_, comment0_.create_dt as create_d2_0_0_, comment0_.updated_dt as updated_3_0_0_, comment0_.author as author4_0_0_, comment0_.content as content5_0_0_, comment0_.post_id as post_id6_0_0_, post1_.post_id as post_id1_1_1_, post1_.create_dt as create_d2_1_1_, post1_.updated_dt as updated_3_1_1_, post1_.author as author4_1_1_, post1_.content as content5_1_1_, post1_.like_count as like_cou6_1_1_, post1_.title as title7_1_1_ from comment comment0_ inner join post post1_ on comment0_.post_id=post1_.post_id where comment0_.comment_id=?
 ```
 
-엔티티의 속성 구성후 쿼리 구문을 로그로 확인하면서 원하는 쿼리인 지 확인하는 습관이 필요한다.
+엔티티의 속성 구성후 쿼리 구문을 로그로 확인하면서 원하는 쿼리인 지 확인하는 습관이 필요하다.
 
 # 5. 정리
 
@@ -519,7 +519,7 @@ JPA 연관관계에서 가장 기본이 되는 다대일 관계에 대해서 알
     - [https://bebong.tistory.com/entry/JPA-Lazy-Evaluation-LazyInitializationException-could-not-initialize-proxy-%E2%80%93-no-Session](https://bebong.tistory.com/entry/JPA-Lazy-Evaluation-LazyInitializationException-could-not-initialize-proxy-–-no-Session)
 - H2 옵션
     - [https://www.h2database.com/javadoc/org/h2/engine/DbSettings.html](https://www.h2database.com/javadoc/org/h2/engine/DbSettings.html)
-- 책 : 자바 ORM 표준 JPA 프로그래맹
+- 책 : 자바 ORM 표준 JPA 프로그래밍
     - <a href="http://www.yes24.com/Product/Goods/19040233?scode=032&OzSrank=2">![책: JPA 프로그래밍](jpa_book1.jpg)</a>
 - 책 : JPA 프로그래밍 입문
     - <a href="http://www.yes24.com/Product/Goods/41787023?scode=029">![책: JPA 프로그래밍 입문](jpa_book2.jpg)</a>

@@ -16,7 +16,7 @@ tags:
 
 # 1. Postman Flows이란?
 
-Postman Flows는 여러 타입의 빌딩 블록을 서로 연결하여 작업 흐름을 정의하고 자동화하는 데 사용되는 도구이다. Flows는 코드 한 줄도 작성하지 않고 작업 흐름을 정의할 수 있는 UI를 제공해 주고 있어서 개발자 외에도 누구나? 쉽게 Flows를 사용할 수 있다. 다음은 Postman Flows 의 주요 특징 및 기능에 대해서 알아보자.
+Postman Flows는 여러 타입의 빌딩 블록을 연결해 작업 흐름을 정의하고 자동화하는 도구다. 코드를 한 줄도 쓰지 않고 UI로 흐름을 짤 수 있어서 개발자가 아니어도 쓸 수 있다.
 
 ![Postman Flows](postman-flows-overview.gif)
 
@@ -28,7 +28,7 @@ Postman Flows는 여러 타입의 빌딩 블록을 서로 연결하여 작업 �
 - [Various Postman Flows Usecase Example](https://learning.postman.com/docs/postman-flows/gs/flows-overview/#what-can-you-do-with-flows)
 
 
-> Postman에서는 다양한 형태의 문서를 제공해 주고 있어 쉽게 Postman Flows를 학습할 수 있다.
+> Postman은 문서를 다양하게 제공해서 Flows를 익히기 쉽다.
 >
 
 ## 1.2 Postman Flows 특징 및 기능
@@ -107,7 +107,7 @@ Flow에서는 아래와 같은 여러 block 타입을 제공한다.
 
 ## 1.5 Organize a Flow
 
-Flow에서 block이 많아지면 복잡해져서 아래와 같은 기능을 통해서 작성된 Flow를 조금 더 쉽게 이해할 수 있도록 도와주는 듯하다.
+Flow에 block이 많아지면 한눈에 보기 어렵다. 아래 기능으로 정리하면 좀 더 알아보기 쉽다.
 
 - Colors
     - Block을 선택해서 다른 색을 지정할 수 있다
@@ -118,7 +118,7 @@ Flow에서 block이 많아지면 복잡해져서 아래와 같은 기능을 통�
 
 ## 1.6 Webhook 기능
 
-Flow를 클라우드에 배포해서 Webhook으로 트리거하여 Flow를 실행시킬 수 있다. 아래와 같이 Flow를 Webhook으로 생성하면 API 주소가 나오고 API를 호출하면 Flow가 트리거할 수 있다.
+Flow를 클라우드에 배포하면 Webhook으로 실행할 수 있다. Flow를 Webhook으로 만들면 API 주소가 생기고, 그 주소를 호출하면 Flow가 실행된다.
 
 ![Publish to the cloud](flows-create-webhook-v10-1.gif)
 

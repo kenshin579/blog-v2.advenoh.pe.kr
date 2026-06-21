@@ -18,7 +18,7 @@ tags:
 
 # 1. 들어가며
 
-In-memory DB로 Memcached를 사용하면 자바에서는 [simple-spring-memcached](https://github.com/ragnor/simple-spring-memcached) (SSM) 라이브러리를 자주 사용된다. SSM 어노테이션으로 메서드에 선언하면 쉽게 관련 데이터가 캐시에서 관리된다. 스프링에서도 버전 3.1부터는 캐시 서비스 추상화 기능이 지원되어 비즈니스 로직 변경 없이 쉽게 다양한 캐시 구현체(ex. Ehcache, Redis)로 교체가 가능하게 되었다. 스프링에서 제공하는 캐시 기능은 다른 포스팅에서 더 자세히 다루도록 하자.
+In-memory DB로 Memcached를 사용하면 자바에서는 [simple-spring-memcached](https://github.com/ragnor/simple-spring-memcached) (SSM) 라이브러리를 자주 쓴다. SSM 어노테이션을 메서드에 선언하면 관련 데이터가 캐시에서 관리된다. 스프링에서도 버전 3.1부터 캐시 서비스 추상화 기능이 지원되어 비즈니스 로직 변경 없이 다양한 캐시 구현체(ex. Ehcache, Redis)로 교체할 수 있게 되었다. 스프링에서 제공하는 캐시 기능은 다른 포스팅에서 더 자세히 다루도록 하자.
 
 # 2. 개발 환경
 
@@ -144,7 +144,7 @@ simplesm-context.xml은 [SSM github](https://github.com/ragnor/simple-spring-mem
 
 SingleCache와 MultiCache인 경우 반드시 메서드 인자 중에 @ParameterValueKeyProvider 어노테이션을 지정해야 한다.
 
-기본 캐시 어노테이션 외에도 여러 어노테이션과 같이 사용하는 속성들이 존재하며 예제를 통해서 더 자세히 알아보도록 하자.
+기본 캐시 어노테이션 외에도 여러 어노테이션과 함께 사용하는 속성들이 있다. 예제를 통해서 더 자세히 알아보도록 하자.
 
 - 기타 어노테이션 및 속성
     - @CacheName(“QuoteApp”) : 관련 캐시를 하나로 묶을 수 있는 개념이고 클래스외에도 메서드에도 선언할 수 있다
@@ -284,7 +284,7 @@ public void testReadThroughMultiCache() {
 
 ### 3.3.2 Update Cache
 
-Update로 시작하는 어노테이션은 캐시에 저장된 값을 강제적으로 덮어쓰는 어노테이션이다. Update에 대한 여러 어노테이션에 대해서 알아봅시다.
+Update로 시작하는 어노테이션은 캐시에 저장된 값을 강제로 덮어쓴다. 관련 어노테이션을 하나씩 살펴보자.
 
 **@UpdateAssignCache**
 
@@ -589,7 +589,7 @@ expiration이 30일을 넘으면 무한 값으로 계산된다.
 
 ### 3.5.2 toString()을 override 하자
 
-캐시 key로 지정된 인자가 primitive 타입이 아닌 오브젝트타입인 경우에는 toString() 메서드를 이용해서 key를 생성한다. toString()을 override 하지 않으면 Object.toString()을 사용하며 기본 구현은 아래와 같이 클래스 이름과 hashcode()를 사용해서 값을 반환한다. hashCode는 메모리 주소를 의존하기 때문에 메모리 주소가 변경되면 캐시가 적용이 안 되는 경우가 발생할 수 있어 toString()을 어버라이드 하거나 @CacheKeyMethod을사용을 권장한다.
+캐시 key로 지정된 인자가 primitive 타입이 아닌 오브젝트타입인 경우에는 toString() 메서드를 이용해서 key를 생성한다. toString()을 override 하지 않으면 Object.toString()을 사용하며 기본 구현은 아래와 같이 클래스 이름과 hashcode()를 사용해서 값을 반환한다. hashCode는 메모리 주소에 의존하기 때문에 메모리 주소가 바뀌면 캐시가 적용되지 않을 수 있다. toString()을 오버라이드하거나 @CacheKeyMethod를 사용하는 것을 권장한다.
 
 return getClass().getName() + "@" + Integer.toHexString(hashCode())
 

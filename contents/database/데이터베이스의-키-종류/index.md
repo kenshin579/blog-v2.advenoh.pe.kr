@@ -1,6 +1,6 @@
 ---
 title: "데이터베이스의 키 종류"
-description: "데이터베이스의 키 종류"
+description: "수퍼키, 후보키, 기본키, 대체키, 외래키 등 데이터베이스 키의 종류를 예제 데이터와 함께 정리한다."
 date: 2018-11-25
 update: 2018-11-25
 tags:
@@ -45,14 +45,15 @@ tags:
 ## 1.3 기본키 (primary key)
 
 - **후보키중에 특별히 선택된 키** 이다
-- 키본키는 **NULL 값이나 중복된 값** 을 가질 수 없다
-- 예. authors 테이블 \* 후보키중에 id를 기본키로 선정할 수 있다. (중복값이나 NULL 값이 없다)
+- 기본키는 **NULL 값이나 중복된 값** 을 가질 수 없다
+- 예. authors 테이블
+    - 후보키중에 id를 기본키로 선정할 수 있다. (중복값이나 NULL 값이 없다)
 
 ## 1.4 대체키 (alternate key)
 
 - 대체키란 **기본키로 선택되지 못한 후보키** 를 의미하고 **보조키** 라고도 한다
 - 예. authors 테이블
-    - email가 대체키가 된다.
+    - email이 대체키가 된다.
 
 ## 1.5 외래키 (foreign key)
 
@@ -69,4 +70,5 @@ tags:
     - ![책: 데이터베이스 개론](image_4.jpeg)
 - 키 종류
     - [https://m.blog.naver.com/dlwjddns5/220620195019](https://m.blog.naver.com/dlwjddns5/220620195019)
-    - [http://limkydev.tistory.com/108](http://limkydev.tistory.com/108) \* [https://m.blog.naver.com/PostView.nhn?blogId=slrkanjsepdi&logNo=90118418840&proxyReferer=https%3A%2F%2Fwww.google.co.kr%2F](https://m.blog.naver.com/PostView.nhn?blogId=slrkanjsepdi&logNo=90118418840&proxyReferer=https%3A%2F%2Fwww.google.co.kr%2F)
+    - [http://limkydev.tistory.com/108](http://limkydev.tistory.com/108)
+    - [https://m.blog.naver.com/PostView.nhn?blogId=slrkanjsepdi&logNo=90118418840&proxyReferer=https%3A%2F%2Fwww.google.co.kr%2F](https://m.blog.naver.com/PostView.nhn?blogId=slrkanjsepdi&logNo=90118418840&proxyReferer=https%3A%2F%2Fwww.google.co.kr%2F)

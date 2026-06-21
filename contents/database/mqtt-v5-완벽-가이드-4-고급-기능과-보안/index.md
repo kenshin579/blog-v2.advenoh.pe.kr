@@ -24,11 +24,11 @@ series: "MQTT v5 완벽 가이드"
 
 <img src="thumbnail.png" alt="MQTT v5 Basic Architecture" width="75%" />
 
-`MQTT` v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, `HTTP` 스타일의 Request/Response 패턴, 그리고 디버깅에 필수적인 Reason Code를 다룬다. 이 기능들을 활용하면 더 확장성 있고 운영하기 쉬운 시스템을 구축할 수 있다.
+`MQTT` v5에서는 실무에서 자주 필요한 고급 기능들이 추가되었다. 이 장에서는 로드 밸런싱을 위한 Shared Subscription, `HTTP` 스타일의 Request/Response 패턴, 디버깅에 쓰는 Reason Code를 다룬다.
 
 ## 1.1 Shared Subscription
 
-여러 Subscriber가 **메시지를 나눠서** 처리하는 기능이다. 일반적인 `MQTT` 구독에서는 같은 Topic을 구독하는 모든 Subscriber가 동일한 메시지를 받는다. 하지만 Shared Subscription을 사용하면 메시지가 구독자들 사이에 분배되어 로드 밸런싱 효과를 얻을 수 있다. 이는 대량의 메시지를 처리해야 하는 시스템에서 수평 확장을 가능하게 한다.
+여러 Subscriber가 **메시지를 나눠서** 처리하는 기능이다. 일반적인 `MQTT` 구독에서는 같은 Topic을 구독하는 모든 Subscriber가 동일한 메시지를 받는다. Shared Subscription을 쓰면 메시지가 구독자들 사이에 분배되므로, 처리량이 많은 시스템에서 Subscriber를 늘려 부하를 나눌 수 있다.
 
 ### 1.1.1 개념
 
@@ -100,7 +100,7 @@ Message 3 → Subscriber A
 
 ## 1.2 Request / Response 패턴
 
-`MQTT`는 기본적으로 `Publish`/`Subscribe` 모델이지만, v5에서 추가된 Response Topic과 Correlation Data를 활용하면 `HTTP`처럼 요청-응답 패턴을 구현할 수 있다. 디바이스 상태 조회나 원격 명령 실행 등 응답이 필요한 시나리오에서 유용하다.
+`MQTT`는 기본적으로 `Publish`/`Subscribe` 모델이지만, v5에서 추가된 Response Topic과 Correlation Data를 활용하면 `HTTP`처럼 요청-응답 패턴을 구현할 수 있다. 디바이스 상태 조회나 원격 명령 실행처럼 응답을 받아야 하는 경우에 쓴다.
 
 ### 1.2.1 Response Topic
 
@@ -115,12 +115,12 @@ sequenceDiagram
     A->>Broker: 1. SUBSCRIBE: reply/client-123/status
     Note left of A: 응답 받을 Topic 미리 구독
 
-    A->>Broker: 2. PUBLISH<br/>topic: device/cmd/get_status<br/>response_topic: reply/client-123/status<br/>correlation_data: req-001
+    A->>Broker: 2. PUBLISH (topic device/cmd/get_status, response_topic reply/client-123/status, correlation_data req-001)
     Broker->>B: 요청 전달
 
     Note right of B: 처리 후
 
-    B->>Broker: 3. PUBLISH<br/>topic: reply/client-123/status<br/>correlation_data: req-001<br/>payload: {"status": "ok"}
+    B->>Broker: 3. PUBLISH (topic reply/client-123/status, correlation_data req-001, payload status ok)
     Broker->>A: 응답 전달
 ```
 
@@ -183,7 +183,7 @@ func requestWithTimeout(request Message, timeout time.Duration) (Response, error
 
 ## 1.3 Reason Code
 
-`MQTT` v3에서는 연결이나 구독이 실패해도 구체적인 원인을 알기 어려웠다. v5에서는 `CONNACK`, `PUBACK`, `SUBACK` 등 모든 응답에 Reason Code가 포함되어, 성공 여부뿐 아니라 실패 원인까지 정확히 파악할 수 있다. 이를 통해 클라이언트 측에서 적절한 에러 처리와 디버깅이 가능해진다.
+`MQTT` v3에서는 연결이나 구독이 실패해도 구체적인 원인을 알기 어려웠다. v5에서는 `CONNACK`, `PUBACK`, `SUBACK` 등 모든 응답에 Reason Code가 포함되어, 성공 여부뿐 아니라 실패 원인까지 알 수 있다. 덕분에 클라이언트 쪽에서 원인별로 에러를 처리하고 디버깅하기가 수월해졌다.
 
 ### 1.3.1 성공/실패 세분화
 
@@ -232,11 +232,11 @@ v5: "연결 실패 - Reason Code 134: Bad User Name or Password"
 
 # 2. 보안
 
-`MQTT` 시스템의 보안은 세 가지 축으로 구성된다: 인증(Authentication), 인가(Authorization), 그리고 암호화(Encryption). 인증은 "당신이 누구인가"를 확인하고, 인가는 "무엇을 할 수 있는가"를 결정하며, 암호화는 "통신 내용이 노출되지 않는가"를 보장한다. 특히 IoT 환경에서는 수많은 디바이스가 연결되므로 보안 설계가 더욱 중요한다.
+`MQTT` 시스템의 보안은 인증(Authentication), 인가(Authorization), 암호화(Encryption) 세 가지로 나눠서 본다. 인증은 누구인지 확인하고, 인가는 무엇을 할 수 있는지 정하고, 암호화는 통신 내용을 가린다. IoT 환경은 디바이스가 많이 붙는 만큼 보안 설계가 특히 중요하다.
 
 ## 2.1 인증
 
-Client가 **누구인지** 확인한다. `MQTT`에서는 연결 시점에 인증이 이루어지며, 한 번 인증된 연결은 세션이 유지되는 동안 유효한다. 인증에 실패하면 Broker는 연결을 거부하고, v5에서는 Reason Code를 통해 실패 원인을 알려준다.
+Client가 **누구인지** 확인한다. `MQTT`에서는 연결 시점에 인증이 이루어지며, 한 번 인증된 연결은 세션이 유지되는 동안 유효하다. 인증에 실패하면 Broker는 연결을 거부하고, v5에서는 Reason Code를 통해 실패 원인을 알려준다.
 
 ### 2.1.1 Username / Password
 
@@ -423,7 +423,7 @@ func checkACL(w http.ResponseWriter, r *http.Request) {
 - 비즈니스 로직에 맞는 복잡한 권한 체크 가능
 - 기존 인증 시스템(`LDAP`, `OAuth` 등)과 통합 용이
 
-프로덕션 환경에서는 동적 변경이 가능한 방식을 선택하는 것이 운영에 유리한다.
+프로덕션 환경에서는 동적 변경이 가능한 방식을 고르는 편이 운영에 유리하다.
 
 ### 2.2.6 Publish / Subscribe 권한 분리
 
@@ -595,7 +595,7 @@ func createMutualTLSConfig(caFile, certFile, keyFile string) (*tls.Config, error
 
 ## 2.4 MQTT over WebSocket
 
-브라우저는 TCP 소켓을 직접 사용할 수 없기 때문에, 웹 애플리케이션에서 `MQTT`를 사용하려면 WebSocket으로 감싸야 한다. `MQTT` over WebSocket을 사용하면 프론트엔드에서도 실시간으로 `MQTT` Topic을 구독하고 메시지를 발행할 수 있다.
+브라우저는 TCP 소켓을 직접 사용할 수 없기 때문에, 웹 애플리케이션에서 `MQTT`를 쓰려면 WebSocket으로 감싸야 한다. 이렇게 하면 프론트엔드에서도 `MQTT` Topic을 구독하고 메시지를 발행할 수 있다.
 
 ### 2.4.1 동작 원리
 

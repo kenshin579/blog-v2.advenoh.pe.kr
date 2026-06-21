@@ -1,6 +1,6 @@
 ---
 title: "관계형 데이터베이스에서 조인(join)이란?"
-description: "관계형 데이터베이스에서 조인(join)이란?"
+description: "INNER, OUTER, CROSS, SELF 등 SQL 조인의 종류를 예제와 함께 정리한다"
 date: 2019-02-06
 update: 2019-02-06
 tags:
@@ -18,7 +18,7 @@ tags:
 ---
 
 # 1. JOIN에 대한 기본 개념정리
-관계형 데이터베이스에서는 중복 데이터를 피하기 위해서 데이터를 쪼개 여러 테이블로 나눠서 저장한다. 이렇게 분리되어 저장된 데이터에서 원하는 결과를 다시 도출하기 위해서는 여러 테이블을 조합할 필요가 있다. 관계형 데이터베이스에서는 조인(JOIN) 연산자를 사용해 관련 있는 컬럼 기준으로 행을 합쳐주는 연산이다. 조인에 대해서 공부하다 보면 종류도 많아서 처음에는 많이 헷갈릴 때가 종종 있어서 다시 정리를 해보았다.
+관계형 데이터베이스에서는 중복 데이터를 피하기 위해서 데이터를 쪼개 여러 테이블로 나눠서 저장한다. 이렇게 분리되어 저장된 데이터에서 원하는 결과를 다시 도출하기 위해서는 여러 테이블을 조합할 필요가 있다. 조인은 조인(JOIN) 연산자를 사용해 관련 있는 컬럼 기준으로 행을 합쳐주는 연산이다. 조인에 대해서 공부하다 보면 종류도 많아서 처음에는 많이 헷갈릴 때가 종종 있어서 다시 정리를 해보았다.
 
 # 2. 샘플 데이터
 
@@ -37,10 +37,10 @@ tags:
 
 # 3. 조인의 종류
 
-MySQL에서 지원하는 조인 연산이다. 그외 조인은 설명 위주로 말씀을 드리자.
+MySQL에서 지원하는 조인 연산이다. 그외 조인은 설명 위주로 다룬다.
 
-* 내부 조진 (INNER JOIN)
-    * 교차 조인 (CROSS JOIN - CARTESIN JOIN)
+* 내부 조인 (INNER JOIN)
+    * 교차 조인 (CROSS JOIN - CARTESIAN JOIN)
     * 등가_동등_동일 조인(EQUI JOIN)
     * 비등가 조인(NON-EQUI JOIN)
     * 자연 조인 (NATURAL JOIN)
@@ -61,12 +61,12 @@ SQL 조인 쉽게 이해하기 위한 다이어그램이다.
 
 내부 조인을 더 세부적으로 분류하면 아래와 같다.
 
-* 교차 조인 (CROSS JOIN - CARTESIN JOIN)
+* 교차 조인 (CROSS JOIN - CARTESIAN JOIN)
 * 동등/동일 조인(EQUI JOIN)
 * 비등가 조인(NON-EQUI JOIN)
 * 자연 조인 (NATURAL JOIN)
 
-### 3.1.1 교차 조인 (CROSS JOIN - CARTESIN PRODUCT)
+### 3.1.1 교차 조인 (CROSS JOIN - CARTESIAN PRODUCT)
 
 교차 조인은 두 테이블의 카티션 프로덕트(곱집합)를 한 결과이다. 특별한 조건없이 테이블 A의 각 행과 테이블 B의 각 행을 다 조합한 결과이다.
 
@@ -126,7 +126,7 @@ WHERE employees.emp_no = dept_emp.emp_no;
 
 ### 3.1.4 비등가 조인 (NON-EQUI JOIN)
 
-비등가 조인은 동등비교(=)를 사용하지 않는 조인으로 조건문이 크거나 작거나 같이 않은 비교등을 사용하면 비등가 조인이라고 한다.
+비등가 조인은 동등비교(=)를 사용하지 않는 조인으로 조건문이 크거나 작거나 같지 않은 비교등을 사용하면 비등가 조인이라고 한다.
 
 ```sql
 -- 비등가 조인 (NON-EQUI JOIN)
@@ -203,11 +203,11 @@ ON employees.dept_no = departments.dept_no;
 
 **내부 조인 결과**
 
-![Join Result](22B68707-E0B8-4DA8-82FA-3CFEE9B05EFD 2.png)
+![Join Result](22B68707-E0B8-4DA8-82FA-3CFEE9B05EFD-2.png)
 
 ### 3.2.2 오른쪽 외부 조인 (RIGHT OUTER JOIN)
 
-왼쪽 외부 조인은 테이블 B의 모든 데이터와 테이블 A와 매칭이되는 레코드를 포함하는 조인이다.
+오른쪽 외부 조인은 테이블 B의 모든 데이터와 테이블 A와 매칭이되는 레코드를 포함하는 조인이다.
 
 ![Right Outer Join](image_4.png)
 
@@ -242,7 +242,7 @@ ON employees.dept_no = departments.dept_no;
 ![Full Outer Join](image_14.png)
 
 ```sql
--- 방법1 : JOIN와 UINION
+-- 방법1 : JOIN와 UNION
 SELECT *
 FROM table1
 LEFT OUTER JOIN table2
@@ -361,7 +361,7 @@ WHERE e.emp_no >= 10003);
     * [https://blog.ngelmaum.org/entry/lab-note-sql-join-method](https://blog.ngelmaum.org/entry/lab-note-sql-join-method)
     * [http://postitforhooney.tistory.com/entry/DBMARIADB-SQL-예제를-통한-JOIN의-종류-파악](http://postitforhooney.tistory.com/entry/DBMARIADB-SQL-%EC%98%88%EC%A0%9C%EB%A5%BC-%ED%86%B5%ED%95%9C-JOIN%EC%9D%98-%EC%A2%85%EB%A5%98-%ED%8C%8C%EC%95%85)
     * [http://futurists.tistory.com/17](http://futurists.tistory.com/17)
-    * [https://ko.wikipedia.org/wiki/Join_(SQL](https://ko.wikipedia.org/wiki/Join_%28SQL) )
+    * [https://ko.wikipedia.org/wiki/Join_(SQL)](https://ko.wikipedia.org/wiki/Join_%28SQL%29)
     * [https://coloringpagewiki.com/img/2802678/mysql-whats-the-difference-between-inner-join-left-join-right-also-check-this-post-sql-server-better-performance-left-join-or-not-in.asp](https://coloringpagewiki.com/img/2802678/mysql-whats-the-difference-between-inner-join-left-join-right-also-check-this-post-sql-server-better-performance-left-join-or-not-in.asp)
 * FULL JOIN
     * [https://www.xaprb.com/blog/2006/05/26/how-to-write-full-outer-join-in-mysql/](https://www.xaprb.com/blog/2006/05/26/how-to-write-full-outer-join-in-mysql/)

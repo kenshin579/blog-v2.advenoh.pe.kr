@@ -134,9 +134,7 @@ my-todo-app/
 
 우리가 거의 모든 시간을 보낼 곳은 **`App.tsx`** 한 파일이다. 웹의 `index.html`이나 루트 컴포넌트처럼, 앱을 열면 가장 먼저 이 컴포넌트가 화면에 그려진다.
 
-한 가지 더, Expo는 **Fast Refresh**를 지원한다. `App.tsx`를 수정하고 저장하면 앱을 다시 시작할 필요 없이 변경 사항이 화면에 즉시 반영된다. 웹 개발의 HMR(Hot Module Replacement)과 같은 경험이라고 보면 된다.
-
-이제 본격적으로 Todo 앱을 만들어 본다.
+한 가지 더, Expo는 Fast Refresh를 지원한다. `App.tsx`를 수정하고 저장하면 앱을 다시 시작할 필요 없이 변경 사항이 화면에 즉시 반영된다. 웹 개발의 HMR(Hot Module Replacement)과 같은 경험이라고 보면 된다.
 
 # 5. Todo 앱 만들기
 
@@ -191,7 +189,7 @@ Todo 4개를 추가하고 그중 2개를 완료(✅, 취소선) 처리한 결과
 
 지금 앱은 껐다 켜면 할 일이 모두 사라진다. 모든 상태가 메모리에만 있기 때문이다. 기기에 데이터를 저장하려면 **AsyncStorage**(키-값 형태의 비동기 로컬 저장소)를 사용한다.
 
-여기서 Expo의 진짜 강점이 드러난다. 네이티브 모듈을 추가할 때 `npm install` 대신 **`npx expo install`**을 사용한다.
+네이티브 모듈을 추가할 때는 `npm install` 대신 `npx expo install`을 쓴다. 여기서 Expo가 편한 이유가 하나 더 보인다.
 
 ```bash
 npx expo install @react-native-async-storage/async-storage
@@ -236,7 +234,7 @@ Expo는 시작을 쉽게 해주지만 만능은 아니다. 실무에 적용하�
 
 > 참고로 예전의 "eject"(Expo를 떼어내 순수 네이티브 프로젝트로 전환) 개념은 현재 **prebuild**와 development build로 대체되었다. 이제는 Expo를 유지하면서도 필요한 네이티브 코드를 추가하는 방식이 일반적이라, "Expo로 시작하면 나중에 막힌다"는 과거의 우려는 많이 해소되었다.
 
-정리하면 **대부분의 일반적인 앱은 Expo로 충분**하며, 위 한계들은 주로 깊은 네이티브 커스터마이징이 필요한 경우에 해당한다.
+정리하면 대부분의 앱은 Expo로 충분하고, 위 한계들은 주로 네이티브를 깊게 커스터마이징해야 할 때 부딪힌다.
 
 # 7. 마무리
 
@@ -248,7 +246,7 @@ Expo로 React Native 앱을 시작하는 흐름을 정리하면 다음과 같다
 4. `View`/`Text`/`TextInput`/`FlatList` 같은 RN 컴포넌트로 UI 구성
 5. `expo install`로 네이티브 모듈(AsyncStorage)을 손쉽게 추가
 
-복잡한 네이티브 설정 없이 React 지식만으로 동작하는 앱을 만들 수 있다는 점이 Expo의 핵심 매력이다.
+복잡한 네이티브 설정 없이 React 지식만으로 앱을 만들 수 있다. 이게 Expo를 쓰는 가장 큰 이유다.
 
 다음 단계로 살펴보면 좋은 주제는 다음과 같다.
 
