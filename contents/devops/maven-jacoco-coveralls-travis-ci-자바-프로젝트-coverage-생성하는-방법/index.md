@@ -84,7 +84,7 @@ Coveralls dependency 추가 시 Repo Token을 Coveralls 사이트에 확인하�
 </plugin>
 ```
 
-JDK 높은 버전(ex. 14)으로 실행하는 경우 javax/xml/bind/Datatype*Converter* 클래스를 찾지 못하는 오류가 발생할 수 있다. 클래스를 못 찾는 오류이어서 jaxb-api dependency를 추가하면 된다.
+JDK 높은 버전(ex. 14)으로 실행하는 경우 javax/xml/bind/DatatypeConverter 클래스를 찾지 못하는 오류가 발생할 수 있다. 클래스를 못 찾는 오류이어서 jaxb-api dependency를 추가하면 된다.
 
 ![](image-20201212112943558.png)
 

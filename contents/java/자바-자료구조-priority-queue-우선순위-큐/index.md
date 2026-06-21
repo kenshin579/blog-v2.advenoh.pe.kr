@@ -24,7 +24,7 @@ PriorityQueue 클래스는 큐 인터페이스를 구현한 구현체이고 이�
 
 ![Queue-Deque-PriorityQueue-In-Java](https://media.geeksforgeeks.org/wp-content/cdn-uploads/20200903183026/Queue-Deque-PriorityQueue-In-Java.png)
 
-> 클래스 다이어그램은 GeeksforGeeks에서 발취함
+> 클래스 다이어그램은 GeeksforGeeks에서 발췌함
 
 
 
@@ -36,7 +36,7 @@ PriorityQueue 클래스는 큐 인터페이스를 구현한 구현체이고 이�
 | ------------------------ | ---------- | ------------------------------------------------ |
 | `boolean add(E element)` | O(N log N) | 우선순위에 따라서 큐에 삽입한다.                 |
 | `public peek()`          | O(1)       | 큐의 first 아이템을 제거하지 않고 확인할 수 있다 |
-| `public poll()`          | O(1)       | 큐의 first 아티엠을 제거하고 데이터를 반환한다   |
+| `public poll()`          | O(1)       | 큐의 first 아이템을 제거하고 데이터를 반환한다   |
 
 메서드에 대한 더 자세한 내용은 [Oracle Java API](https://docs.oracle.com/en/java/javase/11/docs/api/java.base/java/util/PriorityQueue.html)를 참고해주세요.
 
@@ -84,7 +84,7 @@ PriorityQueue 클래스는 큐 인터페이스를 구현한 구현체이고 이�
 
 ## 3.2 Min Heap - Student 객체
 
-기본 Integer 값 외에도 객체에서 특정 값이 우선순위를 가지도록 설정할 수 있다. 예제에서는 Student 객체 Age의 가장 낮은 값이 먼저 추출되도록 설정하였다. Comparator를 인자로 넘겨주기 위해 `Comparator.comparing()` 메서드를 사용하였다. `comparing()` 메서*드는* 인자로 필드 값 기준으로 Comparator 메서드 함수를 반환해주어 쉽게 Comparator를 생성할 수 있다.
+기본 Integer 값 외에도 객체에서 특정 값이 우선순위를 가지도록 설정할 수 있다. 예제에서는 Student 객체 Age의 가장 낮은 값이 먼저 추출되도록 설정하였다. Comparator를 인자로 넘겨주기 위해 `Comparator.comparing()` 메서드를 사용하였다. `comparing()` 메서드는 인자로 필드 값 기준으로 Comparator 메서드 함수를 반환해주어 쉽게 Comparator를 생성할 수 있다.
 
 ```java
 @Test
@@ -105,7 +105,7 @@ public void test_student_age() {
 
 # 4. 마무리
 
-`PriorityQueue`은 우선순위를 가지는 Queue 자료구조이다. 개발 시 `PriorityQueue`를 사용하면 쉽게 Min+Max Heap 자료구조로 사용할 수 있다.
+`PriorityQueue`는 우선순위를 가지는 Queue 자료구조이다. 개발 시 `PriorityQueue`를 사용하면 쉽게 Min+Max Heap 자료구조로 사용할 수 있다.
 
 예제 코드는 [github](https://github.com/kenshin579/tutorials-java/blob/master/java8/src/test/java/com/advenoh/structure/PriorityQueueTest.java)를 참고해주세요.
 

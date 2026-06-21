@@ -30,7 +30,8 @@ tags:
     - 파일(XML, JavaConfig)로 설정만 하면 된다.
 - Apache Commons FileUpload API 사용
     - 구현체 : CommonsMultipartResolver
-    - Servlet 3 환경에만 국한된 것은 아니지만, Servlet 3.x 컨테이너에서도 똑같이 작동한다 \* pom.xml에 라이브러리를 추가해야 한다
+    - Servlet 3 환경에만 국한된 것은 아니지만, Servlet 3.x 컨테이너에서도 똑같이 작동한다
+    - pom.xml에 라이브러리를 추가해야 한다
 
 # 2. 개발 환경
 
@@ -90,7 +91,8 @@ Multipart-config에서 여러 옵션을 설정하여 파일 업로드를 제한�
     - 디폴트 값 : "
 - **maxFileSize** - 파일당 최대 파일 크기이다
     - 디폴트 값 : 제한없음
-- **maxRequestSize** - 파일 한 개의 용량이 아니라 multipart/form-data 요청당 최대 파일 크기이다 (여러 파일 업로드 시 총 크기로 보면 된다) \* 디폴트 값: 제한없음
+- **maxRequestSize** - 파일 한 개의 용량이 아니라 multipart/form-data 요청당 최대 파일 크기이다 (여러 파일 업로드 시 총 크기로 보면 된다)
+    - 디폴트 값: 제한없음
 - **fileSizeThreshold** - 업로드하는 파일이 임시로 파일로 저장되지 않고 메모리에서 바로 스트림으로 전달되는 크기의 한계를 나타낸다
     - 디폴트 값: 0
     - ex. 1024 \* 1024 = 1MB 설정하면 파일이 1MB이상인 경우만에만 임시 파일로 저장된다
@@ -164,7 +166,7 @@ StandardServletMultipartResolver와 다르게 CommonsMultipartResolver 리졸뷰
 </dependency>
 ```
 
-스프링 설정은 Bean 정의 파일이나 JavaConfig으로 설정 가능한다.
+스프링 설정은 Bean 정의 파일이나 JavaConfig으로 설정 가능하다.
 
 **Bean XML 정의 파일 설정**
 
@@ -189,7 +191,7 @@ StandardServletMultipartResolver와 다르게 CommonsMultipartResolver 리졸뷰
 @EnableWebMvc
 @ComponentScan(basePackages = { "com.boraji.tutorial.spring.controller" })
 public class WebConfig extends WebMvcConfigurerAdapter {
-    private final int MAX*SIZE = 10 * 1024 \- 1024;
+    private final int MAX_SIZE = 10 * 1024 * 1024;
     …(생략)...
     @Bean
     public MultipartResolver multipartResolver() {
@@ -263,11 +265,11 @@ throws IOException {
 Request parameter로 넘어오는 파일 이름이 mediaFile이므로 `@RequestParam(“mediaFile”)` 어노테이션으로 지정했다. 파일이 비어 있지 않으면 지정된 경로에 저장하고, 결과 메시지는 Model을 통해 fileUploadForm 뷰로 전달한다.
 
 > 번외 Tips
-> Rest API 구현을 할 때 데이터 형식을 JSON으로 많이 사용해서 클라이언트와 서버 간에 주고받는다. JSON 타입으로 주고받을때 기본적으로 encoding을 해서 보냅니다. 보내는 데이터가 적은 양이면 문제가 되지 않지만, 대용량의 JSON인 경우에는 성능에 큰 영향을 주게 된다. 이런 경우에 JSON 데이터를 stream으로 보내고 컨트롤러에서 MultipartFile로 받으면 스트림형식으로그냥 받기 때문에 성능이 많이 좋아집니다. 프로젝트 진행 시고려해볼 만한 부분이다.
+> Rest API 구현을 할 때 데이터 형식을 JSON으로 많이 사용해서 클라이언트와 서버 간에 주고받는다. JSON 타입으로 주고받을때 기본적으로 encoding을 해서 보냅니다. 보내는 데이터가 적은 양이면 문제가 되지 않지만, 대용량의 JSON인 경우에는 성능에 큰 영향을 주게 된다. 이런 경우에 JSON 데이터를 stream으로 보내고 컨트롤러에서 MultipartFile로 받으면 스트림 형식으로 그냥 받기 때문에 성능이 많이 좋아집니다. 프로젝트 진행 시 고려해볼 만한 부분이다.
 
 ## 4.2 다중 파일 업로드
 
-여러 파일을 업로드하는 방식은 단일 파일 업로드 예제와 매우 유사한다. 차이점은 뷰에서 multiple 속성을 추가하여야사용자가 여러 파일을 선택할 수 있도록 해야 한다.
+여러 파일을 업로드하는 방식은 단일 파일 업로드 예제와 매우 유사하다. 차이점은 뷰에서 multiple 속성을 추가하여야 사용자가 여러 파일을 선택할 수 있도록 해야 한다.
 
 ```html
 <h3>다중 파일 업로드</h3>
@@ -416,7 +418,7 @@ public String singleFileUploadWith( **@ModelAttribute MediaVO mediaVO**, Model m
     - [http://programmertech.com/program/jee/java-file-upload-using-servlet3-and-file-download](http://programmertech.com/program/jee/java-file-upload-using-servlet3-and-file-download)
     - [https://javaee.github.io/tutorial/servlets011.html#BABFGCHB](https://javaee.github.io/tutorial/servlets011.html#BABFGCHB)
     - [http://blog.naver.com/PostView.nhn?blogId=junsu60&logNo=220439479589](http://blog.naver.com/PostView.nhn?blogId=junsu60&logNo=220439479589)
-      _ [https://www.ibm.com/developerworks/community/blogs/9e635b49-09e9-4c23-8999-a4d461aeace2/entry/160?lang=en](https://www.ibm.com/developerworks/community/blogs/9e635b49-09e9-4c23-8999-a4d461aeace2/entry/160?lang=en)
+    - [https://www.ibm.com/developerworks/community/blogs/9e635b49-09e9-4c23-8999-a4d461aeace2/entry/160?lang=en](https://www.ibm.com/developerworks/community/blogs/9e635b49-09e9-4c23-8999-a4d461aeace2/entry/160?lang=en)
 - File Upload Progress Bar
     - [https://www.boraji.com/spring-4-mvc-jquery-ajax-file-upload-example-with-progress-bar](https://www.boraji.com/spring-4-mvc-jquery-ajax-file-upload-example-with-progress-bar)
 

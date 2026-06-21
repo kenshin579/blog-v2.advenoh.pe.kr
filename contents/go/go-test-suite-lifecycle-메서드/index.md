@@ -54,7 +54,6 @@ func Run(t *testing.T, suite TestingSuite) {
   
     ...생략...
 }
-  º
 ```
 
 - 전처리
@@ -64,7 +63,7 @@ func Run(t *testing.T, suite TestingSuite) {
 - 후처리
     - `AfterTest` - 테스트가 실행후에 suiteName testName 인자를 받아 실행하는 함수이다
     - `TearDownTest` - suite에서 각 테스트 실행후에 실행된다
-    - `TestDownSuite` - suite에서 모든 테스트가 실행된 후에 실행된다
+    - `TearDownSuite` - suite에서 모든 테스트가 실행된 후에 실행된다
 
 Test Suite로 테스트를 작성하려면 `suite.Suite` 구조체를 담는 `struct`를 생성하고 해당 `struct`에 대한 suite 메서드를 정의하면 된다.
 

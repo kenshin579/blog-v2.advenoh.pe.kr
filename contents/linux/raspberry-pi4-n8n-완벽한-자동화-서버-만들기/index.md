@@ -35,7 +35,7 @@ tags:
 `n8n`은 `Node.js` 기반으로 동작하므로, 최신 버전의 Node.js를 설치해야 한다.
 
 ```bash
-> curl -fsSL <https://deb.nodesource.com/setup_18.x> | sudo -E bash -
+> curl -fsSL https://deb.nodesource.com/setup_18.x | sudo -E bash -
 > sudo apt install -y nodejs
 ```
 

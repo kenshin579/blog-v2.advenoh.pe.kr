@@ -22,7 +22,7 @@ Lombok는 자바에서 작성해야 하는 boilerplate code(ex. getter/setter, c
 아래 환경 기반으로 코드가 작성되어 있다. IDE에서 Lombok 플러그인을 설치해야 어노테이션이 인식된다.
 
 - OS: Mac OS
-- IDE: Intelij
+- IDE: Intellij
 - Java : JDK 11
 - Source code : [github](https://github.com/kenshin579/tutorials-java-examples/tree/master/java-lombok)
 - Software management tool : Maven
@@ -49,7 +49,7 @@ pom.xml 파일에 lombok dependency를 추가해줍니다.
 - @NonNull
 - @Getter, @Setter
 - @ToString
-- @AllArgsConstructor, @AllArgsConstructor, @NoArgsConstructor
+- @AllArgsConstructor, @NoArgsConstructor, @RequiredArgsConstructor
 - @EqualsAndHashCode
 - @Builder
 - @Data
@@ -582,7 +582,7 @@ public class Car {
 
 ## 3.9 Lombok Configuration
 
-Lombok에서 제공하는 기능에 대해서 사용하지 못하게 하는 설정등이 가능한다. 프로젝트 루트에 lombok.config 파일을 생성해서 원하는 설정를 key=value 형식으로 작성하면 된다. 구체적인 설정은 해당 [Lombok Configuration system](https://projectlombok.org/features/configuration) 을 참조해주세요.
+Lombok에서 제공하는 기능을 사용하지 못하게 막는 설정 등이 가능하다. 프로젝트 루트에 lombok.config 파일을 생성해서 원하는 설정를 key=value 형식으로 작성하면 된다. 구체적인 설정은 해당 [Lombok Configuration system](https://projectlombok.org/features/configuration) 을 참조해주세요.
 
 예 - 설정(@NonNull 사용 금지)
 

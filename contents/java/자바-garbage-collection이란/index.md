@@ -14,7 +14,7 @@ tags:
 
 # 1. 가비지 컬랙션이란?
 
-C/C++ 언어와 달리 자바는 개발자가 명시적으로 객체를 해제할 필요가 없다. 자바 언어의 큰 장점이기도 한다. 사용하지 않는 객체는 메모리에서 삭제하는 작업을 Gargabe Collection(GC)라고 부르며 JVM에서 GC를 수행한다. 기본적으로 JVM의 메모리는 총 5가지 영역(ex. 클래스, 스택, 힙, 네이티브 메서드, PC)으로 나뉘는데, GC는 힙 메모리만 다룹니다.
+C/C++ 언어와 달리 자바는 개발자가 명시적으로 객체를 해제할 필요가 없다. 자바 언어의 큰 장점이기도 한다. 사용하지 않는 객체는 메모리에서 삭제하는 작업을 Garbage Collection(GC)라고 부르며 JVM에서 GC를 수행한다. 기본적으로 JVM의 메모리는 총 5가지 영역(ex. 클래스, 스택, 힙, 네이티브 메서드, PC)으로 나뉘는데, GC는 힙 메모리만 다룹니다.
 
 코드상에서 어떨 때 객체가 가비지 대상이 될까요? 간단하게 생각해보면 프로그램이 실행되면서 코드상에서 참조되지 않는 객체들이 대상이 될 것이다. 일반적으로 아래 같은 경우에 가비지대상이 된다.
 
@@ -34,11 +34,11 @@ Heap 영역은 크게 2가지 영역으로 나뉩니다. Permanent Generation �
         - Survivor 2개
     - 새롭게 생성한 객체는 여기에 위치한다
     - 매우 많은 객체가 Young 영역에 생성되었다가 사라진다
-    - 이 영역에서 객체가 살아지면 Minor GC가 발생했다고 한다
+    - 이 영역에서 객체가 사라지면 Minor GC가 발생했다고 한다
 - Old Generation (Tenured space) - 오래 사용되는 객체들
     - Young 영역에서 살아남은 객체가 여기로 복사된다
     - Young 영역보다 크게 메모리가 크게 할당되어 Young 영역보다 GC는 적게 발생한다
-    - 이 영역에서 객체가 살아지면 Major GC (Full GC)가 발생했다고 한다
+    - 이 영역에서 객체가 사라지면 Major GC (Full GC)가 발생했다고 한다
 - (Non-heap) Permanent Generation
     - 이 영역에는 JVM에 의해서 사용하는 클래스와 메서드 객체 정보를 담고 있다
     - JDK8부터는 PermGen은 Metaspace로 교체된다
@@ -103,9 +103,9 @@ Serial collector는 single 쓰레드로 동작하며 Young와 Old를 serial 하�
 ### 3.1.1 Young 영역의 Minor GC 절차 - mark and copy
 
 - 처음에 생성된 객체는 Eden에 쌓인다
-- Eden이 어느 정도 쌓이면 GC가 발생하고 살아남은 객체는 Survisor(Empty) 영역으로 이동한다
-    - Survisor 영역중에 한 영역은 반드시 비어 있어야 한다
-- Survisor 영역이 차게 되면 GC가 발생하고 Eden 영역에 있는 객체와 꽉 찬 Survisor 영역에 있는 객체가 비어 있는 다른 Survisor 영역으로 이동한다
+- Eden이 어느 정도 쌓이면 GC가 발생하고 살아남은 객체는 Survivor(Empty) 영역으로 이동한다
+    - Survivor 영역중에 한 영역은 반드시 비어 있어야 한다
+- Survivor 영역이 차게 되면 GC가 발생하고 Eden 영역에 있는 객체와 꽉 찬 Survivor 영역에 있는 객체가 비어 있는 다른 Survivor 영역으로 이동한다
 - 이 과정을 반복하다가 계속 살아남아 있는 객체들은 Old 영역으로 이동한다
 
 | GC 전 | GC 이후 |
@@ -142,9 +142,7 @@ Parallel compacting collector는 JDK5u6부터 제공되었으면 JDK7u4부터는
 CMS collector는 heap 메모리 영역의 크기가 크고 2개 이상의 프로세서를 사용하는 서버에 적합한다. XX:+CMSIncrementalMode 옵션은 Young 영역의 GC를 더 잘게 쪼개어 서버의 대기 시간을 줄일 수 있지만, 예기치 못한 성능 저하가 발생할 수 있다. CMS는 Old 영역에 대한 compact 작업을 하지 않기 때문에 memory fragmentation이 발생할 수 있다. CMS collector의 경우에는 추후 릴리스에서 제거되는 거로 결정이 되었다. ( [JEP 291](http://openjdk.java.net/jeps/291) )
 
 - Young 영역 (multi thread)
-
-      	* mark and copy
-
+    - mark and copy
 - Old 영역 (multi thread)
     - mark-sweep-remark
     - initial mark (stop-the-world) : 애플리케이스 코드에서 직접/바로 접근 가능한 객체를 판단하고 initial set을 만든다

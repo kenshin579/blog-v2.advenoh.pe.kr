@@ -145,7 +145,7 @@ $ sudo apt install xrdp
 $ sudo reboot
 ```
 
-맥에서 Microsoft Remote Desktop가 없은 경우에는 AppStore 찾아 설치하고 Connect 설정을 한다.
+맥에서 Microsoft Remote Desktop가 없는 경우에는 AppStore에서 찾아 설치하고 Connect 설정을 한다.
 
 ![](image-20210628001119.png)
 
@@ -165,7 +165,7 @@ $ sudo passwd pi
 
 ## 3.2 VNC 구동시 "Cannot currently show the desktop" 오류 발생시 해결책
 
-*"Cannot currently show the desktiop"* 오류가 발생하면 `raspi-config`에서 아래 설정을 변경하면 해결된다.
+*"Cannot currently show the desktop"* 오류가 발생하면 `raspi-config`에서 아래 설정을 변경하면 해결된다.
 
 - Display Options > Resolution > DMT Mode 16 1024 x 728
 

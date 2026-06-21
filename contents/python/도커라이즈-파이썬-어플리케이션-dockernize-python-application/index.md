@@ -14,7 +14,7 @@ tags:
 
 # 1. Dockernize Python Application
 
-파이썬 어플리케이션을 도커 이미지로 생성하는 방법에 대해서 알아보자. 도 커 라이 저하는 과정은 개발언어와 상관없이 비슷한 과정을 통해서 도커 이미지를 만든다. 아래는 `Hello World`를 화면에 출력하는 파이썬 코드이다. 이 코드로 도커 이미지를 만들어보자.
+파이썬 어플리케이션을 도커 이미지로 생성하는 방법에 대해서 알아보자. 도커라이즈하는 과정은 개발언어와 상관없이 비슷한 과정을 통해서 도커 이미지를 만든다. 아래는 `Hello World`를 화면에 출력하는 파이썬 코드이다. 이 코드로 도커 이미지를 만들어보자.
 
 ```python
 #!/usr/bin/env python3
@@ -41,13 +41,13 @@ CMD ["python3, main.py"]
 - `ADD` : 이미지 생성시 파일 추가
 - CMD : 컨테이너 시작할 때 실행할 명령어 지정
 
-파이썬 베이스 이미는 아래 3가지를 사용할 수 있다. 각각의 차이점은 다음과 같다.
+파이썬 베이스 이미지는 아래 3가지를 사용할 수 있다. 각각의 차이점은 다음과 같다.
 
 - `python:3.9-buster`  대부분의 필요한 패키지가 설치된 버전
 - `python:3.9-slim-buster` : 표준 라이브러리를 제외하고 전부 제외된 버전
 - `python:3.9-alpine` : BusyBox Linux + apk 패키지 관리자가 포함된 버전
 
-`alpine` 베이스 이미지는 `lightweight`한 버전으로 여러 개발 언어로도 제공하여 많이 사용하는 베이스 이미지이다. 간단한 파이썬의 경우에는 `alpine` 이미지를 사용해도 무방하지만, application에서 사용하는 libray에 따라서 alpine에서는 기존 적으로 `linux wheel`을 지원하지 않아 별도 빌드가 필요할 수 있다고 한다. 이런 빌드 과정을 거치지 않고 바로 도커나이즈하려면 `buster`나 `slim-buster`를 베이스 이미지로 선택하기를 추천한다.
+`alpine` 베이스 이미지는 `lightweight`한 버전으로 여러 개발 언어로도 제공하여 많이 사용하는 베이스 이미지이다. 간단한 파이썬의 경우에는 `alpine` 이미지를 사용해도 무방하지만, application에서 사용하는 library에 따라서 alpine에서는 기본적으로 `linux wheel`을 지원하지 않아 별도 빌드가 필요할 수 있다고 한다. 이런 빌드 과정을 거치지 않고 바로 도커나이즈하려면 `buster`나 `slim-buster`를 베이스 이미지로 선택하기를 추천한다.
 
 ### 1.1.1 참고
 
@@ -77,7 +77,7 @@ docker-push: docker-build
 	@docker push $(IMAGE)
 ```
 
-매번 빌드하기 쉽게 `Makefile`을 위와 같이 작성하고 `make`을 하거나 버로 도커 허브에 이미지를 업로드라고 싶은 경오 `docker-push` 옵션으로 실행한다.
+매번 빌드하기 쉽게 `Makefile`을 위와 같이 작성하고 `make`을 하거나 바로 도커 허브에 이미지를 업로드하고 싶은 경우 `docker-push` 옵션으로 실행한다.
 ```bash
 $ make docker-build
 $ make docker-push
@@ -94,7 +94,7 @@ Hello World
 
 # 2. Flask Web Application
 
-컨솔 창에서 출력하는 버전외에 웹 어플레이션도 도커나이즈해보자. 서버 구동후 8080 포트로 접속하면 "Flask inside Docker!!"를 출력하는 파이쎤 코드이다.
+콘솔 창에서 출력하는 버전 외에 웹 어플리케이션도 도커나이즈해보자. 서버 구동 후 8080 포트로 접속하면 "Flask inside Docker!!"를 출력하는 파이썬 코드이다.
 
 ```python
 #!/usr/bin/env python3

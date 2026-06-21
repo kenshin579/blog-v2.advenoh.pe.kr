@@ -25,7 +25,7 @@ Python 패키지를 개발한 후 `PyPi`(Python Package Index)에 업로드하�
 
 > 주식 투자할 때 개인적으로 구글 시트를 사용해. `GOOGLEFINANCE` 함수로 많은 정보를 얻을 수 있지만, 제공되지 않는 데이터도 있어서 사용자 정의 함수를 구현해서 사용하고 있다.
 >
-> v1 stock-api에서는 직접 한글투자 API를 호출해서 데이터를 가져왔는데, v2 stock-api에서는 이미 구현된 Python 버전을 사용하면 시간을 절약할 수 있을 것 같아서 그걸로 대체하고 있다.
+> v1 stock-api에서는 직접 한국투자 API를 호출해서 데이터를 가져왔는데, v2 stock-api에서는 이미 구현된 Python 버전을 사용하면 시간을 절약할 수 있을 것 같아서 그걸로 대체하고 있다.
 >
 > 참고: [구글 시트에서 사용자 정의 함수 구현하기](https://blog.advenoh.pe.kr/구글-시트에서-사용자-정의-함수-구현하기/)
 
@@ -118,15 +118,8 @@ PyCharm IDE에서 설치하려면 아래 왼쪽에 위치한 `Python Packages` �
 ### 3.2.1 사전 작업
 
 - **PyPi 계정 생성**: https://pypi.org/account/register/
-
-- API 토큰 생성
-
-  : 
-
-  https://pypi.org/manage/account/#api-tokens
-
+- **API 토큰 생성**: https://pypi.org/manage/account/#api-tokens
   - 참고로 2FA 를 활성화 해야 한다
-
 - `$HOME/.pypirc` 파일에 API 토큰 설정
 
 ```

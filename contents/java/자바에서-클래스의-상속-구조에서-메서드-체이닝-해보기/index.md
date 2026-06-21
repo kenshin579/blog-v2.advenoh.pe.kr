@@ -40,7 +40,7 @@ public void testMethodChaining() {
 ```
 
 
-메서드 체이닝의 매직은 간단한다. 체이닝으로 연결하고 싶은 메서드의 반환 값으로 this를 반환하면 된다.
+메서드 체이닝의 매직은 간단하다. 체이닝으로 연결하고 싶은 메서드의 반환 값으로 this를 반환하면 된다.
 
 ```java
 package simple.methodChain;

@@ -33,7 +33,7 @@ $ npm -h
 
 ## 2.2 package.json
 
-NPM 리파지토리에 배포하기 위해 간단한 파일 몇 개만 필요한다. 그중 가장 먼저 작성하게 되는 파일이 package.json 이다. 프로그램에 대한 기본적인 내용(ex. 이름, 버전)을 포함해서 프로그램에 필요한 dependency 그리고 실행 방법 등을 기술할 수 있다.
+NPM 리파지토리에 배포하기 위해 간단한 파일 몇 개만 필요하다. 그중 가장 먼저 작성하게 되는 파일이 package.json 이다. 프로그램에 대한 기본적인 내용(ex. 이름, 버전)을 포함해서 프로그램에 필요한 dependency 그리고 실행 방법 등을 기술할 수 있다.
 
 npm의 init 명령어로 -y 옵션을 주어서 non-interactive 하게 기본 설정으로 package.json을 생성할 수 있다.
 
@@ -118,7 +118,7 @@ $ npm adduser
 
 ### 2.4.2 리파지토로에 배포하기
 
-모듈 배포는 간단한다. npm publish 명령어로 프로젝트 폴더에서 실행하면 된다.
+모듈 배포는 간단하다. npm publish 명령어로 프로젝트 폴더에서 실행하면 된다.
 
 npm-publish-test는 이미 존재하는 프로젝트이여서 package.json에서 name을 ykoh-npm-publish-test로 변경한 이후에 다시 publish를 하였다.
 

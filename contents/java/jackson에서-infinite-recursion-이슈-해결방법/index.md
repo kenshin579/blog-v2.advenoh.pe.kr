@@ -98,7 +98,7 @@ public class Customer {
  
 @Setter
 @Getter
-@ToString(exclude = "customer”) //toString() 실행시에도 무한 재귀가 발생하여 제외시킨다
+@ToString(exclude = "customer") //toString() 실행시에도 무한 재귀가 발생하여 제외시킨다
 public class Order {
     private int orderId;
     private List<Integer> itemIds;
@@ -147,7 +147,7 @@ Jackson 2.0 이후부터 새롭게 추가된 어노테이션이다. @JsonIdentit
 @Getter
 @ToString
 @JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class,
-        property = "id”) 
+        property = "id")
 @JsonIdentityReference(alwaysAsId = true) //직렬화시 id로만 출력된다
 public class Customer {
     private int id;

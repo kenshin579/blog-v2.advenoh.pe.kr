@@ -1127,7 +1127,7 @@ go tool pprof http://localhost:6060/debug/pprof/heap
 - **[Google Cloud Profiler](https://cloud.google.com/profiler)**: GCP 기반 프로파일링 서비스
 - **[Datadog Continuous Profiler](https://www.datadoghq.com/product/code-profiling/)**: 모니터링 도구와 통합
 
-이러한 도구는 백그래운드에서 주기적으로 프로파일을 수집하고, 시계열 데이터로 저장하여 과거 시점의 성능 상태를 비교 분석할 수 있게 해준다.
+이러한 도구는 백그라운드에서 주기적으로 프로파일을 수집하고, 시계열 데이터로 저장하여 과거 시점의 성능 상태를 비교 분석할 수 있게 해준다.
 
 # 9. 정리
 

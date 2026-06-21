@@ -139,7 +139,7 @@ simplesm-context.xml은 [SSM github](https://github.com/ragnor/simple-spring-mem
 | **Cache Type** | **Description**                                              |
 | -------------- | ------------------------------------------------------------ |
 | AssignCache    | 캐시 키는 assignedKey 속성으로 지정한 값이고 메서드 인자가 없는 경우에 사용된다<br/>ex. List<Person> getAllUsers()와 같은 메서드에 사용된다 |
-| SingleCache    | 캐시 키는 SSM 어노테이션으로 선언된 메서드 인자로 생성되며 인자가 하나인 경우에 사용된다.<br/>ㅁ. 인자가 List 타입인 경우에는 캐시 키로 생성해서 사용할 수 없다<br/>ex. Person getUser(int int) |
+| SingleCache    | 캐시 키는 SSM 어노테이션으로 선언된 메서드 인자로 생성되며 인자가 하나인 경우에 사용된다.<br/>인자가 List 타입인 경우에는 캐시 키로 생성해서 사용할 수 없다<br/>ex. Person getUser(int id) |
 | MultiCache     | 캐시 키는 SSM 어노테이션으로 선언된 메서드 여러 인자로 생성된다. 인자중에 한개가 List 타입 형이여야하며 반환결과도 List 타입이여야 한다. 반환된 결과 List의 각 요소는 지정된 캐시 키로 저장된다.<br/>ex. List<Person> getUserFromData(List workInfo) |
 
 SingleCache와 MultiCache인 경우 반드시 메서드 인자 중에 @ParameterValueKeyProvider 어노테이션을 지정해야 한다.
@@ -149,7 +149,6 @@ SingleCache와 MultiCache인 경우 반드시 메서드 인자 중에 @Parameter
 - 기타 어노테이션 및 속성
     - @CacheName(“QuoteApp”) : 관련 캐시를 하나로 묶을 수 있는 개념이고 클래스외에도 메서드에도 선언할 수 있다
     - @CacheKeyMethod : 캐시의 key 값으로 이용할 메서드를 선언한다
-    - 캐시 key는 @CacheKeyMethod로 선언된 메서드가
     - @CacheKeyMethod가 지정되지 않은 경우에는 Object.toString() 메서드가 사용된다
     - @ParameterValueKeyProvider : 메서드 인자에 적용되며 @CacheKeyMethod로 선언된 메서드나 toString()을 이용해서 key 값을 구한다
     - @ParameterDataUpdateContent : 메서드 인자에 어노테이션이 적용되며 새로 저장할 값을 지정한다

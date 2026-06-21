@@ -19,7 +19,7 @@ tags:
 
 웹 정보 바다라고 할 만큼 엄청난 양의 데이터를 가지고 있다. 트위터, 페이스북과 같은 사이트에서는 정규화된 JSON 형태의 데이터를 API로 제공해서 쉽게 원하는 데이터에 접근할 수 있다. 하지만, API를 통해서 제공되는 데이터는 제한적이고 원하는 데이터를 얻지 못할 수도 있다.
 
-필요한 정보를 실제 사이트에서 직접 데이터를 추출해서 데이터를 가공할 필요가 있다. 이런 방식을 웹 크롤링(Web Crawling), 웹 스크래핑(Web Scraping)이라고 한다. 웹 크롤링은 웹 스파이터(spider), 봇(bot)이라고 해서 검색 엔진과 같은 여러 사이트(ex. 구글)에서 정보를 정기적으로 추출하는 방식이다. 웹 스크래핑은 웹 사이트로에서 원하는 데이터를 추출하는 행위를 일반적으로 얘기한다. 둘의 차이점을 정리하면 아래와 같다.
+필요한 정보를 실제 사이트에서 직접 데이터를 추출해서 데이터를 가공할 필요가 있다. 이런 방식을 웹 크롤링(Web Crawling), 웹 스크래핑(Web Scraping)이라고 한다. 웹 크롤링은 웹 스파이터(spider), 봇(bot)이라고 해서 검색 엔진과 같은 여러 사이트(ex. 구글)에서 정보를 정기적으로 추출하는 방식이다. 웹 스크래핑은 웹 사이트에서 원하는 데이터를 추출하는 행위를 일반적으로 얘기한다. 둘의 차이점을 정리하면 아래와 같다.
 
 * 웹 크롤링
     * 검색 엔진에서 사용되며 bot과 같이 자동으로 웹 처리됨
@@ -61,7 +61,7 @@ $ pip3 install requests
 ```
 
 ### 2.1.2 사용법과 예제
-먼저 파이썬에 기본적으로 내장된 urllib 모듈을 사용해서 데이터를 가져와 보고 이어서 requests 모듈로 데이터를 가져오는 예제를 작성해봅니다. 전체 예제 소스는 [github](https://github.com/kenshin579/tutorials-python/tree/master/web_scraping/01_web_scraping) 에 작정 되어 있다.
+먼저 파이썬에 기본적으로 내장된 urllib 모듈을 사용해서 데이터를 가져와 보고 이어서 requests 모듈로 데이터를 가져오는 예제를 작성해봅니다. 전체 예제 소스는 [github](https://github.com/kenshin579/tutorials-python/tree/master/web_scraping/01_web_scraping) 에 작성되어 있다.
 위키백과 사이트에서 **요즘 화제** 페이지의 **주요 뉴스** 정보를 가져오는 예제를 같이 작성해봅시다.
 
 * [https://ko.wikipedia.org/wiki/포털:요즘_화제](https://ko.wikipedia.org/wiki/%ED%8F%AC%ED%84%B8:%EC%9A%94%EC%A6%98_%ED%99%94%EC%A0%9C)
@@ -72,7 +72,7 @@ $ pip3 install requests
 
 ![](6B835F07-A3A4-4479-88DF-6F3B0F8D66D7.png)
 
-**2. 웹사이트에 접근하여** **BeautifulSoup** **로 HTML를 파씽하고 원하는 데이터를 추출한다.**
+**2. 웹사이트에 접근하여 BeautifulSoup로 HTML를 파씽하고 원하는 데이터를 추출한다.**
 
 아래 코드는 urllib 모듈로 위키백과 사이트에 접근하는 방식이다.
 
@@ -155,7 +155,7 @@ tr [1] - 뉴스 내용
 
 * 책 : [Web Scraping with Python](http://www.hanbit.co.kr/store/books/look.php?p_code=B7159663510)
     * ![](image_1.jpeg)
-* 스콜링 vs. 스크래핑
+* 크롤링 vs. 스크래핑
     * [http://stophyun.tistory.com/142](http://stophyun.tistory.com/142)
     * [https://ko.wikipedia.org/wiki/웹_크롤러](https://ko.wikipedia.org/wiki/%EC%9B%B9_%ED%81%AC%EB%A1%A4%EB%9F%AC)
 * Nodejs로 웹 스크래핑

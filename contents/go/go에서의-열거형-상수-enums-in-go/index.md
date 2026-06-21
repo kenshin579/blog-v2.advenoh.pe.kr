@@ -27,9 +27,9 @@ Go에서는 Java에서 제공하는 Enums 타입은 존재하지 않는다. 하�
 const iota = 0 // Untyped int.
 ```
 
-#2.  iota 예제
+# 2. iota 예제
 
-## 1.1 기본 예제
+## 2.1 기본 예제
 
 `iota`의 시작 값은 0이고 이후부터는 +1 증가된 값으로 선언된다.
 
@@ -67,7 +67,7 @@ func Example_iota_기본2() {
 
 
 
-## 1.2 시작 값 변경하기
+## 2.2 시작 값 변경하기
 
 시작 값도 쉽게 변경할 수 있다.
 
@@ -88,9 +88,9 @@ func Example_iota_시작값_변경() {
 
 
 
-## 1.3 중간 값 스킵하기
+## 2.3 중간 값 스킵하기
 
-### 1.3.1 하나의 값을 스킵하는 방법
+### 2.3.1 하나의 값을 스킵하는 방법
 
 중간 값을 스킵하려면 `blank identifier`를 사용해서 중간 값을 스킵한다.
 
@@ -110,13 +110,13 @@ func Example_iota_중간값_skipped() {
 }
 ```
 
-### 1.3.2 하나 이상의 값 스킵하는 방법
+### 2.3.2 하나 이상의 값 스킵하는 방법
 
 아래와 같이 하나 이상의 값을 스킵하고 상수 값을 선언하는 방법에 대해서 알아보자.
 
 > 1, 2, 100, 101, 500, 501
 
-#### 1.3.2.1 jump해야 하는 값을 직접 계산하기
+#### 2.3.2.1 jump해야 하는 값을 직접 계산하기
 
 스킵해야 하는 구간의 값을 직접 계산해서 선언하면 된다.
 
@@ -138,7 +138,7 @@ func Example_iota_중간값_다르게_지정() {
 }
 ```
 
-#### 1.3.2.2 const 그룹 별로 나눠서 선언하기
+#### 2.3.2.2 const 그룹 별로 나눠서 선언하기
 
 jump 뛰어야 하는 구간을 직접 계산하기보다는 아래와 같이 여러 그룹으로 나눠서 선언하면 조금 더 쉽게 선언이 가능하다.
 
@@ -165,11 +165,11 @@ func Example_iota_중간값_다르게_지정2() {
 
 ```
 
-# 2. Enums 예제 모음
+# 3. Enums 예제 모음
 
 Enums 식으로 사용할 수 있는 예제들이다.
 
-## 2.1 ByteSize 상수 값 선언하기
+## 3.1 ByteSize 상수 값 선언하기
 
 데이터 단위를 아래와 같이 선언한다. KB 단위만 선언하면 나머지 MB, GB... 단위도 쉽게 선언이 된다.
 
@@ -197,7 +197,7 @@ func Example_iota_BYTE_예제() {
 
 
 
-## 2.2 Bitwise 연산으로 플래그 값이나 옵션 확인하기
+## 3.2 Bitwise 연산으로 플래그 값이나 옵션 확인하기
 
 비트 연산을 통해서 여러 옵션이나 플래그를 적용하고 AND 연산으로 적용되었는지 확인하는 예제이다. 이 예제에서는 사용자에게 여러 역할을 부여하고 역할을 확인한다.
 
@@ -230,7 +230,7 @@ func Example_iota_bitwise_role_예제() {
 
 
 
-## 2.3 선언한 Enums iterate해보기
+## 3.3 선언한 Enums iterate해보기
 
 상수 선언시 마지막 값을 이용해서 iterate한다.
 
@@ -272,11 +272,11 @@ func (d WeekDay) String() string {
 }
 ```
 
-# 3. 마무리
+# 4. 마무리
 
 Go 언어에서 Enums 형식으로 선언하는 방법에 대해서 알아보았다. 쉽게 상수 값을 선언하기 위해서 iota 키워드를 사용했고 다양한 예제도 볼 수 있었다. 본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/go-enums-iota)에서 확인할 수 있다.
 
-# 4. 참고
+# 5. 참고
 
 * https://stackoverflow.com/questions/64178176/how-to-create-an-enum-in-golang-an-iterate-over-it
 * https://stackoverflow.com/questions/57053373/how-to-skip-a-lot-of-values-when-define-const-variable-with-iota/57053431#57053431

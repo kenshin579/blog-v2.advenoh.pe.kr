@@ -103,7 +103,7 @@ Quartz Scheduler에 익숙해지기 위해서 자주 사용하는 용어들을 �
 
 ![](image_24.png)
 
-		* TriggerLIstener
+		* TriggerListener
 			* Trigger가 발생하거나 불발이 일어날 때나 Trigger를 완료할 때 이벤트를 받을 수 있다
 
 ![](image_16.png)
@@ -123,7 +123,7 @@ Quartz Scheduler에 익숙해지기 위해서 자주 사용하는 용어들을 �
 
 # 3. Quartz 구성요소
 
-[Java Articles](https://www.javarticles.com/2016/03/quartz-scheduler-model.html) 블로그에서 가져온 다이어그램이다. Quartz의 전체 구조와 흐름을 잘 보여주는 그림이다. Quartz의 세밀한 설정을 이해하려면 공식 문서도 참고할 만하고, 실제 [소스코드](https://github.com/quartz-scheduler) 를 직접 따라가면 동작 방식과 전체 아키텍처를 훨씬 빠르게 파악할 수 있다.
+[Java Articles](https://www.javarticles.com/2016/03/quartz-scheduler-model.html) 블로그에서 가져온 다이어그램으로 Quartz의 전체 구조와 흐름을 잘 보여준다. 세밀한 설정은 공식 문서를 참고하고, 실제 [소스코드](https://github.com/quartz-scheduler) 를 직접 따라가 보면 동작 방식을 이해하는 데 도움이 된다.
 
 ![](image_8.png)
 
@@ -137,7 +137,7 @@ Quartz 스케줄러가 언제 시작되고 등록된 Job들이 어떤 작업들�
 
 ![](image_22.png)
 
-분석한 코드를 나름 정리한다고 했는데, 이해한 코드를 쉽게 글로 정리하기가 쉽지 않네요. 디버깅을 걸어서 따라가면서 정리된 내용을 보시면 좋을 듯한다.
+분석한 코드를 나름 정리한다고 했는데, 이해한 코드를 쉽게 글로 정리하기가 쉽지 않네요. 디버깅을 걸어서 따라가면서 정리된 내용을 보시면 좋을 듯합니다.
 
 * SchedulerFactoryBean
     * Quartz 스케줄러는 스프링의 컨테이너의 빈 LifeCycle 관리에 의해서 scheduler관련 설정이 초기화, 시작, 종료가 된다
@@ -226,7 +226,7 @@ Quartz에 대한 기본 개념과 용어 그리고 Quartz 스케줄러가 스프
     * [https://juliuskrah.com/tutorial/2017/10/06/persisting-dynamic-jobs-with-quartz-and-spring/](https://juliuskrah.com/tutorial/2017/10/06/persisting-dynamic-jobs-with-quartz-and-spring/)
     * [https://www.baeldung.com/spring-quartz-schedule](https://www.baeldung.com/spring-quartz-schedule)
 * Quartz 장단점
-    * [https://kingbbode.tistory.com/38](https://kingbbode.tistory.com/38) f
+    * [https://kingbbode.tistory.com/38](https://kingbbode.tistory.com/38)
     * [https://github.com/HomoEfficio/dev-tips/blob/master/Quartz%20Advanced.md](https://github.com/HomoEfficio/dev-tips/blob/master/Quartz%20Advanced.md)
 * Quartz Architecture
     * [https://www.javarticles.com/2016/03/quartz-scheduler-model.html](https://www.javarticles.com/2016/03/quartz-scheduler-model.html)

@@ -39,7 +39,7 @@ tags:
 ![](image_3.png)
 
 ## - facade 패턴이란?
-## - strateggy 패턴이란?
+## - strategy 패턴이란?
 
 ## - @Constraint(validateBy…?)
 

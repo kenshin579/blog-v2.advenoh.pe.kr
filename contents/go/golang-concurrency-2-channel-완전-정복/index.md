@@ -84,14 +84,14 @@ Channel의 가장 중요한 특성은 **blocking**이다.
 ```mermaid
 graph LR
     subgraph "Unbuffered Channel"
-        GA[Goroutine A<br/>send - blocking] -- "핸드셰이크<br/>(동시에 진행)" --> GB[Goroutine B<br/>receive - blocking]
+        GA["Goroutine A (send - blocking)"] -- "핸드셰이크 (동시에 진행)" --> GB["Goroutine B (receive - blocking)"]
     end
 ```
 
 ```mermaid
 graph LR
     subgraph "Buffered Channel (크기 3)"
-        GA2[Goroutine A<br/>send x3 가능<br/>4번째 send BLOCK!] --> BUF[Buffer<br/>크기: 3] --> GB2[Goroutine B<br/>receive]
+        GA2["Goroutine A (send x3 가능, 4번째 send BLOCK!)"] --> BUF["Buffer (크기: 3)"] --> GB2["Goroutine B (receive)"]
     end
 ```
 

@@ -15,7 +15,7 @@ tags:
 
 # 1. 개요
 
-요즘은 콘텐츠 시대라고 해도 과언이 아닙니다. 특정 방송 회사가 콘텐츠를 만들기보다 개인이 직접 좋은 콘텐츠를 만들어 유튜브와 같은 플랫폼에서 퍼블리쉬하는 시대로 바뀌었다. [리디북스](https://ridibooks.com/?genre=general) 와 같은 eBook 리더기가 보급되고 점점 활성화되면서 eBook 시장에도 개인이 직접 책을 만들 수 있는 여러 도구와 플랫폼이제공되고 있다.
+요즘은 콘텐츠 시대라고 해도 과언이 아닙니다. 특정 방송 회사가 콘텐츠를 만들기보다 개인이 직접 좋은 콘텐츠를 만들어 유튜브와 같은 플랫폼에서 퍼블리쉬하는 시대로 바뀌었다. [리디북스](https://ridibooks.com/?genre=general) 와 같은 eBook 리더기가 보급되고 점점 활성화되면서 eBook 시장에도 개인이 직접 책을 만들 수 있는 여러 도구와 플랫폼이 제공되고 있다.
 
 - 애플
     - [iBooks Author](https://www.apple.com/kr/ibooks-author/)
@@ -49,7 +49,7 @@ $ npm install gitbook-cli -g
 $ gitbook --version
 ```
 
-전자책 포맷과 PDF를 생성하려면 ebook-convert 명령어가 필요한다.
+전자책 포맷과 PDF를 생성하려면 ebook-convert 명령어가 필요하다.
 
 ```bash
 $ brew cask install calibre

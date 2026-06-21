@@ -48,7 +48,7 @@ Golang의 최신 버전을 공식 웹사이트에서 확인하고 다운로드�
 1. 아래 명령어로 최신 버전을 확인한다.
 
 ```bash
-> curl -s <https://go.dev/VERSION?m=text>
+> curl -s https://go.dev/VERSION?m=text
 go1.24.1
 time 2025-02-27T17:57:18Z
 ```
@@ -57,7 +57,7 @@ time 2025-02-27T17:57:18Z
 
 ```bash
 > cd src
-> wget <https://go.dev/dl/go1.X.Y.linux-><ARCH>.tar.gz
+> wget https://go.dev/dl/go1.X.Y.linux-<ARCH>.tar.gz
 ```
 
 > `<ARCH>` 부분은 `armv6l`이면 `armv6l`, `aarch64`이면 `arm64`로 변경한다.
@@ -65,7 +65,7 @@ time 2025-02-27T17:57:18Z
 예를 들어, ARM64 버전의 최신 Golang을 다운로드하려면 다음과 같이 실행한다.
 
 ```bash
-> wget <https://go.dev/dl/go1.22.1.linux-arm64.tar.gz>
+> wget https://go.dev/dl/go1.22.1.linux-arm64.tar.gz
 ```
 
 ## 2.3 Golang 수동 설치
@@ -100,7 +100,7 @@ go version go1.22.1 linux/arm64
 
 # 3. 마무리
 
-이제 라즈베리파이에 최신 Golang이 성공적으로 설치되었다. `apt`를 통한 기본 설치보다 최신 기능과 성능 최적화를 활용할 수 있다. 이후 Go 프로젝트를 시작하려면 `GOPATH` 설정 및 모듈 관리를 추가로 진행하면 된다. 🚀
+이제 라즈베리파이에 최신 Golang이 설치되었다. `apt`로 받는 1.19 버전 대신 최신 버전을 쓸 수 있다. 이후 Go 프로젝트를 시작하려면 `GOPATH` 설정과 모듈 관리를 추가로 진행하면 된다.
 
 # 4. 참고
 

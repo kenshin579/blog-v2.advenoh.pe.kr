@@ -38,7 +38,7 @@ public interface Comparable<T> {
 - Comparator
 
     - 정렬할 대상 객체를 직접 수정할 수 없는 경우에 Comparator 인터페이스를 사용해서 정렬할 수 있다
-        - compare() 메서드는 o1, to2 객체의 차이점에 따라서 int값을 반환하는 메서드이고 이 반환 값에 따라서 정렬이 이루어진다
+        - compare() 메서드는 o1, o2 객체의 차이점에 따라서 int값을 반환하는 메서드이고 이 반환 값에 따라서 정렬이 이루어진다
             - 1 : o1 > o2 첫번째 객체가 큰 경우
             - -1 : o1 < o2 첫번째 객체가 작은 경우
             - 0 :  o1 == o2 두 객체가 같은 경우
@@ -93,7 +93,7 @@ public class ComparatorPlayer {
 
 ```
 
-# 3. 객채 정렬하기
+# 3. 객체 정렬하기
 
 ## 3.1 Collections.sort()로 정렬하기
 

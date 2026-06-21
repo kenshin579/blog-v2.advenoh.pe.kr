@@ -130,9 +130,9 @@ Jayway JsonPath로 원하는 데이터를 추출하려면 parse()와 read()를 �
 
 ```java
 @Test
-public void test*id값으로*데이터를_가져오기() {
+public void test_id값으로_데이터를_가져오기() {
     String searchId = "5c2c3278acd492387a5223d7";
-    Object dataObject = JsonPath.parse(jsonStream).read("\$[?(@._id == '" + searchId + "')]");
+    Object dataObject = JsonPath.parse(jsonStream).read("$[?(@._id == '" + searchId + "')]");
     assertTrue(dataObject.toString().contains("Hello, Louella! You have 8 unread messages."));
 }
 ```
@@ -158,9 +158,9 @@ public void test*id값으로*데이터를_가져오기() {
 
 ```java
 @Test
-public void test*id값으로*데이터를\_가져오기() {
+public void test_id값으로_데이터를_가져오기() {
     String searchId = "5c2c3278acd492387a5223d7";
-    List<Object> lists = JsonPath.parse(jsonStream).read("\$[?(@._id == '" + searchId + "')]");
+    List<Object> lists = JsonPath.parse(jsonStream).read("$[?(@._id == '" + searchId + "')]");
     assertEquals(1, lists.size());
     assertTrue(lists.get(0).toString().contains("Hello, Louella! You have 8 unread messages."));
 }
@@ -172,8 +172,8 @@ public void test*id값으로*데이터를\_가져오기() {
 
 ```java
 @Test
-public void test*tags가*있는*사람은*모두() {
-    List<Map<String, Object>> dataList = JsonPath.parse(jsonStream).read("\$[?('pariatur' in @['tags'])]");
+public void test_tags가_있는_사람은_모두() {
+    List<Map<String, Object>> dataList = JsonPath.parse(jsonStream).read("$[?('pariatur' in @['tags'])]");
     assertTrue(dataList.get(0).get("name").toString().contains("Dawn") && dataList.get(0).get("name").toString().contains("Roach"));
     assertTrue(dataList.get(1).get("name").toString().contains("Deloris") && dataList.get(1).get("name").toString().contains("Albert"));
 }
@@ -189,7 +189,7 @@ public void test*tags가*있는*사람은*모두() {
         "incididunt",
         "elit",
         "laborum",
-        **"pariatur",**
+        "pariatur",
         "amet"
         ],
     },
@@ -200,7 +200,7 @@ public void test*tags가*있는*사람은*모두() {
         "irure",
         "eu",
         "ullamco",
-        **"pariatur"**
+        "pariatur"
         ],
     …(생략)…
 ]
@@ -212,9 +212,9 @@ public void test*tags가*있는*사람은*모두() {
 
 ```java
 @Test
-public void test*Person객체로*매핑하기() {
+public void test_Person객체로_매핑하기() {
     DocumentContext documentContext = JsonPath.parse(this.getResourceAsStream("person.json"));
-    Person person = documentContext.read("\$", **Person.class)**;
+    Person person = documentContext.read("$", Person.class);
     assertEquals("Frank Oh", person.getName());
     assertEquals(26, person.getAge());
 }
@@ -226,9 +226,9 @@ public void test*Person객체로*매핑하기() {
 
 ```java
 @Test
-public void test*jsonpath*함수() {
+public void test_jsonpath_함수() {
     DocumentContext documentContext = JsonPath.parse(jsonStream);
-    double rangeAvg = documentContext.read("\$[0].range.avg()");
+    double rangeAvg = documentContext.read("$[0].range.avg()");
     assertEquals(4.5, rangeAvg, 0);
 }
 ```
@@ -251,15 +251,15 @@ public void test*jsonpath*함수() {
 
 ```java
 @Test
-public void test*모든*사람의*총*계좌*잔고을*계산하기() throws ParseException {
+public void test_모든_사람의_총_계좌_잔고를_계산하기() throws ParseException {
     NumberFormat formatter = NumberFormat.getCurrencyInstance(Locale.US);
 
     DocumentContext documentContext = JsonPath.parse(jsonStream);
-    int maxSize = documentContext.read("\$.length()");
+    int maxSize = documentContext.read("$.length()");
     double totalAmount = 0.0;
 
     for (int i = 0; i < maxSize; i++) {
-    totalAmount += formatter.parse(documentContext.read("\$[" + i + "]['balance']")).doubleValue();
+    totalAmount += formatter.parse(documentContext.read("$[" + i + "]['balance']")).doubleValue();
     }
     assertEquals(15998, (int) totalAmount);
 }
@@ -271,11 +271,11 @@ public void test*모든*사람의*총*계좌*잔고을*계산하기() throws Par
 
 ```java
 @Test
-public void test*제일*어린*사람을*찾기() {
+public void test_제일_어린_사람을_찾기() {
     DocumentContext documentContext = JsonPath.parse(jsonStream);
-    List<Integer> ageList = documentContext.read("$[**]['age']”); *#1**
-    int minAge = ageList.get(ageList.indexOf(Collections.min(ageList))); **#2**
-    List<Object> lists = documentContext.read("$[?(@['age'] == " + minAge + ")]”); **#3**
+    List<Integer> ageList = documentContext.read("$[*]['age']"); //#1
+    int minAge = ageList.get(ageList.indexOf(Collections.min(ageList))); //#2
+    List<Object> lists = documentContext.read("$[?(@['age'] == " + minAge + ")]"); //#3
     assertTrue(lists.get(0).toString().contains("Deloris") && lists.get(0).toString().contains("Albert"));
 }
 ```

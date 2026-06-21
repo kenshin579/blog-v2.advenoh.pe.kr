@@ -56,7 +56,7 @@ tags:
   * Unicode 8.0
   * Java 8은 Unicode 6.2을 지원
   * UTF-8 Properties files
-  * Default Localte Data Change
+  * Default Locale Data Change
 
 자바9에 추가된 여러 기능 및 개선 사항은 다음 링크를 참조해주세요.
 
