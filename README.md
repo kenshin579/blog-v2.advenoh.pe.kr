@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-06-19
+Updated 2026-06-24
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -62,6 +62,7 @@ Updated 2026-06-19
 * [Copying Docker Images to Another Docker Registry - Skopeo](https://blog.advenoh.pe.kr/도커-이미지-다른-도커-registry로-복사하기-skopeo/)
 * [Deploying a Node.js + MongoDB App to Heroku](https://blog.advenoh.pe.kr/heroku에-node-js-mongodb-app-배포하기/)
 * [Easily Build a Local Kubernetes Cluster with Minikube on macOS](https://blog.advenoh.pe.kr/맥에서-minikube로-로컬-kubernetes-클러스터-쉽게-구축하기/)
+* [Getting Started with k9s — Beyond kubectl, a Terminal UI to 'Explore' Your Cluster](https://blog.advenoh.pe.kr/k9s-쿠버네티스-터미널-ui-입문/)
 * [Heroku에 Node.js+MongoDB App 배포하기](https://blog.advenoh.pe.kr/heroku에-node-js-mongodb-app-배포하기/)
 * [How to Use kcat](https://blog.advenoh.pe.kr/kcat-사용방법/)
 * [Ingress NGINX 지원 종료 이후, Gateway API로의 마이그레이션 전략](https://blog.advenoh.pe.kr/ingress-nginx-지원-종료-이후-gateway-api로의-마이그레이션-전략/)
@@ -81,13 +82,14 @@ Updated 2026-06-19
 * [Managing Multiple Applications with GitOps in ArgoCD: App of Apps vs ApplicationSet](https://blog.advenoh.pe.kr/argocd-여러-application-gitops-관리/)
 * [Migration Strategy to Gateway API After Ingress NGINX End of Support](https://blog.advenoh.pe.kr/ingress-nginx-지원-종료-이후-gateway-api로의-마이그레이션-전략/)
 * [Running Kafka in a Local Environment (with AKHQ)](https://blog.advenoh.pe.kr/로컬환경에서-kafka-실행하기-with-akhq/)
-* [SSL 인증서 Ngnix 서버에 설치하기 (무료 Lets Encrypt 인증서 발급)](https://blog.advenoh.pe.kr/ssl-인증서-ngnix-서버에-설치하기/)
+* [SSL 인증서 Nginx 서버에 설치하기 (무료 Lets Encrypt 인증서 발급)](https://blog.advenoh.pe.kr/ssl-인증서-ngnix-서버에-설치하기/)
 * [Securely Managing Secrets in a Kubernetes Environment](https://blog.advenoh.pe.kr/kubernetes-환경에서-secret-안전하게-관리하기/)
 * [Setting Up a Personal Docker Registry on a MacBook and Managing Images](https://blog.advenoh.pe.kr/맥북에서-개인용-docker-registry-구축하고-이미지-관리하기/)
 * [Switching Kubernetes context and namespace quickly with kx and ns (with fzf)](https://blog.advenoh.pe.kr/kx-ns로-kubernetes-context-namespace-빠르게-전환하기/)
 * [Terraform 완벽 가이드: 기본 개념부터 GitOps 실전까지](https://blog.advenoh.pe.kr/terraform-완벽-가이드-기본-개념부터-gitops-실전까지/)
 * [The Complete Terraform Guide: From Basic Concepts to GitOps in Practice](https://blog.advenoh.pe.kr/terraform-완벽-가이드-기본-개념부터-gitops-실전까지/)
 * [Understanding ArgoCD Resource Hooks (PreSync, PostSync, SyncWaves)](https://blog.advenoh.pe.kr/argocd-resource-hooks에-대해서-알아보자/)
+* [k9s 입문 — kubectl을 넘어, 클러스터를 '탐색'하는 터미널 UI](https://blog.advenoh.pe.kr/k9s-쿠버네티스-터미널-ui-입문/)
 * [kcat 사용방법](https://blog.advenoh.pe.kr/kcat-사용방법/)
 * [ksqlDB 소개](https://blog.advenoh.pe.kr/ksqldb-소개/)
 * [kx, ns로 Kubernetes context·namespace 빠르게 전환하기 (with fzf)](https://blog.advenoh.pe.kr/kx-ns로-kubernetes-context-namespace-빠르게-전환하기/)
