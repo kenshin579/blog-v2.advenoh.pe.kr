@@ -1,8 +1,8 @@
 ---
 title: "k9s 입문 — kubectl을 넘어, 클러스터를 '탐색'하는 터미널 UI"
 description: "kubectl은 쓸 줄 알지만 k9s는 처음인 개발자를 위한 입문 가이드. 설치부터 로그 보기, shell 접속, 포트 포워딩, 롤아웃까지 매일 쓰는 작업을 단축키 중심으로 정리한다"
-date: 2026-06-25
-update: 2026-06-25
+date: 2026-06-24
+update: 2026-06-24
 tags:
   - k9s
   - kubernetes
