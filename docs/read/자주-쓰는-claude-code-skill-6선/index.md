@@ -35,21 +35,21 @@ series: "Claude Code Complete Guide"
 
 # 2. Skill 설치/사용법 (공통)
 
-대부분의 커뮤니티 skill은 **플러그인 마켓플레이스를 등록한 뒤 설치**하거나, **skill 디렉토리를 직접 배치**하는 두 가지 방식 중 하나로 쓴다.
+커뮤니티 skill을 가장 손쉽게 찾는 곳은 [skills.sh](https://www.skills.sh/)다. 랭킹·검색으로 원하는 skill을 찾았다면, **설치 방법은 그 skill의 상세 페이지를 따르는 게 가장 정확하다**. 페이지마다 **Installation** 섹션에 그대로 복사해 쓸 수 있는 명령이 적혀 있기 때문이다.
 
-**(1) 마켓플레이스로 설치 (플러그인형)**
+예를 들어 [understand](https://www.skills.sh/lum1104/understand-anything/understand) 페이지의 Installation 섹션에는 다음 명령이 있다.
 
 ```bash
-# Claude Code 안에서
-/plugin marketplace add <github-owner>/<repo>
-/plugin install <skill-name>
+npx skills add https://github.com/lum1104/understand-anything --skill understand
 ```
 
-**(2) 디렉토리에 직접 배치 (개인용)**
+이 명령을 복사해 Claude Code에 그대로 입력하고 설치를 요청하면, 현재 작업 중인 **프로젝트의 `.claude/skills/`** 아래에 해당 skill이 설치된다. 이후 Claude가 상황에 맞다고 판단하면 자동으로 불러와 쓴다.
 
-`~/.claude/skills/<skill-name>/SKILL.md` 형태로 직접 두면 전역에서, `<project>/.claude/skills/`에 두면 해당 프로젝트에서만 활성화된다.
+> 설치 명령과 옵션은 skill마다 다르므로(예: 한 저장소에 여러 skill이 묶여 있어 `--skill`로 특정 skill만 고르는 경우), 아래에서는 명령을 매번 반복하지 않고 **출처** 만 표기한다. 실제 설치 명령은 각 skill의 skills.sh 페이지에서 확인하면 된다.
 
-> 각 skill의 README에 정확한 설치 명령이 적혀 있으므로, 아래에서는 설치 명령을 매번 반복하지 않고 **출처(GitHub)** 만 표기한다.
+**플러그인(마켓플레이스)으로 배포되는 경우**
+
+skill이 플러그인 형태로 묶여 마켓플레이스로 배포되기도 한다. 이 경우 `/plugin marketplace add`로 마켓플레이스를 등록한 뒤 `/plugin install`로 설치한다. 플러그인 설치 방식의 자세한 내용은 [Claude Code Plugin & Hooks 완벽 가이드](/article/claude-code-plugin-hooks-완벽-가이드)를 참고하면 된다.
 
 # 3. 개발 작업
 
