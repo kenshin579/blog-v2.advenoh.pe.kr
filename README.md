@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-06-24
+Updated 2026-07-02
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -46,6 +46,7 @@ Updated 2026-06-24
 * [Frank's IT Biweekly News (2026-04-17 ~ 2026-05-01)](https://blog.advenoh.pe.kr/news-2026-05-01/)
 * [Frank's IT Biweekly News (2026-05-01 ~ 2026-05-15)](https://blog.advenoh.pe.kr/news-2026-05-15/)
 * [Frank's IT Biweekly News (2026-05-18 ~ 2026-06-01)](https://blog.advenoh.pe.kr/news-2026-06-01/)
+* [Frank's IT Biweekly News (2026-06-01 ~ 2026-06-15)](https://blog.advenoh.pe.kr/news-2026-06-15/)
 
 ## Cloud
 * [(Docker-1) Docker Command Cheat Sheet](https://blog.advenoh.pe.kr/docker-도커-명령어-모음/)
