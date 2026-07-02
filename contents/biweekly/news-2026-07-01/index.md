@@ -54,6 +54,7 @@ series: "Frank's IT News 2026 하반기"
 - [Go Micro - Go를 위한 에이전트 하네스](https://news.hada.io/topic?id=30958) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [Memora: 장기 작업을 위한 확장형 메모리 시스템](https://news.hada.io/topic?id=30956) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [Qwen 3.6 27B는 로컬 개발의 최적 지점](https://news.hada.io/topic?id=30942) - GeekNews - 개발/기술/스타트업 뉴스 서비스
+- [Nano Banana 2 Lite](https://news.hada.io/topic?id=30983) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 
 ## 💻 Development
 
@@ -89,7 +90,6 @@ series: "Frank's IT News 2026 하반기"
 - [유럽 디지털 ID 지갑, Google·Apple 안전 서비스에 의존](https://news.hada.io/topic?id=30993) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [Rule of 40은 하드웨어에도 적용될까?](https://news.hada.io/topic?id=30988) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [AArch64 데스크톱 실험의 끝](https://news.hada.io/topic?id=30985) - GeekNews - 개발/기술/스타트업 뉴스 서비스
-- [Nano Banana 2 Lite](https://news.hada.io/topic?id=30983) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [우리는 작동 방식을 아는 마지막 세대](https://news.hada.io/topic?id=30981) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [SSH를 위한 네이티브 그래픽 셸](https://news.hada.io/topic?id=30977) - GeekNews - 개발/기술/스타트업 뉴스 서비스
 - [유럽 ISP들, 과잉 차단 피해에 권리자 책임 요구](https://news.hada.io/topic?id=30976) - GeekNews - 개발/기술/스타트업 뉴스 서비스
