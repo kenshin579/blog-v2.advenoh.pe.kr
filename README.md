@@ -47,6 +47,7 @@ Updated 2026-07-02
 * [Frank's IT Biweekly News (2026-05-01 ~ 2026-05-15)](https://blog.advenoh.pe.kr/news-2026-05-15/)
 * [Frank's IT Biweekly News (2026-05-18 ~ 2026-06-01)](https://blog.advenoh.pe.kr/news-2026-06-01/)
 * [Frank's IT Biweekly News (2026-06-01 ~ 2026-06-15)](https://blog.advenoh.pe.kr/news-2026-06-15/)
+* [Frank's IT Biweekly News (2026-06-17 ~ 2026-07-01)](https://blog.advenoh.pe.kr/news-2026-07-01/)
 
 ## Cloud
 * [(Docker-1) Docker Command Cheat Sheet](https://blog.advenoh.pe.kr/docker-도커-명령어-모음/)
