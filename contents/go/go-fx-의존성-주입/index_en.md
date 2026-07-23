@@ -64,22 +64,23 @@ go get go.uber.org/fx
 
 Before diving in, here is an at-a-glance summary of the fx methods covered in this article. fx has many methods that are easy to confuse, so use the table below as a map while reading. The order of categories matches the article's flow (basics → extension → testing).
 
-| Method | Category | Role | Introduced in |
-|--------|------|------|-----------|
-| `fx.New` | Basic | Create the app container | — |
-| `fx.Provide` | Basic | lazy registration (register in the graph by return type) | — |
-| `fx.Invoke` | Basic | eager execution (side effects like starting the server, registering routes) | — |
-| `fx.Supply` | Basic | register a value directly without a constructor | — |
-| `fx.Lifecycle` | Lifecycle | manage startup/shutdown via OnStart/OnStop hooks | — |
-| `fx.Module` | Extension | group dependencies by domain | v1.17+ |
-| `fx.Decorate` | Extension | wrap an existing dependency (logging/caching/metrics) | v1.18+ |
-| `fx.Annotate` | Extension | attach metadata to a constructor (name/group/As) | — |
-| `fx.ResultTags` + `name:` | Extension | identify the same type individually | — |
-| `group:` tag | Extension | collect implementations of the same interface into a slice | — |
-| `fx.Private` | Extension | encapsulate a dependency within a Module | v1.20+ |
-| `fxtest.New` | Testing | create a test-only app | — |
-| `fx.Replace` | Testing | replace an existing Provide with a Mock | — |
-| `fx.Populate` | Testing | extract an internal container instance into an external variable | — |
+| Method | Category | Role | When/why to use | Introduced in |
+|--------|------|------|-----------------|-----------|
+| `fx.New` | Basic | Create the app container | The app's entry point. Gathers all `Provide`/`Invoke` calls and builds the dependency graph | — |
+| `fx.Provide` | Basic | lazy registration (register in the graph by return type) | For registering most constructors (`NewXxx`). Defers execution until the value is actually needed | — |
+| `fx.Invoke` | Basic | eager execution (side effects like starting the server, registering routes) | For code that must run at app startup. This is what actually assembles the lazy graph | — |
+| `fx.Supply` | Basic | register a value directly without a constructor | For injecting an already-built value (config struct, constant, etc.) when there's no construction logic and `Provide` would be overkill | — |
+| `fx.Lifecycle` | Lifecycle | manage startup/shutdown via OnStart/OnStop hooks | For resources whose setup and teardown come in pairs — server boot/shutdown, DB connection open/close | — |
+| `fx.Module` | Extension | group dependencies by domain | When the app grows and `Provide` calls number in the dozens. Groups them by domain for reuse and isolation | v1.17+ |
+| `fx.Decorate` | Extension | wrap an existing dependency (logging/caching/metrics) | When you want to layer cross-cutting concerns (logging/caching/metrics) onto an existing dependency without touching the original code | v1.18+ |
+| `fx.Annotate` | Extension | attach metadata to a constructor (name/group/As) | When you want to keep a plain constructor as-is but add only metadata like name/group/As | — |
+| `fx.In` / `fx.Out` | Extension | group parameters/return values into a struct for injection (name/group tag matching) | When there are many dependencies to inject, or you need to target a specific instance by name/group tag | — |
+| `fx.ResultTags` + `name:` | Extension | identify the same type individually | When there are multiple instances of the same type (e.g. read/write DB) and you inject them distinguished by name | — |
+| `group:` tag | Extension | collect implementations of the same interface into a slice | When you want to receive all implementations of the same interface at once as a slice, like plugins or handlers | — |
+| `fx.Private` | Extension | encapsulate a dependency within a Module | When you want to hide a dependency used only inside a Module and not expose it to the outer graph | v1.20+ |
+| `fxtest.New` | Testing | create a test-only app | For spinning up an fx app in tests. Reports failures via `t` and helps with cleanup | — |
+| `fx.Replace` | Testing | replace an existing Provide with a Mock | For injecting a Mock/Stub in place of the real dependency to isolate a test | — |
+| `fx.Populate` | Testing | extract an internal container instance into an external variable | For pulling out an assembled instance to verify it in a test (concisely, without an `Invoke` closure) | — |
 
 The following sections cover each method one by one with hands-on examples. First, let's look at the most basic building blocks: `fx.Provide`, `fx.Invoke`, `fx.Supply`, and `fx.New`.
 
@@ -390,7 +391,7 @@ fx.Provide(
 )
 ```
 
-On the receiving side, match by `name` tag in an `fx.In` struct.
+On the receiving side, match by `name` tag in an `fx.In` struct. `fx.In` is an embedded marker that lets you inject multiple dependencies bundled into a single parameter struct. Use it when a constructor takes many parameters, or when — as here — you need to target a specific instance via a `name` or `group` tag. Embedding `fx.In` in a struct tells fx to treat each field as an individual dependency and fill it in (conversely, use `fx.Out` to bundle return values into a struct).
 
 ```go
 // fx_test.go
