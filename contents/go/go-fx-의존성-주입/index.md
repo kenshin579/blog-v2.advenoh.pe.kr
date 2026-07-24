@@ -82,6 +82,26 @@ go get go.uber.org/fx
 | `fx.Replace` | 테스트 | 기존 Provide를 Mock으로 교체 | 실제 의존성 대신 Mock/Stub을 주입해 테스트를 격리할 때 | — |
 | `fx.Populate` | 테스트 | 컨테이너 내부 인스턴스를 외부 변수로 추출 | 테스트에서 조립된 인스턴스를 꺼내 검증할 때(`Invoke` 클로저 없이 간결하게) | — |
 
+각 메서드가 무엇을 인자로 받아 무엇을 반환하는지도 함께 알아두면 이해가 빠르다. 핵심은 **대부분의 fx 함수가 `fx.Option`을 반환**하고, 그 `Option`들을 `fx.New()`가 모아 앱을 조립한다는 점이다.
+
+| 메서드 | 인자 (받는 것) | 반환값 |
+|--------|----------------|--------|
+| `fx.New` | `opts ...fx.Option` (Provide/Invoke 등) | `*fx.App` |
+| `fx.Provide` | `constructors ...interface{}` (생성자 함수들) | `fx.Option` |
+| `fx.Invoke` | `funcs ...interface{}` (실행할 함수들) | `fx.Option` |
+| `fx.Supply` | `values ...interface{}` (이미 만든 값들) | `fx.Option` |
+| `fx.Module` | `name string, opts ...fx.Option` | `fx.Option` |
+| `fx.Decorate` | `decorators ...interface{}` (데코레이터 함수들) | `fx.Option` |
+| `fx.Annotate` | `f interface{}, anns ...fx.Annotation` | `interface{}` (주석 달린 생성자) |
+| `fx.ResultTags` / `fx.ParamTags` | `tags ...string` | `fx.Annotation` |
+| `fx.Replace` | `values ...interface{}` | `fx.Option` |
+| `fx.Populate` | `targets ...interface{}` (포인터들) | `fx.Option` |
+| `fxtest.New` | `tb fxtest.TB, opts ...fx.Option` | `*fxtest.App` |
+
+위 표는 함수형 API만 다뤘다. `fx.Lifecycle`(인터페이스), `fx.In` / `fx.Out`(임베드용 구조체), `name:` / `group:`(struct 태그)은 함수가 아니라 각각 뒤 섹션에서 따로 설명한다.
+
+정리하면 두 가지만 기억하면 된다. ①`Provide`·`Invoke`·`Supply`·`Module`·`Decorate`·`Replace`·`Populate`는 전부 `fx.Option`을 반환해 `fx.New`의 인자로 들어간다. ②`Annotate`·`ResultTags`는 `Annotation`(또는 주석 달린 생성자)을 반환해 `Provide`·`Supply` 안에서 쓰인다.
+
 이후 섹션에서 각 메서드를 실전 예제로 하나씩 다룬다. 우선 가장 기초가 되는 `fx.Provide`, `fx.Invoke`, `fx.Supply`, `fx.New`부터 살펴보자.
 
 `fx.Provide()`에 등록된 생성자는 즉시 실행되지 않는다. 다른 곳에서 해당 타입이 필요할 때 **lazy**하게 생성된다.
