@@ -82,6 +82,26 @@ Before diving in, here is an at-a-glance summary of the fx methods covered in th
 | `fx.Replace` | Testing | replace an existing Provide with a Mock | For injecting a Mock/Stub in place of the real dependency to isolate a test | — |
 | `fx.Populate` | Testing | extract an internal container instance into an external variable | For pulling out an assembled instance to verify it in a test (concisely, without an `Invoke` closure) | — |
 
+It also helps to know what each method takes as arguments and what it returns. The key point is that **most fx functions return an `fx.Option`**, and `fx.New()` gathers those `Option`s to assemble the app.
+
+| Method | Arguments (takes) | Returns |
+|--------|-------------------|---------|
+| `fx.New` | `opts ...fx.Option` (Provide/Invoke, etc.) | `*fx.App` |
+| `fx.Provide` | `constructors ...interface{}` (constructor functions) | `fx.Option` |
+| `fx.Invoke` | `funcs ...interface{}` (functions to run) | `fx.Option` |
+| `fx.Supply` | `values ...interface{}` (already-built values) | `fx.Option` |
+| `fx.Module` | `name string, opts ...fx.Option` | `fx.Option` |
+| `fx.Decorate` | `decorators ...interface{}` (decorator functions) | `fx.Option` |
+| `fx.Annotate` | `f interface{}, anns ...fx.Annotation` | `interface{}` (annotated constructor) |
+| `fx.ResultTags` / `fx.ParamTags` | `tags ...string` | `fx.Annotation` |
+| `fx.Replace` | `values ...interface{}` | `fx.Option` |
+| `fx.Populate` | `targets ...interface{}` (pointers) | `fx.Option` |
+| `fxtest.New` | `tb fxtest.TB, opts ...fx.Option` | `*fxtest.App` |
+
+The table above covers only the function-style API. `fx.Lifecycle` (an interface), `fx.In` / `fx.Out` (structs to embed), and `name:` / `group:` (struct tags) are not functions and are explained separately in later sections.
+
+In short, just remember two things: ① `Provide`, `Invoke`, `Supply`, `Module`, `Decorate`, `Replace`, and `Populate` all return an `fx.Option` that goes into `fx.New`'s arguments. ② `Annotate` and `ResultTags` return an `Annotation` (or an annotated constructor) used inside `Provide` and `Supply`.
+
 The following sections cover each method one by one with hands-on examples. First, let's look at the most basic building blocks: `fx.Provide`, `fx.Invoke`, `fx.Supply`, and `fx.New`.
 
 A constructor registered with `fx.Provide()` is not executed immediately. It is created **lazily** when the corresponding type is needed elsewhere.
