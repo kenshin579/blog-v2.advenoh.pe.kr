@@ -69,6 +69,22 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
           const raw = fs.readFileSync(indexPath, 'utf-8');
           const { data, content } = matter(raw);
 
+          // 슬라이드 데크와 본문 마커의 짝이 맞는지 검사한다 (경고만, 빌드는 계속)
+          const slidesFile = lang === 'en' ? 'slides_en.html' : 'slides.html';
+          const hasSlidesFile = fs.existsSync(path.join(dirPath, slidesFile));
+          const hasSlidesMarker = /<!--\s*slides\s*-->/.test(content);
+
+          if (hasSlidesFile && !hasSlidesMarker) {
+            console.warn(
+              `⚠️  ${category}/${articleDir} (${lang}): ${slidesFile} 는 있는데 본문에 <!-- slides --> 마커가 없습니다`
+            );
+          }
+          if (hasSlidesMarker && !hasSlidesFile) {
+            console.warn(
+              `⚠️  ${category}/${articleDir} (${lang}): <!-- slides --> 마커는 있는데 ${slidesFile} 가 없습니다`
+            );
+          }
+
           const mdImageMatch = raw.match(/!\[([^\]]*)]\(([^)]+)\)/);
           const htmlImageMatch = raw.match(/<img\s[^>]*src=["']([^"']+)["']/);
           const firstImage = mdImageMatch ? mdImageMatch[2] : htmlImageMatch ? htmlImageMatch[1] : undefined;
