@@ -5,13 +5,13 @@
   "license": "MIT",
   "scripts": {
     "dev": "next dev",
-    "build": "npm run generate:manifest && npm run generate:search && npm run generate:feeds && npm run copy:images && next build",
+    "build": "npm run generate:manifest && npm run generate:search && npm run generate:feeds && npm run copy:assets && next build",
     "start": "npx serve@latest out -l 3000",
     "check": "tsc",
     "generate:manifest": "tsx scripts/generate-content-manifest.ts",
     "generate:search": "tsx scripts/generate-search-index.ts",
     "generate:feeds": "tsx scripts/generate-feeds.ts",
-    "copy:images": "tsx scripts/copy-images.ts"
+    "copy:assets": "tsx scripts/copy-assets.ts"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.10.0",

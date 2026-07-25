@@ -34,14 +34,62 @@ function findImages(dir: string, baseDir: string, images: Map<string, string>) {
 }
 
 /**
- * 이미지를 public/images로 복사
+ * 슬라이드 데크 파일명 → public 하위 경로 prefix
+ * ko: public/{글폴더}/slides/index.html
+ * en: public/en/{글폴더}/slides/index.html
  */
-function copyImages(images: Map<string, string>, publicDir: string) {
+const SLIDE_VARIANTS = [
+  { file: 'slides.html', prefix: '' },
+  { file: 'slides_en.html', prefix: 'en' },
+];
+
+/**
+ * contents/{category}/{글폴더}/slides*.html 을 찾아
+ * [목적지 상대 경로, 원본 절대 경로] 맵으로 반환한다.
+ *
+ * 목적지에서 category 를 떼는 규칙은 라우트가 쓰는
+ * lib/articles.ts 의 getArticleTitleFromSlug() 와 동일하다.
+ * (script 는 단독 node 프로세스이므로 의존성 최소화 위해 inline)
+ */
+function findSlides(contentsDir: string): Map<string, string> {
+  const slides = new Map<string, string>();
+
+  const categories = fs
+    .readdirSync(contentsDir, { withFileTypes: true })
+    .filter((dirent) => dirent.isDirectory())
+    .map((dirent) => dirent.name);
+
+  for (const category of categories) {
+    const categoryPath = path.join(contentsDir, category);
+    const articleDirs = fs
+      .readdirSync(categoryPath, { withFileTypes: true })
+      .filter((dirent) => dirent.isDirectory())
+      .map((dirent) => dirent.name);
+
+    for (const articleDir of articleDirs) {
+      for (const { file, prefix } of SLIDE_VARIANTS) {
+        const sourcePath = path.join(categoryPath, articleDir, file);
+        if (!fs.existsSync(sourcePath)) continue;
+
+        const destPath = path.join(prefix, articleDir, 'slides', 'index.html');
+        slides.set(destPath, sourcePath);
+      }
+    }
+  }
+
+  return slides;
+}
+
+/**
+ * 자산 맵을 목적지 루트로 복사한다.
+ * key = 목적지 루트 기준 상대 경로, value = 원본 절대 경로
+ */
+function copyFiles(files: Map<string, string>, destRoot: string) {
   let copiedCount = 0;
   let skippedCount = 0;
 
-  for (const [relativePath, sourcePath] of images) {
-    const destPath = path.join(publicDir, relativePath);
+  for (const [relativePath, sourcePath] of files) {
+    const destPath = path.join(destRoot, relativePath);
     const destDir = path.dirname(destPath);
 
     // 대상 디렉토리 생성
@@ -81,7 +129,8 @@ function copyImages(images: Map<string, string>, publicDir: string) {
  */
 function main() {
   const contentsDir = path.join(process.cwd(), 'contents');
-  const publicImagesDir = path.join(process.cwd(), 'public', 'images');
+  const publicDir = path.join(process.cwd(), 'public');
+  const publicImagesDir = path.join(publicDir, 'images');
 
   console.log('🔍 Scanning for images in contents/...');
   const images = new Map<string, string>();
@@ -91,7 +140,7 @@ function main() {
 
   if (images.size > 0) {
     console.log('📋 Copying images to public/images/...');
-    const { copiedCount, skippedCount } = copyImages(images, publicImagesDir);
+    const { copiedCount, skippedCount } = copyFiles(images, publicImagesDir);
 
     console.log(`✅ Copy complete!
   - Copied: ${copiedCount} files
@@ -100,6 +149,16 @@ function main() {
   `);
   } else {
     console.log('ℹ️  No images to copy from contents/');
+  }
+
+  // 슬라이드 데크 복사 (public/{글폴더}/slides/index.html)
+  console.log('\n🔍 Scanning for slides in contents/...');
+  const slides = findSlides(contentsDir);
+  console.log(`✅ Found ${slides.size} slide decks`);
+
+  if (slides.size > 0) {
+    const { copiedCount, skippedCount } = copyFiles(slides, publicDir);
+    console.log(`✅ Slides copied: ${copiedCount}, skipped: ${skippedCount}`);
   }
 
   // Copy default image
