@@ -29,6 +29,8 @@ function createSearchDocument(
     const cleanContent = content
       .replace(/```[\s\S]*?```/g, '') // 코드 블록 제거
       .replace(/`[^`]+`/g, '') // 인라인 코드 제거
+      .replace(/<!--[\s\S]*?-->/g, '') // HTML 주석 제거 (<!-- slides --> 마커 포함)
+      .replace(/<[^>]+>/g, '') // HTML 태그 제거 (<details>, <img>, <iframe> 등)
       .replace(/!\[([^\]]*)]\(([^)]+)\)/g, '') // 이미지 제거
       .replace(/\[([^\]]+)]\(([^)]+)\)/g, '$1') // 링크는 텍스트만
       .replace(/#{1,6}\s+/g, '') // 헤딩 마크 제거
