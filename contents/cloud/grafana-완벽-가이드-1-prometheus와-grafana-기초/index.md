@@ -934,6 +934,8 @@ rate(node_network_transmit_bytes_total{device!="lo"}[5m])
 
 > 이 글에서 사용한 전체 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/monitoring/grafana-metrics)에서 확인할 수 있다.
 
+<!-- slides -->
+
 # 7. 참고
 
 - [Prometheus 공식 문서](https://prometheus.io/docs/introduction/overview/)
