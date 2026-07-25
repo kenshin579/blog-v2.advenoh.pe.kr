@@ -212,13 +212,17 @@ head -c 80 "public/grafana-완벽-가이드-1-prometheus와-grafana-기초/slide
 
 Expected: `PASS: 슬라이드 복사됨` 그리고 `<!doctype html>`로 시작하는 내용
 
-- [ ] **Step 9: 재실행 시 스킵되는지 확인**
+- [ ] **Step 9: 재실행 동작 확인**
 
 ```bash
 npx tsx scripts/copy-assets.ts 2>&1 | grep "Slides copied"
 ```
 
-Expected: `✅ Slides copied: 0, skipped: 1` (mtime·size가 같아 스킵)
+Expected: `✅ Slides copied: 1, skipped: 0`
+
+**주의 — 이 계획의 최초 기대값(`skipped: 1`)은 틀렸다.** 실행해서 확인한 결과, `copyFiles`의 스킵 판정 `sourceStats.mtimeMs === destStats.mtimeMs`가 macOS에서 부동소수점 정밀도 차이로 항상 실패한다(`1784981140206.8945` vs `1784981140207`). 이미지 627건도 매 실행마다 전부 재복사된다.
+
+이건 **이 태스크 이전부터 있던 버그**이며 기능에는 영향이 없다(불필요한 재복사만 발생). 이 태스크에서는 고치지 않는다 — 계획에 없는 변경이고, 슬라이드 임베드와 무관하다. 별도 이슈로 남긴다.
 
 - [ ] **Step 10: 커밋**
 
