@@ -10,6 +10,22 @@
   force = false
   conditions = {Language = ["en"]}
 
+# 레거시 `-en` 접미사 글 → `/en/{ko-slug}/` (index_en.md 페어링으로 통합됨)
+[[redirects]]
+  from = "/jaeger에-대한-소개-en/"
+  to = "/en/jaeger에-대한-소개/"
+  status = 301
+
+[[redirects]]
+  from = "/kafka-cli-명령어-모음-en/"
+  to = "/en/kafka-cli-명령어-모음/"
+  status = 301
+
+[[redirects]]
+  from = "/ksqldb-소개-en/"
+  to = "/en/ksqldb-소개/"
+  status = 301
+
 [[redirects]]
   from = "/*"
   to = "/404.html"

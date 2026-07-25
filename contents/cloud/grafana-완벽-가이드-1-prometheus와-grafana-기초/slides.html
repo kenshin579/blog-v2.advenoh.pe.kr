@@ -1,0 +1,2351 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prometheus와 Grafana 기초 — Grafana 완벽 가이드 편 1</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 따뜻한 표시등
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #C24A12;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(194, 74, 18, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #FF7A45;
+    --accent-ink:#170A03;
+    --accent-soft: rgba(255, 122, 69, .14);
+    --teal:      #46C7B0;
+    --teal-soft: rgba(70, 199, 176, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #FF7A45;
+  --accent-ink:#170A03;
+  --accent-soft: rgba(255, 122, 69, .14);
+  --teal:      #46C7B0;
+  --teal-soft: rgba(70, 199, 176, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #C24A12;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(194, 74, 18, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: center center;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+/* 높이를 채우는 2단 조판에서는 각 열이 늘어나고, 내용은 열 안에서 세로 중앙에 놓인다 */
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 그림 ──────────────────────────────────────────────────── */
+.figure { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+.figure img {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  background: var(--surface-2);
+}
+.figure figcaption, .cap {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.fit img { max-height: 100%; }
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+
+/* ── 트리 ──────────────────────────────────────────────────── */
+.tree { font-family: var(--f-mono); font-size: 15px; line-height: 2.05; }
+.tree .lv { display: block; white-space: pre; }
+.tree .k { color: var(--accent); font-weight: 600; }
+.tree .v { color: var(--ink-dim); }
+
+/* ── 쿼리 해부도 ───────────────────────────────────────────── */
+.anat { display: flex; flex-direction: column; gap: 14px; }
+.anat-q {
+  font-family: var(--f-mono);
+  font-size: 24px;
+  letter-spacing: -.01em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.anat-q .p { padding: 3px 2px; border-bottom: 2px solid transparent; }
+.anat-q .p1 { border-bottom-color: var(--accent); }
+.anat-q .p2 { border-bottom-color: var(--teal); }
+.anat-q .p3 { border-bottom-color: var(--amber); }
+.anat-q .p4 { border-bottom-color: var(--ink-faint); }
+.legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.legend .lg-i { display: flex; flex-direction: column; gap: 4px; }
+.legend .lg-b { height: 3px; width: 34px; }
+.legend .lg-n { font-size: 15px; font-weight: 700; }
+.legend .lg-d { font-size: 14px; color: var(--ink-dim); line-height: 1.42; }
+
+/* ── 카디널리티 계산기 ─────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 (Counter 슬라이드) ───────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+
+    <!-- ═══════════ 01 표지 ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">Grafana 완벽 가이드 · 편 1 / 4</div>
+            <h1 class="cover-title">Prometheus와<br />Grafana 기초</h1>
+            <p class="cover-sub">수치를 모으고, 질문하고, 그리기까지<br />— 메트릭 모니터링의 최소 구성 한 바퀴</p>
+            <div class="cover-meta">
+              <span class="chip on">Metrics</span>
+              <span class="chip">PromQL</span>
+              <span class="chip">Grafana Dashboard</span>
+              <span class="chip">docker-compose</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>CPU 사용률</span>
+              <span>last 30m</span>
+            </div>
+            <div class="panel-body"><canvas id="heroCanvas" width="1000" height="464"></canvas></div>
+            <div class="panel-foot">
+              <span>100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">인사 + 오늘 발표는 시리즈 4편 중 1편. 오른쪽 패널이 오늘 끝에 직접 만들게 될 화면이라는 점을 미리 알려주고 시작한다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 문제 제기 ═══════════ -->
+    <div class="holder" data-n="02">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">문제</span><span class="stamp">why monitoring</span></div>
+        <h2 class="slide-title"><code class="inl">top</code>을 치는 순간, 이미 늦었다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>서비스가 느려졌다는 얘기를 듣고 서버에 접속한다</li>
+              <li><b>지금</b> CPU가 몇 퍼센트인지는 보인다</li>
+              <li><b>30분 전</b>에는 어땠는지 알 방법이 없다</li>
+              <li>원인을 찾으려면 과거의 수치가 필요한데, 그게 아무 데도 남아 있지 않다</li>
+            </ul>
+            <pre class="code sm plain"><span class="t-cm">$</span> top
+<span class="t-cm">Processes: 612 total, 3 running</span>
+<span class="t-cm">CPU usage: </span><span class="t-num">78.4%</span><span class="t-cm"> user, 9.1% sys</span>
+
+<span class="t-cm"># 그래서 30분 전에는?</span>
+<span class="t-bad">…기록이 없다</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">모니터링이 하는 일</span>
+            수치를 <b>계속 쌓아두고</b>, 나중에 <b>되감아볼 수 있게</b> 만드는 것.
+          </div>
+        </div>
+        <div class="notes-src">현장 경험으로 공감대를 만드는 슬라이드. "장애 나고 나서 top 쳐본 적 있는 분?"으로 손을 들게 해도 좋다. 핵심은 실시간 값이 아니라 과거 기록이라는 점.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 Observability ═══════════ -->
+    <div class="holder" data-n="03">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">배경</span><span class="stamp">observability</span></div>
+        <h2 class="slide-title">Observability는 세 종류의 데이터로 나뉜다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>요소</th><th>설명</th><th>대표 도구</th><th>오늘</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>Metrics</td><td>시간에 따른 수치 데이터 — CPU, 메모리, 요청 수</td><td>Prometheus, Datadog</td><td>다룬다</td></tr>
+                <tr><td>Logs</td><td>이벤트 기록 — 에러 메시지, 요청 로그</td><td>Loki, ELK Stack</td><td class="faint">편 외</td></tr>
+                <tr><td>Traces</td><td>요청의 흐름 추적 — 서비스 간 호출 경로</td><td>Tempo, Jaeger</td><td class="faint">편 3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">오늘의 범위</span>
+            셋 중 <b>Metrics</b>만. Prometheus로 수치를 모으고 Grafana로 그리는 데까지.
+          </div>
+        </div>
+        <div class="notes-src">셋을 다 설명하려 하지 말 것. "로그와 트레이스는 다른 편에서"라고 선을 긋고 넘어간다. 카디널리티 얘기(15번)에서 로그가 다시 등장한다는 것만 기억.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 시리즈 로드맵 ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">시리즈</span><span class="stamp">4 parts</span></div>
+        <h2 class="slide-title">전체 시리즈 안에서 오늘의 위치</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>편</th><th>제목</th><th>다루는 영역</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>편 1</td><td>Prometheus와 Grafana 기초</td><td>Metrics 기초</td></tr>
+                <tr><td>편 2</td><td>Go 애플리케이션 커스텀 메트릭</td><td>Metrics 심화</td></tr>
+                <tr><td>편 3</td><td>Grafana Tempo 분산 트레이싱</td><td>Traces</td></tr>
+                <tr><td>편 4</td><td>Grafana Pyroscope Continuous Profiling</td><td>Profiles</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="dim" style="margin:0;font-size:17px;">오늘 나오는 화면 중 일부는 편 2에서 만드는 샘플 앱의 메트릭을 미리 당겨 쓴 것이다.
+          오늘 구축하는 환경만으로는 <code class="inl">node-exporter</code>와 Prometheus 자체 메트릭까지 볼 수 있다.</p>
+        </div>
+        <div class="notes-src">Counter/Histogram/Summary 스크린샷은 편 2의 Go 샘플 앱에서 나온 것이라는 점을 여기서 미리 밝혀두면, 뒤에서 "이건 왜 안 보이죠?" 질문이 안 나온다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 목차 ═══════════ -->
+    <div class="holder" data-n="05">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">목차</span><span class="stamp">agenda</span></div>
+        <h2 class="slide-title">오늘 다루는 것</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <p class="card-t">01 — Prometheus 핵심 개념</p>
+              <ul class="bul" style="font-size:17px;">
+                <li>Pull 기반 아키텍처</li>
+                <li>메트릭 타입 4가지</li>
+                <li>Label과 시계열, 카디널리티</li>
+              </ul>
+            </div>
+            <div class="card">
+              <p class="card-t">02 — PromQL</p>
+              <ul class="bul" style="font-size:17px;">
+                <li>쿼리를 이루는 네 조각</li>
+                <li>instant vector와 range vector</li>
+                <li>실전 쿼리 세 개 해부</li>
+              </ul>
+            </div>
+            <div class="card">
+              <p class="card-t">03 — Grafana</p>
+              <ul class="bul" style="font-size:17px;">
+                <li>Data Source 연동</li>
+                <li>Dashboard · Row · Panel · Query</li>
+                <li>Variables로 대시보드 재사용</li>
+              </ul>
+            </div>
+            <div class="card">
+              <p class="card-t">04 — 실전 구축</p>
+              <ul class="bul" style="font-size:17px;">
+                <li>docker-compose 파일 하나로 띄우기</li>
+                <li>node-exporter 메트릭 수집</li>
+                <li>시스템 모니터링 대시보드 4패널</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">1·2장이 개념, 3·4장이 실습. 시간이 모자라면 2장 실전 쿼리(24~26)를 줄이고 4장 실습을 살린다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 챕터 1 ═══════════ -->
+    <div class="holder" data-n="06" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Prometheus 핵심 개념</h2>
+            <p class="chap-d">메트릭이 어떻게 들어오고, 어떤 모양으로 저장되는가.
+            여기를 이해하면 뒤의 PromQL과 대시보드는 그 위에 얹히는 이야기다.</p>
+          </div>
+        </div>
+        <div class="notes-src">이 장이 오늘의 뿌리. 특히 "시계열 하나"의 정의(14번)와 카디널리티(15번)는 나중에 사고를 막아주는 내용이라 시간을 아끼지 말 것.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 아키텍처 ═══════════ -->
+    <div class="holder" data-n="07">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">architecture</span></div>
+        <h2 class="slide-title">메트릭을 <span class="em">직접 가져온다</span> — Pull 방식</h2>
+        <p class="slide-lede">대상이 <code class="inl">/metrics</code> HTTP 엔드포인트만 열어두면, Prometheus가 주기적으로 그 주소를 호출해(scrape) 값을 긁어온다. 대상 쪽은 어디로 보낼지 몰라도 된다.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Node Exporter</span><span class="n-p">:9100/metrics</span></div>
+              <div class="node"><span class="n-t">Go Application</span><span class="n-p">:8080/metrics</span></div>
+              <div class="node"><span class="n-t">MySQL Exporter</span><span class="n-p">:9104/metrics</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">scrape</span><span class="l-line"></span><span class="l-lbl">매 15초</span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">Prometheus</span><span class="n-p">:9090 · TSDB · PromQL 엔진</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">query</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Grafana</span><span class="n-p">:3000 · 대시보드</span></div>
+              <div class="node"><span class="n-t">Alertmanager</span><span class="n-p">:9093 · 알림 규칙</span></div>
+              <div class="node mute"><span class="n-t">Slack / Email</span><span class="n-p">notify</span></div>
+            </div>
+          </div>
+          <p class="cap">화살표는 <b>데이터가 흐르는 방향</b>이다. 호출은 반대로 일어난다 — Prometheus가 타겟의 <code class="inl">/metrics</code>를 부른다.</p>
+        </div>
+        <div class="notes-src">Exporter는 "번역기"라고 설명하면 잘 통한다. 대상 시스템의 상태를 Prometheus가 읽을 수 있는 텍스트 포맷으로 바꿔주는 역할. 오늘 실습에서는 node-exporter 하나만 띄운다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 Pull vs Push ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">pull vs push</span></div>
+        <h2 class="slide-title">Pull과 Push는 무엇을 맞바꾸는가</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>비교 항목</th><th>Pull — Prometheus</th><th>Push — Datadog, InfluxDB</th></tr></thead>
+              <tbody>
+                <tr><td>데이터 흐름</td><td>서버가 타겟에서 가져감</td><td>타겟이 서버에 보냄</td></tr>
+                <tr><td>서비스 디스커버리</td><td>필요 — 어디를 scrape할지 알아야 함</td><td>불필요 — 타겟이 직접 전송</td></tr>
+                <tr><td>네트워크 요구</td><td>서버 → 타겟 접근 필요</td><td>타겟 → 서버 접근 필요</td></tr>
+                <tr><td>장점</td><td class="hl">타겟 상태 확인 가능 — scrape 실패 = 장애</td><td>방화벽 뒤 환경에서 유리</td></tr>
+                <tr><td>단점</td><td>방화벽 뒤 타겟 수집 어려움</td><td>타겟 장애 시 데이터 유실 감지 어려움</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">기억할 한 줄</span>
+            Push 방식은 타겟이 조용해졌을 때 그게 <b>장애인지 트래픽이 없는 건지</b> 구분하기 어렵다. Pull은 호출 실패 자체가 신호다.
+          </div>
+        </div>
+        <div class="notes-src">퀴즈 Q1과 직결되는 슬라이드. 반대로 Kubernetes CronJob처럼 짧게 살았다 죽는 워크로드는 Pull이 불리하고, 그때 Pushgateway를 쓴다는 예외도 한 줄 언급할 수 있다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 메트릭 타입 개요 ═══════════ -->
+    <div class="holder" data-n="09">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">metric types</span></div>
+        <h2 class="slide-title">메트릭 타입은 넷뿐이다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>타입</th><th>특징</th><th>사용 예시</th><th>주요 함수</th></tr></thead>
+              <tbody>
+                <tr><td>Counter</td><td>감소 없이 증가만 한다 (재시작하면 0)</td><td>HTTP 요청 수, 에러 수</td><td class="num-col">rate(), increase()</td></tr>
+                <tr><td>Gauge</td><td>오르내린다</td><td>CPU 사용률, 메모리, 활성 연결 수</td><td class="num-col">직접 조회, avg_over_time()</td></tr>
+                <tr><td>Histogram</td><td>값의 분포를 버킷에 나눠 담는다</td><td>응답 시간, 요청 크기</td><td class="num-col">histogram_quantile()</td></tr>
+                <tr><td>Summary</td><td>분위수를 미리 계산해 저장한다</td><td>응답 시간 (클라이언트 계산)</td><td class="num-col">직접 조회</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">실무 감각</span>
+            넷을 다 쓰지는 않는다. 실제로 손이 가는 건 <b>Counter</b>와 <b>Histogram</b> 둘이다.
+          </div>
+        </div>
+        <div class="notes-src">여기서는 표만 훑고 넘어간다. 다음 다섯 장에서 하나씩 실제 그래프로 보여줄 거라고 예고할 것.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 Counter (토글) ═══════════ -->
+    <div class="holder" data-n="10">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 메트릭 타입</span><span class="stamp">counter</span></div>
+        <h2 class="slide-title">Counter — 답은 값이 아니라 <span class="em">기울기</span>에 있다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <div class="toggle">
+                <button class="tg" type="button" data-swap="cnt" data-target="raw" aria-pressed="true">누적값 그대로</button>
+                <button class="tg" type="button" data-swap="cnt" data-target="rate" aria-pressed="false">rate() 적용</button>
+              </div>
+              <div class="swap" data-swap-group="cnt">
+                <div class="swap-i on stack tight" data-swap-item="raw">
+                  <pre class="code sm">http_requests_total</pre>
+                  <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">읽어낼 수 있는 건 “계속 올라간다” 정도다.
+                  14시 11분에 바닥으로 떨어진 건 <b>애플리케이션 재시작</b>이다.</p>
+                </div>
+                <div class="swap-i stack tight" data-swap-item="rate">
+                  <pre class="code sm"><span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>])</pre>
+                  <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">초당 5~10건, 실제 요청량이 드러난다.
+                  재시작 지점에서도 선이 튀지 않는다 — <b>카운터 리셋을 자동 보정</b>하기 때문.</p>
+                </div>
+              </div>
+              <div class="callout">
+                <span class="lbl">규칙</span>
+                Counter를 보면 <code class="inl">rate()</code>부터 떠올린다.
+              </div>
+            </div>
+            <div class="figure fit swap" data-swap-group="cnt">
+              <img class="swap-i on" data-swap-item="raw" src="counter-cumulative.png" alt="http_requests_total 누적값을 그대로 그린 Grafana 패널" />
+              <img class="swap-i" data-swap-item="rate" src="counter-rate.png" alt="rate()로 초당 증가율을 계산한 Grafana 패널" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">두 버튼을 번갈아 눌러 같은 데이터의 두 얼굴을 비교해 보여준다. 청중에게 먼저 "누적 그래프에서 지금 요청량을 읽을 수 있나요?"를 물어본 뒤 rate()로 넘어가면 효과가 크다. 퀴즈 Q2와 연결.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 Gauge ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 메트릭 타입</span><span class="stamp">gauge</span></div>
+        <h2 class="slide-title">Gauge — 값 자체가 곧 답이다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <ul class="bul">
+                <li>지금 이 순간의 값이라 <b>오르내린다</b></li>
+                <li>CPU 사용률, 메모리 사용량, 활성 연결 수</li>
+                <li>Counter와 달리 <code class="inl">rate()</code>를 씌울 일이 없다</li>
+              </ul>
+              <pre class="code sm"><span class="t-cm"># 현재 활성 요청 수</span>
+http_requests_in_flight
+
+<span class="t-cm"># 5분 평균</span>
+<span class="t-fn">avg_over_time</span>(node_cpu_seconds_total{<span class="t-str">mode="idle"</span>}[<span class="t-num">5m</span>])</pre>
+              <p class="cap">여기서도 14시 11분 재시작 지점에 메모리가 잠깐 줄었다 다시 차오르는 게 보인다.</p>
+            </div>
+            <div class="figure fit">
+              <img src="gauge-memory.png" alt="사용 중인 메모리를 보여주는 Gauge 패널" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">가장 직관적인 타입이라 빠르게 넘어가도 된다. 다만 23번에서 "Gauge에 rate()를 씌워도 에러가 안 난다"는 함정이 나오므로 여기서 "쓸 일이 없다"를 확실히 각인시켜 둔다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 Histogram ═══════════ -->
+    <div class="holder" data-n="12">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 메트릭 타입</span><span class="stamp">histogram</span></div>
+        <h2 class="slide-title">Histogram — 버킷은 <span class="em">누적</span>이다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <ul class="bul">
+                <li>저장하는 건 <b>버킷별 개수</b>뿐. 백분위수는 쿼리 시점에 계산한다</li>
+                <li><code class="inl">le="0.5"</code> 버킷 = <b>0.5초 이하 전부</b>. 0.25~0.5초 구간이 아니다</li>
+                <li>분포를 눈으로 보려면 패널 Format을 <code class="inl">Heatmap</code>으로</li>
+              </ul>
+              <pre class="code sm"><span class="t-cm"># P99 응답 시간</span>
+<span class="t-fn">histogram_quantile</span>(<span class="t-num">0.99</span>,
+  <span class="t-fn">rate</span>(http_request_duration_seconds_bucket[<span class="t-num">5m</span>]))</pre>
+              <div class="callout">
+                <span class="lbl">읽는 법</span>
+                진한 구간이 요청이 몰린 응답 시간대. <b>10~25ms</b>와 <b>250~500ms</b> 두 군데가 따로 진하다 — 조회 API와 주문 생성 API다.
+                평균 하나만 봤다면 100ms 언저리 숫자 하나로 뭉개졌을 것.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="histogram-heatmap.png" alt="응답 시간 분포를 보여주는 Heatmap 패널" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">"평균의 함정"을 보여주는 슬라이드. 쌍봉 분포가 평균으로 뭉개지는 사례는 어디서나 공감을 얻는다. 퀴즈 Q3과 연결.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 Summary ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 메트릭 타입</span><span class="stamp">summary</span></div>
+        <h2 class="slide-title">Summary — 이미 계산이 끝나서 <span class="em">합칠 수 없다</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>비교 항목</th><th>Histogram</th><th>Summary</th></tr></thead>
+                  <tbody>
+                    <tr><td>분위수 계산 위치</td><td>서버 (쿼리 시점)</td><td>클라이언트 (수집 시점)</td></tr>
+                    <tr><td>여러 인스턴스 합산</td><td class="hl-teal">가능</td><td class="hl">불가능</td></tr>
+                    <tr><td>버킷/분위수 변경</td><td>설정 변경 후 재시작</td><td>코드 변경 필요</td></tr>
+                    <tr><td>권장 사용</td><td>대부분의 경우</td><td>정확한 분위수가 꼭 필요할 때</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="callout">
+                <span class="lbl">판단 기준</span>
+                서버 세 대의 p99를 구하려고 각 서버의 p99를 <b>평균 내면 그건 p99가 아니다.</b>
+                서버가 여러 대라면 Histogram을 쓴다.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="summary-quantile.png" alt="go_gc_duration_seconds를 quantile 라벨별로 그린 Summary 패널" />
+              <figcaption>Go 런타임이 기본으로 내보내는 GC 일시정지 시간. 중앙값은 100µs 근처인데 최댓값은 500µs를 넘나든다.</figcaption>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Summary는 "쓸 일이 거의 없다"로 정리해도 무방하다. 다만 Go 런타임 메트릭에서 저절로 만나게 되므로 알아볼 수는 있어야 한다. 퀴즈 Q4와 연결.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 Label과 시계열 ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">time series</span></div>
+        <h2 class="slide-title">저장 단위는 <span class="em">시계열 하나</span>다</h2>
+        <p class="slide-lede">시계열 = 이름표 하나에 <code class="inl">(시각, 값)</code> 쌍이 계속 붙어 나가는 목록. 그래프의 점 하나하나가 이 목록의 한 줄이다.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <pre class="code xs plain">시각        값
+14:30:00   1,204
+14:30:15   1,251     <span class="t-cm">← 15초마다 한 줄 (scrape 주기)</span>
+14:30:30   1,298
+14:30:45   1,344</pre>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">이름표가 하나뿐이면 “요청이 늘었다”까지만 읽힌다.
+              어느 API가, 그중 실패가 몇 건인지는 이 숫자 안에 없다. 그래서 <b>꼬리표(Label)</b>를 붙인다.</p>
+              <pre class="code xs">http_requests_total{<span class="t-str">method="GET" , path="/api/orders", status="200"</span>}
+http_requests_total{<span class="t-str">method="POST", path="/api/orders", status="201"</span>}
+http_requests_total{<span class="t-str">method="POST", path="/api/orders", status="500"</span>}</pre>
+              <div class="callout teal">
+                <span class="lbl">핵심</span>
+                이름은 같지만 Prometheus는 이걸 <b>서로 다른 시계열 세 개</b>로 저장한다. 쪼개는 것도 합치는 것도 Label이 있어서 가능하다.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="promql-label-series.png" alt="Prometheus Table 탭에서 하나의 메트릭이 라벨 조합별로 갈라져 나오는 화면" />
+              <figcaption>메트릭 이름은 하나인데, 실제 시계열은 라벨 조합만큼 존재한다.</figcaption>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">여기가 오늘 발표에서 가장 중요한 개념이다. "메트릭 이름 = 시계열"이라고 착각한 채로 PromQL을 쓰면 22번 집계와 25번 나눗셈에서 반드시 막힌다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 카디널리티 ═══════════ -->
+    <div class="holder" data-n="15">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">cardinality</span></div>
+        <h2 class="slide-title">Label의 그늘 — 시계열은 <span class="em">곱셈</span>으로 늘어난다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <div class="stack">
+              <div class="factor"><span>method</span><b>5</b><span>×</span><span>path</span><b>20</b><span>×</span><span>status</span><b>6</b></div>
+              <div class="odo-row">
+                <span class="odo sm" data-odo="600">0</span>
+                <span class="odo-cap">개 시계열 — 이 정도는 괜찮다</span>
+              </div>
+              <div class="rule" style="margin:6px 0;"></div>
+              <div class="factor"><span>+ user_id</span><b>100,000</b><span>을 붙이면</span></div>
+              <div class="odo-row">
+                <span class="odo" data-odo="60000000">0</span>
+              </div>
+              <p class="dim" style="margin:0;font-size:16.5px;">시계열 하나하나가 메모리를 차지한다. Prometheus는 그대로 주저앉는다.
+              이걸 <b>카디널리티 폭발</b>이라고 부른다.</p>
+            </div>
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">판단 기준은 하나</span>
+                이 Label의 값이 <b>몇 가지인지 미리 셀 수 있는가?</b>
+              </div>
+              <div class="cols c-2" style="gap:16px;">
+                <div class="card">
+                  <p class="card-t" style="color:var(--teal);">Label로 써도 된다</p>
+                  <ul class="bul teal" style="font-size:16px;">
+                    <li><code class="inl">method</code></li>
+                    <li><code class="inl">status</code></li>
+                    <li><code class="inl">path</code></li>
+                  </ul>
+                </div>
+                <div class="card">
+                  <p class="card-t" style="color:var(--accent);">로그로 보내라</p>
+                  <ul class="bul" style="font-size:16px;">
+                    <li><code class="inl">user_id</code></li>
+                    <li><code class="inl">session_id</code></li>
+                    <li>이메일 · IP 주소</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">숫자가 올라가는 동안 잠깐 멈춰 청중이 자릿수를 읽게 둔다. 실무에서 Prometheus를 죽이는 1순위 원인이라는 점을 강조. 퀴즈 Q5와 연결.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 메트릭 이름 ═══════════ -->
+    <div class="holder" data-n="16">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">naming</span></div>
+        <h2 class="slide-title">그 이름들은 어디서 오는가</h2>
+        <p class="slide-lede"><code class="inl">http_requests_total</code>은 Prometheus에 미리 들어 있는 게 아니다. 전부 누군가 코드에 적어 넣은 이름이다.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <pre class="code sm"><span class="t-key">var</span> HttpRequestsTotal = prometheus.NewCounterVec(
+    prometheus.CounterOpts{
+        Name: <span class="t-str">"http_requests_total"</span>,
+        Help: <span class="t-str">"Total number of HTTP requests"</span>,
+    },
+    []<span class="t-key">string</span>{<span class="t-str">"method", "path", "status"</span>},
+)</pre>
+              <p class="cap">세 번째 인자가 이 메트릭이 쓸 Label 이름이다. Prometheus 입장에서 이름은 그냥 문자열이라
+              <code class="inl">my_stuff_counter</code>라고 지었어도 똑같이 동작한다.</p>
+            </div>
+            <div class="stack">
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>공식 명명 규칙</th><th>예</th></tr></thead>
+                  <tbody>
+                    <tr><td>도메인 한 단어를 앞에</td><td class="num-col">node_ · process_ · prometheus_</td></tr>
+                    <tr><td>단위를 복수형으로 뒤에</td><td class="num-col">_seconds · _bytes</td></tr>
+                    <tr><td>누적 카운트는 _total로</td><td class="num-col">http_requests_total</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>이름의 출처</th><th>누가 정하나</th></tr></thead>
+                  <tbody>
+                    <tr><td class="num-col">node_cpu_seconds_total</td><td>exporter 제작자</td></tr>
+                    <tr><td class="num-col">go_gc_duration_seconds</td><td>라이브러리가 자동 등록</td></tr>
+                    <tr><td class="num-col">http_requests_total</td><td>애플리케이션 개발자</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="cap">이름을 외울 필요는 없다. <code class="inl">curl -s :9090/api/v1/metadata</code>로 물어보거나, Prometheus UI 입력창의 자동완성을 쓴다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">"아무도 선언하지 않았는데 go_ 메트릭이 왜 있냐"는 질문이 자주 나온다. Go 클라이언트 라이브러리를 붙이는 순간 런타임 메트릭이 딸려 온다고 답하면 된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 /metrics 원본 ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">exposition format</span></div>
+        <h2 class="slide-title">Prometheus가 실제로 긁어가는 것</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a grow" style="min-height:0;">
+            <pre class="code xs" style="overflow:auto;"><span class="t-cm"># TYPE http_requests_total counter</span>
+http_requests_total{<span class="t-str">method="GET",path="/api/orders",status="200"</span>} <span class="t-num">272</span>
+http_requests_total{<span class="t-str">method="POST",path="/api/orders",status="201"</span>} <span class="t-num">64</span>
+http_requests_total{<span class="t-str">method="POST",path="/api/orders",status="500"</span>} <span class="t-num">8</span>
+
+<span class="t-cm"># TYPE http_requests_in_flight gauge</span>
+http_requests_in_flight <span class="t-num">0</span>
+
+<span class="t-cm"># TYPE http_request_duration_seconds histogram</span>
+..._bucket{<span class="t-str">le="0.1"</span>}   <span class="t-num">7</span>
+..._bucket{<span class="t-str">le="0.25"</span>}  <span class="t-num">32</span>
+..._bucket{<span class="t-str">le="0.5"</span>}   <span class="t-num">72</span>
+..._bucket{<span class="t-str">le="+Inf"</span>}  <span class="t-num">72</span>
+..._sum   <span class="t-num">19.577</span>
+..._count <span class="t-num">72</span>
+
+<span class="t-cm"># TYPE go_gc_duration_seconds summary</span>
+go_gc_duration_seconds{<span class="t-str">quantile="0.5"</span>} <span class="t-num">4.82e-05</span>
+go_gc_duration_seconds_sum   <span class="t-num">8.74e-05</span>
+go_gc_duration_seconds_count <span class="t-num">2</span></pre>
+            <ul class="bul" style="font-size:17px;">
+              <li><b><code class="inl"># TYPE</code> 줄이 타입의 출처다.</b> <code class="inl">#</code>으로 시작하지만 주석이 아니라 메타데이터다</li>
+              <li><b>Counter는 라벨 조합마다 한 줄.</b> 여기서는 세 줄이니 시계열도 셋</li>
+              <li><b>Histogram은 이름 하나가 여러 줄로 펼쳐진다.</b> 버킷 값이 <code class="inl">7 → 32 → 72</code>로 커지다 유지되는 게 <b>누적</b>이다. 72건 전부가 0.5초 안에 끝났다는 뜻</li>
+              <li><b>Summary에는 버킷이 없다.</b> 계산이 끝난 값뿐이라 합칠 원재료가 없다</li>
+              <li><b>Gauge는 지금 값 하나로 끝</b></li>
+            </ul>
+          </div>
+        </div>
+        <div class="notes-src">개념 설명을 다 한 뒤 원본을 보여주면 앞의 이야기가 한 번에 정리된다. 실습 환경이 떠 있다면 여기서 실제로 curl을 쳐 보여주는 게 가장 좋다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 챕터 2 ═══════════ -->
+    <div class="holder" data-n="18" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">PromQL</h2>
+            <p class="chap-d">Grafana 패널 하나가 결국 PromQL 쿼리 한 줄이다.
+            대시보드를 만들려면 이건 피해갈 수 없다.</p>
+          </div>
+        </div>
+        <div class="notes-src">"암호처럼 보이지만 구조는 단순하다"로 문을 연다. 다음 장에서 네 조각으로 분해하는 게 이 장의 뼈대.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 쿼리 해부 ═══════════ -->
+    <div class="holder" data-n="19">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">anatomy</span></div>
+        <h2 class="slide-title">어떤 쿼리든 네 조각의 조합이다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="anat">
+            <div class="anat-q"><span class="p p4">sum by(path)</span> (<span class="p p4">rate</span>(<span class="p p1">http_requests_total</span><span class="p p2">{status="500"}</span><span class="p p3">[5m]</span>))</div>
+            <div class="legend">
+              <div class="lg-i"><span class="lg-b" style="background:var(--accent)"></span><span class="lg-n">메트릭 이름</span><span class="lg-d">무엇을 볼지</span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--teal)"></span><span class="lg-n">라벨 필터</span><span class="lg-d">그중 어떤 시계열만 볼지</span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--amber)"></span><span class="lg-n">시간 범위</span><span class="lg-d">언제부터 언제까지</span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--ink-faint)"></span><span class="lg-n">함수 · 집계</span><span class="lg-d">그 값들을 어떻게 계산할지</span></div>
+            </div>
+            <div class="callout teal" style="margin-top:8px;">
+              <span class="lbl">읽는 순서는 안쪽부터 바깥</span>
+              <code class="inl">http_requests_total</code> 중에서 → <code class="inl">status="500"</code>인 것만 골라 → 최근 5분 구간을 → 초당 증가율로 바꾸고 → <code class="inl">path</code>별로 합친다.
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">이 슬라이드를 이 장의 기준점으로 삼는다. 뒤에 나오는 슬라이드들은 각 조각을 하나씩 확대하는 것이라고 안내하면 흐름이 잡힌다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 라벨 필터 ═══════════ -->
+    <div class="holder" data-n="20">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">selector</span></div>
+        <h2 class="slide-title">조각 1·2 — 중괄호 안의 조건</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>연산자</th><th>뜻</th><th>예시</th></tr></thead>
+                <tbody>
+                  <tr><td class="num-col">=</td><td>값이 같은 것</td><td class="num-col">{method="GET"}</td></tr>
+                  <tr><td class="num-col">!=</td><td>값이 다른 것</td><td class="num-col">{device!="lo"}</td></tr>
+                  <tr><td class="num-col">=~</td><td>정규식에 맞는 것</td><td class="num-col">{status=~"5.."}</td></tr>
+                  <tr><td class="num-col">!~</td><td>정규식에 안 맞는 것</td><td class="num-col">{path!~"/health.*"}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">자주 쓰는 관용구</span>
+                <code class="inl">{status=~"5.."}</code>에서 <code class="inl">.</code>은 아무 문자 하나. 500·502·503이 전부 걸린다 — 즉 <b>“5xx 전체”</b>.
+              </div>
+              <pre class="code sm"><span class="t-cm"># 조건을 쉼표로 이으면 모두 만족하는 것만 남는다</span>
+http_requests_total{<span class="t-str">method="GET"</span>, <span class="t-str">status=~"5.."</span>}</pre>
+              <p class="dim" style="margin:0;font-size:16.5px;">네트워크 패널에서 <code class="inl">device!="lo"</code>로 loopback을 빼는 것도,
+              디스크 패널에서 <code class="inl">mountpoint="/"</code>로 하나만 고르는 것도 전부 이 자리에서 일어난다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">퀴즈 Q7과 연결. 정규식은 부분 매칭이 아니라 완전 매칭(anchored)이라는 점을 덧붙이면 정확하다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 range vector ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">instant vs range</span></div>
+        <h2 class="slide-title">조각 3 — <code class="inl">[5m]</code>이 붙으면 달라지는 것</h2>
+        <p class="slide-lede">PromQL에서 제일 헷갈리는 지점. 함수마다 요구하는 <b>입력의 모양</b>이 다르기 때문이다.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <p class="card-t">instant vector — 지금 값 하나</p>
+              <pre class="code sm plain" style="margin-bottom:10px;">http_requests_total
+<span class="t-cm"># 시계열마다 값 1개 (예: 1,344)</span></pre>
+              <p class="dim" style="margin:0;font-size:16px;">Gauge를 그냥 볼 때는 이걸로 충분하다.</p>
+            </div>
+            <div class="card">
+              <p class="card-t">range vector — 기간에 쌓인 값 전부</p>
+              <pre class="code sm" style="margin-bottom:10px;">http_requests_total[<span class="t-num">5m</span>]
+<span class="t-cm"># 시계열마다 값 20개 (15초 × 5분)</span></pre>
+              <p class="dim" style="margin:0;font-size:16px;"><code class="inl">rate()</code>는 “늘어난 양 ÷ 걸린 시간”이라 값이 최소 둘 필요하다.</p>
+            </div>
+          </div>
+          <div class="cols c-2">
+            <pre class="code sm"><span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>])   <span class="t-cm">✓ 동작</span>
+<span class="t-fn">rate</span>(http_requests_total)       <span class="t-bad">✗ 에러</span></pre>
+            <div class="callout">
+              <span class="lbl">구간은 얼마로 잡나</span>
+              최소한 값이 둘은 들어와야 하니 <b>scrape 주기보다 넉넉히</b>. 15초 주기면 1분 이상, 관례적으로 <b>5분</b>.
+              짧으면 예민하게 튀고, 길면 변화가 뭉개진다.
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">퀴즈 Q6과 연결. "왜 [5m]이 붙어 있냐"는 질문은 반드시 나온다. 여기서 확실히 정리하고 넘어갈 것.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 집계 ═══════════ -->
+    <div class="holder" data-n="22">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">aggregation</span></div>
+        <h2 class="slide-title">조각 4 — 쪼갠 시계열을 다시 합치기</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b">
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>함수</th><th>뜻</th></tr></thead>
+                <tbody>
+                  <tr><td class="num-col">sum()</td><td>전부 더한다</td></tr>
+                  <tr><td class="num-col">avg()</td><td>평균을 낸다</td></tr>
+                  <tr><td class="num-col">max() / min()</td><td>최댓값 / 최솟값</td></tr>
+                  <tr><td class="num-col">count()</td><td>시계열이 몇 개인지 센다</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="stack">
+              <pre class="code sm"><span class="t-fn">sum</span>(<span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>]))
+<span class="t-cm">→ 전체 요청량 · 선 1개</span>
+
+<span class="t-fn">sum</span> <span class="t-key">by</span>(path) (<span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>]))
+<span class="t-cm">→ path별 요청량 · path 수만큼 선</span>
+
+<span class="t-fn">sum</span> <span class="t-key">by</span>(path, status) (...)
+<span class="t-cm">→ path × status 조합별</span></pre>
+              <div class="callout teal">
+                <span class="lbl">by와 without</span>
+                <code class="inl">by</code> = 이 라벨만 <b>남긴다</b>. <code class="inl">without</code> = 이 라벨만 <b>버리고</b> 나머지를 남긴다.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">퀴즈 Q8과 연결. 그냥 sum(...)을 쓰면 라벨을 전부 버려 값 하나로 뭉갠다는 점이 25번 에러율 슬라이드의 복선이 된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 함수 + 타입 함정 ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">functions · 함정</span></div>
+        <h2 class="slide-title">함수 넷이면 대부분 커버된다 — 그리고 한 가지 함정</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>함수</th><th>설명</th><th>쓰는 메트릭 타입</th><th>사용 예시</th></tr></thead>
+              <tbody>
+                <tr><td class="num-col">rate()</td><td>초당 평균 변화율</td><td>Counter</td><td class="num-col">rate(http_requests_total[5m])</td></tr>
+                <tr><td class="num-col">increase()</td><td>지정 기간 총 증가량</td><td>Counter</td><td class="num-col">increase(http_requests_total[1h])</td></tr>
+                <tr><td class="num-col">histogram_quantile()</td><td>백분위수 계산</td><td>Histogram</td><td class="num-col">histogram_quantile(0.99, rate(...))</td></tr>
+                <tr><td class="num-col">avg_over_time()</td><td>지정 기간 평균값</td><td>Gauge</td><td class="num-col">avg_over_time(metric[5m])</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="cols c-2" style="align-items:start;">
+            <div class="callout">
+              <span class="lbl">함정 — “쓰는 메트릭 타입”은 검사되지 않는다</span>
+              Prometheus 서버는 어떤 메트릭이 Counter인지 Gauge인지 <b>알지 못한다.</b>
+              모든 타입을 타입 없는 부동소수점 시계열로 평탄화해 다룬다.
+            </div>
+            <pre class="code sm"><span class="t-fn">rate</span>(node_memory_MemAvailable_bytes[<span class="t-num">5m</span>])
+<span class="t-cm">→ 에러 없음. Gauge인데도 계산된다 (결과는 엉터리)</span>
+
+<span class="t-fn">rate</span>(http_requests_total)
+<span class="t-bad">→ 에러. range vector가 아니다</span></pre>
+          </div>
+          <p class="cap"><b>에러로 걸러주는 건 벡터 타입까지고, 메트릭 타입이 맞는지는 쓰는 사람이 책임진다.</b>
+          이름으로 짐작할 수 있다 — <code class="inl">_total</code>이면 Counter, <code class="inl">_bucket/_sum/_count</code> 세트면 Histogram, <code class="inl">quantile</code> 라벨이 붙어 있으면 Summary.</p>
+        </div>
+        <div class="notes-src">실무에서 조용히 틀린 대시보드가 만들어지는 대표 경로다. Gauge에 rate()를 씌우면 값이 줄어든 구간을 카운터 리셋으로 오해해 보정해버린다는 점까지 설명하면 좋다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 실전 CPU ═══════════ -->
+    <div class="holder" data-n="24">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · 실전 쿼리 1</span><span class="stamp">cpu %</span></div>
+        <h2 class="slide-title">CPU 사용률 — 안쪽부터 한 겹씩</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code"><span class="t-num">100</span> - (<span class="t-fn">avg</span> <span class="t-key">by</span>(instance) (<span class="t-fn">rate</span>(node_cpu_seconds_total{<span class="t-str">mode="idle"</span>}[<span class="t-num">5m</span>])) * <span class="t-num">100</span>)</pre>
+          <div class="cols c-2a grow" style="min-height:0;">
+            <div class="steps">
+              <div class="step"><span class="s-n">1</span><div><div class="s-c">node_cpu_seconds_total{mode="idle"}</div><div class="s-d">CPU가 놀고 있던 누적 시간 중 idle 모드만 고른다</div></div></div>
+              <div class="step"><span class="s-n">2</span><div><div class="s-c">[5m] + rate(...)</div><div class="s-d">5분 구간의 기울기 = 초당 idle 시간. 코어가 8개면 코어마다 시계열이 따로 나온다</div></div></div>
+              <div class="step"><span class="s-n">3</span><div><div class="s-c">avg by(instance)</div><div class="s-d">코어별 값을 서버 단위로 평균. 결과는 0~1, 1이면 완전히 놀고 있다는 뜻</div></div></div>
+              <div class="step"><span class="s-n">4</span><div><div class="s-c">* 100</div><div class="s-d">백분율로 바꾼다</div></div></div>
+              <div class="step"><span class="s-n">5</span><div><div class="s-c">100 - (...)</div><div class="s-d">“논 비율”을 뒤집어 “일한 비율”로 만든다</div></div></div>
+            </div>
+            <div class="figure fit">
+              <img src="prometheus-query-cpu.png" alt="Prometheus Graph 탭에서 CPU 사용률 쿼리를 실행한 결과" />
+              <figcaption>대시보드를 만들기 전에 Prometheus UI에서 쿼리가 원하는 값을 내는지 먼저 보는 편이 빠르다.</figcaption>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">CPU 사용률을 직접 재는 메트릭이 없어서 idle을 뒤집는다는 점이 포인트. 처음 보면 이상해 보이지만 리눅스가 원래 그렇게 보고한다고 설명하면 납득한다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 25 실전 에러율 ═══════════ -->
+    <div class="holder" data-n="25">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · 실전 쿼리 2</span><span class="stamp">error rate · 함정</span></div>
+        <h2 class="slide-title">에러율 — <code class="inl">sum()</code>이 없으면 <span class="em">항상 1</span>이 나온다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code"><span class="t-fn">sum</span>(<span class="t-fn">rate</span>(http_requests_total{<span class="t-str">status=~"5.."</span>}[<span class="t-num">5m</span>]))
+  / <span class="t-fn">sum</span>(<span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>])) * <span class="t-num">100</span></pre>
+          <div class="cols c-2">
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">왜 sum()이 필요한가</span>
+                PromQL의 나눗셈은 양쪽 시계열의 <b>라벨이 전부 같은 것끼리</b> 짝을 짓는다.
+                <code class="inl">sum()</code> 없이 나누면 왼쪽 <code class="inl">{status="500"}</code>은 오른쪽 <code class="inl">{status="500"}</code>과 짝지어진다 — 자기 자신을 나눈 값이니 <b>언제나 1</b>.
+              </div>
+              <pre class="code sm plain"><span class="t-cm"># sum 없이 — 항상 1</span>
+{method="POST", path="/api/orders", status="500"}  <span class="t-bad">1</span>
+
+<span class="t-cm"># sum으로 라벨을 걷어낸 뒤 — 실제 에러율</span>
+{}  <span class="t-num">5.5</span></pre>
+            </div>
+            <div class="stack">
+              <p class="dim" style="margin:0;font-size:17px;"><code class="inl">status</code>를 라벨에서 없애는 게 핵심이라,
+              <code class="inl">sum()</code> 대신 <code class="inl">by</code>로 남길 라벨을 지정해도 된다. 경로별 에러율이 필요하면:</p>
+              <pre class="code sm"><span class="t-fn">sum</span> <span class="t-key">by</span>(path) (<span class="t-fn">rate</span>(http_requests_total{<span class="t-str">status=~"5.."</span>}[<span class="t-num">5m</span>]))
+  / <span class="t-fn">sum</span> <span class="t-key">by</span>(path) (<span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>])) * <span class="t-num">100</span></pre>
+              <div class="callout teal">
+                <span class="lbl">일반화</span>
+                두 쿼리를 나눌 때는 먼저 묻는다 — <b>양쪽 라벨 집합이 같은가?</b>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">"에러율이 계속 100%로 나와요"라는 문의의 90%가 이것이다. 그래프가 1.0에 평평하게 붙어 있으면 이 실수를 의심하라고 알려준다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 26 실전 메모리/디스크 ═══════════ -->
+    <div class="holder" data-n="26">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · 실전 쿼리 3</span><span class="stamp">memory · disk</span></div>
+        <h2 class="slide-title">메모리와 디스크 — 어떤 메트릭을 고르느냐가 절반</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <pre class="code sm">(<span class="t-num">1</span> - node_memory_MemAvailable_bytes
+     / node_memory_MemTotal_bytes) * <span class="t-num">100</span></pre>
+              <ul class="bul" style="font-size:16.5px;">
+                <li><code class="inl">rate()</code>가 없다 — 둘 다 Gauge라 지금 값이 곧 답</li>
+                <li>양쪽 라벨이 <code class="inl">instance</code>, <code class="inl">job</code>으로 똑같아 <b>짝이 저절로 맞는다</b>. 에러율 쿼리와 갈린 지점</li>
+                <li><b>MemFree가 아니라 MemAvailable</b> — 리눅스는 남는 메모리를 파일 캐시로 쓰는데, 이 캐시는 필요하면 즉시 회수된다. MemFree로 계산하면 캐시가 찬 서버는 항상 메모리 부족처럼 보인다</li>
+              </ul>
+            </div>
+            <div class="stack">
+              <pre class="code sm">(<span class="t-num">1</span> - node_filesystem_avail_bytes{<span class="t-str">mountpoint="/"</span>}
+     / node_filesystem_size_bytes{<span class="t-str">mountpoint="/"</span>}) * <span class="t-num">100</span></pre>
+              <ul class="bul" style="font-size:16.5px;">
+                <li>계산 방식은 메모리와 같다</li>
+                <li>파일시스템 메트릭은 <b>마운트 지점마다 시계열이 따로</b> 생기므로 <code class="inl">mountpoint</code>로 하나를 지정해야 한다. 안 하면 <code class="inl">/</code>, <code class="inl">/boot</code>, 도커 오버레이까지 다 나온다</li>
+                <li><b>free가 아니라 avail</b> — 리눅스는 일부 블록을 root 전용으로 예약한다. 일반 프로세스가 실제로 쓸 수 있는 양은 avail 쪽</li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">실습 주의</span>
+            docker-compose로 띄운 node-exporter는 컨테이너 안에 갇혀 자기 파일시스템만 본다. 위 디스크 쿼리가 비어 있다면
+            <code class="inl">curl -s :9100/metrics | grep "^node_filesystem_size_bytes"</code>로 실제 마운트 지점부터 확인한다.
+          </div>
+        </div>
+        <div class="notes-src">MemAvailable vs MemFree는 리눅스를 오래 만진 사람도 헷갈리는 부분이라 반응이 좋다. macOS/Windows Docker Desktop에서는 호스트 디스크가 안 보인다는 점도 미리 말해두면 실습 중 질문이 줄어든다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 27 챕터 3 ═══════════ -->
+    <div class="holder" data-n="27" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Grafana</h2>
+            <p class="chap-d">여러 데이터 소스를 붙여 시각화하는 오픈소스 대시보드 도구.
+            Prometheus 말고도 Loki, Tempo, MySQL, Elasticsearch를 붙일 수 있다.</p>
+          </div>
+        </div>
+        <div class="notes-src">Grafana는 데이터를 저장하지 않는다는 점을 짚어준다. 저장은 Prometheus가, 그리기는 Grafana가.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 28 Data Source ═══════════ -->
+    <div class="holder" data-n="28">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · Grafana</span><span class="stamp">data source</span></div>
+        <h2 class="slide-title">Data Source — 대시보드보다 먼저 등록한다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <div class="card">
+                <p class="card-t">방법 1 — UI에서 직접</p>
+                <div class="tree">
+                  <span class="lv"><span class="k">Connections</span> → Data sources → Add</span>
+                  <span class="lv">Prometheus 선택</span>
+                  <span class="lv">URL: <span class="k">http://prometheus:9090</span></span>
+                  <span class="lv">Save &amp; Test</span>
+                </div>
+              </div>
+              <div class="callout">
+                <span class="lbl">포인트</span>
+                <code class="inl">localhost:9090</code>이 아니라 <code class="inl">prometheus:9090</code>.
+                Grafana도 컨테이너 안에서 돌기 때문에 <b>컨테이너 이름</b>으로 찾아가야 한다.
+              </div>
+              <pre class="code xs"><span class="t-cm"># 방법 2 — provisioning 파일로 자동 등록</span>
+<span class="t-key">apiVersion</span>: 1
+<span class="t-key">datasources</span>:
+  - name: <span class="t-str">Prometheus</span>
+    type: <span class="t-str">prometheus</span>
+    access: <span class="t-str">proxy</span>
+    url: <span class="t-str">http://prometheus:9090</span>
+    isDefault: <span class="t-num">true</span></pre>
+            </div>
+            <div class="figure fit">
+              <img src="grafana-datasource-setup.png" alt="Grafana의 Prometheus Data Source 설정 화면" />
+              <figcaption>Save &amp; Test를 누르면 “Successfully queried the Prometheus API”가 뜬다.</figcaption>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">퀴즈 Q9와 연결. 컨테이너 네트워킹을 모르는 청중이 있다면 "docker-compose가 만든 네트워크에서는 서비스 이름이 곧 호스트 이름"이라는 한 줄을 꼭 넣는다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 29 Dashboard 구조 + Panel ═══════════ -->
+    <div class="holder" data-n="29">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · Grafana</span><span class="stamp">dashboard · panel</span></div>
+        <h2 class="slide-title">Dashboard → Row → Panel → Query</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <div class="tree">
+                <span class="lv"><span class="k">Dashboard</span>  <span class="v">JSON으로 내보내기/가져오기 가능</span></span>
+                <span class="lv">├─ <span class="k">Row</span>  <span class="v">Panel을 묶는 접이식 영역</span></span>
+                <span class="lv">│   ├─ <span class="k">Panel</span>  <span class="v">하나의 시각화 단위</span></span>
+                <span class="lv">│   │   └─ <span class="k">Query</span>  <span class="v">PromQL 한 줄</span></span>
+                <span class="lv">│   └─ <span class="k">Panel</span></span>
+                <span class="lv">└─ <span class="k">Row</span></span>
+              </div>
+              <div class="callout teal">
+                <span class="lbl">기억할 한 줄</span>
+                Panel 하나 = <b>PromQL 쿼리 하나</b>. 대시보드를 만드는 일은 결국 쿼리를 쓰는 일이다.
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl sm">
+                <thead><tr><th>Panel 타입</th><th>적합한 데이터</th></tr></thead>
+                <tbody>
+                  <tr><td>Time series</td><td>CPU 사용률, 요청 수, 응답 시간</td></tr>
+                  <tr><td>Stat</td><td>현재 가동 시간, 총 요청 수</td></tr>
+                  <tr><td>Gauge</td><td>디스크 사용률, 메모리 사용률</td></tr>
+                  <tr><td>Table</td><td>인스턴스별 상태, Top N 목록</td></tr>
+                  <tr><td>Bar chart</td><td>서비스별 에러 수, 엔드포인트별 요청 수</td></tr>
+                  <tr><td>Heatmap</td><td>응답 시간 분포, Histogram 버킷</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">대시보드를 JSON으로 내보낼 수 있다는 점은 실무에서 매우 중요하다 — 코드로 관리하고 provisioning으로 배포한다는 흐름을 한 줄 언급.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 30 Variables ═══════════ -->
+    <div class="holder" data-n="30">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · Grafana</span><span class="stamp">variables</span></div>
+        <h2 class="slide-title">Variables — 대시보드 하나로 서버 스무 대</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>항목</th><th>값</th></tr></thead>
+                  <tbody>
+                    <tr><td>Name</td><td class="num-col">instance</td></tr>
+                    <tr><td>Type</td><td>Query</td></tr>
+                    <tr><td>Data source</td><td>Prometheus</td></tr>
+                    <tr><td>Query</td><td class="num-col">label_values(node_cpu_seconds_total, instance)</td></tr>
+                    <tr><td>Multi-value</td><td>활성화</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <pre class="code xs"><span class="t-num">100</span> - (<span class="t-fn">avg</span> <span class="t-key">by</span>(instance) (<span class="t-fn">rate</span>(node_cpu_seconds_total{
+    <span class="t-str">mode="idle"</span>, <span class="t-str">instance=~"$instance"</span>}[<span class="t-num">5m</span>])) * <span class="t-num">100</span>)</pre>
+              <p class="cap">드롭다운에서 인스턴스를 고르면 그 인스턴스의 메트릭만 남는다.
+              서버를 늘리면 <code class="inl">label_values()</code>가 찾아낸 만큼 항목도 따라 늘어난다.</p>
+            </div>
+            <div class="figure fit">
+              <img src="grafana-variables-dropdown.png" alt="대시보드 상단에 생긴 instance 변수 드롭다운" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">서버가 한 대일 때는 필요를 못 느끼지만, 대시보드를 서버 수만큼 복제하기 시작하면 그때가 늦은 시점이라는 점을 말해준다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 31 챕터 4 ═══════════ -->
+    <div class="holder" data-n="31" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">실전 — 로컬 환경 구축</h2>
+            <p class="chap-d">docker-compose 파일 하나로 Prometheus · Grafana · node-exporter를 띄우고,
+            시스템 모니터링 대시보드 4패널을 만든다.</p>
+          </div>
+        </div>
+        <div class="notes-src">여기서부터는 가능하면 라이브 데모. 미리 이미지를 pull 받아두고, 데모가 실패할 때를 대비해 뒤 슬라이드의 스크린샷으로 대체할 수 있게 준비한다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 32 docker-compose ═══════════ -->
+    <div class="holder" data-n="32">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 실전</span><span class="stamp">docker-compose.yml</span></div>
+        <h2 class="slide-title">서비스 셋이면 끝난다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a grow" style="min-height:0;">
+            <pre class="code xs" style="overflow:auto;"><span class="t-key">services</span>:
+  <span class="t-key">prometheus</span>:
+    image: <span class="t-str">prom/prometheus:v2.51.0</span>
+    ports: [<span class="t-str">"9090:9090"</span>]
+    volumes:
+      - <span class="t-str">./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml</span>
+    command:
+      - <span class="t-str">'--config.file=/etc/prometheus/prometheus.yml'</span>
+      - <span class="t-str">'--storage.tsdb.retention.time=7d'</span>
+
+  <span class="t-key">grafana</span>:
+    image: <span class="t-str">grafana/grafana:11.4.0</span>
+    ports: [<span class="t-str">"3000:3000"</span>]
+    environment:
+      - <span class="t-str">GF_SECURITY_ADMIN_PASSWORD=admin</span>
+    volumes:
+      - <span class="t-str">./provisioning:/etc/grafana/provisioning</span>
+
+  <span class="t-key">node-exporter</span>:
+    image: <span class="t-str">prom/node-exporter:v1.8.1</span>
+    ports: [<span class="t-str">"9100:9100"</span>]</pre>
+            <div class="stack">
+              <pre class="code sm"><span class="t-cm">></span> docker compose up -d</pre>
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>서비스</th><th>주소</th></tr></thead>
+                  <tbody>
+                    <tr><td>Prometheus</td><td class="num-col">localhost:9090</td></tr>
+                    <tr><td>Grafana</td><td class="num-col">localhost:3000 · admin/admin</td></tr>
+                    <tr><td>node-exporter</td><td class="num-col">localhost:9100/metrics</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="callout teal">
+                <span class="lbl">보존 기간</span>
+                <code class="inl">--storage.tsdb.retention.time=7d</code> — 로컬 실습이라 7일. 운영에서는 디스크와 맞바꾸는 값이다.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">이미지 태그를 고정했다는 점을 짚어준다. latest로 두면 어제 되던 실습이 오늘 안 된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 33 prometheus.yml ═══════════ -->
+    <div class="holder" data-n="33">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 실전</span><span class="stamp">prometheus.yml</span></div>
+        <h2 class="slide-title">수집 대상은 <code class="inl">scrape_configs</code>에서 정한다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <pre class="code sm"><span class="t-key">global</span>:
+  scrape_interval: <span class="t-num">15s</span>      <span class="t-cm"># 수집 주기</span>
+  evaluation_interval: <span class="t-num">15s</span>  <span class="t-cm"># 알림 규칙 평가 주기</span>
+
+<span class="t-key">scrape_configs</span>:
+  <span class="t-cm"># Prometheus 자체 메트릭</span>
+  - job_name: <span class="t-str">'prometheus'</span>
+    static_configs:
+      - targets: [<span class="t-str">'localhost:9090'</span>]
+
+  <span class="t-cm"># node-exporter 시스템 메트릭</span>
+  - job_name: <span class="t-str">'node-exporter'</span>
+    static_configs:
+      - targets: [<span class="t-str">'node-exporter:9100'</span>]</pre>
+            <div class="stack">
+              <ul class="bul">
+                <li><code class="inl">scrape_interval: 15s</code> — 이 값이 앞에서 본 <b>시계열의 점 간격</b>이 된다</li>
+                <li><code class="inl">job_name</code>은 그대로 <code class="inl">job</code> 라벨이 되어 모든 시계열에 붙는다</li>
+                <li>여기서는 <code class="inl">static_configs</code>지만, 실제 운영에서는 Kubernetes·Consul 같은 <b>서비스 디스커버리</b>를 붙인다</li>
+              </ul>
+              <div class="callout">
+                <span class="lbl">Pull의 대가</span>
+                “어디를 긁을지”를 서버가 알아야 한다 — 그게 이 파일이다. Push 방식에는 없는 파일이다.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">8번의 Pull vs Push 표에서 "서비스 디스커버리 필요"라고 했던 게 구체적으로 이 파일이라는 걸 연결해주면 이해가 붙는다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 34 Targets ═══════════ -->
+    <div class="holder" data-n="34">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 실전</span><span class="stamp">status → targets</span></div>
+        <h2 class="slide-title">문제가 생기면 <span class="em">여기부터</span> 본다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <ul class="bul">
+                <li>Prometheus 웹 UI → <b>Status → Targets</b></li>
+                <li>Endpoint, 마지막 scrape 시각, 걸린 시간까지 여기서 확인된다</li>
+                <li>여기가 <code class="inl">DOWN</code>이면 대시보드를 아무리 만져도 <b>빈 그래프</b>만 나온다</li>
+              </ul>
+              <div class="callout">
+                <span class="lbl">디버깅 순서</span>
+                ① Targets가 UP인가 → ② Prometheus UI에서 쿼리가 값을 내는가 → ③ 그 다음이 Grafana 패널 설정이다.
+                순서를 건너뛰면 시간을 버린다.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="prometheus-targets.png" alt="Prometheus Targets 화면에서 두 타겟이 UP 상태" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">퀴즈 Q10과 연결. 실습 중 가장 많이 나오는 질문이 "그래프가 비어 있어요"인데, 답은 거의 항상 이 화면에 있다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 35 4패널 대시보드 ═══════════ -->
+    <div class="holder" data-n="35">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 실전</span><span class="stamp">first dashboard</span></div>
+        <h2 class="slide-title">서버 한 대를 들여다보는 최소 구성</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack tight">
+              <pre class="code xs"><span class="t-cm"># 1. CPU 사용률 (%)  · Unit: Percent (0-100)</span>
+<span class="t-num">100</span> - (<span class="t-fn">avg</span> <span class="t-key">by</span>(instance) (<span class="t-fn">rate</span>(node_cpu_seconds_total{<span class="t-str">mode="idle"</span>}[<span class="t-num">5m</span>])) * <span class="t-num">100</span>)
+
+<span class="t-cm"># 2. 메모리 사용률 (%)</span>
+(<span class="t-num">1</span> - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * <span class="t-num">100</span>
+
+<span class="t-cm"># 3. 디스크 I/O  · Unit: Bytes/sec (IEC)</span>
+<span class="t-fn">rate</span>(node_disk_read_bytes_total[<span class="t-num">5m</span>])
+<span class="t-fn">rate</span>(node_disk_written_bytes_total[<span class="t-num">5m</span>])
+
+<span class="t-cm"># 4. 네트워크 트래픽  · Unit: Bytes/sec (IEC)</span>
+<span class="t-fn">rate</span>(node_network_receive_bytes_total{<span class="t-str">device!="lo"</span>}[<span class="t-num">5m</span>])
+<span class="t-fn">rate</span>(node_network_transmit_bytes_total{<span class="t-str">device!="lo"</span>}[<span class="t-num">5m</span>])</pre>
+              <div class="callout">
+                <span class="lbl">범례가 지저분하다면</span>
+                디스크·네트워크는 장치 수만큼 시계열이 잡힌다. <code class="inl">device=~"nvme.*|sd.*"</code>로 실제 장치만 남기거나 범례를 끈다.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="grafana-system-dashboard.png" alt="CPU, 메모리, 디스크, 네트워크 4개 패널로 구성된 시스템 모니터링 대시보드" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Unit 설정을 빼먹으면 y축이 그냥 숫자로 나와 읽기 어렵다는 점을 강조. 패널마다 Unit을 지정하는 습관이 대시보드 품질을 크게 바꾼다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 36 정리 ═══════════ -->
+    <div class="holder" data-n="36">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">마무리</span><span class="stamp">recap</span></div>
+        <h2 class="slide-title">오늘 가져갈 것</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <ul class="bul" style="font-size:20px;gap:16px;">
+            <li>Prometheus는 Exporter가 열어둔 <code class="inl">/metrics</code>를 주기적으로 긁어 가는 <b>Pull</b> 방식이다</li>
+            <li>메트릭 타입은 넷이지만 실제로 손이 가는 건 <b>Counter와 Histogram</b>이다</li>
+            <li>PromQL은 <code class="inl">rate()</code> · <code class="inl">increase()</code> · <code class="inl">histogram_quantile()</code> · <code class="inl">avg_over_time()</code> 네 개로 대부분 커버된다</li>
+            <li>Label은 메트릭을 여러 차원으로 쪼개주지만, <b>고유 식별자를 넣는 순간 카디널리티가 터진다</b></li>
+            <li>Grafana 대시보드는 <b>Data Source → Dashboard → Row → Panel → Query</b> 구조다</li>
+            <li>Prometheus + Grafana + node-exporter는 <b>docker-compose 파일 하나</b>로 띄울 수 있다</li>
+          </ul>
+        </div>
+        <div class="notes-src">여섯 줄을 소리 내어 읽는 것만으로 정리가 된다. 여기서 질문을 받기 시작해도 좋다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 37 퀴즈 ═══════════ -->
+    <div class="holder" data-n="37">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">확인</span><span class="stamp">클릭하면 답이 열립니다</span></div>
+        <h2 class="slide-title">스스로 답해보기</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>누적 Counter 그래프가 어느 시점에 바닥으로 뚝 떨어졌다. 무슨 일이 있었나?</span></button>
+              <div class="q-a">애플리케이션이 재시작돼 카운터가 0부터 다시 시작한 것이다. <code class="inl">rate()</code>는 이 단절을 자동 보정하므로 같은 구간에서도 값이 튀지 않는다. <span class="ref">→ 슬라이드 10</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>Histogram에서 <code class="inl">le="0.5"</code> 버킷에는 어떤 요청이 담기나?</span></button>
+              <div class="q-a">0.5초 <b>이하</b> 요청 전부다. 0.25~0.5초 구간만 세는 게 아니다. 버킷이 누적이라 오른쪽으로 갈수록 값이 계속 커진다. <span class="ref">→ 슬라이드 12</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span>서버 세 대의 p99를 구해야 한다. Histogram과 Summary 중 무엇을 쓰나?</span></button>
+              <div class="q-a">Histogram. Summary는 각 서버가 미리 계산한 분위수만 넘기므로 합칠 수 없다 — 세 서버의 p99를 평균 내도 그건 전체 p99가 아니다. <span class="ref">→ 슬라이드 13</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span>요청을 사용자별로 보고 싶어 <code class="inl">user_id</code>를 Label에 넣으려 한다. 왜 말려야 하나?</span></button>
+              <div class="q-a">시계열 수가 Label 값 가짓수의 곱으로 늘기 때문이다. 600개짜리 메트릭에 사용자 10만 명을 곱하면 6천만 개가 된다. 셀 수 없는 값은 로그로 보낸다. <span class="ref">→ 슬라이드 15</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span><code class="inl">rate(http_requests_total)</code>은 왜 에러가 날까?</span></button>
+              <div class="q-a">범위 표기가 없으면 시계열마다 지금 값 하나(instant vector)만 온다. “늘어난 양 ÷ 걸린 시간”을 계산하려면 값이 최소 둘 필요하므로 <code class="inl">[5m]</code>을 붙여 range vector로 만들어야 한다. <span class="ref">→ 슬라이드 21</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q6</span><span>대시보드를 다 만들었는데 패널이 전부 비어 있다. 어디부터 확인하나?</span></button>
+              <div class="q-a">Prometheus 웹 UI의 <b>Status → Targets</b>. 타겟이 <code class="inl">DOWN</code>이면 애초에 데이터가 없는 것이라 쿼리나 패널 설정을 만져도 소용없다. <span class="ref">→ 슬라이드 34</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">청중에게 먼저 답하게 한 뒤 클릭해서 연다. 시간이 없으면 Q4와 Q6 두 개만 골라도 충분하다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 38 다음 편 ═══════════ -->
+    <div class="holder" data-n="38">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">다음</span><span class="stamp">part 2</span></div>
+        <h2 class="slide-title">다음 편 — Go 애플리케이션 커스텀 메트릭</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <p class="dim" style="margin:0;font-size:18px;line-height:1.6;">node-exporter가 주는 시스템 메트릭에서 한 걸음 더 들어가,
+              <b>Go 애플리케이션에 직접 메트릭을 심는다.</b> HTTP 요청 수와 응답 시간은 물론
+              주문 건수 같은 <b>비즈니스 지표</b>까지 계측해서 Grafana에 올려본다.</p>
+              <div class="callout">
+                <span class="lbl">오늘 본 화면 중</span>
+                Counter · Histogram · Summary 스크린샷이 바로 그 샘플 앱에서 나온 것이다.
+              </div>
+            </div>
+            <div class="card">
+              <p class="card-t">참고 자료</p>
+              <ul class="bul" style="font-size:16.5px;gap:9px;">
+                <li>전체 코드 — <code class="inl">github.com/kenshin579/tutorials-go</code> <span class="faint">/monitoring/grafana-metrics</span></li>
+                <li>Prometheus 공식 문서 — <code class="inl">prometheus.io/docs</code></li>
+                <li>PromQL 쿼리 가이드 — <code class="inl">prometheus.io/docs/prometheus/latest/querying/basics</code></li>
+                <li>Grafana 공식 문서 — <code class="inl">grafana.com/docs/grafana/latest</code></li>
+                <li>node-exporter — <code class="inl">github.com/prometheus/node_exporter</code></li>
+                <li>Dashboard Best Practices — <code class="inl">grafana.com/docs/grafana/latest/dashboards/build-dashboards/best-practices</code></li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">감사합니다</span>
+            질문 환영합니다 — <code class="inl">advenoh.pe.kr</code>
+          </div>
+        </div>
+        <div class="notes-src">GitHub 저장소 주소를 화면에 띄워둔 채로 Q&amp;A를 받는다.</div>
+      </section>
+    </div>
+
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">발표자 노트</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">Prometheus &amp; Grafana 기초</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 38</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="개요 (O)">개요</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="발표자 노트 (N)">노트</button>
+      <button class="kbtn" id="btnTheme" type="button" title="테마 전환 (T)">테마</button>
+      <button class="kbtn" id="btnHelp" type="button" title="단축키 (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>단축키</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>다음 슬라이드</dd>
+        <dt>← · PgUp</dt><dd>이전 슬라이드</dd>
+        <dt>Home · End</dt><dd>처음 · 마지막</dd>
+        <dt>O</dt><dd>전체 슬라이드 개요</dd>
+        <dt>N</dt><dd>발표자 노트</dd>
+        <dt>T</dt><dd>밝은 테마 / 어두운 테마</dd>
+        <dt>F</dt><dd>전체 화면</dd>
+        <dt>Esc</dt><dd>닫기</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "슬라이드 " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    stage.style.transform = "scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 카디널리티 카운터 ─────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 이미지 토글 ───────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지 스파크라인 ───────────────────────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+
+    var accent = css("--accent") || "#FF7A45";
+    var line   = css("--line") || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+
+    /* 격자 */
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    var i, y, x;
+    for (i = 1; i <= 4; i++) {
+      y = Math.round((H / 5) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (i = 1; i <= 5; i++) {
+      x = Math.round((W / 6) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    /* 결정적인 CPU 곡선 (난수 없이 재현 가능하게) */
+    var N = 180, pts = [];
+    for (i = 0; i < N; i++) {
+      var t = i / (N - 1);
+      var v = 0.42
+        + 0.16 * Math.sin(t * 8.1 + 0.6)
+        + 0.09 * Math.sin(t * 21.3 + 1.9)
+        + 0.05 * Math.sin(t * 47.7 + 4.2)
+        + 0.10 * Math.exp(-Math.pow((t - 0.68) * 9, 2));
+      v = Math.max(0.08, Math.min(0.92, v));
+      pts.push([6 + t * (W - 12), H - v * H]);
+    }
+
+    var steps = reduce ? N : 0;
+    function render(n) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = line;
+      for (i = 1; i <= 4; i++) {
+        y = Math.round((H / 5) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      for (i = 1; i <= 5; i++) {
+        x = Math.round((W / 6) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      var m = Math.max(2, n);
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, accent + "55");
+      grad.addColorStop(1, accent + "00");
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], H);
+      for (i = 0; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(pts[m - 1][0], H);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.4;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      /* 마지막 점 강조 */
+      ctx.beginPath();
+      ctx.arc(pts[m - 1][0], pts[m - 1][1], 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = accent;
+      ctx.fill();
+
+      ctx.font = "500 20px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.fillText("100%", 8, 22);
+      ctx.fillText("0", 8, H - 8);
+    }
+
+    if (reduce) { render(N); return; }
+    var n0 = 2, t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1100);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(n0, Math.round(N * e)));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>
