@@ -72,7 +72,12 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
           // 슬라이드 데크와 본문 마커의 짝이 맞는지 검사한다 (경고만, 빌드는 계속)
           const slidesFile = lang === 'en' ? 'slides_en.html' : 'slides.html';
           const hasSlidesFile = fs.existsSync(path.join(dirPath, slidesFile));
-          const hasSlidesMarker = /<!--\s*slides\s*-->/.test(content);
+          // 코드펜스 안의 마커 예시를 실제 마커로 오탐하지 않도록 코드부터 제거한다.
+          // (제거 순서는 scripts/generate-search-index.ts 와 동일)
+          const contentWithoutCode = content
+            .replace(/```[\s\S]*?```/g, '')
+            .replace(/`[^`]+`/g, '');
+          const hasSlidesMarker = /<!--\s*slides\s*-->/.test(contentWithoutCode);
 
           if (hasSlidesFile && !hasSlidesMarker) {
             console.warn(
