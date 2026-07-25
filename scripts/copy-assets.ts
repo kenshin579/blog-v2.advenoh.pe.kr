@@ -109,7 +109,7 @@ function copyFiles(files: Map<string, string>, destRoot: string) {
       }
     }
 
-    // 이미지 복사
+    // 파일 복사
     try {
       fs.copyFileSync(sourcePath, destPath);
       // 원본 파일의 mtime 보존
@@ -159,6 +159,8 @@ function main() {
   if (slides.size > 0) {
     const { copiedCount, skippedCount } = copyFiles(slides, publicDir);
     console.log(`✅ Slides copied: ${copiedCount}, skipped: ${skippedCount}`);
+  } else {
+    console.log('ℹ️  No slides to copy from contents/');
   }
 
   // Copy default image
