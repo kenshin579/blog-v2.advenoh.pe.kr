@@ -68,6 +68,9 @@ function replaceSlidesMarker(
 
   const t = getDictionary(lang);
   // slug 은 {category}/{글폴더} 형태. URL 에는 글폴더만 쓴다.
+  // 같은 규칙을 lib/articles.ts 의 getArticleTitleFromSlug() 와
+  // scripts/copy-assets.ts 도 각자 구현한다. 한 곳을 바꾸면 나머지도 맞춰야 한다.
+  // (articles.ts 가 이 파일을 import 하므로 역참조하면 순환 임포트가 된다)
   const articleDir = slug.split('/').pop() ?? slug;
   const src = lang === 'en' ? `/en/${articleDir}/slides/` : `/${articleDir}/slides/`;
   const safeTitle = escapeHtmlAttribute(title);
