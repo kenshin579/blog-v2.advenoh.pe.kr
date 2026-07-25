@@ -526,7 +526,7 @@ PrivateModule := fx.Module("private",
 )
 ```
 
-`*internalDB`는 `PrivateModule` 안의 `newModuleService`만 주입받을 수 있다. Module 외부에서 `*internalDB`를 직접 요청하면 fx는 의존성 그래프 구성 시점에 에러를 반환한다(`fx.Populate`는 §2.8.3에서 다룬다).
+`*internalDB`는 `PrivateModule` 안의 `newModuleService`만 주입받을 수 있다. Module 외부에서 `*internalDB`를 직접 요청하면 fx는 의존성 그래프 구성 시점에 에러를 반환한다(`fx.Populate`는 4.3에서 다룬다).
 
 ```go
 // fx_test.go
@@ -640,7 +640,81 @@ app := fxtest.New(t,
 | 인스턴스를 외부 변수로 꺼내는 게 목적 | `fx.Populate` |
 | 추출 후 함수 호출이나 추가 검증을 같은 시점에 수행 | `fx.Invoke` |
 
-# 5. 마무리
+# 5. 퀴즈
+
+여기까지 읽었으면 아래 질문에 답할 수 있어야 한다. 펼치기 전에 먼저 스스로 답해보고, 막히면 괄호 안의 절로 돌아가면 된다.
+
+<details>
+<summary><b>Q1.</b> <code>fx.Provide()</code>에 생성자를 잔뜩 등록했는데 앱을 띄워도 아무것도 실행되지 않는다. 왜일까?</summary>
+
+**A.** `fx.Provide`는 등록만 하고 실행은 미루는 lazy 등록이기 때문이다. 그래프가 실제로 조립되려면 그 타입을 요구하는 쪽이 있어야 하고, 그 시작점이 `fx.Invoke`다. 부수 효과(서버 기동·라우터 등록)를 담당하는 `Invoke`가 하나도 없으면 어떤 생성자도 호출되지 않는다. (2.2)
+
+</details>
+
+<details>
+<summary><b>Q2.</b> <code>fx.Provide</code>와 <code>fx.Supply</code>는 무엇이 다른가?</summary>
+
+**A.** `Provide`는 **생성자 함수**를 등록하고, fx가 그 함수의 반환 타입을 보고 그래프에 연결한다. `Supply`는 **이미 만들어진 값**을 그대로 등록한다. 설정 구조체나 상수처럼 생성 로직이 따로 없는 값에는 `Supply`가 맞다. (2.2)
+
+</details>
+
+<details>
+<summary><b>Q3.</b> fx는 생성자를 어떤 순서로 호출할지 어떻게 결정하나?</summary>
+
+**A.** 각 생성자의 **매개변수 타입과 반환 타입**만 본다. `database.New(cfg *config.Config)`는 `*config.Config`를 요구하므로 그 타입을 반환하는 `config.New()`가 먼저 호출된다. 등록 순서는 상관없고, 순환 의존성이 있으면 앱 시작 시점에 에러로 알려준다. (2.3)
+
+</details>
+
+<details>
+<summary><b>Q4.</b> <code>registerHooks</code>를 <code>fx.Invoke</code>로 등록했다. 서버는 정확히 언제 뜨나?</summary>
+
+**A.** 두 시점으로 나뉜다. `Invoke` 함수 본문은 `fx.New()` 호출 시점에 즉시 실행되지만, 거기서 하는 일은 `Lifecycle`에 훅을 *등록*하는 것뿐이다. `OnStart` 본문(실제 서버 기동)은 이후 `app.Start(ctx)`가 호출될 때 실행된다. `fx.Lifecycle`이 2단계 구조인 이유가 이것이다. (2.4)
+
+</details>
+
+<details>
+<summary><b>Q5.</b> 도메인별로 <code>fx.Module</code>을 나눴는데, 다른 Module이 같은 DB 핸들을 주입받아 버렸다. 무엇을 빠뜨렸나?</summary>
+
+**A.** `fx.Module`은 이름을 붙여 묶어줄 뿐, 안에 있는 `fx.Provide`는 기본적으로 전역 그래프에 노출된다. 모듈 내부 전용으로 감추려면 같은 `fx.Provide()` 그룹에 `fx.Private`을 넣어야 한다. 그러면 외부에서 그 타입을 요청할 때 그래프 구성 단계에서 에러가 난다. (3.1, 3.5)
+
+</details>
+
+<details>
+<summary><b>Q6.</b> 기존 Repository 코드를 한 줄도 건드리지 않고 로깅을 붙이고 싶다.</summary>
+
+**A.** `fx.Decorate`다. 원본 의존성을 매개변수로 받아 래핑한 **같은 타입**을 반환하면 fx가 그래프의 해당 노드를 교체한다. 이 의존성을 주입받는 쪽(`UserService`)은 코드 변경 없이 래퍼를 받게 된다. (3.2)
+
+</details>
+
+<details>
+<summary><b>Q7.</b> 같은 <code>*DBConnection</code> 타입인 read용·write용 커넥션을 각각 주입받으려면?</summary>
+
+**A.** `fx.Annotate`와 `fx.ResultTags`로 생성자마다 `name:"readDB"` 같은 이름을 붙이고, 수신 측은 `fx.In`을 임베드한 구조체의 필드에 `name` 태그를 달아 매칭한다. 타입이 같아도 이름으로 구분되므로 충돌하지 않는다. (3.3)
+
+</details>
+
+<details>
+<summary><b>Q8.</b> <code>Notifier</code> 구현체가 셋인데 전부 한꺼번에 주입받고 싶다. <code>name:</code> 태그로 되나?</summary>
+
+**A.** 되긴 하지만 나쁜 방법이다. 구현체마다 다른 이름을 붙이고 수신 측에서 필드를 하나씩 받아야 해서, 구현체가 늘 때마다 수신 코드를 고쳐야 한다. `fx.ResultTags`에 `group:"notifiers"`를 달아 등록하고 수신 측은 같은 태그를 붙인 `[]Notifier` 슬라이스 필드로 받으면, 새 구현체를 추가해도 수신 코드는 그대로다. (3.4)
+
+</details>
+
+<details>
+<summary><b>Q9.</b> 테스트에서 실제 Repository 대신 Mock을 넣으려는데, <code>fx.Replace(&mockUserRepo{})</code>만으로는 왜 부족한가?</summary>
+
+**A.** fx는 타입으로 매칭하는데 `&mockUserRepo{}`의 타입은 `*mockUserRepo`이지 `UserRepository` 인터페이스가 아니기 때문이다. `fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))`로 감싸 인터페이스 타입으로 등록해야 기존 Provide를 교체한다. (4.2)
+
+</details>
+
+<details>
+<summary><b>Q10.</b> 조립된 인스턴스를 테스트로 꺼낼 때 <code>fx.Invoke</code>와 <code>fx.Populate</code> 중 무엇을 쓰나?</summary>
+
+**A.** `fx.Populate`는 내부적으로 `fx.Invoke`로 구현된 편의 함수라 본질은 같고, 차이는 목적이다. 변수에 담는 것만이 목적이면 클로저가 군더더기이므로 `Populate`, 꺼낸 뒤 같은 시점에 호출·검증까지 해야 하면 본문을 쓸 수 있는 `Invoke`가 낫다. (4.3)
+
+</details>
+
+# 6. 마무리
 
 fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 되는지 정리하면 다음과 같다.
 
@@ -665,7 +739,7 @@ fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 
 - 메서드별 학습 예제 (본문 `// fx_test.go` 코드): [golang/third-party/fx](https://github.com/kenshin579/tutorials-go/tree/master/golang/third-party/fx)
 - 실전 적용 예시 (Clean Architecture + fx, `// cmd/main.go` 코드): [project-layout/go-clean-arch-v2](https://github.com/kenshin579/tutorials-go/tree/master/project-layout/go-clean-arch-v2)
 
-# 6. 참고
+# 7. 참고
 
 - [uber/fx 공식 문서](https://uber-go.github.io/fx/)
 - [uber/fx GitHub](https://github.com/uber-go/fx)

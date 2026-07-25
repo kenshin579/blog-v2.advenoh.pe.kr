@@ -526,7 +526,7 @@ PrivateModule := fx.Module("private",
 )
 ```
 
-`*internalDB` can only be injected into `newModuleService` inside `PrivateModule`. If you request `*internalDB` directly from outside the Module, fx returns an error when constructing the dependency graph (`fx.Populate` is covered in §2.8.3).
+`*internalDB` can only be injected into `newModuleService` inside `PrivateModule`. If you request `*internalDB` directly from outside the Module, fx returns an error when constructing the dependency graph (`fx.Populate` is covered in 4.3).
 
 ```go
 // fx_test.go
@@ -640,7 +640,81 @@ The selection guide is simple.
 | The goal is to pull an instance into an external variable | `fx.Populate` |
 | Perform a function call or additional verification at the same point after extraction | `fx.Invoke` |
 
-# 5. Wrapping Up
+# 5. Quiz
+
+If you've read this far, you should be able to answer the questions below. Try answering on your own before expanding, and if you get stuck, go back to the section in parentheses.
+
+<details>
+<summary><b>Q1.</b> You registered a pile of constructors with <code>fx.Provide()</code>, but nothing runs when the app starts. Why?</summary>
+
+**A.** `fx.Provide` only registers; it defers execution. For the graph to actually get assembled, something has to demand those types, and `fx.Invoke` is that starting point. If there is no `Invoke` handling side effects (server boot, route registration), no constructor is ever called. (2.2)
+
+</details>
+
+<details>
+<summary><b>Q2.</b> What is the difference between <code>fx.Provide</code> and <code>fx.Supply</code>?</summary>
+
+**A.** `Provide` registers a **constructor function**, and fx wires it into the graph based on that function's return type. `Supply` registers an **already-built value** as is. For values with no construction logic — config structs, constants — `Supply` is the right fit. (2.2)
+
+</details>
+
+<details>
+<summary><b>Q3.</b> How does fx decide the order in which constructors are called?</summary>
+
+**A.** It looks only at each constructor's **parameter types and return type**. `database.New(cfg *config.Config)` requires `*config.Config`, so `config.New()`, which returns that type, is called first. Registration order does not matter, and a circular dependency is reported as an error at app startup. (2.3)
+
+</details>
+
+<details>
+<summary><b>Q4.</b> You registered <code>registerHooks</code> with <code>fx.Invoke</code>. When exactly does the server start?</summary>
+
+**A.** It splits into two points. The `Invoke` function body runs immediately when `fx.New()` is called, but all it does there is *register* hooks on the `Lifecycle`. The `OnStart` body (the actual server boot) runs later, when `app.Start(ctx)` is called. That is precisely why `fx.Lifecycle` has this two-stage structure. (2.4)
+
+</details>
+
+<details>
+<summary><b>Q5.</b> You split domains into separate <code>fx.Module</code>s, but another Module ended up receiving the same DB handle. What did you miss?</summary>
+
+**A.** `fx.Module` only names and groups things — the `fx.Provide` calls inside it are still exposed to the global graph by default. To hide a dependency for module-internal use only, put `fx.Private` in the same `fx.Provide()` group. Then requesting that type from outside fails while the graph is being built. (3.1, 3.5)
+
+</details>
+
+<details>
+<summary><b>Q6.</b> You want to add logging without touching a single line of the existing Repository code.</summary>
+
+**A.** That's `fx.Decorate`. Take the original dependency as a parameter and return a wrapped value of the **same type**, and fx swaps that node in the graph. Whatever injects this dependency (`UserService`) receives the wrapper with no code changes. (3.2)
+
+</details>
+
+<details>
+<summary><b>Q7.</b> How do you inject a read connection and a write connection separately when both are the same <code>*DBConnection</code> type?</summary>
+
+**A.** Use `fx.Annotate` with `fx.ResultTags` to give each constructor a name like `name:"readDB"`, and on the receiving side match it with a `name` tag on a field of a struct that embeds `fx.In`. Even with identical types, the names keep them apart. (3.3)
+
+</details>
+
+<details>
+<summary><b>Q8.</b> You have three <code>Notifier</code> implementations and want all of them injected at once. Can the <code>name:</code> tag do this?</summary>
+
+**A.** It can, but it's the wrong tool. You'd have to name each implementation and receive them field by field, so every new implementation forces a change on the receiving side. Register them with `group:"notifiers"` in `fx.ResultTags` and receive a `[]Notifier` slice field carrying the same tag — then adding an implementation leaves the receiving code untouched. (3.4)
+
+</details>
+
+<details>
+<summary><b>Q9.</b> You want a Mock instead of the real Repository in a test. Why isn't <code>fx.Replace(&mockUserRepo{})</code> enough on its own?</summary>
+
+**A.** fx matches by type, and the type of `&mockUserRepo{}` is `*mockUserRepo`, not the `UserRepository` interface. Wrap it as `fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))` so it is registered under the interface type; only then does it replace the existing Provide. (4.2)
+
+</details>
+
+<details>
+<summary><b>Q10.</b> To pull an assembled instance out in a test, do you use <code>fx.Invoke</code> or <code>fx.Populate</code>?</summary>
+
+**A.** `fx.Populate` is a convenience function implemented on top of `fx.Invoke`, so they are the same underneath; the difference is intent. If the only goal is to store the value in a variable, the closure is dead weight, so use `Populate`. If you need to call or verify something at the same point after extracting it, `Invoke` gives you a body to do that. (4.3)
+
+</details>
+
+# 6. Wrapping Up
 
 fx has many methods and is easy to confuse. Here's a summary of what to choose in each situation.
 
@@ -665,7 +739,7 @@ The full source is available in the following two places.
 - Per-method learning examples (the `// fx_test.go` code in this article): [golang/third-party/fx](https://github.com/kenshin579/tutorials-go/tree/master/golang/third-party/fx)
 - Real-world application example (Clean Architecture + fx, the `// cmd/main.go` code): [project-layout/go-clean-arch-v2](https://github.com/kenshin579/tutorials-go/tree/master/project-layout/go-clean-arch-v2)
 
-# 6. References
+# 7. References
 
 - [uber/fx Official Docs](https://uber-go.github.io/fx/)
 - [uber/fx GitHub](https://github.com/uber-go/fx)
