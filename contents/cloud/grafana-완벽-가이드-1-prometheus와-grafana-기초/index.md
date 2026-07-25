@@ -1,8 +1,8 @@
 ---
 title: "Grafana 완벽 가이드 1편 - Prometheus와 Grafana 기초"
 description: "Grafana 완벽 가이드 1편 - Prometheus와 Grafana 기초"
-date: 2026-02-28
-update: 2026-02-28
+date: 2026-07-25
+update: 2026-07-25
 tags:
   - prometheus
   - grafana
