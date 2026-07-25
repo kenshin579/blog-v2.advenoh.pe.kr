@@ -513,6 +513,36 @@ pre[class*="language-"] {
   @apply border-l-4 border-destructive;
 }
 
+/* ----- 접기 블록 (이해도 점검 퀴즈 등) ----- */
+/* details가 본문 문단과 섞여 보이지 않도록 카드 형태로 분리한다. */
+.prose details,
+.prose-bento details {
+  @apply my-3 rounded-xl border px-5 py-4;
+  background: hsl(var(--muted) / 0.4);
+}
+
+.prose summary,
+.prose-bento summary {
+  @apply cursor-pointer font-semibold;
+}
+
+.prose summary:hover,
+.prose-bento summary:hover {
+  @apply text-foreground/80;
+}
+
+/* 펼쳤을 때 질문과 답변 사이 간격 */
+.prose details[open] summary,
+.prose-bento details[open] summary {
+  @apply mb-3;
+}
+
+/* 펼친 내용의 첫/마지막 여백 정리 */
+.prose details[open] > *:last-child,
+.prose-bento details[open] > *:last-child {
+  @apply mb-0;
+}
+
 /* ----- Bento utilities ----- */
 .bento-card {
   border-radius: 24px;

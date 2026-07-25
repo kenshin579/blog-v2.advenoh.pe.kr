@@ -501,7 +501,7 @@ flowchart LR
 | 지표 | 설명 | 메트릭 예시 |
 |------|------|-------------|
 | **Rate** | 초당 요청 수 | `rate(http_requests_total[5m])` |
-| **Errors** | 에러 비율 (%) | `rate(http_requests_total{status=~"5.."}[5m]) / rate(http_requests_total[5m]) * 100` |
+| **Errors** | 에러 비율 (%) | `sum(rate(http_requests_total{status=~"5.."}[5m])) / sum(rate(http_requests_total[5m])) * 100` |
 | **Duration** | 응답 시간 분포 (P50/P90/P99) | `histogram_quantile(0.99, rate(http_request_duration_seconds_bucket[5m]))` |
 
 > RED 메서드는 **사용자 관점**의 지표이다. 시스템 관점의 USE 메서드(Utilization, Saturation, Errors)와 함께 사용하면 인프라부터 애플리케이션까지 전체 스택을 모니터링할 수 있다.
@@ -615,8 +615,8 @@ rate(orders_created_total{status="failed"}[5m])
 
 ```promql
 # 주문 성공률 (%)
-rate(orders_created_total{status="success"}[5m])
-  / rate(orders_created_total[5m]) * 100
+sum(rate(orders_created_total{status="success"}[5m]))
+  / sum(rate(orders_created_total[5m])) * 100
 ```
 
 ### 4.3.3 Panel 7: 주문 처리 시간 분포
@@ -714,8 +714,8 @@ histogram_quantile(0.99, sum by(le) (rate(http_request_duration_seconds_bucket[5
 
 ```promql
 # Alert 조건 쿼리
-rate(orders_created_total{status="failed"}[5m])
-  / rate(orders_created_total[5m]) * 100 > 10
+sum(rate(orders_created_total{status="failed"}[5m]))
+  / sum(rate(orders_created_total[5m])) * 100 > 10
 ```
 
 전체 Alert Rule을 정리하면 다음과 같다.
