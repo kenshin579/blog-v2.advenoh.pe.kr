@@ -34,11 +34,66 @@ export interface TOCItem {
 }
 
 /**
+ * HTML 속성값에 넣기 전 이스케이프
+ */
+function escapeHtmlAttribute(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * 본문의 <!-- slides --> 마커를 슬라이드 임베드 블록으로 치환한다.
+ * 마커가 없으면 원본을 그대로 돌려준다.
+ *
+ * 마커는 반드시 자기 줄에 단독으로 있어야 한다. 문단 안에 인라인으로 넣으면
+ * CommonMark 가 HTML 블록으로 인식하지 못해 마크업이 그대로 노출된다.
+ */
+function replaceSlidesMarker(
+  content: string,
+  slug: string,
+  lang: 'ko' | 'en',
+  title: string
+): string {
+  if (!/<!--\s*slides\s*-->/.test(content)) return content;
+
+  // slug 은 {category}/{글폴더} 형태. URL 에는 글폴더만 쓴다.
+  const articleDir = slug.split('/').pop() ?? slug;
+  const src = lang === 'en' ? `/en/${articleDir}/slides/` : `/${articleDir}/slides/`;
+  const safeTitle = escapeHtmlAttribute(title);
+
+  const embed = [
+    '<div class="slides-embed">',
+    `<iframe class="slides-embed__frame" src="${src}" title="${safeTitle} 슬라이드" loading="lazy" allowfullscreen></iframe>`,
+    `<a class="slides-embed__open" href="${src}" target="_blank" rel="noopener">슬라이드 새 탭에서 열기 →</a>`,
+    '<p class="slides-embed__hint">슬라이드를 클릭한 뒤 <kbd>←</kbd> <kbd>→</kbd> 이동 · <kbd>f</kbd> 전체화면 · <kbd>?</kbd> 도움말</p>',
+    '</div>',
+  ].join('\n');
+
+  return content.replace(/<!--\s*slides\s*-->/g, embed);
+}
+
+/**
  * Markdown을 HTML로 변환
  */
-export async function parseMarkdown(markdown: string, slug: string): Promise<Article> {
+export async function parseMarkdown(
+  markdown: string,
+  slug: string,
+  lang: 'ko' | 'en' = 'ko'
+): Promise<Article> {
   // gray-matter로 frontmatter 파싱
   const { data, content } = matter(markdown);
+
+  // <!-- slides --> 마커를 임베드 블록으로 치환한 사본을 렌더에만 사용한다.
+  // 반환되는 content 는 원본 그대로 유지한다 (읽기 시간·첫 이미지 추출이 쓴다).
+  const renderSource = replaceSlidesMarker(
+    content,
+    slug,
+    lang,
+    (data as ArticleFrontmatter).title ?? ''
+  );
 
   // unified로 markdown → HTML 변환
   const result = await unified()
@@ -54,7 +109,7 @@ export async function parseMarkdown(markdown: string, slug: string): Promise<Art
       showLineNumbers: true,
     }) // 코드 하이라이팅
     .use(rehypeStringify) // hast → HTML
-    .process(content);
+    .process(renderSource);
 
   let html = String(result);
 

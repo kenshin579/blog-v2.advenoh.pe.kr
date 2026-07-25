@@ -91,7 +91,7 @@ export async function getArticle(slug: string, lang: 'ko' | 'en' = 'ko'): Promis
     const fileName = lang === 'en' ? 'index_en.md' : 'index.md';
     const filePath = path.join(process.cwd(), 'contents', slug, fileName);
     const markdown = await fs.readFile(filePath, 'utf-8');
-    const article = await parseMarkdown(markdown, slug);
+    const article = await parseMarkdown(markdown, slug, lang);
     articleCache.set(cacheKey, article);
     return article;
   } catch (error) {
