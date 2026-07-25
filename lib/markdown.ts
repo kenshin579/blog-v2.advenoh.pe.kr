@@ -54,6 +54,9 @@ function escapeHtmlAttribute(text: string): string {
  * `&#x3C;!-- slides -->` 형태로 엔티티 인코딩하기 때문에 실제 블록 레벨 HTML
  * 주석(그대로 살아남는다)과 자동으로 구분된다. 파싱 전 raw markdown에 대고
  * 치환하면 코드펜스 안의 예시까지 오탐한다.
+ *
+ * 마커는 본문에서 자기 줄에 단독으로 있어야 한다. 문단 중간에 인라인으로 넣으면
+ * <p> 안에 <div>가 중첩된 유효하지 않은 HTML이 만들어진다.
  */
 function replaceSlidesMarker(
   html: string,
