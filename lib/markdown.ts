@@ -8,6 +8,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeStringify from 'rehype-stringify';
+import { getDictionary } from './i18n/dictionaries';
 
 export interface ArticleFrontmatter {
   title: string;
@@ -45,20 +46,24 @@ function escapeHtmlAttribute(text: string): string {
 }
 
 /**
- * 본문의 <!-- slides --> 마커를 슬라이드 임베드 블록으로 치환한다.
+ * 렌더링된 HTML에서 <!-- slides --> 마커를 슬라이드 임베드 블록으로 치환한다.
  * 마커가 없으면 원본을 그대로 돌려준다.
  *
- * 마커는 반드시 자기 줄에 단독으로 있어야 한다. 문단 안에 인라인으로 넣으면
- * CommonMark 가 HTML 블록으로 인식하지 못해 마크업이 그대로 노출된다.
+ * 반드시 markdown → HTML 변환이 끝난 뒤(파싱 후) 호출해야 한다. 코드펜스 안에
+ * 마커 사용법을 예시로 적어둔 경우, rehype-stringify 가 그 리터럴 텍스트를
+ * `&#x3C;!-- slides -->` 형태로 엔티티 인코딩하기 때문에 실제 블록 레벨 HTML
+ * 주석(그대로 살아남는다)과 자동으로 구분된다. 파싱 전 raw markdown에 대고
+ * 치환하면 코드펜스 안의 예시까지 오탐한다.
  */
 function replaceSlidesMarker(
-  content: string,
+  html: string,
   slug: string,
   lang: 'ko' | 'en',
   title: string
 ): string {
-  if (!/<!--\s*slides\s*-->/.test(content)) return content;
+  if (!/<!--\s*slides\s*-->/.test(html)) return html;
 
+  const t = getDictionary(lang);
   // slug 은 {category}/{글폴더} 형태. URL 에는 글폴더만 쓴다.
   const articleDir = slug.split('/').pop() ?? slug;
   const src = lang === 'en' ? `/en/${articleDir}/slides/` : `/${articleDir}/slides/`;
@@ -66,13 +71,13 @@ function replaceSlidesMarker(
 
   const embed = [
     '<div class="slides-embed">',
-    `<iframe class="slides-embed__frame" src="${src}" title="${safeTitle} 슬라이드" loading="lazy" allowfullscreen></iframe>`,
-    `<a class="slides-embed__open" href="${src}" target="_blank" rel="noopener">슬라이드 새 탭에서 열기 →</a>`,
-    '<p class="slides-embed__hint">슬라이드를 클릭한 뒤 <kbd>←</kbd> <kbd>→</kbd> 이동 · <kbd>f</kbd> 전체화면 · <kbd>?</kbd> 도움말</p>',
+    `<iframe class="slides-embed__frame" src="${src}" title="${safeTitle} ${t.slides.frameTitle}" loading="lazy" allowfullscreen></iframe>`,
+    `<a class="slides-embed__open" href="${src}" target="_blank" rel="noopener">${t.slides.open}</a>`,
+    `<p class="slides-embed__hint">${t.slides.hint}</p>`,
     '</div>',
   ].join('\n');
 
-  return content.replace(/<!--\s*slides\s*-->/g, embed);
+  return html.replace(/<!--\s*slides\s*-->/g, embed);
 }
 
 /**
@@ -86,14 +91,11 @@ export async function parseMarkdown(
   // gray-matter로 frontmatter 파싱
   const { data, content } = matter(markdown);
 
-  // <!-- slides --> 마커를 임베드 블록으로 치환한 사본을 렌더에만 사용한다.
-  // 반환되는 content 는 원본 그대로 유지한다 (읽기 시간·첫 이미지 추출이 쓴다).
-  const renderSource = replaceSlidesMarker(
-    content,
-    slug,
-    lang,
-    (data as ArticleFrontmatter).title ?? ''
-  );
+  const frontmatter = data as ArticleFrontmatter;
+  // Normalize description → excerpt (markdown 파일은 description 키 사용, UI는 excerpt 사용)
+  if (!frontmatter.excerpt && frontmatter.description) {
+    frontmatter.excerpt = frontmatter.description;
+  }
 
   // unified로 markdown → HTML 변환
   const result = await unified()
@@ -109,7 +111,7 @@ export async function parseMarkdown(
       showLineNumbers: true,
     }) // 코드 하이라이팅
     .use(rehypeStringify) // hast → HTML
-    .process(renderSource);
+    .process(content);
 
   let html = String(result);
 
@@ -120,13 +122,10 @@ export async function parseMarkdown(
     `<img$1 src="/images/${slug}/$2"`
   );
 
-  const firstImage = extractFirstImage(content);
+  // <!-- slides --> 마커를 슬라이드 임베드 블록으로 치환한다 (파싱 후 HTML 단계).
+  html = replaceSlidesMarker(html, slug, lang, frontmatter.title ?? '');
 
-  const frontmatter = data as ArticleFrontmatter;
-  // Normalize description → excerpt (markdown 파일은 description 키 사용, UI는 excerpt 사용)
-  if (!frontmatter.excerpt && frontmatter.description) {
-    frontmatter.excerpt = frontmatter.description;
-  }
+  const firstImage = extractFirstImage(content);
 
   return {
     slug,
