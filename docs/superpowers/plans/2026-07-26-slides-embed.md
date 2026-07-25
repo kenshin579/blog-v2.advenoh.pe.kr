@@ -729,10 +729,12 @@ Expected: 빌드 성공.
 - [ ] **Step 4: 빌드 경고 확인**
 
 ```bash
-grep -i "slides" /tmp/build.log
+grep "⚠️" /tmp/build.log
 ```
 
-Expected: 출력 없음 (Task 4에서 나오던 마커 누락 경고가 사라졌어야 한다)
+Expected: 슬라이드 관련 경고 없음 (Task 4에서 나오던 마커 누락 경고가 사라졌어야 한다)
+
+**주의 — 이 계획의 최초 검증 명령(`grep -i "slides"` → 출력 없음)은 틀렸다.** Task 1에서 copy-assets가 `🔍 Scanning for slides...` / `✅ Slides copied: 1`을 정상 출력하므로 "slides" 문자열은 반드시 잡힌다. 확인해야 할 것은 `⚠️` 경고의 부재다.
 
 - [ ] **Step 5: 산출물 확인**
 
@@ -744,7 +746,9 @@ grep -o 'src="/grafana-완벽-가이드-1-prometheus와-grafana-기초/slides/"'
   "out/grafana-완벽-가이드-1-prometheus와-grafana-기초/index.html" | head -1
 ```
 
-Expected: `PASS: 슬라이드 배포됨`, `grep -c` 결과 1, 그리고 src 문자열 한 줄 출력
+Expected: `PASS: 슬라이드 배포됨`, `grep -c` 결과 **2**, 그리고 src 문자열 한 줄 출력
+
+**주의 — 이 계획의 최초 기대값(1)은 틀렸다.** Next App Router는 `index.html`에 렌더된 HTML과 RSC 플라이트 페이로드(`<`로 이스케이프된 직렬화 사본)를 함께 넣는다. 그래서 마크업이 두 줄에서 잡힌다. 실제 임베드는 1개다. 확인하려면 매치 주변을 출력해 한 쪽이 `<iframe` 형태의 이스케이프된 페이로드인지 보면 된다.
 
 - [ ] **Step 6: 영문 글에는 임베드가 없는지 확인**
 
