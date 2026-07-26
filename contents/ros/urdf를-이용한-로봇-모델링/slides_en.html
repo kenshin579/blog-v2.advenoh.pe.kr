@@ -1,0 +1,1985 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Robot Modeling with URDF</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 따뜻한 표시등
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #6A34B0;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(106, 52, 176, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #B98CF7;
+    --accent-ink:#140A22;
+    --accent-soft: rgba(185, 140, 247, .14);
+    --teal:      #46C7B0;
+    --teal-soft: rgba(70, 199, 176, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #B98CF7;
+  --accent-ink:#140A22;
+  --accent-soft: rgba(185, 140, 247, .14);
+  --teal:      #46C7B0;
+  --teal-soft: rgba(70, 199, 176, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #6A34B0;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(106, 52, 176, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: 0 0;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+/* 높이를 채우는 2단 조판에서는 각 열이 늘어나고, 내용은 열 안에서 세로 중앙에 놓인다 */
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 그림 ──────────────────────────────────────────────────── */
+.figure { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+.figure img {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  background: var(--surface-2);
+}
+.figure figcaption, .cap {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.fit img { max-height: 100%; }
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+
+/* ── 트리 ──────────────────────────────────────────────────── */
+.tree { font-family: var(--f-mono); font-size: 15px; line-height: 2.05; }
+.tree .lv { display: block; white-space: pre; }
+.tree .k { color: var(--accent); font-weight: 600; }
+.tree .v { color: var(--ink-dim); }
+
+/* ── 쿼리 해부도 ───────────────────────────────────────────── */
+.anat { display: flex; flex-direction: column; gap: 14px; }
+.anat-q {
+  font-family: var(--f-mono);
+  font-size: 24px;
+  letter-spacing: -.01em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.anat-q .p { padding: 3px 2px; border-bottom: 2px solid transparent; }
+.anat-q .p1 { border-bottom-color: var(--accent); }
+.anat-q .p2 { border-bottom-color: var(--teal); }
+.anat-q .p3 { border-bottom-color: var(--amber); }
+.anat-q .p4 { border-bottom-color: var(--ink-faint); }
+.legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.legend .lg-i { display: flex; flex-direction: column; gap: 4px; }
+.legend .lg-b { height: 3px; width: 34px; }
+.legend .lg-n { font-size: 15px; font-weight: 700; }
+.legend .lg-d { font-size: 14px; color: var(--ink-dim); line-height: 1.42; }
+
+/* ── 카디널리티 계산기 ─────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 (Counter 슬라이드) ───────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+
+    <!-- ═══════════ 01 Cover ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">ROS 2 · Robot Modeling</div>
+            <h1 class="cover-title">Draw a robot<br />with URDF</h1>
+            <p class="cover-sub">Write links and joints in XML, then see it in RViz<br />— building one manipulator from scratch</p>
+            <div class="cover-meta">
+              <span class="chip on">URDF</span>
+              <span class="chip">link · joint</span>
+              <span class="chip">RViz</span>
+              <span class="chip">xacro</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>testbot.urdf</span>
+              <span>5 links · 4 joints</span>
+            </div>
+            <div class="panel-body" style="display:block;padding:22px 20px;">
+              <div class="tree">
+                <span class="lv"><span class="k">&lt;robot name="testbot"&gt;</span></span>
+                <span class="lv">├─ &lt;material&gt;  <span class="v">green · orange</span></span>
+                <span class="lv">├─ &lt;link&gt;  <span class="k">base</span>  <span class="v">root</span></span>
+                <span class="lv">├─ &lt;link&gt;  <span class="k">link1 … link4</span></span>
+                <span class="lv">│     └─ <span class="v">visual · collision · inertial</span></span>
+                <span class="lv">└─ &lt;joint&gt;  <span class="k">base_joint</span></span>
+                <span class="lv">      └─ <span class="v">link1_link2 · link2_link3 · …</span></span>
+              </div>
+            </div>
+            <div class="panel-foot">
+              <span>A URDF is just a list of links and a list of joints</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">To work with a robot in ROS 2 you first have to write down "what this robot looks like" in a form a machine can read. URDF is that standard format. Today we write one manipulator (a robot arm) in XML, put it in RViz, and move its joints by hand. In a 40-minute slot, spend the first half on tag syntax and the second half on running it and on tooling. If the audience is new to ROS, confirm the workspace (~/robot_ws) idea here before moving on.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 Chapter 01 ═══════════ -->
+    <div class="holder" data-n="02" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">What URDF is</h2>
+            <p class="chap-d">A file that records a robot's shape in a machine-readable form.
+            Several similar formats exist, so we sort out what each is for — and what URDF <b>cannot</b> express.</p>
+          </div>
+        </div>
+        <div class="notes-src">The goal of this chapter is a shared sense of "what kind of thing URDF is." If time is short, cut the SDF·SRDF comparison (04) to one line and go straight to the limits (05).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 ═══════════ -->
+    <div class="holder" data-n="03">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">definition</span><span class="stamp">Unified Robot Description Format</span></div>
+        <h2 class="slide-title">URDF is a robot spec written in XML</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>An XML file holding the robot's geometry, joints and sensor data</li>
+              <li>Parts are <b><code class="inl">&lt;link&gt;</code></b>, motion is <b><code class="inl">&lt;joint&gt;</code></b></li>
+              <li>Stitch those two together and you have one robot</li>
+              <li>The finished model runs straight in RViz and Gazebo</li>
+            </ul>
+            <pre class="code sm">&lt;?xml version=<span class="t-str">"1.0"</span> ?&gt;
+&lt;<span class="t-key">robot</span> name=<span class="t-str">"testbot"</span>&gt;
+
+  &lt;<span class="t-key">link</span> name=<span class="t-str">"base"</span>/&gt;
+  &lt;<span class="t-key">link</span> name=<span class="t-str">"link1"</span>&gt; ... &lt;/<span class="t-key">link</span>&gt;
+
+  &lt;<span class="t-key">joint</span> name=<span class="t-str">"base_joint"</span> type=<span class="t-str">"fixed"</span>&gt;
+    &lt;<span class="t-key">parent</span> link=<span class="t-str">"base"</span>/&gt;
+    &lt;<span class="t-key">child</span>  link=<span class="t-str">"link1"</span>/&gt;
+  &lt;/<span class="t-key">joint</span>&gt;
+
+&lt;/<span class="t-key">robot</span>&gt;</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">in one line</span>
+            Links say <b>what exists</b>; joints say <b>how it attaches and how it moves</b>.
+          </div>
+        </div>
+        <div class="notes-src">Point out here that there is no reason to fear the XML. There are barely ten tags, and half of them can be left out and the robot still shows up in RViz. The code on the right is the skeleton we keep extending, so read it aloud once: "there is a robot, there are links, and there are joints connecting the links."</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">compare</span><span class="stamp">URDF · SDF · SRDF</span></div>
+        <h2 class="slide-title">Three lookalike formats, three different tools</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>format</th><th>what it describes</th><th>main tool</th></tr></thead>
+              <tbody>
+                <tr class="on"><td><code class="inl">URDF</code></td><td>links · joints — shape and motion</td><td>RViz</td></tr>
+                <tr><td><code class="inl">SDF</code></td><td>simulation data, physics and world included</td><td>Gazebo</td></tr>
+                <tr><td><code class="inl">SRDF</code></td><td>groups, path planning, collision checks</td><td>MoveIt</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">URDF is always the start</span>
+            <code class="inl">gz sdf -p model.urdf &gt; model.sdf</code> gives you SDF, and Setup Assistant generates SRDF.
+          </div>
+        </div>
+        <div class="notes-src">Don't read the table row by row — give the rule of thumb: "just display it, URDF; run physics, SDF; plan arm motion, SRDF." The key point is that almost nobody hand-writes SDF or SRDF in practice; they are converted from URDF.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 ═══════════ -->
+    <div class="holder" data-n="05">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">limits</span><span class="stamp">not every robot fits</span></div>
+        <h2 class="slide-title">URDF can only draw trees</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">Tree structures only</div>
+              <p>A link has exactly one parent. Closed loops — parallel mechanisms such as a delta robot — cannot be expressed in URDF.</p>
+              <p class="dim">that is why check_urdf prints a tree</p>
+            </div>
+            <div class="card">
+              <div class="card-t">Links are assumed rigid</div>
+              <p>Linked bodies are taken never to bend or stretch. Flexible parts like cables and springs are not supported.</p>
+              <p class="dim">solve those on the Gazebo plugin side</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">know it up front</span>
+            The spec is as general as it can be, but it <b>cannot describe every robot.</b> Most arms and mobile robots are fine as trees.
+          </div>
+        </div>
+        <div class="notes-src">The reason to state the limits early is so nobody burns time later on "why won't this work?" If someone in the room works on parallel mechanisms, point them at SDF or MuJoCo. Don't linger here — 30 seconds is enough.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 Chapter 02 ═══════════ -->
+    <div class="holder" data-n="06" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">What we model — a manipulator</h2>
+            <p class="chap-d">A robot that moves like a human arm is called a manipulator.
+            Before writing XML, we look at how it splits into parts and which of them URDF actually cares about.</p>
+          </div>
+        </div>
+        <div class="notes-src">This is a vocabulary chapter. If many in the audience have no robotics background, spend a bit more time here; if most do robotics, skip both slides quickly.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 ═══════════ -->
+    <div class="holder" data-n="07">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">structure</span><span class="stamp">manipulator</span></div>
+        <h2 class="slide-title">A manipulator splits into four parts</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node"><span class="n-t">base</span><span class="n-p">where the robot is anchored — the floor, or a mobile robot</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">fixed</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">link</span><span class="n-p">rigid frame joining base, joints and tip</span></div>
+              <div class="node hero"><span class="n-t">joint</span><span class="n-p">rotation · translation — where motion comes from</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">repeat</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">end effector</span><span class="n-p">the hand — gripper, suction cup, spray nozzle</span></div>
+            </div>
+          </div>
+          <p class="cap">Arrows run parent → child. The side nearer the base is always the parent, and links and joints alternate as the arm gets longer.</p>
+        </div>
+        <div class="notes-src">Explain why the middle two boxes are marked hero — URDF really only describes links and joints, and even the base and the end effector end up expressed as links. So the four parts are a conceptual split that collapses into two kinds of tag in the file.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">core</span><span class="stamp">link vs joint</span></div>
+        <h2 class="slide-title">In the end it is links and joints</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">&lt;link&gt; — what exists</div>
+              <p>Name · shape · mass (kg) · moment of inertia (kg·m²).</p>
+              <p class="dim">Shapes default to primitives — cylinder, cone, box. Complex bodies come from <code class="inl">stl</code>·<code class="inl">dae</code> meshes.</p>
+            </div>
+            <div class="card">
+              <div class="card-t">&lt;joint&gt; — how it attaches and moves</div>
+              <p>Name · type · axis of motion · min/max values · effort and velocity.</p>
+              <p class="dim">It always describes the <b>relation between two links</b>. A joint alone means nothing.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">the rest is detail</span>
+            Get these two tags right and the robot shows up in RViz. Every other tag is a detail of one of them.
+          </div>
+        </div>
+        <div class="notes-src">This slide is the map for the whole talk. Nail down in advance that visual·collision·inertial·origin·material all live under link, and axis·limit·parent·child all live under joint — then the audience never loses the thread.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 Chapter 03 ═══════════ -->
+    <div class="holder" data-n="09" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Create the package, raise the skeleton</h2>
+            <p class="chap-d">By convention a ROS robot model lives in a <code class="inl">robotname_description</code> package.
+            We create <code class="inl">testbot_description</code> and put the outermost URDF skeleton inside it.</p>
+          </div>
+        </div>
+        <div class="notes-src">Hands start moving from here. If you are doing a live demo, switch to the terminal at this chapter. Without a demo, reading the commands out loud is enough.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 ═══════════ -->
+    <div class="holder" data-n="10">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">steps</span><span class="stamp">ros2 pkg create</span></div>
+        <h2 class="slide-title">The convention is <code class="inl">robotname_description</code></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="steps">
+            <div class="step"><span class="s-n">1</span><div><div class="s-c">cd ~/robot_ws/src</div><div class="s-d">move into the workspace source folder</div></div></div>
+            <div class="step"><span class="s-n">2</span><div><div class="s-c">ros2 pkg create testbot_description --build-type ament_cmake --dependencies urdf</div><div class="s-d">create a package holding only modeling data</div></div></div>
+            <div class="step"><span class="s-n">3</span><div><div class="s-c">mkdir urdf &amp;&amp; vim urdf/testbot.urdf</div><div class="s-d">make a home for the URDF file</div></div></div>
+            <div class="step"><span class="s-n">4</span><div><div class="s-c">search "description" on index.ros.org</div><div class="s-d">open someone else's polished URDF as an example</div></div></div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">why this name</span>
+            It is a community convention, so the same rule finds other people's robot packages too.
+          </div>
+        </div>
+        <div class="notes-src">Stress step 4. Rather than writing URDF from nothing, it is far faster to open a similar robot's description package and edit it. If there is time, actually open ROS Index and show the URDF of a turtlebot or a UR robot.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">skeleton</span><span class="stamp">&lt;robot&gt;</span></div>
+        <h2 class="slide-title"><code class="inl">&lt;robot&gt;</code> is a list of links and a list of joints</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm">&lt;?xml version=<span class="t-str">"1.0"</span> ?&gt;
+&lt;<span class="t-key">robot</span> name=<span class="t-str">"testbot"</span>&gt;
+
+  <span class="t-cm">&lt;!-- parts: what exists --&gt;</span>
+  &lt;<span class="t-key">link</span> name=<span class="t-str">"base"</span>/&gt;
+  &lt;<span class="t-key">link</span> name=<span class="t-str">"link1"</span>&gt; ... &lt;/<span class="t-key">link</span>&gt;
+  &lt;<span class="t-key">link</span> name=<span class="t-str">"link2"</span>&gt; ... &lt;/<span class="t-key">link</span>&gt;
+
+  <span class="t-cm">&lt;!-- connections: how they attach and move --&gt;</span>
+  &lt;<span class="t-key">joint</span> name=<span class="t-str">"base_joint"</span>  type=<span class="t-str">"fixed"</span>&gt;    ... &lt;/<span class="t-key">joint</span>&gt;
+  &lt;<span class="t-key">joint</span> name=<span class="t-str">"link1_link2"</span> type=<span class="t-str">"revolute"</span>&gt; ... &lt;/<span class="t-key">joint</span>&gt;
+
+&lt;/<span class="t-key">robot</span>&gt;</pre>
+          <div class="callout">
+            <span class="lbl">one root</span>
+            <code class="inl">&lt;robot&gt;</code> is declared first as the document root. Links connect <b>only through joints</b>.
+          </div>
+        </div>
+        <div class="notes-src">Ordering comes up often — mixing links and joints still parses, but listing all links first and then all joints reads better. The real testbot.urdf goes material → four links → four joints as well.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 Chapter 04 ═══════════ -->
+    <div class="holder" data-n="12" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">&lt;link&gt; — the robot's parts</h2>
+            <p class="chap-d">How to write one link properly. The shape you see, the shape that collides, and the mass and inertia used for physics —
+            what each is, and why they are kept apart.</p>
+          </div>
+        </div>
+        <div class="notes-src">This is the densest chapter of the talk. Five slides follow, so keep signalling priority — "you don't need this just to see it in RViz" — so the audience doesn't wear out.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">parts</span><span class="stamp">visual · collision · inertial</span></div>
+        <h2 class="slide-title">One link wears three faces</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><b><code class="inl">&lt;visual&gt;</code></b> — the shape drawn on screen</li>
+              <li><b><code class="inl">&lt;collision&gt;</code></b> — the volume used for collision checks</li>
+              <li><b><code class="inl">&lt;inertial&gt;</code></b> — mass and inertia tensor, for physics</li>
+              <li>All three carry their own <code class="inl">&lt;origin&gt;</code> and <code class="inl">&lt;geometry&gt;</code></li>
+            </ul>
+            <pre class="code sm">&lt;<span class="t-key">link</span> name=<span class="t-str">"link1"</span>&gt;
+  &lt;<span class="t-key">visual</span>&gt;
+    &lt;<span class="t-key">origin</span> xyz=<span class="t-str">"0 0 0.25"</span> rpy=<span class="t-str">"0 0 0"</span>/&gt;
+    &lt;<span class="t-key">geometry</span>&gt;&lt;<span class="t-key">box</span> size=<span class="t-str">"0.1 0.1 0.5"</span>/&gt;&lt;/<span class="t-key">geometry</span>&gt;
+    &lt;<span class="t-key">material</span> name=<span class="t-str">"green"</span>/&gt;
+  &lt;/<span class="t-key">visual</span>&gt;
+  &lt;<span class="t-key">collision</span>&gt; ... &lt;/<span class="t-key">collision</span>&gt;
+  &lt;<span class="t-key">inertial</span>&gt; ... &lt;/<span class="t-key">inertial</span>&gt;
+&lt;/<span class="t-key">link</span>&gt;</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">the three are independent</span>
+            The shape you see need not match the shape that collides. For RViz alone, <code class="inl">&lt;visual&gt;</code> is enough.
+          </div>
+        </div>
+        <div class="notes-src">"For RViz alone, visual is enough" is a big relief to beginners. inertial matters once you run physics in Gazebo, and it sticks if you add the anecdote that bad values make the robot fly apart as if it exploded.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">concept</span><span class="stamp">why keep them apart</span></div>
+        <h2 class="slide-title">The body you see and the body that collides differ</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">&lt;visual&gt; — display volume</div>
+              <p><code class="inl">box</code>·<code class="inl">cylinder</code>·<code class="inl">sphere</code> by default. Awkward shapes load from CAD files such as STL or DAE.</p>
+              <p class="dim">the point is looking right</p>
+            </div>
+            <div class="card">
+              <div class="card-t">&lt;collision&gt; — interference volume</div>
+              <p>Same tags, different purpose. It is sometimes made <b>larger</b> than the visual to leave a safety margin.</p>
+              <p class="dim">the point is being fast and safe</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">practical tip</span>
+            Detailed meshes in <code class="inl">&lt;visual&gt;</code>, plain boxes and cylinders in <code class="inl">&lt;collision&gt;</code>. It looks good and collision stays cheap.
+          </div>
+        </div>
+        <div class="notes-src">This tip really does decide simulation performance. Run collision checks against a mesh with tens of thousands of triangles and the simulation stops keeping up with real time. Anyone with Gazebo experience will nod along here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 ═══════════ -->
+    <div class="holder" data-n="15">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">frames</span><span class="stamp">&lt;origin&gt;</span></div>
+        <h2 class="slide-title">Position is xyz (meters), orientation is rpy (radians)</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><b>xyz</b> — position in 3D space, in <b>meters (m)</b></li>
+              <li><b>rpy</b> — roll·pitch·yaw Euler angles, in <b>radians (rad)</b></li>
+              <li>roll about x, pitch about y, yaw about z</li>
+              <li>Always <b>relative to the parent frame</b></li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">&lt;!-- lift a 0.5-long box by half in z --&gt;</span>
+&lt;<span class="t-key">origin</span> xyz=<span class="t-str">"0.0 0.0 0.25"</span> rpy=<span class="t-str">"0.0 0.0 0.0"</span>/&gt;
+&lt;<span class="t-key">geometry</span>&gt;
+  &lt;<span class="t-key">box</span> size=<span class="t-str">"0.1 0.1 0.5"</span>/&gt;
+&lt;/<span class="t-key">geometry</span>&gt;
+
+<span class="t-cm">&lt;!-- yaw 90 deg = pi/2 = 1.5708 rad --&gt;</span>
+&lt;<span class="t-key">origin</span> xyz=<span class="t-str">"0 0 0"</span> rpy=<span class="t-str">"0 0 1.5708"</span>/&gt;</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">common mistake</span>
+            <span class="t-bad">Putting degrees straight into rpy.</span> Write 90 and you get 90 radians — about fourteen and a half turns.
+          </div>
+        </div>
+        <div class="notes-src">Explain why the box is raised by 0.25 — a geometry's origin sits at the <b>center</b> of the shape, so a 0.5-long box has to be lifted by half to start at the ground. Miss this and links render half-buried in the floor. Best of all is showing it live in RViz.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 ═══════════ -->
+    <div class="holder" data-n="16">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">physics</span><span class="stamp">&lt;inertial&gt;</span></div>
+        <h2 class="slide-title">The inertia tensor is symmetric — six values suffice</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>3×3 inertia matrix</th><th>x</th><th>y</th><th>z</th></tr></thead>
+              <tbody>
+                <tr class="on"><td><b>x</b></td><td><code class="inl">ixx</code></td><td><code class="inl">ixy</code></td><td><code class="inl">ixz</code></td></tr>
+                <tr><td><b>y</b></td><td class="faint">ixy</td><td><code class="inl">iyy</code></td><td><code class="inl">iyz</code></td></tr>
+                <tr><td><b>z</b></td><td class="faint">ixz</td><td class="faint">iyz</td><td><code class="inl">izz</code></td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">symmetric, so upper triangle only</span>
+            Since <code class="inl">ixy = iyx</code>, the six values <b>ixx · ixy · ixz · iyy · iyz · izz</b> are enough. <code class="inl">&lt;mass&gt;</code> in kg, <code class="inl">&lt;inertia&gt;</code> in kg·m².
+          </div>
+        </div>
+        <div class="notes-src">Somebody always asks where the values come from. Answer: Wikipedia's "List of 3D inertia tensors" collects formulas per shape, and CAD tools compute them too. Setting everything to 1.0 like the example and just opening RViz is a common early choice as well.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">looks</span><span class="stamp">&lt;material&gt;</span></div>
+        <h2 class="slide-title">Color is rgba between 0 and 1</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm">&lt;!-- define once near the top of the robot --&gt;</span>
+&lt;<span class="t-key">material</span> name=<span class="t-str">"green"</span>&gt;
+  &lt;<span class="t-key">color</span> rgba=<span class="t-str">"0 0.6 0 1"</span> /&gt;
+&lt;/<span class="t-key">material</span>&gt;
+&lt;<span class="t-key">material</span> name=<span class="t-str">"orange"</span>&gt;
+  &lt;<span class="t-key">color</span> rgba=<span class="t-str">"1.0 0.4 0.0 1.0"</span>/&gt;
+&lt;/<span class="t-key">material</span>&gt;
+
+<span class="t-cm">&lt;!-- a link refers to it by name --&gt;</span>
+&lt;<span class="t-key">visual</span>&gt;
+  ...
+  &lt;<span class="t-key">material</span> name=<span class="t-str">"green"</span>/&gt;
+&lt;/<span class="t-key">visual</span>&gt;</pre>
+          <div class="callout teal">
+            <span class="lbl">the last number is alpha</span>
+            Red, green, blue and alpha, each 0.0–1.0. Alpha <b>1.0 means opaque</b>. <code class="inl">&lt;texture&gt;</code> can map a png instead.
+          </div>
+        </div>
+        <div class="notes-src">Point out that the range is 0–1, not 0–255. People used to web colors put in 255 and everything turns white. Giving each link a different color makes it easy to see which link moves how in RViz — that is why the example alternates green and orange.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 Chapter 05 ═══════════ -->
+    <div class="holder" data-n="18" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">05</div>
+          <div class="chap-l">
+            <h2 class="chap-t">&lt;joint&gt; — what creates motion</h2>
+            <p class="chap-d">A joint connects two links and decides <b>how that connection may move</b>.
+            We look at the six types, plus the axis and limit values that shape the real motion.</p>
+          </div>
+        </div>
+        <div class="notes-src">This is the peak of URDF. The link chapter was the static story; this one is the dynamic story. If you have an RViz demo, placing it at the end of this chapter is the dramatic choice.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 ═══════════ -->
+    <div class="holder" data-n="19">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">types</span><span class="stamp">type="..."</span></div>
+        <h2 class="slide-title">There are six kinds of joint</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>type</th><th>motion</th><th>analogy</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inl">fixed</code></td><td>does not move</td><td>base bolted to link1</td></tr>
+                <tr class="on"><td><code class="inl">revolute</code></td><td>rotation with angle limits</td><td>a fan panning side to side</td></tr>
+                <tr><td><code class="inl">continuous</code></td><td>unlimited continuous rotation</td><td>a car wheel</td></tr>
+                <tr><td><code class="inl">prismatic</code></td><td>straight travel along one axis</td><td>a sliding drawer</td></tr>
+                <tr><td><code class="inl">floating</code></td><td>6-DoF travel + rotation</td><td class="faint">a free-floating body</td></tr>
+                <tr><td><code class="inl">planar</code></td><td>travel + rotation on one plane</td><td class="faint">an object gliding on a plane</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="notes-src">In practice only four get used: fixed · revolute · continuous · prismatic. Saying that floating and planar are in the standard but rare in real robot URDFs takes memorization pressure off the audience. The revolute vs continuous difference (limits or not) shows up in the quiz too.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 ═══════════ -->
+    <div class="holder" data-n="20">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">wiring</span><span class="stamp">parent · child</span></div>
+        <h2 class="slide-title">Joints tie parent to child and build the tree</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">&lt;parent&gt;</code>·<code class="inl">&lt;child&gt;</code> — <b>the side nearer the base is the parent</b></li>
+              <li>The tree is built here: base → link1 → link2 → …</li>
+              <li><code class="inl">&lt;origin&gt;</code> — joint position relative to the parent link</li>
+              <li><code class="inl">type</code> decides how this connection moves</li>
+            </ul>
+            <pre class="code sm">&lt;<span class="t-key">joint</span> name=<span class="t-str">"link1_link2"</span> type=<span class="t-str">"revolute"</span>&gt;
+  &lt;<span class="t-key">origin</span> xyz=<span class="t-str">"0.0 0.0 0.5"</span> rpy=<span class="t-str">"0.0 0.0 0.0"</span>/&gt;
+  &lt;<span class="t-key">parent</span> link=<span class="t-str">"link1"</span>/&gt;
+  &lt;<span class="t-key">child</span>  link=<span class="t-str">"link2"</span>/&gt;
+  &lt;<span class="t-key">axis</span> xyz=<span class="t-str">"0 0 1"</span>/&gt;
+  &lt;<span class="t-key">limit</span> lower=<span class="t-num">"-2.617"</span> upper=<span class="t-num">"2.617"</span>
+         effort=<span class="t-num">"30.0"</span> velocity=<span class="t-num">"1.571"</span>/&gt;
+&lt;/<span class="t-key">joint</span>&gt;</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">naming rule</span>
+            Put both linked names in the joint name, like <code class="inl">link1_link2</code>, and you can read the tree by eye.
+          </div>
+        </div>
+        <div class="notes-src">Point out why origin z is 0.5 — link1 is 0.5 long, so the next joint sits at its end. In other words a joint's origin says "where on the parent link do I mount this joint." Once that clicks, time lost wandering through URDF coordinates drops sharply.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">motion</span><span class="stamp">axis · limit</span></div>
+        <h2 class="slide-title"><code class="inl">&lt;axis&gt;</code> and <code class="inl">&lt;limit&gt;</code> decide the real motion</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">axis xyz="0 0 1"</code> — <b>rotates about z.</b> Pans like a fan's neck</li>
+              <li><code class="inl">axis xyz="0 1 0"</code> — <b>rotates about y.</b> Bends up and down like an elbow</li>
+              <li><code class="inl">lower</code>·<code class="inl">upper</code> — rotation range, in radians</li>
+              <li><code class="inl">effort</code> — force at the joint (N), <code class="inl">velocity</code> — speed (rad/s)</li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">&lt;!-- joint that turns like a neck --&gt;</span>
+&lt;<span class="t-key">axis</span> xyz=<span class="t-str">"0.0 0.0 1.0"</span>/&gt;
+
+<span class="t-cm">&lt;!-- joint that bends like an elbow --&gt;</span>
+&lt;<span class="t-key">axis</span> xyz=<span class="t-str">"0.0 1.0 0.0"</span>/&gt;
+
+&lt;<span class="t-key">limit</span> lower=<span class="t-num">"-2.617"</span> upper=<span class="t-num">"2.617"</span>
+       effort=<span class="t-num">"30.0"</span> velocity=<span class="t-num">"1.571"</span>/&gt;</pre>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">2.617 rad ≈ 150°</span>
+            Changing values and turning the joint yourself in RViz is the fastest way to understand URDF.
+          </div>
+        </div>
+        <div class="notes-src">What matters is that the axis follows the <b>robot's reference frame</b>. In the example link1_link2 uses z while link2_link3 and link3_link4 use y, so the first joint swings the whole arm sideways and the other two fold and unfold it. Move them one at a time with the joint_state_publisher GUI sliders in RViz and it lands immediately.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 Chapter 06 ═══════════ -->
+    <div class="holder" data-n="22" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">06</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Show it in RViz and move the joints</h2>
+            <p class="chap-d">The file alone tells you little. Launch three nodes and the robot appears
+            on screen, with sliders to turn its joints by hand.</p>
+          </div>
+        </div>
+        <div class="notes-src">Results start here. If you prepared a demo video or screenshots, use them in this chapter. Spend the most time making the node structure (23) land, and move fast through the launch file code (24).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">structure</span><span class="stamp">node &amp; topic</span></div>
+        <h2 class="slide-title">The launch file starts three nodes</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node"><span class="n-t">joint_state_publisher_gui</span><span class="n-p">produces joint values from sliders</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">/joint_states</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">robot_state_publisher</span><span class="n-p">URDF + joint values → transforms (TF)</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">/tf · /tf_static</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">rviz2</span><span class="n-p">draws the robot in 3D from the TF it receives</span></div>
+            </div>
+          </div>
+          <p class="cap">Arrows show which way topics flow. The URDF itself is handed to robot_state_publisher up front via the <code class="inl">robot_description</code> parameter.</p>
+        </div>
+        <div class="notes-src">This one picture replaces five slides. The key is that "the side producing joint values" and "the side computing frames from them" are separated. Always add that on a real robot a driver node reading encoders takes the place of the GUI on the left — that is what makes the split make sense.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 ═══════════ -->
+    <div class="holder" data-n="24">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">hands-on</span><span class="stamp">testbot.launch.py</span></div>
+        <h2 class="slide-title">The launch file really does just one thing</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code xs"><span class="t-key">def</span> <span class="t-fn">generate_launch_description</span>():
+    urdf_file = os.path.<span class="t-fn">join</span>(
+        <span class="t-fn">get_package_share_directory</span>(<span class="t-str">'testbot_description'</span>),
+        <span class="t-str">'urdf'</span>, <span class="t-str">'testbot.urdf'</span>)
+    <span class="t-key">with</span> <span class="t-fn">open</span>(urdf_file, <span class="t-str">'r'</span>) <span class="t-key">as</span> infp:
+        robot_description_file = infp.<span class="t-fn">read</span>()
+
+    robot_state_publisher = <span class="t-fn">Node</span>(
+        package=<span class="t-str">'robot_state_publisher'</span>, executable=<span class="t-str">'robot_state_publisher'</span>,
+        parameters=[{<span class="t-str">'robot_description'</span>: robot_description_file}])
+    joint_state_publisher_gui = <span class="t-fn">Node</span>(
+        package=<span class="t-str">'joint_state_publisher_gui'</span>, executable=<span class="t-str">'joint_state_publisher_gui'</span>)
+    rviz2 = <span class="t-fn">Node</span>(
+        package=<span class="t-str">'rviz2'</span>, executable=<span class="t-str">'rviz2'</span>,
+        arguments=[<span class="t-str">'-d'</span>, rviz_display_config_file])
+
+    <span class="t-key">return</span> <span class="t-fn">LaunchDescription</span>([robot_state_publisher, joint_state_publisher_gui, rviz2])</pre>
+          <div class="callout teal">
+            <span class="lbl">this is the point</span>
+            Read the URDF file and pass it as the <code class="inl">robot_description</code> parameter. The rest is boilerplate that starts nodes.
+          </div>
+        </div>
+        <div class="notes-src">The code is trimmed to fit the slide (the original also carries output='screen', use_sim_time and more). Don't dwell — stress the one line and move on. rviz_display_config_file is the path to a .rviz file storing the RViz layout, used so you don't re-add displays every time.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 25 ═══════════ -->
+    <div class="holder" data-n="25">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">roles</span><span class="stamp">who passes what to whom</span></div>
+        <h2 class="slide-title">The two publishers do different jobs</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>node</th><th>subscribes</th><th>publishes</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inl">joint_state_publisher</code></td><td class="faint">—</td><td><code class="inl">/joint_states</code></td></tr>
+                <tr class="on"><td><code class="inl">robot_state_publisher</code></td><td><code class="inl">/joint_states</code></td><td><code class="inl">/tf</code> · <code class="inl">/tf_static</code> · <code class="inl">/robot_description</code></td></tr>
+                <tr><td><code class="inl">rviz2</code></td><td><code class="inl">/tf</code> · <code class="inl">/robot_description</code></td><td class="faint">—</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">the flow in one line</span>
+            Joint values come in, get <b>combined with the URDF into transforms</b>, and go back out. RViz only draws the result.
+          </div>
+        </div>
+        <div class="notes-src">/joint_states is sensor_msgs/msg/JointState and /tf is tf2_msgs/msg/TFMessage. Nobody needs to memorize message types, but mention that ros2 topic echo lets you watch the URDF turn into numbers. /tf_static holds only transforms that never change, such as fixed joints.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 26 ═══════════ -->
+    <div class="holder" data-n="26">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">steps</span><span class="stamp">install → build → launch</span></div>
+        <h2 class="slide-title">Install it, build it, launch it</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="steps">
+            <div class="step"><span class="s-n">1</span><div><div class="s-c">sudo apt install ros-humble-joint-state-publisher-gui ros-humble-robot-state-publisher</div><div class="s-d">install the packages behind the nodes the launch file starts</div></div></div>
+            <div class="step"><span class="s-n">2</span><div><div class="s-c">cd ~/robot_ws &amp;&amp; colcon build --symlink-install</div><div class="s-d">build the workspace</div></div></div>
+            <div class="step"><span class="s-n">3</span><div><div class="s-c">ros2 launch testbot_description testbot.launch.py</div><div class="s-d">RViz and the joint slider GUI come up together</div></div></div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">set an alias</span>
+            Shorten it with <code class="inl">alias cba='colcon build --symlink-install'</code> and the loop gets much lighter.
+          </div>
+        </div>
+        <div class="notes-src">--symlink-install matters. With it, edits to urdf or launch files take effect without rebuilding. URDF work means changing values and rechecking constantly, so this one option shortens the loop a lot. Remind people not to forget source install/local_setup.bash after building.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 27 ═══════════ -->
+    <div class="holder" data-n="27">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">shortcut</span><span class="stamp">urdf_tutorial</span></div>
+        <h2 class="slide-title">You can look without a launch file at all</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm"># install the urdf_tutorial package</span>
+$ sudo apt install ros-humble-urdf-tutorial
+
+<span class="t-cm"># pass only the model path and RViz opens</span>
+$ ros2 launch urdf_tutorial display.launch.py \
+    model:=/home/parallels/robot_ws/src/testbot_description/urdf/testbot.urdf</pre>
+          <div class="callout">
+            <span class="lbl">when to use it</span>
+            The <b>early stage</b>, while you are still changing tag values. Lean on it until you have a launch file and a .rviz config.
+          </div>
+        </div>
+        <div class="notes-src">You get exactly the same screen as with your own launch file. In the end the urdf_tutorial package just contains a launch file like the one we saw. Recommend starting here while learning URDF and writing your own package's launch file once the robot is reasonably complete.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 28 Chapter 07 ═══════════ -->
+    <div class="holder" data-n="28" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">07</div>
+          <div class="chap-l">
+            <h2 class="chap-t">How to verify, and the tooling</h2>
+            <p class="chap-d">Commands that check syntax and the tree before RViz ever opens,
+            plus <code class="inl">xacro</code>, which cuts repetition once a URDF gets long.</p>
+          </div>
+        </div>
+        <div class="notes-src">The closing chapter. If time runs out, show check_urdf (29) only and jump to xacro (31). The tool table (30) can be left as reference material.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 29 ═══════════ -->
+    <div class="holder" data-n="29">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">verify</span><span class="stamp">$ check_urdf testbot.urdf</span></div>
+        <h2 class="slide-title"><code class="inl">check_urdf</code> — syntax and link tree at once</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tree">
+            <span class="lv"><span class="k">robot name is: testbot</span></span>
+            <span class="lv"><span class="v">---------- Successfully Parsed XML ---------------</span></span>
+            <span class="lv"><span class="k">root Link: base</span> has 1 child(ren)</span>
+            <span class="lv">    child(1):  link1</span>
+            <span class="lv">        child(1):  link2</span>
+            <span class="lv">            child(1):  link3</span>
+            <span class="lv">                child(1):  <span class="v">link4</span></span>
+          </div>
+          <div class="callout">
+            <span class="lbl">what it catches</span>
+            Misspelled link names, links with no parent, breaks in the tree. Run it <b>before opening RViz</b>.
+          </div>
+        </div>
+        <div class="notes-src">The staircase indentation in the output is the tree structure. If it differs from what you intended, a joint's parent/child is wrong. RViz sometimes silently draws nothing when a URDF is broken, so running this command first is a good habit for finding problems fast.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 30 ═══════════ -->
+    <div class="holder" data-n="30">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">tools</span><span class="stamp">what each shows</span></div>
+        <h2 class="slide-title">Tools to reach for when you are stuck</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>tool</th><th>what it shows</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inl">check_urdf</code></td><td>syntax errors and the link tree</td></tr>
+                <tr><td><code class="inl">urdf_to_graphiz</code></td><td>link · joint relations and relative transforms as a PDF diagram</td></tr>
+                <tr><td><code class="inl">ros2 run tf2_tools view_frames</code></td><td>the running TF tree as a PDF</td></tr>
+                <tr><td><code class="inl">rqt</code></td><td>how nodes and topics are actually wired</td></tr>
+                <tr class="on"><td>URDF for VSCode</td><td>syntax highlighting and snippets for <code class="inl">.urdf</code>·<code class="inl">.xacro</code></td></tr>
+                <tr><td><code class="inl">rviz2</code></td><td>the final render — where you really check</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="notes-src">JetBrains PyCharm has no usable URDF plugin, so VSCode plus the URDF extension is effectively the standard. Don't count on VSCode's "ROS: Preview URDF" — it works on ROS 1 but sometimes shows a blank screen on ROS 2. urdf_to_graphiz produces both a .gv and a .pdf.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 31 ═══════════ -->
+    <div class="holder" data-n="31">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">scaling</span><span class="stamp">XML Macro</span></div>
+        <h2 class="slide-title"><code class="inl">xacro</code> turns repeated XML into macros</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>Short for XML Macro. A macro language that <b>generates</b> URDF</li>
+              <li><code class="inl">&lt;xacro:property&gt;</code> — manage a value by name</li>
+              <li>Expressions like <code class="inl">pi</code>·<code class="inl">radians(x)</code>·<code class="inl">sqrt(x)</code> are available</li>
+              <li><code class="inl">&lt;xacro:macro&gt;</code> — link · joint templates taking arguments</li>
+              <li><code class="inl">&lt;xacro:if&gt;</code> — insert a different block by condition</li>
+            </ul>
+            <pre class="code xs">&lt;<span class="t-key">xacro:property</span> name=<span class="t-str">"the_radius"</span> value=<span class="t-str">"2.1"</span> /&gt;
+&lt;<span class="t-key">geometry</span> type=<span class="t-str">"cylinder"</span> radius=<span class="t-str">"${the_radius}"</span> /&gt;
+
+<span class="t-cm">&lt;!-- no need to compute radians by hand --&gt;</span>
+&lt;<span class="t-key">xacro:property</span> name=<span class="t-str">"upper"</span> value=<span class="t-str">"${radians(150)}"</span>/&gt;
+
+&lt;<span class="t-key">xacro:macro</span> name=<span class="t-str">"link_box"</span> params=<span class="t-str">"suffix"</span>&gt;
+  &lt;<span class="t-key">link</span> name=<span class="t-str">"link_${suffix}"</span>&gt; ... &lt;/<span class="t-key">link</span>&gt;
+&lt;/<span class="t-key">xacro:macro</span>&gt;
+
+&lt;<span class="t-key">xacro:link_box</span> suffix=<span class="t-str">"1"</span> /&gt;</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">when to switch</span>
+            Plain URDF is fine up to four or five links. <b>Once you start copying blocks</b>, it is time for xacro.
+          </div>
+        </div>
+        <div class="notes-src">The testbot we built today repeats nearly identical content four times across link1–link4 — exactly where xacro is needed. Saying that being able to write radians(150) is reason enough to switch gets a lot of nods. Most real robot packages ship .urdf.xacro rather than .urdf.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 32 ═══════════ -->
+    <div class="holder" data-n="32">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">summary</span><span class="stamp">what to take away</span></div>
+        <h2 class="slide-title">Only two things to remember</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">A model is links and joints</div>
+              <p><code class="inl">&lt;link&gt;</code> for parts, <code class="inl">&lt;joint&gt;</code> for connection and motion.</p>
+              <p class="dim">visual·collision·inertial·origin·axis·limit are all details of those two</p>
+            </div>
+            <div class="card">
+              <div class="card-t">You check it in RViz</div>
+              <p>Changing values and relaunching is the fastest way to understand URDF.</p>
+              <p class="dim">but check the tree with check_urdf first</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">next steps</span>
+            Control the robot you modeled · physics simulation in Gazebo · Navigation.
+          </div>
+        </div>
+        <div class="notes-src">You can close the talk here, or continue into the quiz. The three next steps come straight from the article's "next study topics," so this is a good place to trail a follow-up talk. Take questions while staying on this slide.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 33 ═══════════ -->
+    <div class="holder" data-n="33">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">check ①</span><span class="stamp">click to reveal</span></div>
+        <h2 class="slide-title">Answer for yourself — formats and links</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>Which tool uses URDF, SDF and SRDF?</span></button>
+              <div class="q-a">URDF in RViz (modeling), SDF in Gazebo (simulation), SRDF in MoveIt (planning, collision). All three are XML, and URDF is the starting point. <span class="ref">→ Slide 04</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>Which robot structure can URDF not express?</span></button>
+              <div class="q-a">Closed-loop (parallel) structures. URDF only expresses trees, one parent per link. Flexible parts that bend or stretch are out too. <span class="ref">→ Slide 05</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span>Why keep <code class="inl">&lt;visual&gt;</code> and <code class="inl">&lt;collision&gt;</code> apart?</span></button>
+              <div class="q-a">Because the shape shown and the collision volume may differ. Enlarge collision for a safety margin, or use simple shapes instead of heavy meshes to keep it cheap. <span class="ref">→ Slide 13 · 14</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span>What does <code class="inl">&lt;origin rpy="0 0 1.5708"/&gt;</code> mean?</span></button>
+              <div class="q-a">1.5708 radians about z (yaw), roughly 90°. rpy is in radians and xyz in meters. Put degrees in raw and it faces somewhere else. <span class="ref">→ Slide 15</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>Why write only six values in <code class="inl">&lt;inertia&gt;</code>?</span></button>
+              <div class="q-a">The 3×3 inertia matrix is symmetric: ixy=iyx, ixz=izx, iyz=izy. The upper triangle ixx·ixy·ixz·iyy·iyz·izz fixes the rest. <span class="ref">→ Slide 16</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Read one question, wait 5–10 seconds, then open the answer. Q3 and Q5 split the room best. If time is short, Q2 and Q4 alone still cover the core of the earlier slides.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 34 ═══════════ -->
+    <div class="holder" data-n="34">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">check ②</span><span class="stamp">click to reveal</span></div>
+        <h2 class="slide-title">Answer for yourself — joints and running it</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>How do <code class="inl">revolute</code> and <code class="inl">continuous</code> differ?</span></button>
+              <div class="q-a">Both rotate, but revolute has lower·upper angle limits while continuous spins without any. A car wheel is continuous. <span class="ref">→ Slide 19</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>Which link is a joint's <code class="inl">&lt;parent&gt;</code>?</span></button>
+              <div class="q-a">The one nearer the base. That is how the tree base → link1 → link2 → … is built, and check_urdf prints exactly that tree. <span class="ref">→ Slide 20</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span>How wide is <code class="inl">&lt;limit lower="-2.617" upper="2.617"/&gt;</code> in degrees?</span></button>
+              <div class="q-a">About ±150°. limit angles are radians; effort next to it is newtons (N) and velocity is rad/s. <span class="ref">→ Slide 21</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span>What does <code class="inl">robot_state_publisher</code> take in and send out?</span></button>
+              <div class="q-a">It subscribes to <code class="inl">/joint_states</code>, combines it with the URDF into transforms, and publishes <code class="inl">/tf</code>·<code class="inl">/tf_static</code>. The joint values themselves come from joint_state_publisher. <span class="ref">→ Slide 23 · 25</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>How do you check a URDF quickly before writing a launch file?</span></button>
+              <div class="q-a">Run <code class="inl">check_urdf</code> for syntax and tree, then <code class="inl">ros2 launch urdf_tutorial display.launch.py model:=...</code> to put it straight into RViz. <span class="ref">→ Slide 27 · 29</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The last slide. Q5 is the habit you will use most often, so make sure to land it before closing. Leaving every answer open turns the screen into a summary while you take questions.</div>
+      </section>
+    </div>
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">Speaker notes</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">URDF Robot Modeling</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 34</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="Overview (O)">Overview</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="Speaker notes (N)">Notes</button>
+      <button class="kbtn" id="btnTheme" type="button" title="Toggle theme (T)">Theme</button>
+      <button class="kbtn" id="btnHelp" type="button" title="Shortcuts (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>Shortcuts</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>Next slide</dd>
+        <dt>← · PgUp</dt><dd>Previous slide</dd>
+        <dt>Home · End</dt><dd>First · Last</dd>
+        <dt>O</dt><dd>Slide overview</dd>
+        <dt>N</dt><dd>Speaker notes</dd>
+        <dt>T</dt><dd>Light / dark theme</dd>
+        <dt>F</dt><dd>Fullscreen</dd>
+        <dt>Esc</dt><dd>Close</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "Slide " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 카디널리티 카운터 ─────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 이미지 토글 ───────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지 스파크라인 ───────────────────────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+
+    var accent = css("--accent") || "#B98CF7";
+    var line   = css("--line") || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+
+    /* 격자 */
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    var i, y, x;
+    for (i = 1; i <= 4; i++) {
+      y = Math.round((H / 5) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (i = 1; i <= 5; i++) {
+      x = Math.round((W / 6) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    /* 결정적인 CPU 곡선 (난수 없이 재현 가능하게) */
+    var N = 180, pts = [];
+    for (i = 0; i < N; i++) {
+      var t = i / (N - 1);
+      var v = 0.42
+        + 0.16 * Math.sin(t * 8.1 + 0.6)
+        + 0.09 * Math.sin(t * 21.3 + 1.9)
+        + 0.05 * Math.sin(t * 47.7 + 4.2)
+        + 0.10 * Math.exp(-Math.pow((t - 0.68) * 9, 2));
+      v = Math.max(0.08, Math.min(0.92, v));
+      pts.push([6 + t * (W - 12), H - v * H]);
+    }
+
+    var steps = reduce ? N : 0;
+    function render(n) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = line;
+      for (i = 1; i <= 4; i++) {
+        y = Math.round((H / 5) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      for (i = 1; i <= 5; i++) {
+        x = Math.round((W / 6) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      var m = Math.max(2, n);
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, accent + "55");
+      grad.addColorStop(1, accent + "00");
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], H);
+      for (i = 0; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(pts[m - 1][0], H);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.4;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      /* 마지막 점 강조 */
+      ctx.beginPath();
+      ctx.arc(pts[m - 1][0], pts[m - 1][1], 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = accent;
+      ctx.fill();
+
+      ctx.font = "500 20px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.fillText("100%", 8, 22);
+      ctx.fillText("0", 8, H - 8);
+    }
+
+    if (reduce) { render(N); return; }
+    var n0 = 2, t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1100);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(n0, Math.round(N * e)));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>

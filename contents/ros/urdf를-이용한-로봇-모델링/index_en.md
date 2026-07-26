@@ -35,6 +35,8 @@ In addition to `URDF`, several other file formats exist for robot modeling, simu
     - Used together with `URDF`, this is an XML file that defines information such as the robot's groups, path planning, and collision checking, and is used by [MoveIt](https://moveit.ros.org/)
     - You can easily convert URDF → SRDF through the Setup Assistant program
 
+<!-- slides -->
+
 # 2. The Robot to Model — Manipulator
 
 > A manipulator is a type of robot that performs motions similar to a human arm.

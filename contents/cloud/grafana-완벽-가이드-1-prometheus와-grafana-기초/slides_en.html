@@ -1,0 +1,2357 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Prometheus and Grafana Basics — Complete Grafana Guide Part 1</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 따뜻한 표시등
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #C24A12;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(194, 74, 18, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #FF7A45;
+    --accent-ink:#170A03;
+    --accent-soft: rgba(255, 122, 69, .14);
+    --teal:      #46C7B0;
+    --teal-soft: rgba(70, 199, 176, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #FF7A45;
+  --accent-ink:#170A03;
+  --accent-soft: rgba(255, 122, 69, .14);
+  --teal:      #46C7B0;
+  --teal-soft: rgba(70, 199, 176, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #C24A12;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(194, 74, 18, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: 0 0;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+/* 높이를 채우는 2단 조판에서는 각 열이 늘어나고, 내용은 열 안에서 세로 중앙에 놓인다 */
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 그림 ──────────────────────────────────────────────────── */
+.figure { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+.figure img {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  background: var(--surface-2);
+}
+.figure figcaption, .cap {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.fit img { max-height: 100%; }
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+
+/* ── 트리 ──────────────────────────────────────────────────── */
+.tree { font-family: var(--f-mono); font-size: 15px; line-height: 2.05; }
+.tree .lv { display: block; white-space: pre; }
+.tree .k { color: var(--accent); font-weight: 600; }
+.tree .v { color: var(--ink-dim); }
+
+/* ── 쿼리 해부도 ───────────────────────────────────────────── */
+.anat { display: flex; flex-direction: column; gap: 14px; }
+.anat-q {
+  font-family: var(--f-mono);
+  font-size: 24px;
+  letter-spacing: -.01em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.anat-q .p { padding: 3px 2px; border-bottom: 2px solid transparent; }
+.anat-q .p1 { border-bottom-color: var(--accent); }
+.anat-q .p2 { border-bottom-color: var(--teal); }
+.anat-q .p3 { border-bottom-color: var(--amber); }
+.anat-q .p4 { border-bottom-color: var(--ink-faint); }
+.legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.legend .lg-i { display: flex; flex-direction: column; gap: 4px; }
+.legend .lg-b { height: 3px; width: 34px; }
+.legend .lg-n { font-size: 15px; font-weight: 700; }
+.legend .lg-d { font-size: 14px; color: var(--ink-dim); line-height: 1.42; }
+
+/* ── 카디널리티 계산기 ─────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 (Counter 슬라이드) ───────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+    <!-- ═══════════ 01 cover ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">Complete Grafana Guide · Part 1 / 4</div>
+            <h1 class="cover-title">Prometheus and<br />Grafana Basics</h1>
+            <p class="cover-sub">Collect the numbers, ask questions, draw them<br />— one lap around a minimal metrics setup</p>
+            <div class="cover-meta">
+              <span class="chip on">Metrics</span>
+              <span class="chip">PromQL</span>
+              <span class="chip">Grafana Dashboard</span>
+              <span class="chip">docker-compose</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>CPU usage</span>
+              <span>last 30m</span>
+            </div>
+            <div class="panel-body"><canvas id="heroCanvas" width="1000" height="464"></canvas></div>
+            <div class="panel-foot">
+              <span>100 - (avg by(instance) (rate(node_cpu_seconds_total{mode="idle"}[5m])) * 100)</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Greet the room and note this is part 1 of 4. Say up front that the panel on the right is what they will build themselves by the end of today.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 problem ═══════════ -->
+    <div class="holder" data-n="02">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">problem</span><span class="stamp">why monitoring</span></div>
+        <h2 class="slide-title">By the time you type <code class="inl">top</code>, it's too late</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>You hear the service got slow and ssh into the box</li>
+              <li>You can see what the CPU is doing <b>right now</b></li>
+              <li>There is no way to know what it looked like <b>30 minutes ago</b></li>
+              <li>Finding the cause needs past numbers, and they were never kept anywhere</li>
+            </ul>
+            <pre class="code sm plain"><span class="t-cm">$</span> top
+<span class="t-cm">Processes: 612 total, 3 running</span>
+<span class="t-cm">CPU usage: </span><span class="t-num">78.4%</span><span class="t-cm"> user, 9.1% sys</span>
+
+<span class="t-cm"># so what about 30 minutes ago?</span>
+<span class="t-bad">…no record</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">What monitoring does</span>
+            <b>Keep piling up</b> the numbers so you can <b>rewind</b> them later.
+          </div>
+        </div>
+        <div class="notes-src">A slide that builds rapport through shared experience. Asking “who here has run top after an incident?” for a show of hands works well. The point is history, not the live value.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 Observability ═══════════ -->
+    <div class="holder" data-n="03">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">background</span><span class="stamp">observability</span></div>
+        <h2 class="slide-title">Observability splits into three kinds of data</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Pillar</th><th>What it is</th><th>Typical tools</th><th>Today</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>Metrics</td><td>Numbers over time — CPU, memory, request counts</td><td>Prometheus, Datadog</td><td>covered</td></tr>
+                <tr><td>Logs</td><td>Event records — error messages, request logs</td><td>Loki, ELK Stack</td><td class="faint">not covered</td></tr>
+                <tr><td>Traces</td><td>Request paths — calls between services</td><td>Tempo, Jaeger</td><td class="faint">Part 3</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">Today's scope</span>
+            <b>Metrics</b> only. Collecting numbers with Prometheus and drawing them with Grafana.
+          </div>
+        </div>
+        <div class="notes-src">Do not try to explain all three. Draw the line — “logs and traces belong to other parts” — and move on. Just remember logs come back in the cardinality slide (15).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 series roadmap ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">series</span><span class="stamp">4 parts</span></div>
+        <h2 class="slide-title">Where today sits in the series</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Part</th><th>Title</th><th>Area</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>Part 1</td><td>Prometheus and Grafana Basics</td><td>Metrics basics</td></tr>
+                <tr><td>Part 2</td><td>Custom Metrics in a Go Application</td><td>Metrics in depth</td></tr>
+                <tr><td>Part 3</td><td>Distributed Tracing with Grafana Tempo</td><td>Traces</td></tr>
+                <tr><td>Part 4</td><td>Continuous Profiling with Grafana Pyroscope</td><td>Profiles</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="dim" style="margin:0;font-size:17px;">Some screens today borrow metrics from the sample app built in part 2.
+          The environment we set up today shows <code class="inl">node-exporter</code> and Prometheus' own metrics.</p>
+        </div>
+        <div class="notes-src">Saying up front that the Counter/Histogram/Summary screenshots come from the Go sample app in part 2 prevents “why can't I see this?” questions later.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 agenda ═══════════ -->
+    <div class="holder" data-n="05">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">contents</span><span class="stamp">agenda</span></div>
+        <h2 class="slide-title">What we cover today</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <p class="card-t">01 — Prometheus core concepts</p>
+              <ul class="bul" style="font-size:17px;">
+                <li>Pull-based architecture</li>
+                <li>The four metric types</li>
+                <li>Labels, time series, cardinality</li>
+              </ul>
+            </div>
+            <div class="card">
+              <p class="card-t">02 — PromQL</p>
+              <ul class="bul" style="font-size:17px;">
+                <li>The four pieces of a query</li>
+                <li>instant vector vs range vector</li>
+                <li>Three real queries, dissected</li>
+              </ul>
+            </div>
+            <div class="card">
+              <p class="card-t">03 — Grafana</p>
+              <ul class="bul" style="font-size:17px;">
+                <li>Connecting a Data Source</li>
+                <li>Dashboard · Row · Panel · Query</li>
+                <li>Reusing dashboards with Variables</li>
+              </ul>
+            </div>
+            <div class="card">
+              <p class="card-t">04 — Hands-on setup</p>
+              <ul class="bul" style="font-size:17px;">
+                <li>One docker-compose file to run it all</li>
+                <li>Scraping node-exporter metrics</li>
+                <li>A four-panel system dashboard</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Chapters 1 and 2 are concepts, 3 and 4 are hands-on. If time runs short, trim the real-world queries (24–26) and protect chapter 4.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 chapter 1 ═══════════ -->
+    <div class="holder" data-n="06" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Prometheus core concepts</h2>
+            <p class="chap-d">How metrics come in, and what shape they are stored in.
+            Get this and PromQL and dashboards are just stories told on top of it.</p>
+          </div>
+        </div>
+        <div class="notes-src">This chapter is the root of the talk. Do not rush the definition of “one time series” (14) and cardinality (15) — they are what prevent accidents later.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 architecture ═══════════ -->
+    <div class="holder" data-n="07">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">architecture</span></div>
+        <h2 class="slide-title">It <span class="em">fetches</span> metrics itself — the Pull model</h2>
+        <p class="slide-lede">As long as a target exposes a <code class="inl">/metrics</code> HTTP endpoint, Prometheus calls that address on a schedule (scrape) and pulls the values. The target never has to know where to send anything.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Node Exporter</span><span class="n-p">:9100/metrics</span></div>
+              <div class="node"><span class="n-t">Go Application</span><span class="n-p">:8080/metrics</span></div>
+              <div class="node"><span class="n-t">MySQL Exporter</span><span class="n-p">:9104/metrics</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">scrape</span><span class="l-line"></span><span class="l-lbl">every 15s</span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">Prometheus</span><span class="n-p">:9090 · TSDB · PromQL engine</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">query</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Grafana</span><span class="n-p">:3000 · dashboards</span></div>
+              <div class="node"><span class="n-t">Alertmanager</span><span class="n-p">:9093 · alert rules</span></div>
+              <div class="node mute"><span class="n-t">Slack / Email</span><span class="n-p">notify</span></div>
+            </div>
+          </div>
+          <p class="cap">The arrows show <b>which way the data flows</b>. The calls go the other way — Prometheus calls each target's <code class="inl">/metrics</code>.</p>
+        </div>
+        <div class="notes-src">Calling an exporter a “translator” lands well: it turns a system's state into text Prometheus can read. Today's lab runs only node-exporter.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 Pull vs Push ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">pull vs push</span></div>
+        <h2 class="slide-title">What Pull and Push trade away</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Aspect</th><th>Pull — Prometheus</th><th>Push — Datadog, InfluxDB</th></tr></thead>
+              <tbody>
+                <tr><td>Data flow</td><td>Server fetches from targets</td><td>Targets send to the server</td></tr>
+                <tr><td>Service discovery</td><td>Needed — must know what to scrape</td><td>Not needed — targets send directly</td></tr>
+                <tr><td>Network</td><td>Server → target reachability</td><td>Target → server reachability</td></tr>
+                <tr><td>Upside</td><td class="hl">Target health for free — failed scrape = down</td><td>Works behind a firewall</td></tr>
+                <tr><td>Downside</td><td>Hard to scrape targets behind firewalls</td><td>Missing data from a dead target is hard to spot</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">One line to remember</span>
+            With Push, when a target goes quiet you cannot tell <b>an outage from no traffic</b>. With Pull, the failed call is itself the signal.
+          </div>
+        </div>
+        <div class="notes-src">Directly tied to quiz Q1. You can also mention the exception: short-lived workloads such as Kubernetes CronJobs suit Pull poorly, and that is what Pushgateway is for.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 metric types overview ═══════════ -->
+    <div class="holder" data-n="09">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">metric types</span></div>
+        <h2 class="slide-title">There are only four metric types</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Type</th><th>Behavior</th><th>Example use</th><th>Key functions</th></tr></thead>
+              <tbody>
+                <tr><td>Counter</td><td>Only goes up (back to 0 on restart)</td><td>HTTP request count, error count</td><td class="num-col">rate(), increase()</td></tr>
+                <tr><td>Gauge</td><td>Goes up and down</td><td>CPU usage, memory, active connections</td><td class="num-col">read directly, avg_over_time()</td></tr>
+                <tr><td>Histogram</td><td>Spreads values across buckets</td><td>Response time, request size</td><td class="num-col">histogram_quantile()</td></tr>
+                <tr><td>Summary</td><td>Stores pre-computed quantiles</td><td>Response time (client-side)</td><td class="num-col">read directly</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">In practice</span>
+            You will not use all four. The two you actually reach for are <b>Counter</b> and <b>Histogram</b>.
+          </div>
+        </div>
+        <div class="notes-src">Just skim the table here. Announce that the next five slides show each type on a real graph.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 Counter (toggle) ═══════════ -->
+    <div class="holder" data-n="10">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · metric types</span><span class="stamp">counter</span></div>
+        <h2 class="slide-title">Counter — the answer is the <span class="em">slope</span>, not the value</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <div class="toggle">
+                <button class="tg" type="button" data-swap="cnt" data-target="raw" aria-pressed="true">raw cumulative</button>
+                <button class="tg" type="button" data-swap="cnt" data-target="rate" aria-pressed="false">with rate()</button>
+              </div>
+              <div class="swap" data-swap-group="cnt">
+                <div class="swap-i on stack tight" data-swap-item="raw">
+                  <pre class="code sm">http_requests_total</pre>
+                  <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">All you can read is “it keeps going up”.
+                  The drop to the floor at 14:11 is an <b>application restart</b>.</p>
+                </div>
+                <div class="swap-i stack tight" data-swap-item="rate">
+                  <pre class="code sm"><span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>])</pre>
+                  <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">5–10 per second — the real traffic shows.
+                  The line stays smooth across the restart — <b>counter resets are corrected automatically</b>.</p>
+                </div>
+              </div>
+              <div class="callout">
+                <span class="lbl">Rule</span>
+                See a Counter, think <code class="inl">rate()</code> first.
+              </div>
+            </div>
+            <div class="figure fit swap" data-swap-group="cnt">
+              <img class="swap-i on" data-swap-item="raw" src="counter-cumulative.png" alt="Grafana panel plotting the raw cumulative http_requests_total" />
+              <img class="swap-i" data-swap-item="rate" src="counter-rate.png" alt="Grafana panel showing the per-second rate computed with rate()" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Click both buttons to compare two faces of the same data. Asking the audience “can you read the current request rate off the cumulative graph?” before switching to rate() lands hard. Ties to quiz Q2.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 Gauge ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · metric types</span><span class="stamp">gauge</span></div>
+        <h2 class="slide-title">Gauge — the value itself is the answer</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <ul class="bul">
+                <li>It is the value at this instant, so it <b>goes up and down</b></li>
+                <li>CPU usage, memory used, active connections</li>
+                <li>Unlike a Counter, there is no reason to wrap it in <code class="inl">rate()</code></li>
+              </ul>
+              <pre class="code sm"><span class="t-cm"># in-flight requests right now</span>
+http_requests_in_flight
+
+<span class="t-cm"># 5-minute average</span>
+<span class="t-fn">avg_over_time</span>(node_cpu_seconds_total{<span class="t-str">mode="idle"</span>}[<span class="t-num">5m</span>])</pre>
+              <p class="cap">Here too you can see memory dip at the 14:11 restart and fill back up.</p>
+            </div>
+            <div class="figure fit">
+              <img src="gauge-memory.png" alt="Gauge panel showing memory in use" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The most intuitive type, so move fast. But slide 23 has the trap that rate() on a Gauge raises no error, so drive “no reason to use it” home here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 Histogram ═══════════ -->
+    <div class="holder" data-n="12">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · metric types</span><span class="stamp">histogram</span></div>
+        <h2 class="slide-title">Histogram — buckets are <span class="em">cumulative</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <ul class="bul">
+                <li>Stores only <b>counts per bucket</b>; percentiles are computed at query time</li>
+                <li><code class="inl">le="0.5"</code> means <b>everything under 0.5s</b>, not the 0.25–0.5s slice</li>
+                <li>For the distribution, set the panel format to <code class="inl">Heatmap</code></li>
+              </ul>
+              <pre class="code sm"><span class="t-cm"># P99 response time</span>
+<span class="t-fn">histogram_quantile</span>(<span class="t-num">0.99</span>,
+  <span class="t-fn">rate</span>(http_request_duration_seconds_bucket[<span class="t-num">5m</span>]))</pre>
+              <div class="callout">
+                <span class="lbl">How to read it</span>
+                Dark bands are where requests pile up: <b>10–25ms</b> (read API) and <b>250–500ms</b> (order-create).
+                An average would smear both into one number near 100ms.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="histogram-heatmap.png" alt="Heatmap panel showing the response time distribution" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The “trap of averages” slide. A bimodal distribution smeared into one mean resonates everywhere. Ties to quiz Q3.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 Summary ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · metric types</span><span class="stamp">summary</span></div>
+        <h2 class="slide-title">Summary — already computed, so it <span class="em">cannot be merged</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>Aspect</th><th>Histogram</th><th>Summary</th></tr></thead>
+                  <tbody>
+                    <tr><td>Quantile computed</td><td>Server (at query time)</td><td>Client (at collection)</td></tr>
+                    <tr><td>Merge across instances</td><td class="hl-teal">Possible</td><td class="hl">Impossible</td></tr>
+                    <tr><td>Change buckets/quantiles</td><td>Edit config, restart</td><td>Code change required</td></tr>
+                    <tr><td>Recommended for</td><td>Most cases</td><td>When exact quantiles are a must</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="callout">
+                <span class="lbl">Rule of thumb</span>
+                Averaging the p99 of three servers <b>does not give you a p99.</b>
+                With more than one server, use a Histogram.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="summary-quantile.png" alt="Summary panel plotting go_gc_duration_seconds per quantile label" />
+              <figcaption>GC pause times the Go runtime exports by default. The median sits near 100µs while the max swings past 500µs.</figcaption>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">It is fine to sum Summary up as “you will rarely use it”. Still, Go runtime metrics expose one, so they should recognize it. Ties to quiz Q4.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 Label and time series ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">time series</span></div>
+        <h2 class="slide-title">The unit of storage is <span class="em">one time series</span></h2>
+        <p class="slide-lede">A time series = one name tag with <code class="inl">(timestamp, value)</code> pairs appended forever. Every dot on a graph is one row.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <pre class="code xs plain">time       value
+14:30:00   1,204
+14:30:15   1,251     <span class="t-cm">← one row every 15s (scrape interval)</span>
+14:30:30   1,298
+14:30:45   1,344</pre>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">One name tag only tells you “requests went up” — not which API,
+              or how many failed. So we attach <b>labels</b>.</p>
+              <pre class="code xs">http_requests_total{<span class="t-str">method="GET" , path="/api/orders", status="200"</span>}
+http_requests_total{<span class="t-str">method="POST", path="/api/orders", status="201"</span>}
+http_requests_total{<span class="t-str">method="POST", path="/api/orders", status="500"</span>}</pre>
+              <div class="callout teal">
+                <span class="lbl">The point</span>
+                Same name, but Prometheus stores these as <b>three separate time series</b>. Labels are what make splitting and merging possible.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="promql-label-series.png" alt="Prometheus Table tab showing one metric split out by label combination" />
+              <figcaption>One metric name, but as many time series as there are label combinations.</figcaption>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">This is the most important concept in the talk. Using PromQL while believing “metric name = time series” guarantees getting stuck on aggregation (22) and division (25).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 cardinality ═══════════ -->
+    <div class="holder" data-n="15">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">cardinality</span></div>
+        <h2 class="slide-title">The shadow of labels — series grow by <span class="em">multiplication</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <div class="stack">
+              <div class="factor"><span>method</span><b>5</b><span>×</span><span>path</span><b>20</b><span>×</span><span>status</span><b>6</b></div>
+              <div class="odo-row">
+                <span class="odo sm" data-odo="600">0</span>
+                <span class="odo-cap">time series — that much is fine</span>
+              </div>
+              <div class="rule" style="margin:6px 0;"></div>
+              <div class="factor"><span>+ user_id</span><b>100,000</b><span>and you get</span></div>
+              <div class="odo-row">
+                <span class="odo" data-odo="60000000">0</span>
+              </div>
+              <p class="dim" style="margin:0;font-size:16.5px;">Every single series costs memory. Prometheus simply falls over.
+              This is called a <b>cardinality explosion</b>.</p>
+            </div>
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">One test decides it</span>
+                Can you <b>count this label's possible values in advance?</b>
+              </div>
+              <div class="cols c-2" style="gap:16px;">
+                <div class="card">
+                  <p class="card-t" style="color:var(--teal);">Fine as a label</p>
+                  <ul class="bul teal" style="font-size:16px;">
+                    <li><code class="inl">method</code></li>
+                    <li><code class="inl">status</code></li>
+                    <li><code class="inl">path</code></li>
+                  </ul>
+                </div>
+                <div class="card">
+                  <p class="card-t" style="color:var(--accent);">Send it to logs</p>
+                  <ul class="bul" style="font-size:16px;">
+                    <li><code class="inl">user_id</code></li>
+                    <li><code class="inl">session_id</code></li>
+                    <li>email · IP address</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Pause while the number climbs so the audience reads the digits. Stress that this is the number one cause of dead Prometheus servers in the field. Ties to quiz Q5.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 metric names ═══════════ -->
+    <div class="holder" data-n="16">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">naming</span></div>
+        <h2 class="slide-title">Where do those names come from?</h2>
+        <p class="slide-lede"><code class="inl">http_requests_total</code> is not built into Prometheus. Every one of these names was typed into someone's code.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <pre class="code sm"><span class="t-key">var</span> HttpRequestsTotal = prometheus.NewCounterVec(
+    prometheus.CounterOpts{
+        Name: <span class="t-str">"http_requests_total"</span>,
+        Help: <span class="t-str">"Total number of HTTP requests"</span>,
+    },
+    []<span class="t-key">string</span>{<span class="t-str">"method", "path", "status"</span>},
+)</pre>
+              <p class="cap">The third argument lists the label names this metric will use. To Prometheus a name is just a string, so
+              <code class="inl">my_stuff_counter</code> would have worked identically.</p>
+            </div>
+            <div class="stack">
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>Official naming rules</th><th>Example</th></tr></thead>
+                  <tbody>
+                    <tr><td>One domain word up front</td><td class="num-col">node_ · process_ · prometheus_</td></tr>
+                    <tr><td>Plural unit at the end</td><td class="num-col">_seconds · _bytes</td></tr>
+                    <tr><td>Cumulative counts end in _total</td><td class="num-col">http_requests_total</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>Where a name comes from</th><th>Who picks it</th></tr></thead>
+                  <tbody>
+                    <tr><td class="num-col">node_cpu_seconds_total</td><td>exporter author</td></tr>
+                    <tr><td class="num-col">go_gc_duration_seconds</td><td>registered by the library</td></tr>
+                    <tr><td class="num-col">http_requests_total</td><td>application developer</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="cap">No need to memorize names. Ask with <code class="inl">curl -s :9090/api/v1/metadata</code>, or use the autocomplete in the Prometheus UI.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">“Nobody declared them, so why do go_ metrics exist?” comes up a lot. The answer: attaching the Go client library brings the runtime metrics along with it.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 /metrics raw ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · Prometheus</span><span class="stamp">exposition format</span></div>
+        <h2 class="slide-title">What Prometheus actually scrapes</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a grow" style="min-height:0;">
+            <pre class="code xs" style="overflow:auto;"><span class="t-cm"># TYPE http_requests_total counter</span>
+http_requests_total{<span class="t-str">method="GET",path="/api/orders",status="200"</span>} <span class="t-num">272</span>
+http_requests_total{<span class="t-str">method="POST",path="/api/orders",status="201"</span>} <span class="t-num">64</span>
+http_requests_total{<span class="t-str">method="POST",path="/api/orders",status="500"</span>} <span class="t-num">8</span>
+
+<span class="t-cm"># TYPE http_requests_in_flight gauge</span>
+http_requests_in_flight <span class="t-num">0</span>
+
+<span class="t-cm"># TYPE http_request_duration_seconds histogram</span>
+..._bucket{<span class="t-str">le="0.1"</span>}   <span class="t-num">7</span>
+..._bucket{<span class="t-str">le="0.25"</span>}  <span class="t-num">32</span>
+..._bucket{<span class="t-str">le="0.5"</span>}   <span class="t-num">72</span>
+..._bucket{<span class="t-str">le="+Inf"</span>}  <span class="t-num">72</span>
+..._sum   <span class="t-num">19.577</span>
+..._count <span class="t-num">72</span>
+
+<span class="t-cm"># TYPE go_gc_duration_seconds summary</span>
+go_gc_duration_seconds{<span class="t-str">quantile="0.5"</span>} <span class="t-num">4.82e-05</span>
+go_gc_duration_seconds_sum   <span class="t-num">8.74e-05</span>
+go_gc_duration_seconds_count <span class="t-num">2</span></pre>
+            <ul class="bul" style="font-size:17px;">
+              <li><b>The <code class="inl"># TYPE</code> line is where the type comes from.</b> It starts with <code class="inl">#</code> but it is metadata, not a comment</li>
+              <li><b>A Counter gets one line per label combination.</b> Three lines here, so three series</li>
+              <li><b>A Histogram fans one name out over many lines.</b> Buckets climbing <code class="inl">7 → 32 → 72</code> and then holding is what <b>cumulative</b> means — all 72 finished within 0.5s</li>
+              <li><b>A Summary has no buckets.</b> Only finished numbers, so there is no raw material to merge</li>
+              <li><b>A Gauge is one current value and that is it</b></li>
+            </ul>
+          </div>
+        </div>
+        <div class="notes-src">Showing the raw text after all the concepts pulls the whole story together at once. If the lab is up, curling it live here is the best option.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 chapter 2 ═══════════ -->
+    <div class="holder" data-n="18" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">PromQL</h2>
+            <p class="chap-d">A Grafana panel is, in the end, one line of PromQL.
+            There is no building a dashboard without it.</p>
+          </div>
+        </div>
+        <div class="notes-src">Open with “it looks like a cipher, but the structure is simple”. Breaking it into four pieces on the next slide is the spine of this chapter.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 query anatomy ═══════════ -->
+    <div class="holder" data-n="19">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">anatomy</span></div>
+        <h2 class="slide-title">Every query is four pieces put together</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="anat">
+            <div class="anat-q"><span class="p p4">sum by(path)</span> (<span class="p p4">rate</span>(<span class="p p1">http_requests_total</span><span class="p p2">{status="500"}</span><span class="p p3">[5m]</span>))</div>
+            <div class="legend">
+              <div class="lg-i"><span class="lg-b" style="background:var(--accent)"></span><span class="lg-n">metric name</span><span class="lg-d">what to look at</span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--teal)"></span><span class="lg-n">label filter</span><span class="lg-d">which series of those</span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--amber)"></span><span class="lg-n">time range</span><span class="lg-d">over what window</span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--ink-faint)"></span><span class="lg-n">function · aggregation</span><span class="lg-d">how to compute them</span></div>
+            </div>
+            <div class="callout teal" style="margin-top:8px;">
+              <span class="lbl">Read it from the inside out</span>
+              Out of <code class="inl">http_requests_total</code> → keep only <code class="inl">status="500"</code> → take the last 5 minutes → turn it into a per-second rate → sum it by <code class="inl">path</code>.
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Use this slide as the anchor for the chapter. Saying that the following slides each zoom into one piece keeps the flow clear.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 label filters ═══════════ -->
+    <div class="holder" data-n="20">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">selector</span></div>
+        <h2 class="slide-title">Pieces 1 · 2 — the conditions inside the braces</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>Operator</th><th>Meaning</th><th>Example</th></tr></thead>
+                <tbody>
+                  <tr><td class="num-col">=</td><td>value is equal</td><td class="num-col">{method="GET"}</td></tr>
+                  <tr><td class="num-col">!=</td><td>value differs</td><td class="num-col">{device!="lo"}</td></tr>
+                  <tr><td class="num-col">=~</td><td>matches the regex</td><td class="num-col">{status=~"5.."}</td></tr>
+                  <tr><td class="num-col">!~</td><td>does not match it</td><td class="num-col">{path!~"/health.*"}</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">A common idiom</span>
+                In <code class="inl">{status=~"5.."}</code>, <code class="inl">.</code> is any single character. 500, 502 and 503 all match — that is, <b>“all 5xx”</b>.
+              </div>
+              <pre class="code sm"><span class="t-cm"># comma-separated conditions must all match</span>
+http_requests_total{<span class="t-str">method="GET"</span>, <span class="t-str">status=~"5.."</span>}</pre>
+              <p class="dim" style="margin:0;font-size:16.5px;">Dropping loopback with <code class="inl">device!="lo"</code> on a network panel,
+              or picking one filesystem with <code class="inl">mountpoint="/"</code> on a disk panel — it all happens right here.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Ties to quiz Q7. Adding that regexes are fully anchored rather than partial matches makes it precise.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 range vector ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">instant vs range</span></div>
+        <h2 class="slide-title">Piece 3 — what changes when <code class="inl">[5m]</code> is attached</h2>
+        <p class="slide-lede">The most confusing spot in PromQL, because every function demands a different <b>shape of input</b>.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <p class="card-t">instant vector — one value, right now</p>
+              <pre class="code sm plain" style="margin-bottom:10px;">http_requests_total
+<span class="t-cm"># 1 value per series (e.g. 1,344)</span></pre>
+              <p class="dim" style="margin:0;font-size:16px;">Enough when you just want to look at a Gauge.</p>
+            </div>
+            <div class="card">
+              <p class="card-t">range vector — every value in the window</p>
+              <pre class="code sm" style="margin-bottom:10px;">http_requests_total[<span class="t-num">5m</span>]
+<span class="t-cm"># 20 values per series (15s × 5m)</span></pre>
+              <p class="dim" style="margin:0;font-size:16px;"><code class="inl">rate()</code> is “increase ÷ elapsed time”, so it needs at least two values.</p>
+            </div>
+          </div>
+          <div class="cols c-2">
+            <pre class="code sm"><span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>])   <span class="t-cm">✓ works</span>
+<span class="t-fn">rate</span>(http_requests_total)       <span class="t-bad">✗ error</span></pre>
+            <div class="callout">
+              <span class="lbl">How wide should the window be</span>
+              It needs at least two samples, so keep it <b>comfortably longer than the scrape interval</b>. At 15s, a minute or more; <b>5m</b> by convention.
+              Too short and it twitches, too long and change blurs out.
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Ties to quiz Q6. “Why is [5m] there?” always comes up. Settle it here before moving on.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 aggregation ═══════════ -->
+    <div class="holder" data-n="22">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">aggregation</span></div>
+        <h2 class="slide-title">Piece 4 — putting the split series back together</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b">
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>Function</th><th>Meaning</th></tr></thead>
+                <tbody>
+                  <tr><td class="num-col">sum()</td><td>adds them all up</td></tr>
+                  <tr><td class="num-col">avg()</td><td>takes the average</td></tr>
+                  <tr><td class="num-col">max() / min()</td><td>largest / smallest</td></tr>
+                  <tr><td class="num-col">count()</td><td>counts how many series</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="stack">
+              <pre class="code sm"><span class="t-fn">sum</span>(<span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>]))
+<span class="t-cm">→ total traffic · 1 line</span>
+
+<span class="t-fn">sum</span> <span class="t-key">by</span>(path) (<span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>]))
+<span class="t-cm">→ traffic per path · one line per path</span>
+
+<span class="t-fn">sum</span> <span class="t-key">by</span>(path, status) (...)
+<span class="t-cm">→ per path × status combination</span></pre>
+              <div class="callout teal">
+                <span class="lbl">by and without</span>
+                <code class="inl">by</code> = <b>keep</b> only these labels. <code class="inl">without</code> = <b>drop</b> these labels and keep the rest.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Ties to quiz Q8. That a bare sum(...) throws away every label and collapses to a single value foreshadows the error-rate slide (25).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 functions + type trap ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · PromQL</span><span class="stamp">functions · trap</span></div>
+        <h2 class="slide-title">Four functions cover most of it — and one trap</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>Function</th><th>What it does</th><th>Metric type</th><th>Example</th></tr></thead>
+              <tbody>
+                <tr><td class="num-col">rate()</td><td>per-second average rate</td><td>Counter</td><td class="num-col">rate(http_requests_total[5m])</td></tr>
+                <tr><td class="num-col">increase()</td><td>total increase over a window</td><td>Counter</td><td class="num-col">increase(http_requests_total[1h])</td></tr>
+                <tr><td class="num-col">histogram_quantile()</td><td>computes a percentile</td><td>Histogram</td><td class="num-col">histogram_quantile(0.99, rate(...))</td></tr>
+                <tr><td class="num-col">avg_over_time()</td><td>average over a window</td><td>Gauge</td><td class="num-col">avg_over_time(metric[5m])</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="cols c-2" style="align-items:start;">
+            <div class="callout">
+              <span class="lbl">The trap — that “metric type” column is never checked</span>
+              The Prometheus server <b>does not know</b> whether a metric is a Counter or a Gauge.
+              It flattens every type into untyped floating-point time series.
+            </div>
+            <pre class="code sm"><span class="t-fn">rate</span>(node_memory_MemAvailable_bytes[<span class="t-num">5m</span>])
+<span class="t-cm">→ no error. Computes on a Gauge (result is nonsense)</span>
+
+<span class="t-fn">rate</span>(http_requests_total)
+<span class="t-bad">→ error. not a range vector</span></pre>
+          </div>
+          <p class="cap"><b>Errors catch the vector type only; matching the metric type is on you.</b>
+          The name is a decent guess — <code class="inl">_total</code> means Counter, a <code class="inl">_bucket/_sum/_count</code> set means Histogram, a <code class="inl">quantile</code> label means Summary.</p>
+        </div>
+        <div class="notes-src">This is the classic path to a quietly wrong dashboard. Worth adding that rate() on a Gauge reads every dip as a counter reset and “corrects” it away.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 real-world CPU ═══════════ -->
+    <div class="holder" data-n="24">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · query 1</span><span class="stamp">cpu %</span></div>
+        <h2 class="slide-title">CPU usage — one layer at a time from the inside</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code"><span class="t-num">100</span> - (<span class="t-fn">avg</span> <span class="t-key">by</span>(instance) (<span class="t-fn">rate</span>(node_cpu_seconds_total{<span class="t-str">mode="idle"</span>}[<span class="t-num">5m</span>])) * <span class="t-num">100</span>)</pre>
+          <div class="cols c-2a grow" style="min-height:0;">
+            <div class="steps">
+              <div class="step"><span class="s-n">1</span><div><div class="s-c">node_cpu_seconds_total{mode="idle"}</div><div class="s-d">Out of cumulative CPU time, pick only the idle mode</div></div></div>
+              <div class="step"><span class="s-n">2</span><div><div class="s-c">[5m] + rate(...)</div><div class="s-d">Slope over 5 minutes = idle seconds per second. With 8 cores you get one series per core</div></div></div>
+              <div class="step"><span class="s-n">3</span><div><div class="s-c">avg by(instance)</div><div class="s-d">Average the per-core values per host. Result is 0–1; 1 means completely idle</div></div></div>
+              <div class="step"><span class="s-n">4</span><div><div class="s-c">* 100</div><div class="s-d">Turn it into a percentage</div></div></div>
+              <div class="step"><span class="s-n">5</span><div><div class="s-c">100 - (...)</div><div class="s-d">Flip “percent idle” into “percent busy”</div></div></div>
+            </div>
+            <div class="figure fit">
+              <img src="prometheus-query-cpu.png" alt="Running the CPU usage query in the Prometheus Graph tab" />
+              <figcaption>It is faster to check in the Prometheus UI that a query returns what you want before building the dashboard.</figcaption>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The point is that no metric measures CPU usage directly, so we invert idle. It looks odd at first, but explaining that Linux reports it that way settles it.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 25 real-world error rate ═══════════ -->
+    <div class="holder" data-n="25">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · query 2</span><span class="stamp">error rate · trap</span></div>
+        <h2 class="slide-title">Error rate — without <code class="inl">sum()</code> you <span class="em">always get 1</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code"><span class="t-fn">sum</span>(<span class="t-fn">rate</span>(http_requests_total{<span class="t-str">status=~"5.."</span>}[<span class="t-num">5m</span>]))
+  / <span class="t-fn">sum</span>(<span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>])) * <span class="t-num">100</span></pre>
+          <div class="cols c-2">
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">Why sum() is needed</span>
+                Division in PromQL pairs series whose <b>label sets match exactly</b>.
+                Without <code class="inl">sum()</code>, the left <code class="inl">{status="500"}</code> pairs with the right <code class="inl">{status="500"}</code> — dividing something by itself, so <b>always 1</b>.
+              </div>
+              <pre class="code sm plain"><span class="t-cm"># without sum — always 1</span>
+{method="POST", path="/api/orders", status="500"}  <span class="t-bad">1</span>
+
+<span class="t-cm"># after sum strips the labels — the real rate</span>
+{}  <span class="t-num">5.5</span></pre>
+            </div>
+            <div class="stack">
+              <p class="dim" style="margin:0;font-size:17px;">The point is removing <code class="inl">status</code> from the labels,
+              so instead of <code class="inl">sum()</code> you can name what to keep with <code class="inl">by</code>. For a per-path error rate:</p>
+              <pre class="code sm"><span class="t-fn">sum</span> <span class="t-key">by</span>(path) (<span class="t-fn">rate</span>(http_requests_total{<span class="t-str">status=~"5.."</span>}[<span class="t-num">5m</span>]))
+  / <span class="t-fn">sum</span> <span class="t-key">by</span>(path) (<span class="t-fn">rate</span>(http_requests_total[<span class="t-num">5m</span>])) * <span class="t-num">100</span></pre>
+              <div class="callout teal">
+                <span class="lbl">Generalized</span>
+                Before dividing two queries, ask first — <b>do both sides carry the same label set?</b>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">This is 90% of the “my error rate is stuck at 100%” reports. Tell them a graph pinned flat at 1.0 should raise this suspicion.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 26 real-world memory/disk ═══════════ -->
+    <div class="holder" data-n="26">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · query 3</span><span class="stamp">memory · disk</span></div>
+        <h2 class="slide-title">Memory and disk — half the job is picking the metric</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <pre class="code sm">(<span class="t-num">1</span> - node_memory_MemAvailable_bytes
+     / node_memory_MemTotal_bytes) * <span class="t-num">100</span></pre>
+              <ul class="bul" style="font-size:16.5px;">
+                <li>No <code class="inl">rate()</code> — both are Gauges, so the current value is the answer</li>
+                <li>Both sides carry the same <code class="inl">instance</code>, <code class="inl">job</code> labels, so <b>they pair up by themselves</b>. That is where this parts ways with the error-rate query</li>
+                <li><b>MemAvailable, not MemFree</b> — Linux spends spare memory on file cache, and that cache is reclaimed the moment it is needed. Compute with MemFree and a well-cached server always looks out of memory</li>
+              </ul>
+            </div>
+            <div class="stack">
+              <pre class="code sm">(<span class="t-num">1</span> - node_filesystem_avail_bytes{<span class="t-str">mountpoint="/"</span>}
+     / node_filesystem_size_bytes{<span class="t-str">mountpoint="/"</span>}) * <span class="t-num">100</span></pre>
+              <ul class="bul" style="font-size:16.5px;">
+                <li>Same shape of calculation as memory</li>
+                <li>Filesystem metrics get <b>a separate series per mount point</b>, so pin one with <code class="inl">mountpoint</code>. Skip it and you get <code class="inl">/</code>, <code class="inl">/boot</code> and Docker overlays too</li>
+                <li><b>avail, not free</b> — Linux reserves some blocks for root only. What an ordinary process can really use is avail</li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">Lab note</span>
+            The node-exporter started by docker-compose is boxed in its container and sees only its own filesystem. If the disk query is empty,
+            check the real mount points with <code class="inl">curl -s :9100/metrics | grep "^node_filesystem_size_bytes"</code>.
+          </div>
+        </div>
+        <div class="notes-src">MemAvailable vs MemFree trips up even long-time Linux users, so it gets a good reaction. Mentioning that Docker Desktop on macOS/Windows cannot see the host disk cuts questions during the lab.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 27 chapter 3 ═══════════ -->
+    <div class="holder" data-n="27" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Grafana</h2>
+            <p class="chap-d">An open-source dashboard tool that plugs into many data sources and visualizes them.
+            Besides Prometheus it can talk to Loki, Tempo, MySQL and Elasticsearch.</p>
+          </div>
+        </div>
+        <div class="notes-src">Point out that Grafana stores nothing. Prometheus stores, Grafana draws.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 28 Data Source ═══════════ -->
+    <div class="holder" data-n="28">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · Grafana</span><span class="stamp">data source</span></div>
+        <h2 class="slide-title">Data Source — register it first</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <div class="card">
+                <p class="card-t">Option 1 — from the UI</p>
+                <div class="tree">
+                  <span class="lv"><span class="k">Connections</span> → Data sources → Add</span>
+                  <span class="lv">Pick Prometheus</span>
+                  <span class="lv">URL: <span class="k">http://prometheus:9090</span></span>
+                  <span class="lv">Save &amp; Test</span>
+                </div>
+              </div>
+              <div class="callout">
+                <span class="lbl">The point</span>
+                <code class="inl">prometheus:9090</code>, not <code class="inl">localhost:9090</code> — Grafana runs in a container too, so it must reach it by <b>container name</b>.
+              </div>
+              <pre class="code xs"><span class="t-cm"># Option 2 — auto-register via provisioning</span>
+<span class="t-key">apiVersion</span>: 1
+<span class="t-key">datasources</span>:
+  - name: <span class="t-str">Prometheus</span>
+    type: <span class="t-str">prometheus</span>
+    access: <span class="t-str">proxy</span>
+    url: <span class="t-str">http://prometheus:9090</span>
+    isDefault: <span class="t-num">true</span></pre>
+            </div>
+            <div class="figure fit">
+              <img src="grafana-datasource-setup.png" alt="The Prometheus Data Source settings screen in Grafana" />
+              <figcaption>Save &amp; Test → “Successfully queried the Prometheus API”.</figcaption>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Ties to quiz Q9. If anyone in the room is new to container networking, add the line: on a docker-compose network the service name is the hostname.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 29 Dashboard structure + Panel ═══════════ -->
+    <div class="holder" data-n="29">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · Grafana</span><span class="stamp">dashboard · panel</span></div>
+        <h2 class="slide-title">Dashboard → Row → Panel → Query</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <div class="tree">
+                <span class="lv"><span class="k">Dashboard</span>  <span class="v">can be exported/imported as JSON</span></span>
+                <span class="lv">├─ <span class="k">Row</span>  <span class="v">collapsible group of panels</span></span>
+                <span class="lv">│   ├─ <span class="k">Panel</span>  <span class="v">one unit of visualization</span></span>
+                <span class="lv">│   │   └─ <span class="k">Query</span>  <span class="v">one line of PromQL</span></span>
+                <span class="lv">│   └─ <span class="k">Panel</span></span>
+                <span class="lv">└─ <span class="k">Row</span></span>
+              </div>
+              <div class="callout teal">
+                <span class="lbl">One line to remember</span>
+                One panel = <b>one PromQL query</b>. Building a dashboard is really writing queries.
+              </div>
+            </div>
+            <div class="tbl-wrap">
+              <table class="tbl sm">
+                <thead><tr><th>Panel type</th><th>Good for</th></tr></thead>
+                <tbody>
+                  <tr><td>Time series</td><td>CPU usage, request rate, response time</td></tr>
+                  <tr><td>Stat</td><td>Current uptime, total requests</td></tr>
+                  <tr><td>Gauge</td><td>Disk usage, memory usage</td></tr>
+                  <tr><td>Table</td><td>Per-instance status, Top N lists</td></tr>
+                  <tr><td>Bar chart</td><td>Errors per service, requests per endpoint</td></tr>
+                  <tr><td>Heatmap</td><td>Response time distribution, Histogram buckets</td></tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Exporting a dashboard as JSON matters a lot in practice — mention managing them as code and shipping them via provisioning.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 30 Variables ═══════════ -->
+    <div class="holder" data-n="30">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · Grafana</span><span class="stamp">variables</span></div>
+        <h2 class="slide-title">Variables — one dashboard for twenty servers</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>Field</th><th>Value</th></tr></thead>
+                  <tbody>
+                    <tr><td>Name</td><td class="num-col">instance</td></tr>
+                    <tr><td>Type</td><td>Query</td></tr>
+                    <tr><td>Data source</td><td>Prometheus</td></tr>
+                    <tr><td>Query</td><td class="num-col">label_values(node_cpu_seconds_total, instance)</td></tr>
+                    <tr><td>Multi-value</td><td>enabled</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <pre class="code xs"><span class="t-num">100</span> - (<span class="t-fn">avg</span> <span class="t-key">by</span>(instance) (<span class="t-fn">rate</span>(node_cpu_seconds_total{
+    <span class="t-str">mode="idle"</span>, <span class="t-str">instance=~"$instance"</span>}[<span class="t-num">5m</span>])) * <span class="t-num">100</span>)</pre>
+              <p class="cap">Pick an instance from the dropdown and only that instance's metrics remain.
+              Add servers and the list grows with whatever <code class="inl">label_values()</code> finds.</p>
+            </div>
+            <div class="figure fit">
+              <img src="grafana-variables-dropdown.png" alt="The instance variable dropdown at the top of the dashboard" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">With one server nobody feels the need, but by the time you are cloning a dashboard per server it is already too late.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 31 chapter 4 ═══════════ -->
+    <div class="holder" data-n="31" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Hands-on — a local setup</h2>
+            <p class="chap-d">Bring up Prometheus · Grafana · node-exporter with a single docker-compose file,
+            then build a four-panel system monitoring dashboard.</p>
+          </div>
+        </div>
+        <div class="notes-src">Live demo from here if at all possible. Pull the images beforehand, and be ready to fall back on the screenshots in the following slides.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 32 docker-compose ═══════════ -->
+    <div class="holder" data-n="32">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · hands-on</span><span class="stamp">docker-compose.yml</span></div>
+        <h2 class="slide-title">Three services and you are done</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a grow" style="min-height:0;">
+            <pre class="code xs" style="overflow:auto;"><span class="t-key">services</span>:
+  <span class="t-key">prometheus</span>:
+    image: <span class="t-str">prom/prometheus:v2.51.0</span>
+    ports: [<span class="t-str">"9090:9090"</span>]
+    volumes:
+      - <span class="t-str">./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml</span>
+    command:
+      - <span class="t-str">'--config.file=/etc/prometheus/prometheus.yml'</span>
+      - <span class="t-str">'--storage.tsdb.retention.time=7d'</span>
+
+  <span class="t-key">grafana</span>:
+    image: <span class="t-str">grafana/grafana:11.4.0</span>
+    ports: [<span class="t-str">"3000:3000"</span>]
+    environment:
+      - <span class="t-str">GF_SECURITY_ADMIN_PASSWORD=admin</span>
+    volumes:
+      - <span class="t-str">./provisioning:/etc/grafana/provisioning</span>
+
+  <span class="t-key">node-exporter</span>:
+    image: <span class="t-str">prom/node-exporter:v1.8.1</span>
+    ports: [<span class="t-str">"9100:9100"</span>]</pre>
+            <div class="stack">
+              <pre class="code sm"><span class="t-cm">></span> docker compose up -d</pre>
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>Service</th><th>Address</th></tr></thead>
+                  <tbody>
+                    <tr><td>Prometheus</td><td class="num-col">localhost:9090</td></tr>
+                    <tr><td>Grafana</td><td class="num-col">localhost:3000 · admin/admin</td></tr>
+                    <tr><td>node-exporter</td><td class="num-col">localhost:9100/metrics</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <div class="callout teal">
+                <span class="lbl">Retention</span>
+                <code class="inl">--storage.tsdb.retention.time=7d</code> — 7 days for a local lab. In production this is traded against disk.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Point out that the image tags are pinned. Leave them on latest and yesterday's working lab breaks today.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 33 prometheus.yml ═══════════ -->
+    <div class="holder" data-n="33">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · hands-on</span><span class="stamp">prometheus.yml</span></div>
+        <h2 class="slide-title"><code class="inl">scrape_configs</code> decides what gets scraped</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <pre class="code sm"><span class="t-key">global</span>:
+  scrape_interval: <span class="t-num">15s</span>      <span class="t-cm"># scrape period</span>
+  evaluation_interval: <span class="t-num">15s</span>  <span class="t-cm"># rule evaluation period</span>
+
+<span class="t-key">scrape_configs</span>:
+  <span class="t-cm"># Prometheus' own metrics</span>
+  - job_name: <span class="t-str">'prometheus'</span>
+    static_configs:
+      - targets: [<span class="t-str">'localhost:9090'</span>]
+
+  <span class="t-cm"># node-exporter system metrics</span>
+  - job_name: <span class="t-str">'node-exporter'</span>
+    static_configs:
+      - targets: [<span class="t-str">'node-exporter:9100'</span>]</pre>
+            <div class="stack">
+              <ul class="bul">
+                <li><code class="inl">scrape_interval: 15s</code> — this becomes the <b>spacing between points</b> in a time series</li>
+                <li><code class="inl">job_name</code> becomes the <code class="inl">job</code> label attached to every series</li>
+                <li>This uses <code class="inl">static_configs</code>, but real operations wire in <b>service discovery</b> such as Kubernetes or Consul</li>
+              </ul>
+              <div class="callout">
+                <span class="lbl">The price of Pull</span>
+                The server has to know “where to scrape” — that is this file. Push setups have no such file.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Connecting “service discovery needed” from the Pull vs Push table (8) to this concrete file is what makes it click.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 34 Targets ═══════════ -->
+    <div class="holder" data-n="34">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · hands-on</span><span class="stamp">status → targets</span></div>
+        <h2 class="slide-title">When something breaks, look <span class="em">here first</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack">
+              <ul class="bul">
+                <li>Prometheus web UI → <b>Status → Targets</b></li>
+                <li>Endpoint, last scrape time and how long it took are all here</li>
+                <li>If this says <code class="inl">DOWN</code>, no amount of dashboard tweaking gives you anything but <b>empty graphs</b></li>
+              </ul>
+              <div class="callout">
+                <span class="lbl">Debugging order</span>
+                ① Are the targets UP → ② does the query return values in the Prometheus UI → ③ only then the Grafana panel settings.
+                Skip the order and you burn time.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="prometheus-targets.png" alt="Two targets showing UP on the Prometheus Targets page" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Ties to quiz Q10. “My graph is empty” is the most common question during the lab, and the answer is almost always on this screen.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 35 4-panel dashboard ═══════════ -->
+    <div class="holder" data-n="35">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · hands-on</span><span class="stamp">first dashboard</span></div>
+        <h2 class="slide-title">The minimum setup for watching one server</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b grow" style="min-height:0;">
+            <div class="stack tight">
+              <pre class="code xs"><span class="t-cm"># 1. CPU usage (%)  · Unit: Percent (0-100)</span>
+<span class="t-num">100</span> - (<span class="t-fn">avg</span> <span class="t-key">by</span>(instance) (<span class="t-fn">rate</span>(node_cpu_seconds_total{<span class="t-str">mode="idle"</span>}[<span class="t-num">5m</span>])) * <span class="t-num">100</span>)
+
+<span class="t-cm"># 2. Memory usage (%)</span>
+(<span class="t-num">1</span> - node_memory_MemAvailable_bytes / node_memory_MemTotal_bytes) * <span class="t-num">100</span>
+
+<span class="t-cm"># 3. Disk I/O  · Unit: Bytes/sec (IEC)</span>
+<span class="t-fn">rate</span>(node_disk_read_bytes_total[<span class="t-num">5m</span>])
+<span class="t-fn">rate</span>(node_disk_written_bytes_total[<span class="t-num">5m</span>])
+
+<span class="t-cm"># 4. Network traffic  · Unit: Bytes/sec (IEC)</span>
+<span class="t-fn">rate</span>(node_network_receive_bytes_total{<span class="t-str">device!="lo"</span>}[<span class="t-num">5m</span>])
+<span class="t-fn">rate</span>(node_network_transmit_bytes_total{<span class="t-str">device!="lo"</span>}[<span class="t-num">5m</span>])</pre>
+              <div class="callout">
+                <span class="lbl">If the legend looks messy</span>
+                Disk and network produce one series per device. Keep only real devices with <code class="inl">device=~"nvme.*|sd.*"</code>, or turn the legend off.
+              </div>
+            </div>
+            <div class="figure fit">
+              <img src="grafana-system-dashboard.png" alt="System monitoring dashboard with four panels: CPU, memory, disk and network" />
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Stress that skipping Unit leaves the y-axis as bare numbers that are hard to read. Setting a Unit per panel changes dashboard quality dramatically.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 36 recap ═══════════ -->
+    <div class="holder" data-n="36">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">wrap-up</span><span class="stamp">recap</span></div>
+        <h2 class="slide-title">What to take away today</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <ul class="bul" style="font-size:20px;gap:16px;">
+            <li>Prometheus is <b>Pull</b>-based — it scrapes the <code class="inl">/metrics</code> endpoints exporters expose</li>
+            <li>There are four metric types, but the ones you actually reach for are <b>Counter and Histogram</b></li>
+            <li>PromQL is mostly covered by four functions: <code class="inl">rate()</code> · <code class="inl">increase()</code> · <code class="inl">histogram_quantile()</code> · <code class="inl">avg_over_time()</code></li>
+            <li>Labels slice a metric into dimensions, but <b>a unique identifier blows cardinality up</b></li>
+            <li>A Grafana dashboard is <b>Data Source → Dashboard → Row → Panel → Query</b></li>
+            <li>Prometheus + Grafana + node-exporter come up from <b>a single docker-compose file</b></li>
+          </ul>
+        </div>
+        <div class="notes-src">Reading the six lines aloud is enough of a recap on its own. It is fine to start taking questions here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 37 quiz ═══════════ -->
+    <div class="holder" data-n="37">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">check</span><span class="stamp">click to reveal</span></div>
+        <h2 class="slide-title">Answer these yourself</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>A cumulative Counter graph drops to the floor at some point. What happened?</span></button>
+              <div class="q-a">The application restarted and the counter began again at 0. <code class="inl">rate()</code> corrects for that break, so the line does not jump there. <span class="ref">→ Slide 10</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>Which requests land in a Histogram's <code class="inl">le="0.5"</code> bucket?</span></button>
+              <div class="q-a">Every request of 0.5s <b>or less</b>, not just the 0.25–0.5s slice. Buckets are cumulative, so values keep growing to the right. <span class="ref">→ Slide 12</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span>You need the p99 across three servers. Histogram or Summary?</span></button>
+              <div class="q-a">Histogram. A Summary only hands over quantiles each server already computed, so they cannot be merged — averaging three p99s is not the overall p99. <span class="ref">→ Slide 13</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span>Someone wants <code class="inl">user_id</code> as a Label to see requests per user. Why stop them?</span></button>
+              <div class="q-a">Series count grows as the product of label value counts. 600 series times 100,000 users is 60 million. Values you cannot count belong in logs. <span class="ref">→ Slide 15</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>Why does <code class="inl">rate(http_requests_total)</code> fail?</span></button>
+              <div class="q-a">Without a range, each series yields one current value (an instant vector). “Increase ÷ elapsed time” needs at least two, so add <code class="inl">[5m]</code> to make it a range vector. <span class="ref">→ Slide 21</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q6</span><span>The dashboard is built but every panel is empty. Where do you look first?</span></button>
+              <div class="q-a"><b>Status → Targets</b> in the Prometheus web UI. If a target is <code class="inl">DOWN</code> there is no data at all, so touching queries or panel settings is pointless. <span class="ref">→ Slide 34</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Let the audience answer first, then click to open. If time is short, Q4 and Q6 alone are enough.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 38 next part ═══════════ -->
+    <div class="holder" data-n="38">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">next</span><span class="stamp">part 2</span></div>
+        <h2 class="slide-title">Next — Custom Metrics in a Go Application</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <p class="dim" style="margin:0;font-size:18px;line-height:1.6;">One step past the system metrics node-exporter gives you,
+              <b>we instrument a Go application directly.</b> HTTP request counts and response times, of course,
+              plus <b>business metrics</b> like order volume, all the way up into Grafana.</p>
+              <div class="callout">
+                <span class="lbl">Among today's screens</span>
+                The Counter · Histogram · Summary screenshots came from that very sample app.
+              </div>
+            </div>
+            <div class="card">
+              <p class="card-t">References</p>
+              <ul class="bul" style="font-size:16.5px;gap:9px;">
+                <li>Full code — <code class="inl">github.com/kenshin579/tutorials-go</code> <span class="faint">/monitoring/grafana-metrics</span></li>
+                <li>Prometheus docs — <code class="inl">prometheus.io/docs</code></li>
+                <li>PromQL querying guide — <code class="inl">prometheus.io/docs/prometheus/latest/querying/basics</code></li>
+                <li>Grafana docs — <code class="inl">grafana.com/docs/grafana/latest</code></li>
+                <li>node-exporter — <code class="inl">github.com/prometheus/node_exporter</code></li>
+                <li>Dashboard Best Practices — <code class="inl">grafana.com/docs/grafana/latest/dashboards/build-dashboards/best-practices</code></li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">Thank you</span>
+            Questions welcome — <code class="inl">advenoh.pe.kr</code>
+          </div>
+        </div>
+        <div class="notes-src">Take Q&amp;A with the GitHub repo URL up on the screen.</div>
+      </section>
+    </div>
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">Speaker notes</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">Prometheus &amp; Grafana Basics</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 38</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="Overview (O)">Overview</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="Speaker notes (N)">Notes</button>
+      <button class="kbtn" id="btnTheme" type="button" title="Toggle theme (T)">Theme</button>
+      <button class="kbtn" id="btnHelp" type="button" title="Shortcuts (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>Shortcuts</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>Next slide</dd>
+        <dt>← · PgUp</dt><dd>Previous slide</dd>
+        <dt>Home · End</dt><dd>First · Last</dd>
+        <dt>O</dt><dd>Slide overview</dd>
+        <dt>N</dt><dd>Speaker notes</dd>
+        <dt>T</dt><dd>Light / dark theme</dd>
+        <dt>F</dt><dd>Fullscreen</dd>
+        <dt>Esc</dt><dd>Close</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "Slide " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 카디널리티 카운터 ─────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 이미지 토글 ───────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지 스파크라인 ───────────────────────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+
+    var accent = css("--accent") || "#FF7A45";
+    var line   = css("--line") || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+
+    /* 격자 */
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    var i, y, x;
+    for (i = 1; i <= 4; i++) {
+      y = Math.round((H / 5) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (i = 1; i <= 5; i++) {
+      x = Math.round((W / 6) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    /* 결정적인 CPU 곡선 (난수 없이 재현 가능하게) */
+    var N = 180, pts = [];
+    for (i = 0; i < N; i++) {
+      var t = i / (N - 1);
+      var v = 0.42
+        + 0.16 * Math.sin(t * 8.1 + 0.6)
+        + 0.09 * Math.sin(t * 21.3 + 1.9)
+        + 0.05 * Math.sin(t * 47.7 + 4.2)
+        + 0.10 * Math.exp(-Math.pow((t - 0.68) * 9, 2));
+      v = Math.max(0.08, Math.min(0.92, v));
+      pts.push([6 + t * (W - 12), H - v * H]);
+    }
+
+    var steps = reduce ? N : 0;
+    function render(n) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = line;
+      for (i = 1; i <= 4; i++) {
+        y = Math.round((H / 5) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      for (i = 1; i <= 5; i++) {
+        x = Math.round((W / 6) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      var m = Math.max(2, n);
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, accent + "55");
+      grad.addColorStop(1, accent + "00");
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], H);
+      for (i = 0; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(pts[m - 1][0], H);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.4;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      /* 마지막 점 강조 */
+      ctx.beginPath();
+      ctx.arc(pts[m - 1][0], pts[m - 1][1], 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = accent;
+      ctx.fill();
+
+      ctx.font = "500 20px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.fillText("100%", 8, 22);
+      ctx.fillText("0", 8, H - 8);
+    }
+
+    if (reduce) { render(N); return; }
+    var n0 = 2, t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1100);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(n0, Math.round(N * e)));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>

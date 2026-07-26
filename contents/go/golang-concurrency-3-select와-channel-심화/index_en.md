@@ -66,6 +66,8 @@ func TestSelectMultipleReady(t *testing.T) {
 }
 ```
 
+<!-- slides -->
+
 # 2. Using the default Case
 
 Adding a `default` case makes it **non-blocking**. When no channel is ready, default runs immediately.
