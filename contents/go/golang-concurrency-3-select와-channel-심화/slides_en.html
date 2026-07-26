@@ -1,0 +1,1874 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Select and Advanced Channel Patterns — Golang Concurrency Part 3</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 따뜻한 표시등
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0B6E8C;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(11, 110, 140, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #4FD3F4;
+    --accent-ink:#04222C;
+    --accent-soft: rgba(79, 211, 244, .14);
+    --teal:      #46C7B0;
+    --teal-soft: rgba(70, 199, 176, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #4FD3F4;
+  --accent-ink:#04222C;
+  --accent-soft: rgba(79, 211, 244, .14);
+  --teal:      #46C7B0;
+  --teal-soft: rgba(70, 199, 176, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0B6E8C;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(11, 110, 140, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: 0 0;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+/* 높이를 채우는 2단 조판에서는 각 열이 늘어나고, 내용은 열 안에서 세로 중앙에 놓인다 */
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 그림 ──────────────────────────────────────────────────── */
+.figure { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+.figure img {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  background: var(--surface-2);
+}
+.figure figcaption, .cap {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.fit img { max-height: 100%; }
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+
+/* ── 트리 ──────────────────────────────────────────────────── */
+.tree { font-family: var(--f-mono); font-size: 15px; line-height: 2.05; }
+.tree .lv { display: block; white-space: pre; }
+.tree .k { color: var(--accent); font-weight: 600; }
+.tree .v { color: var(--ink-dim); }
+
+/* ── 쿼리 해부도 ───────────────────────────────────────────── */
+.anat { display: flex; flex-direction: column; gap: 14px; }
+.anat-q {
+  font-family: var(--f-mono);
+  font-size: 24px;
+  letter-spacing: -.01em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.anat-q .p { padding: 3px 2px; border-bottom: 2px solid transparent; }
+.anat-q .p1 { border-bottom-color: var(--accent); }
+.anat-q .p2 { border-bottom-color: var(--teal); }
+.anat-q .p3 { border-bottom-color: var(--amber); }
+.anat-q .p4 { border-bottom-color: var(--ink-faint); }
+.legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.legend .lg-i { display: flex; flex-direction: column; gap: 4px; }
+.legend .lg-b { height: 3px; width: 34px; }
+.legend .lg-n { font-size: 15px; font-weight: 700; }
+.legend .lg-d { font-size: 14px; color: var(--ink-dim); line-height: 1.42; }
+
+/* ── 카디널리티 계산기 ─────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 (Counter 슬라이드) ───────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+    <!-- ═══════════ 01 Cover ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">Golang Concurrency · Part 3 / 11</div>
+            <h1 class="cover-title">Select &amp; Advanced<br />Channel Patterns</h1>
+            <p class="cover-sub">The one construct that waits on <b>many channels at once</b><br />— timeout · fan-in/out · nil channel</p>
+            <div class="cover-meta">
+              <span class="chip on">select</span>
+              <span class="chip">timeout</span>
+              <span class="chip">fan-in · fan-out</span>
+              <span class="chip">nil channel</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>five faces of select</span>
+              <span>keyword × 1</span>
+            </div>
+            <div class="panel-body" style="display:block;padding:22px 20px;">
+              <div class="tree">
+                <span class="lv"><span class="k">select</span></span>
+                <span class="lv">├─ case only          <span class="v">waits until one is ready</span></span>
+                <span class="lv">├─ + default          <span class="v">never waits</span></span>
+                <span class="lv">├─ + time.After       <span class="v">wakes when time is up</span></span>
+                <span class="lv">├─ case &lt;-nilCh       <span class="v">that case is off</span></span>
+                <span class="lv">└─ <span class="k">select {}</span>          <span class="v">blocks forever</span></span>
+              </div>
+            </div>
+            <div class="panel-foot">
+              <span>one case = plain &lt;-ch</span>
+              <span>several ready = random</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Greeting + part 3 of an 11-part series. The first two parts covered goroutines and channels separately, so frame today as the story of <b>combining</b> them. The right-hand panel is everything we cover — there is only one keyword, select, and it grows five faces depending on what you attach.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 The problem ═══════════ -->
+    <div class="holder" data-n="02">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">problem</span><span class="stamp">why select</span></div>
+        <h2 class="slide-title">One channel is easy. <span class="em">Two</span> is the problem</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>You want <b>whichever of two APIs answers first</b></li>
+              <li>But write <code class="inl">&lt;-ch1</code> first and no matter how fast ch2 is, you <b>sit waiting on ch1</b></li>
+              <li>And if ch1 never comes? <b>The program stops</b> on that line</li>
+              <li>The moment you fix an order, the requirement <b>whichever comes first</b> is broken</li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">// one channel: this is enough</span>
+msg := <span class="t-key">&lt;-</span>ch1
+
+<span class="t-cm">// the moment there are two —</span>
+a := <span class="t-key">&lt;-</span>ch1   <span class="t-cm">// even if ch2 is first</span>
+b := <span class="t-key">&lt;-</span>ch2   <span class="t-cm">// we never get here</span>
+
+<span class="t-cm">// select: takes whichever is ready</span>
+<span class="t-key">select</span> {
+<span class="t-key">case</span> m := <span class="t-key">&lt;-</span>ch1:
+<span class="t-key">case</span> m := <span class="t-key">&lt;-</span>ch2:
+}</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">Go's answer</span>
+            <code class="inl">select</code> is the syntax that <b>lines up several channel operations and picks the one that becomes possible first</b>. Every pattern today derives from it.
+          </div>
+        </div>
+        <div class="notes-src">Opening with "how did you write the code that fires two requests and takes the first reply?" gets a good reaction. Nail down that the problem with sequential receives is not slowness but that they <b>force an order</b>. If timeout comes up here, push it to Chapter 3.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 Series roadmap ═══════════ -->
+    <div class="holder" data-n="03">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">series</span><span class="stamp">11 parts</span></div>
+        <h2 class="slide-title">Where today sits in the series</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>Part</th><th>Title</th><th>Focus</th></tr></thead>
+              <tbody>
+                <tr><td>Part 1</td><td>Overview and Goroutine Basics</td><td>unit of execution</td></tr>
+                <tr><td>Part 2</td><td>Channels in Depth</td><td>communication</td></tr>
+                <tr class="on"><td>Part 3</td><td>Select and Advanced Channel Patterns</td><td>choice · composition</td></tr>
+                <tr><td>Part 4 · 5</td><td>The sync Package / The Context Package</td><td>sync · lifecycle</td></tr>
+                <tr><td>Part 6 · 7</td><td>Concurrency Patterns / Error Handling</td><td>design patterns</td></tr>
+                <tr><td>Part 8 · 9</td><td>Memory Model and Atomic / Race Detector</td><td>low level · debugging</td></tr>
+                <tr><td>Part 10 · 11</td><td>Real Project / go tool trace</td><td>practice · tooling</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="dim" style="margin:0;font-size:17px;">Part 1 gave the <b>unit of execution</b>, Part 2 the <b>means of communication</b>. Today <b>weaves</b> the two together.</p>
+        </div>
+        <div class="notes-src">We assume goroutines and channels are known. If someone is not there yet, point them at parts 1 and 2 and keep going. Do not spend time here — 30 seconds.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 Agenda ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">contents</span><span class="stamp">agenda</span></div>
+        <h2 class="slide-title">What we cover today</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="steps">
+            <div class="step">
+              <span class="s-n">01</span>
+              <div><div class="s-c">Select Statement Basics</div>
+              <div class="s-d">How it differs from switch · anatomy of a case · the <b>random pick</b> when several are ready</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">02</span>
+              <div><div class="s-c">Default and Non-blocking</div>
+              <div class="s-d">Receive / send without waiting · the five shapes of select · the busy-wait trap</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">03</span>
+              <div><div class="s-c">Handling Timeouts</div>
+              <div class="s-d"><code class="inl">time.After</code> · <code class="inl">context.WithTimeout</code> · which one to pick</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">04</span>
+              <div><div class="s-c">Fan-out / Fan-in</div>
+              <div class="s-d">One out to many · many back into one · the two joined into a pipeline</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">05</span>
+              <div><div class="s-c">The Nil Channel Trick</div>
+              <div class="s-d">Using blocks-forever as a <b>switch</b> · turning off drained sources</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Chapters 1 and 2 are syntax; the real work starts at 3. If time runs short, skip the fan-out code slide (18), show only the diagram, and save Chapter 5. Flag Chapter 5 (nil channel) up front as today's highlight.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 Chapter 1 ═══════════ -->
+    <div class="holder" data-n="05" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Select Statement Basics</h2>
+            <p class="chap-d">It looks like switch, but what it chooses over is different.
+            We look at <b>what decides</b> which case runs, and what happens when <b>several are ready at once</b>.</p>
+          </div>
+        </div>
+        <div class="notes-src">A syntax chapter, so move fast. Three slides (06 · 07 · 08), and of those only 08 (the random pick) has to stick.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 select vs switch ═══════════ -->
+    <div class="holder" data-n="06">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · basics</span><span class="stamp">select vs switch</span></div>
+        <h2 class="slide-title">switch looks at <span class="em">values</span>, select at <span class="em">readiness</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>Each case is exactly one <b>channel operation</b> — receive or send</li>
+              <li>The criterion is not a value but <b>whether that op can proceed now</b></li>
+              <li>If no case can proceed, it <b>waits right there</b></li>
+              <li><b>Exactly one</b> case runs. There is no fallthrough</li>
+              <li>A select with a single case is just <code class="inl">&lt;-ch</code></li>
+            </ul>
+            <pre class="code sm"><span class="t-key">select</span> {
+<span class="t-key">case</span> msg := <span class="t-key">&lt;-</span>ch1: <span class="t-cm">// if ch1 is first</span>
+    fmt.<span class="t-fn">Println</span>(<span class="t-str">"ch1:"</span>, msg)
+<span class="t-key">case</span> msg := <span class="t-key">&lt;-</span>ch2: <span class="t-cm">// if ch2 is first</span>
+    fmt.<span class="t-fn">Println</span>(<span class="t-str">"ch2:"</span>, msg)
+}
+<span class="t-cm">// neither ready? it waits right here</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">in one line</span>
+            select is the syntax that <b>picks whichever becomes ready first</b>. Which one that is, the code does not decide.
+          </div>
+        </div>
+        <div class="notes-src">Setting it next to switch makes it click fast. "Can I put a value comparison in a case?" → No. It must be a channel operation. Mention here that send cases work too and slide 10 follows naturally.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 Anatomy of a case ═══════════ -->
+    <div class="holder" data-n="07">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · basics</span><span class="stamp">anatomy</span></div>
+        <h2 class="slide-title">One case line is made of <span class="em">four pieces</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="anat">
+            <div class="anat-q"><span class="p p4">case</span> <span class="p p1">v</span>, <span class="p p2">ok</span> := <span class="p p3">&lt;-ch</span>:</div>
+            <div class="legend">
+              <div class="lg-i"><span class="lg-b" style="background:var(--ink-faint)"></span><span class="lg-n">case</span><span class="lg-d">One candidate. Only one of them runs</span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--accent)"></span><span class="lg-n">v</span><span class="lg-d">Value taken from the channel. Omit if unused</span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--teal)"></span><span class="lg-n">ok</span><span class="lg-d"><code class="inl">false</code> means the channel is <b>closed</b></span></div>
+              <div class="lg-i"><span class="lg-b" style="background:var(--amber)"></span><span class="lg-n">&lt;-ch</span><span class="lg-d">Whether this op can proceed is <b>the criterion</b></span></div>
+            </div>
+            <div class="callout teal" style="margin-top:8px;">
+              <span class="lbl">watch the ok</span>
+              A closed channel keeps handing out zero values <b>without ever blocking</b> — so that case is <b>ready forever</b>. Catching that through <code class="inl">ok</code> is where the Chapter 5 nil channel trick starts.
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The point here is to plant <code>ok</code> early. Say the sentence "a closed channel does not block" out loud once before moving on — it comes back on slide 24.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 Random pick ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · basics</span><span class="stamp">pseudo-random</span></div>
+        <h2 class="slide-title">Both ready? <span class="em">The one written first</span> does not win</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>When several cases are ready the runtime picks one <b>at random</b></li>
+              <li>It does not scan top-down — <b>never rely on source order</b></li>
+              <li>That is what prevents <b>starvation</b>, where one channel is served forever</li>
+              <li>If you need priority you have to build it outside select</li>
+            </ul>
+            <pre class="code sm">ch1Count, ch2Count := <span class="t-num">0</span>, <span class="t-num">0</span>
+<span class="t-key">for range</span> <span class="t-num">1000</span> {
+    ch1 <span class="t-key">&lt;-</span> <span class="t-num">1</span>  <span class="t-cm">// make both ready</span>
+    ch2 <span class="t-key">&lt;-</span> <span class="t-num">2</span>
+
+    <span class="t-key">select</span> {
+    <span class="t-key">case</span> <span class="t-key">&lt;-</span>ch1:
+        ch1Count++
+    <span class="t-key">case</span> <span class="t-key">&lt;-</span>ch2:
+        ch2Count++
+    }
+    <span class="t-fn">drain</span>(ch1, ch2) <span class="t-cm">// clear leftovers</span>
+}
+<span class="t-cm">// ch1: 516, ch2: 484 — roughly 50:50</span></pre>
+          </div>
+        </div>
+        <div class="notes-src">Stress that the numbers shift a little on every run if you try it yourself. "So how do I give priority?" comes up often — describe the two-level structure (an outer select checking the priority channel non-blocking, then the inner select) in words only and move on.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 Chapter 2 ═══════════ -->
+    <div class="holder" data-n="09" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Default and Non-blocking</h2>
+            <p class="chap-d">One <code class="inl">default</code> line changes the whole character of a select.
+            From <b>a structure that waits</b> to <b>one that only checks what is possible now</b>.</p>
+          </div>
+        </div>
+        <div class="notes-src">A short chapter. Two slides (10 · 11), and the busy-wait warning on 11 is the mine people step on most often in production.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 non-blocking ═══════════ -->
+    <div class="holder" data-n="10">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · default</span><span class="stamp">non-blocking</span></div>
+        <h2 class="slide-title">With default, select <span class="em">never blocks</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack tight">
+              <div class="card-t">non-blocking receive</div>
+              <pre class="code sm"><span class="t-key">select</span> {
+<span class="t-key">case</span> val := <span class="t-key">&lt;-</span>ch:
+    fmt.<span class="t-fn">Println</span>(<span class="t-str">"received:"</span>, val)
+<span class="t-key">default</span>:
+    <span class="t-cm">// empty? straight to here</span>
+    fmt.<span class="t-fn">Println</span>(<span class="t-str">"no data"</span>)
+}</pre>
+            </div>
+            <div class="stack tight">
+              <div class="card-t">non-blocking send</div>
+              <pre class="code sm">ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">1</span>)
+ch <span class="t-key">&lt;-</span> <span class="t-num">1</span> <span class="t-cm">// buffer is full</span>
+
+<span class="t-key">select</span> {
+<span class="t-key">case</span> ch <span class="t-key">&lt;-</span> <span class="t-num">2</span>:
+    fmt.<span class="t-fn">Println</span>(<span class="t-str">"sent"</span>)
+<span class="t-key">default</span>:
+    fmt.<span class="t-fn">Println</span>(<span class="t-str">"buffer full"</span>)
+}</pre>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">mnemonic</span>
+            <b>default = "if it can't happen now, skip it"</b>. Use it where a value must be received and you get code that silently drops data.
+          </div>
+        </div>
+        <div class="notes-src">The send example is the more useful one — dropping instead of blocking on a full queue is common (metrics, log shipping). Advise asking "is this data safe to drop?" first.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 The five shapes ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · default</span><span class="stamp">one-page recap</span></div>
+        <h2 class="slide-title">Five faces, <span class="em">by what you attach</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Shape</th><th>Behavior</th><th>Where</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inl">case</code> only</td><td>Blocks until one is ready</td><td>the basic form</td></tr>
+                <tr class="on"><td>+ <code class="inl">default</code></td><td>Returns at once if nothing is ready</td><td>polling · drop-tolerant send</td></tr>
+                <tr><td>+ <code class="inl">time.After</code></td><td>Wakes up when the time is up</td><td>timeout</td></tr>
+                <tr><td><code class="inl">case &lt;-nilCh</code></td><td>That case is never chosen</td><td>dynamic disabling</td></tr>
+                <tr><td><code class="inl">select {}</code></td><td>Blocks forever</td><td class="faint">deadlock — almost always a bug</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">most common mistake</span>
+            Put a select with <code class="inl">default</code> inside a <code class="inl">for</code> loop and you have <b>busy-wait</b>. Nothing is happening, yet one CPU core spins at 100%. Where you must wait, drop default and add a <b>timeout case</b>.
+          </div>
+        </div>
+        <div class="notes-src">This table is the summary of today's syntax part. Do not read it row by row — point only at row 2 (default) and row 4 (nil); row 4 also teases Chapter 5. If you have a real busy-wait story, add it briefly.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 Chapter 3 ═══════════ -->
+    <div class="holder" data-n="12" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Handling Timeouts</h2>
+            <p class="chap-d">Go has no separate timeout syntax. You just add one more case — <b>a channel that delivers a value once the time passes</b>.
+            Where that channel comes from is the difference between <code class="inl">time.After</code> and <code class="inl">context</code>.</p>
+          </div>
+        </div>
+        <div class="notes-src">Production territory starts here. Three slides (13 · 14 · 15), and the comparison table on 15 is the conclusion. Even if time is tight, keep 15.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 time.After ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · timeout</span><span class="stamp">time.After</span></div>
+        <h2 class="slide-title">Timeout is not special syntax — it is <span class="em">one more case</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm">ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">string</span>)
+
+<span class="t-key">go</span> <span class="t-key">func</span>() {
+    time.<span class="t-fn">Sleep</span>(<span class="t-num">200</span> * time.Millisecond) <span class="t-cm">// slow work</span>
+    ch <span class="t-key">&lt;-</span> <span class="t-str">"result"</span>
+}()
+
+<span class="t-key">select</span> {
+<span class="t-key">case</span> msg := <span class="t-key">&lt;-</span>ch: <span class="t-cm">// result first: normal path</span>
+    t.<span class="t-fn">Log</span>(<span class="t-str">"received:"</span>, msg)
+<span class="t-key">case</span> <span class="t-key">&lt;-</span>time.<span class="t-fn">After</span>(<span class="t-num">50</span> * time.Millisecond): <span class="t-cm">// over 50ms</span>
+    t.<span class="t-fn">Log</span>(<span class="t-str">"timeout!"</span>)
+}
+<span class="t-cm">// → timeout!  (work 200ms &gt; limit 50ms)</span></pre>
+          <div class="callout">
+            <span class="lbl">what actually happens</span>
+            <code class="inl">time.After(d)</code> returns <b>a channel that receives one value after d</b>. To select it is simply one more ordinary receive case.
+          </div>
+        </div>
+        <div class="notes-src">If someone says "I expected a timeout keyword, and it's just a channel", you have succeeded. One caveat — before Go 1.23 the timer was not reclaimed until it fired, even if you left through the timeout. Used in a loop at short intervals it piled up memory. It is better now, but worth knowing.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 context.WithTimeout ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · timeout</span><span class="stamp">the production default</span></div>
+        <h2 class="slide-title">In production you use <span class="em">context.WithTimeout</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">simulateAPICall</span>(ctx context.Context, d time.Duration) (<span class="t-key">string</span>, <span class="t-key">error</span>) {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">string</span>, <span class="t-num">1</span>) <span class="t-cm">// buffer 1 — reason below</span>
+
+    <span class="t-key">go</span> <span class="t-key">func</span>() {
+        time.<span class="t-fn">Sleep</span>(d)
+        ch <span class="t-key">&lt;-</span> <span class="t-str">"api response"</span>
+    }()
+
+    <span class="t-key">select</span> {
+    <span class="t-key">case</span> result := <span class="t-key">&lt;-</span>ch:  <span class="t-cm">// if the response wins</span>
+        <span class="t-key">return</span> result, <span class="t-key">nil</span>
+    <span class="t-key">case</span> <span class="t-key">&lt;-</span>ctx.<span class="t-fn">Done</span>(): <span class="t-cm">// deadline hit · cancelled upstream</span>
+        <span class="t-key">return</span> <span class="t-str">""</span>, ctx.<span class="t-fn">Err</span>() <span class="t-cm">// context.DeadlineExceeded</span>
+    }
+}</pre>
+          <div class="callout">
+            <span class="lbl">buffer 1 is the point</span>
+            Even after we leave on timeout, the goroutine stores its value and <b>exits cleanly</b>. Unbuffered, nobody would receive it and the send would block forever — a <b>goroutine leak</b>.
+          </div>
+        </div>
+        <div class="notes-src">The caller side is <code>ctx, cancel := context.WithTimeout(...)</code> + <code>defer cancel()</code>. Point out that forgetting cancel leaves the timer alive even when the work finishes early. The buffer-1 story connects to the leak slide in part 1 — a concrete case of "build the exit path when you build the thing".</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 The two compared ═══════════ -->
+    <div class="holder" data-n="15">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · timeout</span><span class="stamp">A vs B</span></div>
+        <h2 class="slide-title">Which one, and when</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Aspect</th><th>time.After</th><th>context.WithTimeout</th></tr></thead>
+              <tbody>
+                <tr><td>Cancel propagation</td><td class="faint">None — only I bail out</td><td>Reaches child goroutines</td></tr>
+                <tr><td>Scope</td><td>one select</td><td>the whole call chain</td></tr>
+                <tr><td>Cleanup</td><td>None needed</td><td><code class="inl">defer cancel()</code> required</td></tr>
+                <tr><td>Reason</td><td class="faint">None</td><td><code class="inl">ctx.Err()</code> — deadline or cancel</td></tr>
+                <tr class="on"><td>Where</td><td>tests · one-off waits</td><td>API calls · server handlers</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">how to choose</span>
+            <b>If you alone can stop waiting</b>, <code class="inl">time.After</code>. <b>If everyone you called must stop too</b>, <code class="inl">context</code>. Production code is mostly the latter.
+          </div>
+        </div>
+        <div class="notes-src">If only one line survives: "do you bail out alone, or do you tell others?" Announce that context itself gets a whole part (5) and do not go deeper here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 Chapter 4 ═══════════ -->
+    <div class="holder" data-n="16" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Fan-out / Fan-in</h2>
+            <p class="chap-d">Hand the work out <b>to many</b> (fan-out), then gather the scattered results <b>back into one</b> (fan-in).
+            Join the two and that is a concurrent pipeline.</p>
+          </div>
+        </div>
+        <div class="notes-src">The most practical chapter today. Five slides (17–21), so it runs long. Leave the two code slides (18 · 20) on screen and talk through the comments — that keeps the timing.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 Fan-out concept ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · patterns</span><span class="stamp">fan-out</span></div>
+        <h2 class="slide-title">Fan-out — <span class="em">many share</span> one queue</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">jobs</span><span class="n-p">chan int, shared</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">pull from</span><span class="l-line"></span><span class="l-lbl">range jobs</span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Worker 1</span><span class="n-p">go func()</span></div>
+              <div class="node"><span class="n-t">Worker 2</span><span class="n-p">go func()</span></div>
+              <div class="node"><span class="n-t">Worker 3</span><span class="n-p">go func()</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">results</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">results[0]</span><span class="n-p">chan int</span></div>
+              <div class="node"><span class="n-t">results[1]</span><span class="n-p">chan int</span></div>
+              <div class="node"><span class="n-t">results[2]</span><span class="n-p">chan int</span></div>
+            </div>
+          </div>
+          <p class="cap">The arrows show <b>where the data flows</b>. All three workers compete to pull from the <b>same</b> jobs channel,
+          and who takes how many is not fixed — whoever finishes sooner takes more (load balancing for free).</p>
+        </div>
+        <div class="notes-src">The key is not "split the work into three" but "everyone drinks from one queue". With the former a slow worker holds up its whole share; with the latter it does not. Worker count usually follows the CPU count or how many concurrent requests the downstream system tolerates.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 Fan-out code ═══════════ -->
+    <div class="holder" data-n="18">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · patterns</span><span class="stamp">fan-out code</span></div>
+        <h2 class="slide-title">What stops the workers is one <span class="em">close(jobs)</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code xs">jobs, results := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">10</span>), <span class="t-fn">make</span>([]<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">3</span>)
+<span class="t-key">for</span> i := <span class="t-key">range</span> results { results[i] = <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">10</span>) }
+<span class="t-key">var</span> wg sync.WaitGroup
+<span class="t-key">for</span> i := <span class="t-key">range</span> results {
+    wg.<span class="t-fn">Add</span>(<span class="t-num">1</span>)
+    <span class="t-key">go</span> <span class="t-key">func</span>() {                   <span class="t-cm">// all three share one jobs</span>
+        <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+        <span class="t-key">for</span> job := <span class="t-key">range</span> jobs {   <span class="t-cm">// pulls until jobs is closed</span>
+            results[i] <span class="t-key">&lt;-</span> job * job
+        }
+        <span class="t-fn">close</span>(results[i])
+    }()
+}
+<span class="t-key">for</span> i := <span class="t-num">1</span>; i <span class="t-key">&lt;=</span> <span class="t-num">9</span>; i++ { jobs <span class="t-key">&lt;-</span> i }
+<span class="t-fn">close</span>(jobs)                        <span class="t-cm">// without it, workers wait forever</span>
+wg.<span class="t-fn">Wait</span>()</pre>
+          <div class="callout teal">
+            <span class="lbl">two things easy to miss</span>
+            ① Without <code class="inl">close(jobs)</code> the <code class="inl">range</code> never ends and all three workers stay alive.
+            ② Capturing the loop variable <code class="inl">i</code> straight into the goroutine is only safe on <b>Go 1.22+</b>.
+          </div>
+        </div>
+        <div class="notes-src">Do not read line by line — point at three blocks: setup / launching workers / pushing jobs and closing. The 1.22 loop-variable note matters most to people on older codebases. Mention the old style of passing <code>func(i int)</code> once.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 Fan-in concept ═══════════ -->
+    <div class="holder" data-n="19">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · patterns</span><span class="stamp">fan-in</span></div>
+        <h2 class="slide-title">Fan-in — scattered results back into <span class="em">one stream</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node"><span class="n-t">source1</span><span class="n-p">chan string</span></div>
+              <div class="node"><span class="n-t">source2</span><span class="n-p">chan string</span></div>
+              <div class="node"><span class="n-t">source3</span><span class="n-p">chan string</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">1 goroutine per source</span><span class="l-line"></span><span class="l-lbl">range ch</span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">merged</span><span class="n-p">chan string</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">consumed in one place</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">consumer</span><span class="n-p">for v := range merged</span></div>
+            </div>
+          </div>
+          <p class="cap">One goroutine per source forwards values into merged. The consumer only has to watch <b>one</b> channel.
+          In exchange, arrival order is <b>not guaranteed</b> — if you need order, pick a design other than fan-in.</p>
+        </div>
+        <div class="notes-src">The real gain of fan-in is that the consumer code gets simple. Compare it with handling three channels directly in a select — with fan-in you never touch the select cases as sources are added.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 fanIn code ═══════════ -->
+    <div class="holder" data-n="20">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · patterns</span><span class="stamp">fan-in code</span></div>
+        <h2 class="slide-title">The WaitGroup decides when to <span class="em">close</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code xs"><span class="t-key">func</span> <span class="t-fn">fanIn</span>(channels ...&lt;-<span class="t-key">chan</span> <span class="t-key">string</span>) &lt;-<span class="t-key">chan</span> <span class="t-key">string</span> {
+    <span class="t-key">var</span> wg sync.WaitGroup
+    merged := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">string</span>)
+    <span class="t-key">for</span> _, ch := <span class="t-key">range</span> channels {
+        wg.<span class="t-fn">Add</span>(<span class="t-num">1</span>)
+        <span class="t-key">go</span> <span class="t-key">func</span>() {              <span class="t-cm">// one goroutine per source</span>
+            <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+            <span class="t-key">for</span> v := <span class="t-key">range</span> ch { merged <span class="t-key">&lt;-</span> v } <span class="t-cm">// ends on close</span>
+        }()
+    }
+    <span class="t-key">go</span> <span class="t-key">func</span>() {
+        wg.<span class="t-fn">Wait</span>()                 <span class="t-cm">// wait for all of them, then</span>
+        <span class="t-fn">close</span>(merged)            <span class="t-cm">// close merged at that point</span>
+    }()
+    <span class="t-key">return</span> merged
+}</pre>
+          <div class="callout">
+            <span class="lbl">why wg.Wait() sits in a goroutine</span>
+            Waiting right here means <code class="inl">fanIn</code> <b>never returns</b>. Values only drain once the caller runs <code class="inl">range merged</code>, and the function is stuck before that — deadlock.
+          </div>
+        </div>
+        <div class="notes-src">This slide asks one question — "who closes?" Answer: <b>the sender</b>. But there are many senders, so none can close alone. That is why the WaitGroup acts as the referee that rules "everyone is done".</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 Pipeline ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · patterns</span><span class="stamp">pipeline</span></div>
+        <h2 class="slide-title">Join the two and you get a <span class="em">pipeline</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node"><span class="n-t">input</span><span class="n-p">chan Job</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">fan-out</span><span class="l-line"></span><span class="l-lbl">distribute</span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Worker 1</span><span class="n-p">process</span></div>
+              <div class="node"><span class="n-t">Worker 2</span><span class="n-p">process</span></div>
+              <div class="node"><span class="n-t">Worker 3</span><span class="n-p">process</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">fan-in</span><span class="l-line"></span><span class="l-lbl">merge</span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">output</span><span class="n-p">chan Result</span></div>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">different jobs</span>
+            Fan-out raises <b>throughput</b>; fan-in folds the scattered results <b>back into one</b>. Joined, from the outside it becomes a plain function that <b>takes one channel and returns one channel</b>.
+          </div>
+        </div>
+        <div class="notes-src">In practice you wrap this whole picture in a single function — <code>func Process(in &lt;-chan Job) &lt;-chan Result</code>. Then you can chain several such blocks into a multi-stage pipeline and tune the worker count of each stage separately. Say part 6 covers more.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 Chapter 5 ═══════════ -->
+    <div class="holder" data-n="22" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">05</div>
+          <div class="chap-l">
+            <h2 class="chap-t">The Nil Channel Trick</h2>
+            <p class="chap-d">A nil channel can do nothing — send blocks, receive blocks.
+            Inside a select, that bug-looking property becomes <b>a switch that turns a case off</b>.</p>
+          </div>
+        </div>
+        <div class="notes-src">Today's highlight. Two slides (23 · 24), but spend generous time on the code in 24. If "ah, that's why we took ok" clicks here, the talk is complete.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 Nil channel behavior ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · nil channel</span><span class="stamp">behavior</span></div>
+        <h2 class="slide-title">Blocking forever turns out to be <span class="em">useful here</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><b>Send</b> to a nil channel blocks forever</li>
+              <li><b>Receive</b> from a nil channel blocks forever too</li>
+              <li>So inside a select that case is <b>never ready</b> — effectively ignored</li>
+              <li>Meaning: assigning <code class="inl">nil</code> to the variable alone <b>turns the case off</b></li>
+            </ul>
+            <pre class="code sm"><span class="t-key">var</span> ch <span class="t-key">chan</span> <span class="t-key">int</span> <span class="t-cm">// nil</span>
+
+<span class="t-key">&lt;-</span>ch      <span class="t-cm">// blocks forever</span>
+ch <span class="t-key">&lt;-</span> <span class="t-num">1</span>  <span class="t-cm">// blocks forever</span>
+
+<span class="t-key">select</span> {
+<span class="t-key">case</span> <span class="t-key">&lt;-</span>ch:    <span class="t-cm">// never chosen</span>
+<span class="t-key">case</span> <span class="t-key">&lt;-</span>other: <span class="t-cm">// only this one lives</span>
+}</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">flip it around</span>
+            You <b>cannot delete</b> a case from a select — the code is fixed. Instead set the <b>variable it reads to nil</b> and it is as good as deleted.
+          </div>
+        </div>
+        <div class="notes-src">"Doesn't sending on a nil channel panic?" is the standard question — panic is for sending on a <b>closed</b> channel. A nil one stops quietly. Separate the two clearly right here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 Nil channel in use ═══════════ -->
+    <div class="holder" data-n="24">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · nil channel</span><span class="stamp">dynamic disabling</span></div>
+        <h2 class="slide-title">Drained sources get <span class="em">switched off with nil</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code xs"><span class="t-key">var</span> a, b = (&lt;-<span class="t-key">chan</span> <span class="t-key">int</span>)(ch1), (&lt;-<span class="t-key">chan</span> <span class="t-key">int</span>)(ch2) <span class="t-cm">// hold them as receive-only</span>
+<span class="t-key">for</span> a != <span class="t-key">nil</span> || b != <span class="t-key">nil</span> {   <span class="t-cm">// both nil = all drained</span>
+    <span class="t-key">select</span> {
+    <span class="t-key">case</span> v, ok := <span class="t-key">&lt;-</span>a:
+        <span class="t-key">if</span> !ok {
+            a = <span class="t-key">nil</span>              <span class="t-cm">// closed → turn this case off</span>
+            <span class="t-key">continue</span>
+        }
+        results = <span class="t-fn">append</span>(results, v)
+    <span class="t-key">case</span> v, ok := <span class="t-key">&lt;-</span>b:
+        <span class="t-key">if</span> !ok {
+            b = <span class="t-key">nil</span>
+            <span class="t-key">continue</span>
+        }
+        results = <span class="t-fn">append</span>(results, v)
+    }
+}</pre>
+          <div class="callout">
+            <span class="lbl">if you skip the nil</span>
+            <b>A closed channel hands out zero values instantly, forever.</b> That case keeps winning, the loop piles up <code class="inl">0</code>s and burns CPU. Turning it off is the only way.
+          </div>
+        </div>
+        <div class="notes-src">This is today's climax. First ask "what happens if we delete the two nil assignments?" and then open the callout. Two places it is used — ① merging sources and switching off the ones that finish ② turning specific channel handling on and off by condition. In both, the select structure stays and only the variable changes.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 25 Recap ═══════════ -->
+    <div class="holder" data-n="25">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">wrap-up</span><span class="stamp">recap</span></div>
+        <h2 class="slide-title">What to take away</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <ul class="bul" style="font-size:20px;gap:16px;">
+            <li>select picks <b>one ready case</b>. Several ready means <b>random</b> — never rely on source order</li>
+            <li>Adding <code class="inl">default</code> makes it non-blocking. Put that in a loop and you get <b>busy-wait</b></li>
+            <li>Timeout is not syntax but <b>one more case</b> — <code class="inl">time.After</code> or <code class="inl">ctx.Done()</code></li>
+            <li>Need cancel to <b>propagate</b>? <code class="inl">context.WithTimeout</code>, and give the result channel <b>buffer 1</b></li>
+            <li>Fan-out for throughput, fan-in to merge. <b>The sender closes</b>, and <code class="inl">WaitGroup</code> sets the moment</li>
+            <li>Assign <code class="inl">nil</code> to a channel variable and its case turns off — the idiom for drained sources</li>
+          </ul>
+        </div>
+        <div class="notes-src">Reading the six lines out loud is the whole recap. If only one survives, take the last — the nil channel trick has no counterpart in other languages. Questions are welcome from here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 26 Quiz ═══════════ -->
+    <div class="holder" data-n="26">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">check</span><span class="stamp">click to reveal</span></div>
+        <h2 class="slide-title">Answer for yourself</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>Two cases are ready at once. Does the one written first run?</span></button>
+              <div class="q-a">No. The runtime picks <b>at random</b>. If you need priority, build it outside select. <span class="ref">→ Slide 08</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>A select with <code class="inl">default</code> inside a <code class="inl">for</code> pins one CPU at 100%. Why?</span></button>
+              <div class="q-a">With nothing ready it drops to default at once, so the loop never rests — <b>busy-wait</b>. If you must wait, drop default and add a <code class="inl">time.After</code> case. <span class="ref">→ Slide 11</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span>Timing out an API call — <code class="inl">time.After</code> or <code class="inl">context</code>?</span></button>
+              <div class="q-a">context. Cancel propagates through <b>the whole call chain</b> and <code class="inl">ctx.Err()</code> tells deadline from cancel. time.After binds to that one select. <span class="ref">→ Slide 15</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span>After you bail out on timeout, what happens to the goroutine sending the result?</span></button>
+              <div class="q-a">If the result channel is <b>unbuffered</b>, nobody receives and the send blocks forever — a goroutine leak. Give it <b>buffer 1</b> and it stores the value and exits. <span class="ref">→ Slide 14</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>What happens if a closed channel stays in a select case?</span></button>
+              <div class="q-a">A closed channel <b>always returns immediately</b> with a zero value. That case keeps winning and the loop spins. Set the variable to <code class="inl">nil</code> when <code class="inl">ok == false</code> to turn the case off. <span class="ref">→ Slide 23 · 24</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Let the audience answer first, then click to open. If time is short, Q4 and Q5 alone are enough — both are mines people really step on in production.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 27 Next part ═══════════ -->
+    <div class="holder" data-n="27">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">next</span><span class="stamp">part 4</span></div>
+        <h2 class="slide-title">Next — the sync package</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <p class="dim" style="margin:0;font-size:18px;line-height:1.6;">So far it has all been about <b>passing values</b>. But moments come when many goroutines
+              must touch <b>the same memory</b>. There, a lock beats a channel.
+              Next up is the tool outside CSP — the <code class="inl">sync</code> package.</p>
+              <div class="callout">
+                <span class="lbl">left for later</span>
+                We used <code class="inl">WaitGroup</code> three times today and never explained it.
+                <code class="inl">Mutex</code> · <code class="inl">RWMutex</code> · <code class="inl">Once</code> get a proper look next time.
+              </div>
+            </div>
+            <div class="card">
+              <p class="card-t">References</p>
+              <ul class="bul" style="font-size:16.5px;gap:9px;">
+                <li>Full code — <code class="inl">github.com/kenshin579/tutorials-go</code> <span class="faint">/golang/concurrency</span></li>
+                <li>Go Tour — Select <span class="faint">go.dev/tour/concurrency/5</span></li>
+                <li>Go Blog — Pipelines and cancellation <span class="faint">go.dev/blog/pipelines</span></li>
+                <li>Previous part — Channels in Depth <span class="faint">advenoh.pe.kr</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">Thank you</span>
+            Questions welcome — <code class="inl">advenoh.pe.kr</code>
+          </div>
+        </div>
+        <div class="notes-src">Take Q&amp;A with the GitHub repo address on screen. If "channel or mutex?" comes up, answer that the first slide of the next part is exactly that.</div>
+      </section>
+    </div>
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">Speaker notes</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">Select &amp; Channels · Go Concurrency 3</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 27</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="Overview (O)">Overview</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="Speaker notes (N)">Notes</button>
+      <button class="kbtn" id="btnTheme" type="button" title="Toggle theme (T)">Theme</button>
+      <button class="kbtn" id="btnHelp" type="button" title="Shortcuts (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>Shortcuts</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>Next slide</dd>
+        <dt>← · PgUp</dt><dd>Previous slide</dd>
+        <dt>Home · End</dt><dd>First · Last</dd>
+        <dt>O</dt><dd>Slide overview</dd>
+        <dt>N</dt><dd>Speaker notes</dd>
+        <dt>T</dt><dd>Light / dark theme</dd>
+        <dt>F</dt><dd>Fullscreen</dd>
+        <dt>Esc</dt><dd>Close</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "Slide " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 카디널리티 카운터 ─────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 이미지 토글 ───────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지 스파크라인 ───────────────────────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+
+    var accent = css("--accent") || "#4FD3F4";
+    var line   = css("--line") || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+
+    /* 격자 */
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    var i, y, x;
+    for (i = 1; i <= 4; i++) {
+      y = Math.round((H / 5) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (i = 1; i <= 5; i++) {
+      x = Math.round((W / 6) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    /* 결정적인 CPU 곡선 (난수 없이 재현 가능하게) */
+    var N = 180, pts = [];
+    for (i = 0; i < N; i++) {
+      var t = i / (N - 1);
+      var v = 0.42
+        + 0.16 * Math.sin(t * 8.1 + 0.6)
+        + 0.09 * Math.sin(t * 21.3 + 1.9)
+        + 0.05 * Math.sin(t * 47.7 + 4.2)
+        + 0.10 * Math.exp(-Math.pow((t - 0.68) * 9, 2));
+      v = Math.max(0.08, Math.min(0.92, v));
+      pts.push([6 + t * (W - 12), H - v * H]);
+    }
+
+    var steps = reduce ? N : 0;
+    function render(n) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = line;
+      for (i = 1; i <= 4; i++) {
+        y = Math.round((H / 5) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      for (i = 1; i <= 5; i++) {
+        x = Math.round((W / 6) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      var m = Math.max(2, n);
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, accent + "55");
+      grad.addColorStop(1, accent + "00");
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], H);
+      for (i = 0; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(pts[m - 1][0], H);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.4;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      /* 마지막 점 강조 */
+      ctx.beginPath();
+      ctx.arc(pts[m - 1][0], pts[m - 1][1], 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = accent;
+      ctx.fill();
+
+      ctx.font = "500 20px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.fillText("100%", 8, 22);
+      ctx.fillText("0", 8, H - 8);
+    }
+
+    if (reduce) { render(N); return; }
+    var n0 = 2, t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1100);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(n0, Math.round(N * e)));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>

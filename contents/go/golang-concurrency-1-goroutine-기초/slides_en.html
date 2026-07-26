@@ -1,0 +1,2322 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Overview and Goroutine Basics — Golang Concurrency Part 1</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 Gopher Blue
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0B6E8C;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(11, 110, 140, .10);
+  --teal:      #146B4E;
+  --teal-ink:  #FFFFFF;
+  --teal-soft: rgba(20, 107, 78, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #4FD3F4;
+    --accent-ink:#04222C;
+    --accent-soft: rgba(79, 211, 244, .13);
+    --teal:      #4FC48F;
+    --teal-ink:  #06231A;
+    --teal-soft: rgba(79, 196, 143, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #4FD3F4;
+  --accent-ink:#04222C;
+  --accent-soft: rgba(79, 211, 244, .13);
+  --teal:      #4FC48F;
+  --teal-ink:  #06231A;
+  --teal-soft: rgba(79, 196, 143, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0B6E8C;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(11, 110, 140, .10);
+  --teal:      #146B4E;
+  --teal-ink:  #FFFFFF;
+  --teal-soft: rgba(20, 107, 78, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: 0 0;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+ul.bul.red > li::before { background: var(--red); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+table.tbl col.on + col, table.tbl .col-on { background: var(--accent-soft); }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.code.red { border-left-color: var(--red); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card.teal { border-color: var(--teal); }
+.card.red { border-color: var(--red); }
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 인용 ──────────────────────────────────────────────────── */
+.quote {
+  font-family: var(--f-display);
+  font-size: 38px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+.quote .em { color: var(--accent); }
+.quote .em2 { color: var(--teal); }
+.quote-by {
+  font-family: var(--f-mono);
+  font-size: 14px;
+  letter-spacing: .1em;
+  color: var(--ink-faint);
+  margin: 18px 0 0;
+}
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.teal { border-color: var(--teal); background: var(--teal-soft); }
+.node.teal .n-t { color: var(--teal); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+.arch-link.teal .l-line::after { border-left-color: var(--teal); }
+
+/* ── 공유 메모리 다이어그램 ────────────────────────────────── */
+.share { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.share .sh-full { grid-column: 1 / -1; }
+.share .sh-a {
+  text-align: center;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── 실행 레인 (동시성 vs 병렬성) ──────────────────────────── */
+.lanes { display: flex; flex-direction: column; gap: 20px; }
+.lane-h {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+}
+.lane-t { display: flex; gap: 3px; height: 40px; }
+.lane-t + .lane-t { margin-top: 3px; }
+.blk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: 2px;
+  min-width: 0;
+}
+.blk.a { background: var(--accent); color: var(--accent-ink); }
+.blk.b { background: var(--teal); color: var(--teal-ink); }
+.blk.idle {
+  background: var(--surface-2);
+  border: 1px dashed var(--line);
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+.axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  color: var(--ink-faint);
+  margin-top: 7px;
+}
+
+/* ── 스택 크기 스케일 ──────────────────────────────────────── */
+.scale { display: flex; flex-direction: column; gap: 16px; }
+.sc-row { display: grid; grid-template-columns: 132px 1fr 92px; align-items: center; gap: 14px; }
+.sc-lbl { font-size: 16.5px; font-weight: 700; }
+.sc-bar { height: 26px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+.sc-bar > span { display: block; height: 100%; background: var(--accent); min-width: 2px; }
+.sc-bar > span.teal { background: var(--teal); }
+.sc-val { font-family: var(--f-mono); font-size: 16px; color: var(--ink-dim); text-align: right; }
+
+/* ── 숫자 오도미터 ─────────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+.agenda .step { padding: 13px 0; }
+.agenda .s-c {
+  font-family: var(--f-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 ──────────────────────────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+    <!-- ═══════════ 01 Cover ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">Golang Concurrency · Part 1 / 11</div>
+            <h1 class="cover-title">Overview and<br />Goroutine Basics</h1>
+            <p class="cover-sub">Concurrency is <b>structure</b>, parallelism is <b>execution</b><br />— what one line of <code class="inl">go</code> really does</p>
+            <div class="cover-meta">
+              <span class="chip on">Concurrency</span>
+              <span class="chip">Goroutine</span>
+              <span class="chip">GMP scheduler</span>
+              <span class="chip">Leak prevention</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>goroutine schedule timeline</span>
+              <span>GOMAXPROCS = 2</span>
+            </div>
+            <div class="panel-body"><canvas id="heroCanvas" width="1000" height="464"></canvas></div>
+            <div class="panel-foot">
+              <span>go func() { … }()  ×8</span>
+              <span>M = OS thread</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Greet the room + note this is Part 1 of 11. Say up front that the picture on the right is today's conclusion — 8 goroutines taking turns on 2 OS threads. Understanding this one slide is the goal.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 The problem ═══════════ -->
+    <div class="holder" data-n="02">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">problem</span><span class="stamp">why concurrency</span></div>
+        <h2 class="slide-title">Time spent waiting becomes <span class="em">wall-clock time</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>You must call three external APIs and merge the results</li>
+              <li>100ms each — but most of that 100ms is <b>waiting for a response</b></li>
+              <li>Sequentially that is 300ms. Meanwhile the CPU <b>sits idle</b></li>
+              <li>The three calls are <b>independent</b>. Nothing stops the waits from overlapping</li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">// sequential — the waits pile up</span>
+a := fetch(u1)   <span class="t-cm">// 100ms</span>
+b := fetch(u2)   <span class="t-cm">// 100ms</span>
+c := fetch(u3)   <span class="t-cm">// 100ms</span>
+<span class="t-cm">// total 300ms</span>
+
+<span class="t-cm">// concurrent — the waits overlap</span>
+<span class="t-key">for</span> i, u := <span class="t-key">range</span> urls {
+    <span class="t-key">go</span> <span class="t-fn">func</span>() { out[i] = fetch(u) }()
+}
+wg.<span class="t-fn">Wait</span>()
+<span class="t-cm">// total ~100ms</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">Go's answer</span>
+            <code class="inl">go</code> and <code class="inl">channel</code> are provided <b>by the language itself</b>. There is no step where you pick a library.
+          </div>
+        </div>
+        <div class="notes-src">Opening with "who has written code that calls three APIs one after another?" lands fast. The key point is that the CPU is not busy, it is waiting. Preview that Chapter 3 (when to use it) also covers the opposite case — CPU-bound work.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 Series roadmap ═══════════ -->
+    <div class="holder" data-n="03">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">series</span><span class="stamp">11 parts</span></div>
+        <h2 class="slide-title">Where today sits in the whole series</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>Part</th><th>Title</th><th>Area</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>Part 1</td><td>Overview and Goroutine Basics</td><td>Execution unit</td></tr>
+                <tr><td>Parts 2 · 3</td><td>Channels in Depth / Select and Advanced Channel Patterns</td><td>Communication</td></tr>
+                <tr><td>Parts 4 · 5</td><td>Complete sync Package Guide / Complete Context Guide</td><td>Sync · lifecycle</td></tr>
+                <tr><td>Parts 6 · 7</td><td>Concurrency Patterns in Practice / Error Handling Strategies</td><td>Design patterns</td></tr>
+                <tr><td>Parts 8 · 9</td><td>Go Memory Model and Atomic / Debugging and Race Detector</td><td>Low level · debugging</td></tr>
+                <tr><td>Parts 10 · 11</td><td>Real Project and Best Practices / go tool trace Visualization</td><td>Practice · tooling</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="dim" style="margin:0;font-size:17px;">Today is the first part. The other ten all sit on top of it, so
+          <b>what a goroutine is and how it gets scheduled</b> is settled here.</p>
+        </div>
+        <div class="notes-src">Do not try to introduce the whole series. Just place today as "the part that lays the floor". Drawing a line at "channels come next time" keeps questions from running ahead.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 Agenda ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">agenda</span><span class="stamp">agenda</span></div>
+        <h2 class="slide-title">What we cover today</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="steps agenda">
+            <div class="step">
+              <span class="s-n">01</span>
+              <div><div class="s-c">What concurrency is</div>
+              <div class="s-d">Concurrency vs Parallelism · CSP model · when to use it and when not</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">02</span>
+              <div><div class="s-c">Goroutine basics</div>
+              <div class="s-d">the <code class="inl">go</code> keyword · vs OS threads · ordering and lifecycle</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">03</span>
+              <div><div class="s-c">GMP scheduler</div>
+              <div class="s-d">roles of G · M · P · work stealing · <code class="inl">GOMAXPROCS</code></div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">04</span>
+              <div><div class="s-c">Comparison with other languages</div>
+              <div class="s-d">Kotlin Coroutine · Java Platform / Virtual Thread · function coloring</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">05</span>
+              <div><div class="s-c">Goroutine leak</div>
+              <div class="s-d">why they leak · stopping them with <code class="inl">context</code> · the exit-path rule</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Chapters 1 and 2 are concept and basics, 3 is the mechanism, 4 is for an audience with background, 5 is the practical trap. If time runs short, cut Chapter 4 (language comparison) entirely and keep 5.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 Chapter 1 ═══════════ -->
+    <div class="holder" data-n="05" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">What concurrency is</h2>
+            <p class="chap-d">Concurrency and parallelism are not the same word. Starting there,
+            we look at why Go chose CSP — and <b>when not to use it</b>.</p>
+          </div>
+        </div>
+        <div class="notes-src">This chapter is conceptual and can drag. Change the rhythm — one table, one diagram, one quote — and move quickly.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 Concurrency vs Parallelism ═══════════ -->
+    <div class="holder" data-n="06">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · concept</span><span class="stamp">concurrency vs parallelism</span></div>
+        <h2 class="slide-title">Often mixed up, but <span class="em">different words</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Aspect</th><th>Concurrency</th><th>Parallelism</th></tr></thead>
+              <tbody>
+                <tr><td>Definition</td><td>Structure for <b>dealing with</b> many tasks</td><td><b>Running</b> many tasks at the same time</td></tr>
+                <tr><td>Core</td><td><b>Composition</b> of work</td><td><b>Execution</b> of work</td></tr>
+                <tr><td>CPU</td><td class="hl">Holds even on a single CPU</td><td>Needs multiple CPUs</td></tr>
+                <tr><td>Analogy</td><td>One person alternating between jobs</td><td>Several people each working at once</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">Remember just this</span>
+            Concurrency holds on a single-core machine. <b>Dealing with at once</b> and <b>running at once</b> are separate things.
+          </div>
+        </div>
+        <div class="notes-src">Ask the room "is concurrency possible on one CPU?" first — most say no. Flipping that once here makes the rest easy. Directly tied to quiz Q1.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 Execution lanes ═══════════ -->
+    <div class="holder" data-n="07">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · concept</span><span class="stamp">timeline</span></div>
+        <h2 class="slide-title">Same two tasks, two different pictures</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="lanes">
+            <div>
+              <div class="lane-h">Concurrency — 1 CPU · taking turns</div>
+              <div class="lane-t">
+                <span class="blk a" style="flex:2.2">A</span>
+                <span class="blk b" style="flex:1.6">B</span>
+                <span class="blk a" style="flex:1.2">A</span>
+                <span class="blk b" style="flex:2.4">B</span>
+                <span class="blk a" style="flex:1.8">A</span>
+                <span class="blk b" style="flex:1.4">B</span>
+                <span class="blk a" style="flex:1.4">A</span>
+              </div>
+            </div>
+            <div>
+              <div class="lane-h">Parallelism — 2 CPUs · truly at the same time</div>
+              <div class="lane-t"><span class="blk a" style="flex:0 0 55%">Task A</span><span class="blk idle" style="flex:1">idle</span></div>
+              <div class="lane-t"><span class="blk b" style="flex:0 0 45%">Task B</span><span class="blk idle" style="flex:1">idle</span></div>
+            </div>
+            <div class="axis"><span>start</span><span>time →</span><span>end</span></div>
+          </div>
+          <div class="callout">
+            <span class="lbl">Go's stance</span>
+            <b>Designing the program concurrently</b> is the developer's job; how many CPUs it runs on is <b>the runtime's call</b>.
+          </div>
+        </div>
+        <div class="notes-src">Point with your hand at how the lower two lanes finish earlier (horizontal length) for the same amount of work. Add one line that speed is not always the point of concurrency — structure comes first. With only one CPU you get the top picture, and concurrency still holds.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 Rob Pike quote ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · concept</span><span class="stamp">rob pike</span></div>
+        <h2 class="slide-title">One sentence from Go's creator</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div>
+            <p class="quote">“Concurrency is about <span class="em">dealing with</span> lots of things at once.<br />
+            Parallelism is about <span class="em2">doing</span> lots of things at once.”</p>
+            <p class="quote-by">— Rob Pike</p>
+          </div>
+          <div class="cols c-2">
+            <div class="card">
+              <p class="card-t" style="color:var(--accent);">Dealing with — structure</p>
+              <p style="margin:0;font-size:17px;line-height:1.5;" class="dim">Splitting code into <b>independently runnable units</b>. This is a story about the program's <b>structure</b>.</p>
+            </div>
+            <div class="card">
+              <p class="card-t" style="color:var(--teal);">Doing — execution</p>
+              <p style="margin:0;font-size:17px;line-height:1.5;" class="dim">Actually <b>running those units at once</b> on several CPUs. That part belongs to the runtime and the hardware.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The sentence comes from the Go Blog talk "Concurrency is not parallelism". The link to the original video is on the last reference slide. Pause here and give people time to read.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 CSP model ═══════════ -->
+    <div class="holder" data-n="09">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · concept</span><span class="stamp">csp</span></div>
+        <h2 class="slide-title">The model Go picked — <span class="em">CSP</span></h2>
+        <p class="slide-lede">Communicating Sequential Processes, proposed by Tony Hoare in 1978. There is only one core idea — <b>independent processes communicate by passing messages.</b></p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b" style="align-items:center;">
+            <div class="tbl-wrap">
+              <table class="tbl sm">
+                <thead><tr><th>CSP concept</th><th>Go's implementation</th></tr></thead>
+                <tbody>
+                  <tr><td>Independent unit of execution</td><td class="num-col hl">goroutine</td></tr>
+                  <tr><td>Means of passing messages</td><td class="num-col hl">channel</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="arch" style="grid-template-columns:1fr 150px 1fr;">
+              <div class="arch-col">
+                <div class="node hero"><span class="n-t">Goroutine A</span><span class="n-p">owns the data</span></div>
+              </div>
+              <div class="arch-link teal"><span class="l-lbl">channel</span><span class="l-line"></span><span class="l-lbl">ownership moves</span></div>
+              <div class="arch-col">
+                <div class="node teal"><span class="n-t">Goroutine B</span><span class="n-p">receives the data</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">Why this is safe</span>
+            Since <b>ownership of the data moves through the channel</b>, only one goroutine touches it at any moment.
+          </div>
+        </div>
+        <div class="notes-src">The name CSP itself does not matter. Leaving one line — "they hand things over as messages" — is enough. If the actor model in Erlang/Akka comes up, just note that Go has channels as first-class objects instead of mailboxes, and move on.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 Go proverb ═══════════ -->
+    <div class="holder" data-n="10">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · concept</span><span class="stamp">go proverb</span></div>
+        <h2 class="slide-title">Do not communicate by sharing memory; <span class="em">share memory by communicating</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card red">
+              <p class="card-t" style="color:var(--red);">Traditional — Shared Memory + Lock</p>
+              <div class="share">
+                <div class="node"><span class="n-t">Thread A</span></div>
+                <div class="node"><span class="n-t">Thread B</span></div>
+                <div class="sh-a sh-full">↓ &nbsp; lock / unlock &nbsp; ↓</div>
+                <div class="node sh-full mute"><span class="n-t">Shared Data</span><span class="n-p">guarded by mutex</span></div>
+              </div>
+              <p class="dim" style="margin:12px 0 0;font-size:16px;line-height:1.45;">A <b>human</b> has to apply the guard. Deadlocks and race conditions come from here.</p>
+            </div>
+            <div class="card teal">
+              <p class="card-t" style="color:var(--teal);">The Go way — Message Passing</p>
+              <div class="arch" style="grid-template-columns:1fr 100px 1fr;">
+                <div class="arch-col"><div class="node teal"><span class="n-t">Goroutine A</span></div></div>
+                <div class="arch-link teal"><span class="l-lbl">chan</span><span class="l-line"></span></div>
+                <div class="arch-col"><div class="node teal"><span class="n-t">Goroutine B</span></div></div>
+              </div>
+              <p class="dim" style="margin:12px 0 0;font-size:16px;line-height:1.45;">Because ownership <b>moves</b>, two places never touch it at once. The lock becomes unnecessary.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">But it is not an absolute rule</span>
+            Go has <code class="inl">sync.Mutex</code> and uses it when needed. Go's attitude is simply that <b>the default choice is a channel</b>.
+          </div>
+        </div>
+        <div class="notes-src">"So we should never use a mutex?" always comes up. The last callout is the answer. Cases like a counter that must share state are covered in Part 4 (the sync package).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 When to use ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · concept</span><span class="stamp">when to use</span></div>
+        <h2 class="slide-title">Concurrency is <span class="em">not free</span></h2>
+        <p class="slide-lede">Scattering goroutines does not make things faster. You pay the cost of complexity first.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2 grow">
+            <div class="card teal">
+              <p class="card-t" style="color:var(--teal);">Worth using</p>
+              <ul class="bul teal" style="font-size:17px;">
+                <li><b>Work with a lot of I/O waiting</b> — HTTP requests, DB queries, file reads/writes</li>
+                <li><b>Parallel handling of independent work</b> — calling several APIs at once</li>
+                <li><b>Event-driven handling</b> — request handling in a web server</li>
+                <li><b>Pipeline processing</b> — chaining data transform stages</li>
+              </ul>
+            </div>
+            <div class="card red">
+              <p class="card-t" style="color:var(--red);">Over-engineering</p>
+              <ul class="bul red" style="font-size:17px;">
+                <li>When plain sequential code is enough — simple data transforms</li>
+                <li>Spawning too many goroutines for <b>CPU-bound work</b></li>
+                <li>So much shared state that locking gets complex — revisit the design</li>
+                <li>Complex enough that debugging becomes hard</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The right-hand card matters more. In particular, throwing 10,000 goroutines at CPU-bound work does not go faster than the core count — this connects back in Chapter 3 with GOMAXPROCS.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 Chapter 2 ═══════════ -->
+    <div class="holder" data-n="12" data-chapter="2">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Goroutine basics</h2>
+            <p class="chap-d">A unit of execution made with one keyword. You avoid accidents only by knowing
+            exactly how light it is and what it <b>does not guarantee</b>.</p>
+          </div>
+        </div>
+        <div class="notes-src">The core of this chapter is not "it is light" but two things: "order is not guaranteed" and "when main ends, everything ends". The mine people step on most in practice is right here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 The go keyword ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">go keyword</span></div>
+        <h2 class="slide-title">Put <span class="em">go</span> in front of a call. That is all</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <pre class="code"><span class="t-cm">// create a goroutine — the go keyword</span>
+<span class="t-key">go</span> <span class="t-fn">func</span>() {
+    fmt.<span class="t-fn">Println</span>(<span class="t-str">"goroutine ran"</span>)
+}()
+
+<span class="t-cm">// named functions work too</span>
+<span class="t-key">go</span> <span class="t-fn">sayHello</span>(<span class="t-str">"World"</span>)</pre>
+            <ul class="bul">
+              <li>A <b>lightweight unit of execution</b> managed by the Go runtime — not an OS thread</li>
+              <li>No extra library, no thread-pool config, no <code class="inl">async/await</code></li>
+              <li>The call <b>returns immediately</b>. The function starts running elsewhere</li>
+              <li>The whole standard library is designed on this premise</li>
+            </ul>
+          </div>
+          <div class="callout">
+            <span class="lbl">What comes with it</span>
+            As easy as it is to create, it is <b>just as easy to forget to clean up.</b> Chapter 5 pays that price.
+          </div>
+        </div>
+        <div class="notes-src">A quick demo works well here. Showing that a Println with go in front prints nothing leads naturally into slide 17 (the main goroutine).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 Goroutine vs OS Thread ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">vs os thread</span></div>
+        <h2 class="slide-title">How is it different from an OS thread</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Aspect</th><th>Goroutine</th><th>OS Thread</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>Initial stack size</td><td>~2KB — grows dynamically as needed</td><td>~1MB fixed</td></tr>
+                <tr><td>Creation cost</td><td>Very cheap</td><td>Relatively expensive</td></tr>
+                <tr><td>Scheduling</td><td class="hl">Go runtime — user space</td><td>OS kernel</td></tr>
+                <tr><td>Concurrent count</td><td>Hundreds of thousands</td><td>Thousands</td></tr>
+                <tr><td>Context switch</td><td>Fast — three registers</td><td>Slow — all registers</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">The key sentence</span>
+            Goroutines are <b>multiplexed</b> onto OS threads. Thousands to tens of thousands run on a handful of OS threads.
+          </div>
+        </div>
+        <div class="notes-src">Why "scheduling in user space" is fast — because there is no switch into kernel mode. Do not go deep here; say it will be drawn out in Chapter 3 on GMP.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 Stack size scale ═══════════ -->
+    <div class="holder" data-n="15">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">stack size</span></div>
+        <h2 class="slide-title">Put 2KB and 1MB on the <span class="em">same axis</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b" style="align-items:center;">
+            <div class="stack">
+              <div class="factor"><span>1 MB</span><span>÷</span><span>2 KB</span><span>=</span></div>
+              <div class="odo-row">
+                <span class="odo" data-odo="512">0</span>
+                <span class="odo-cap">× — that many more in the same memory</span>
+              </div>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">That is why <b>hundreds of thousands</b> of goroutines and <b>thousands</b> of OS threads are the realistic limits.
+              And a goroutine stack is not fixed — it <b>grows when needed</b>.</p>
+            </div>
+            <div class="scale">
+              <div class="sc-row">
+                <span class="sc-lbl">OS Thread</span>
+                <span class="sc-bar"><span style="width:100%"></span></span>
+                <span class="sc-val">1 MB</span>
+              </div>
+              <div class="sc-row">
+                <span class="sc-lbl">Goroutine</span>
+                <span class="sc-bar"><span class="teal" style="width:0.195%"></span></span>
+                <span class="sc-val">2 KB</span>
+              </div>
+              <p class="dim" style="margin:0;font-size:15.5px;line-height:1.45;">The lower bar looking like <b>a single line</b> is not a bug. That is the real ratio.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Pause while the number counts up. Once 512 sinks in, "10,000 goroutines" on slide 19 needs no explaining.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 Non-deterministic order ═══════════ -->
+    <div class="holder" data-n="16">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">non-deterministic</span></div>
+        <h2 class="slide-title">Execution order is <span class="em">not guaranteed</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b" style="align-items:center;">
+            <div class="stack">
+              <ul class="bul">
+                <li>Launching 10 in order does not mean they run in order</li>
+                <li>Which <code class="inl">P</code>'s queue they land in and when they are pulled <b>differs every run</b></li>
+                <li>If a test happens to pass, that is <b>luck</b></li>
+              </ul>
+              <div class="callout">
+                <span class="lbl">If you need order</span>
+                You have to <b>build it yourself</b> with a channel or <code class="inl">sync</code>. It is not given by default.
+              </div>
+            </div>
+            <pre class="code sm"><span class="t-key">const</span> numGoroutines = <span class="t-num">10</span>
+wg.<span class="t-fn">Add</span>(numGoroutines)
+
+<span class="t-key">for</span> i := <span class="t-key">range</span> numGoroutines {
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+        mu.<span class="t-fn">Lock</span>()
+        order = <span class="t-fn">append</span>(order, i)
+        mu.<span class="t-fn">Unlock</span>()
+    }()
+}
+wg.<span class="t-fn">Wait</span>()
+t.<span class="t-fn">Logf</span>(<span class="t-str">"exec order: %v"</span>, order)
+
+<span class="t-cm">// exec order: [1 4 2 3 5 9 8 0 6 7]</span></pre>
+          </div>
+        </div>
+        <div class="notes-src">Running the demo two or three times so a different result appears each time needs no further explanation. Note that since Go 1.22 the for-loop variable is fresh each iteration, so you no longer pass i as an argument.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 main goroutine ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">lifecycle</span></div>
+        <h2 class="slide-title">When main ends, <span class="em">everything ends</span></h2>
+        <p class="slide-lede"><code class="inl">main()</code> runs on the main goroutine. Once it returns, the process exits <b>regardless</b> of whether other goroutines finished.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <pre class="code sm red"><span class="t-key">func</span> <span class="t-fn">TestMainExitKillsGoroutines</span>(t *testing.T) {
+    <span class="t-key">var</span> completed atomic.Bool
+
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        time.<span class="t-fn">Sleep</span>(<span class="t-num">100</span> * time.Millisecond)
+        completed.<span class="t-fn">Store</span>(<span class="t-key">true</span>)
+    }()
+
+    <span class="t-cm">// without waiting it never completes</span>
+    assert.<span class="t-fn">False</span>(t, completed.<span class="t-fn">Load</span>())
+}</pre>
+            <div class="stack">
+              <ul class="bul">
+                <li>The goroutine just vanishes <b>with no chance to clean up</b> — even <code class="inl">defer</code> does not run</li>
+                <li>Log flushes and connection closes are lost too</li>
+                <li>90% of “why is nothing printed?” is this</li>
+              </ul>
+              <div class="callout">
+                <span class="lbl">Rule</span>
+                If you create a goroutine, decide <b>who waits for it</b> at the same time.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">If you ran the go Println demo on slide 13, give the answer here. People have seen code patched with time.Sleep; why that is bad gets explained next when it is replaced by a WaitGroup.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 How to wait ═══════════ -->
+    <div class="holder" data-n="18">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">waitgroup</span></div>
+        <h2 class="slide-title">How to wait — <code class="inl">sync.WaitGroup</code></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <pre class="code sm teal"><span class="t-key">func</span> <span class="t-fn">TestWaitGroupSolution</span>(t *testing.T) {
+    <span class="t-key">var</span> completed atomic.Bool
+    <span class="t-key">var</span> wg sync.WaitGroup
+
+    wg.<span class="t-fn">Add</span>(<span class="t-num">1</span>)
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+        time.<span class="t-fn">Sleep</span>(<span class="t-num">50</span> * time.Millisecond)
+        completed.<span class="t-fn">Store</span>(<span class="t-key">true</span>)
+    }()
+
+    wg.<span class="t-fn">Wait</span>() <span class="t-cm">// block until done</span>
+    assert.<span class="t-fn">True</span>(t, completed.<span class="t-fn">Load</span>())
+}</pre>
+            <div class="stack">
+              <div class="steps">
+                <div class="step"><span class="s-n">01</span><div><div class="s-c">wg.Add(n)</div><div class="s-d">Raise the count <b>before launching the goroutine</b></div></div></div>
+                <div class="step"><span class="s-n">02</span><div><div class="s-c">defer wg.Done()</div><div class="s-d">Put it on the <b>first line</b> inside the goroutine — the counter drops even on panic</div></div></div>
+                <div class="step"><span class="s-n">03</span><div><div class="s-c">wg.Wait()</div><div class="s-d">Blocks until the count reaches zero</div></div></div>
+              </div>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">A channel can do the same job.
+              Code patched with <code class="inl">time.Sleep</code> is <b>gambling, not waiting</b>.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Mention in one line the trap of calling Add inside the goroutine, which creates a race. The rest of WaitGroup's details are covered in Part 4.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 Ten thousand ═══════════ -->
+    <div class="holder" data-n="19">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">lightweight</span></div>
+        <h2 class="slide-title">Create 10,000 and <span class="em">nothing happens</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b" style="align-items:center;">
+            <div class="stack">
+              <div class="odo-row">
+                <span class="odo" data-odo="10000">0</span>
+                <span class="odo-cap">goroutines — all finished fine</span>
+              </div>
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>Creating 10,000</th><th>Initial stack total</th></tr></thead>
+                  <tbody>
+                    <tr class="on"><td>Goroutine (~2KB)</td><td class="num-col">about 20 MB</td></tr>
+                    <tr><td>OS Thread (~1MB)</td><td class="num-col">about 10 GB</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="faint" style="margin:0;font-size:15px;">Plain arithmetic from the stack sizes on the previous slide.</p>
+            </div>
+            <pre class="code sm"><span class="t-key">const</span> numGoroutines = <span class="t-num">10000</span>
+<span class="t-key">var</span> counter atomic.Int64
+<span class="t-key">var</span> wg sync.WaitGroup
+wg.<span class="t-fn">Add</span>(numGoroutines)
+
+<span class="t-key">for</span> <span class="t-key">range</span> numGoroutines {
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+        counter.<span class="t-fn">Add</span>(<span class="t-num">1</span>)
+    }()
+}
+
+wg.<span class="t-fn">Wait</span>()
+assert.<span class="t-fn">Equal</span>(t, <span class="t-fn">int64</span>(numGoroutines), counter.<span class="t-fn">Load</span>())</pre>
+          </div>
+        </div>
+        <div class="notes-src">Say "10,000" in a tone that makes it the default, not something to marvel at. It does not mean you can create them without limit though — if you need a cap, use the semaphore pattern (Part 6).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 Chapter 3 ═══════════ -->
+    <div class="holder" data-n="20" data-chapter="3">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">GMP scheduler</h2>
+            <p class="chap-d">The OS knows nothing about goroutines, so how does this work?
+            We look at how the Go runtime schedules <b>in user space</b>.</p>
+          </div>
+        </div>
+        <div class="notes-src">This is internals, and going deep has no end. The goal is to leave only three letters — G, M, P — plus work stealing and GOMAXPROCS.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 GMP model ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · scheduler</span><span class="stamp">gmp model</span></div>
+        <h2 class="slide-title">A structure in three letters — <span class="em">G · M · P</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node teal"><span class="n-t">G1</span><span class="n-p">running</span></div>
+              <div class="node"><span class="n-t">G2</span><span class="n-p">waiting — run queue</span></div>
+              <div class="node"><span class="n-t">G3</span><span class="n-p">waiting — run queue</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">run queue</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">P1</span><span class="n-p">logical processor · owns run queue</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">bind</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">M1</span><span class="n-p">OS Thread — runs on the CPU</span></div>
+              <div class="node mute"><span class="n-t">CPU Core</span><span class="n-p">hardware</span></div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>Component</th><th>Role</th></tr></thead>
+              <tbody>
+                <tr><td>G — Goroutine</td><td>Lightweight unit holding the function to run and its stack</td></tr>
+                <tr><td>M — Machine</td><td>OS thread. It actually executes code on the CPU</td></tr>
+                <tr class="on"><td>P — Processor</td><td>Logical processor. It manages the run queue of goroutines</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="notes-src">Why P is needed comes up every time. Explaining it as "M (the thread) can block, so the list of work (P) was pulled off the thread" meshes with the three steps on the next slide.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 Scheduling flow ═══════════ -->
+    <div class="holder" data-n="22">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · scheduler</span><span class="stamp">scheduling flow</span></div>
+        <h2 class="slide-title">One trip around the loop</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a" style="align-items:center;">
+            <div class="steps">
+              <div class="step"><span class="s-n">01</span><div><div class="s-c">go f()</div><div class="s-d">A new <code class="inl">G</code> goes into the current <code class="inl">P</code>'s <b>local run queue</b></div></div></div>
+              <div class="step"><span class="s-n">02</span><div><div class="s-c">P → M</div><div class="s-d"><code class="inl">P</code> pulls goroutines off the queue one by one and runs them on its bound <code class="inl">M</code></div></div></div>
+              <div class="step"><span class="s-n">03</span><div><div class="s-c">block → switch</div><div class="s-d">On I/O, channel waits or <code class="inl">time.Sleep</code>, it <b>switches to the next G at once</b></div></div></div>
+              <div class="step"><span class="s-n">04</span><div><div class="s-c">work stealing</div><div class="s-d">When the local queue empties, it <b>steals from another P's queue</b></div></div></div>
+            </div>
+            <div class="stack">
+              <div class="callout teal">
+                <span class="lbl">Why this switch is cheap</span>
+                It never goes through the kernel. <b>In user space</b>, swapping a few registers is the whole job.
+              </div>
+              <div class="callout">
+                <span class="lbl">What work stealing does</span>
+                It keeps a busy <code class="inl">P</code> and an idle <code class="inl">P</code> from coexisting, <b>evening out the load on its own</b>.
+              </div>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">Since Go 1.14 it is <b>preemptive</b>, so the runtime
+              forcibly pulls off a goroutine that hogs the CPU.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Step 3 is the answer to slide 2 (waiting on I/O). Connect the picture: while waiting, M is not idle — it grabs the next G.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 GOMAXPROCS ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · scheduler</span><span class="stamp">gomaxprocs</span></div>
+        <h2 class="slide-title"><code class="inl">GOMAXPROCS</code> — how many can <span class="em">run</span> at once</h2>
+        <p class="slide-lede">It is not <b>how many goroutines you can create</b>; it sets how many <code class="inl">P</code>s exist. The default is the CPU core count.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">TestGOMAXPROCS</span>(t *testing.T) {
+    <span class="t-cm">// passing 0 returns the current value unchanged</span>
+    currentProcs := runtime.<span class="t-fn">GOMAXPROCS</span>(<span class="t-num">0</span>)
+    numCPU := runtime.<span class="t-fn">NumCPU</span>()
+
+    t.<span class="t-fn">Logf</span>(<span class="t-str">"NumCPU: %d"</span>, numCPU)           <span class="t-cm">// 12</span>
+    t.<span class="t-fn">Logf</span>(<span class="t-str">"GOMAXPROCS: %d"</span>, currentProcs) <span class="t-cm">// 12</span>
+
+    runtime.<span class="t-fn">GOMAXPROCS</span>(<span class="t-num">1</span>) <span class="t-cm">// down to one P</span>
+}</pre>
+            <div class="stack">
+              <div class="card">
+                <p class="card-t" style="color:var(--accent);">GOMAXPROCS = 1</p>
+                <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">You can still create <b>as many goroutines as you like.</b> Only one runs at a time — concurrency yes, parallelism no. <b>Useful for reproducing races and debugging</b>.</p>
+              </div>
+              <div class="card teal">
+                <p class="card-t" style="color:var(--teal);">GOMAXPROCS = N</p>
+                <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">At most N run physically at once. <b>Leaving the default alone is recommended</b>. In a container, just check that it matches the CPU limit.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The most common misunderstanding is "isn't it a cap on the number of goroutines?". Quiz Q4 asks exactly that. Do not go deep on the container issue where GOMAXPROCS picks up the host core count — one line is enough.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 Chapter 4 ═══════════ -->
+    <div class="holder" data-n="24" data-chapter="4">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Comparison with other languages</h2>
+            <p class="chap-d">Set side by side with Kotlin coroutines and Java threads, it gets clear
+            <b>what goroutines gave up and what they gained</b>.</p>
+          </div>
+        </div>
+        <div class="notes-src">Adjust the weight to the audience. With many JVM people this is the chapter that lands best; otherwise one table is enough before moving on.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 25 Full comparison table ═══════════ -->
+    <div class="holder" data-n="25">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · comparison</span><span class="stamp">side by side</span></div>
+        <h2 class="slide-title">All four side by side</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>Aspect</th><th>Go Goroutine</th><th>Kotlin Coroutine</th><th>Java Platform Thread</th><th>Java Virtual Thread (21+)</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>Stack size</td><td>~2KB · grows</td><td>stackless · heap object</td><td>~1MB fixed</td><td>~few KB · dynamic</td></tr>
+                <tr><td>Scheduling</td><td>Go runtime · <b>preemptive</b></td><td>cooperative · suspend/resume</td><td>OS kernel</td><td>JVM · cooperative</td></tr>
+                <tr><td>Creation cost</td><td>Very cheap</td><td>Very cheap</td><td>Expensive</td><td>Cheap</td></tr>
+                <tr><td>Concurrent count</td><td>Hundreds of thousands</td><td>Hundreds of thousands</td><td>Thousands</td><td>Millions</td></tr>
+                <tr><td>Communication</td><td class="hl">Channel — CSP</td><td>Flow, Channel</td><td>synchronized, Lock</td><td>synchronized, Lock</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">The rows to watch</span>
+            Not the numbers — <b>scheduling</b> and <b>communication</b>. The remaining slides just unpack those two.
+          </div>
+        </div>
+        <div class="notes-src">Do not read the table cell by cell. Point at two rows and move on. If "millions" for Virtual Thread gets a reaction, preview that the missing channel is covered on slide 28.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 26 preemptive vs cooperative ═══════════ -->
+    <div class="holder" data-n="26">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · comparison</span><span class="stamp">preemptive vs cooperative</span></div>
+        <h2 class="slide-title">The biggest difference is <span class="em">when it yields</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack tight">
+              <p class="card-t" style="margin:0;">Kotlin — cooperative</p>
+              <pre class="code sm plain"><span class="t-cm">// suspends only at suspend points</span>
+<span class="t-key">suspend fun</span> <span class="t-fn">fetchData</span>() {
+    <span class="t-fn">delay</span>(<span class="t-num">1000</span>)  <span class="t-cm">// yields here</span>
+
+    <span class="t-cm">// CPU work without suspend</span>
+    <span class="t-cm">// never yields</span>
+}</pre>
+              <p class="dim" style="margin:0;font-size:16px;line-height:1.45;">Code that just spins on the CPU <b>holds the thread</b> and will not let go.</p>
+            </div>
+            <div class="stack tight">
+              <p class="card-t" style="margin:0;color:var(--accent);">Go — preemptive</p>
+              <pre class="code sm"><span class="t-cm">// runtime switches, no keyword</span>
+<span class="t-key">func</span> <span class="t-fn">fetchData</span>() {
+    time.<span class="t-fn">Sleep</span>(time.Second)
+
+    <span class="t-cm">// CPU-bound work too is</span>
+    <span class="t-cm">// forcibly switched (Go 1.14+)</span>
+}</pre>
+              <p class="dim" style="margin:0;font-size:16px;line-height:1.45;">If a goroutine hogs the CPU, <b>the runtime pulls it off</b>.</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">Where you feel it in practice</span>
+            In Go you never have to think about “inserting a yield point”.
+          </div>
+        </div>
+        <div class="notes-src">One line of history: before Go 1.14 a tight loop really could starve the scheduler. Today signal-based asynchronous preemption is in place.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 27 Function coloring ═══════════ -->
+    <div class="holder" data-n="27">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · comparison</span><span class="stamp">function coloring</span></div>
+        <h2 class="slide-title">Function coloring — Go has <span class="em">no colors</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack tight">
+              <p class="card-t" style="margin:0;">Kotlin — the color spreads</p>
+              <pre class="code sm plain"><span class="t-key">suspend fun</span> <span class="t-fn">a</span>() = <span class="t-fn">b</span>()
+<span class="t-key">suspend fun</span> <span class="t-fn">b</span>() = <span class="t-fn">c</span>()
+<span class="t-key">suspend fun</span> <span class="t-fn">c</span>() = <span class="t-fn">delay</span>(<span class="t-num">100</span>)
+
+<span class="t-cm">// the moment c becomes suspend,</span>
+<span class="t-cm">// suspend spreads up the whole chain</span></pre>
+              <p class="dim" style="margin:0;font-size:16px;line-height:1.45;">A <code class="inl">suspend</code> function is callable only from a <code class="inl">suspend</code> function or a coroutine.</p>
+            </div>
+            <div class="stack tight">
+              <p class="card-t" style="margin:0;color:var(--accent);">Go — they are all the same function</p>
+              <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">a</span>() { <span class="t-fn">b</span>() }
+<span class="t-key">func</span> <span class="t-fn">b</span>() { <span class="t-fn">c</span>() }
+<span class="t-key">func</span> <span class="t-fn">c</span>() { time.<span class="t-fn">Sleep</span>(t) }
+
+<span class="t-key">go</span> <span class="t-fn">a</span>()  <span class="t-cm">// any func as a goroutine</span>
+<span class="t-fn">a</span>()     <span class="t-cm">// or just call it</span></pre>
+              <p class="dim" style="margin:0;font-size:16px;line-height:1.45;">There is no <code class="inl">async</code> · <code class="inl">await</code> · <code class="inl">suspend</code> distinction at all.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">Where Kotlin is better instead</span>
+            <b>Structured concurrency</b> is built into the language, so cancelling a parent cancels its children, and
+            <code class="inl">CoroutineExceptionHandler</code> makes <b>error propagation</b> systematic.
+          </div>
+        </div>
+        <div class="notes-src">This slide keeps the balance. Taking a "Go wins" tone closes off the JVM crowd. State on the next slide that Go has no structured concurrency, so Context and WaitGroup must be managed by hand.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 28 Java Thread ═══════════ -->
+    <div class="holder" data-n="28">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · comparison</span><span class="stamp">java</span></div>
+        <h2 class="slide-title">Java — <span class="em">closer now</span> with virtual threads</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <div class="stack tight">
+              <pre class="code sm plain"><span class="t-cm">// Platform Thread — 1:1 with an OS thread</span>
+<span class="t-key">new</span> <span class="t-fn">Thread</span>(() -&gt; <span class="t-fn">doWork</span>()).<span class="t-fn">start</span>();
+<span class="t-cm">// ~1MB stack allocated</span>
+
+<span class="t-cm">// Virtual Thread (Java 21+) — goroutine-like</span>
+Thread.<span class="t-fn">startVirtualThread</span>(() -&gt; <span class="t-fn">doWork</span>());</pre>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">Past a few thousand platform threads, memory and context-switch costs spike. Virtual threads solve that conceptually <b>the same way goroutines do</b>.</p>
+            </div>
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">What still differs</span>
+                Java has <b>no channel-like communication mechanism built into the language.</b>
+                You pick a separate tool such as <code class="inl">BlockingQueue</code> or <code class="inl">CompletableFuture</code>.
+              </div>
+              <div class="callout teal">
+                <span class="lbl">So the conclusion</span>
+                “Lightweight units of execution” are no longer Go's alone. Where Go still differs is that
+                <b>the unit of execution and the means of communication ship together in the language</b>.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">If people know Loom/virtual threads, the conversation can run long here. Steer it back to the axis of "communication built into the language" and move on.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 29 Strengths and weaknesses ═══════════ -->
+    <div class="holder" data-n="29">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · comparison</span><span class="stamp">summary</span></div>
+        <h2 class="slide-title">Recap — what goroutines got and did not get</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2 grow">
+            <div class="card teal">
+              <p class="card-t" style="color:var(--teal);">Strengths</p>
+              <div class="steps">
+                <div class="step"><span class="s-n">01</span><div><div class="s-c">Built into the language</div><div class="s-d"><code class="inl">go</code> + <code class="inl">chan</code> come as keywords, so no extra library is needed</div></div></div>
+                <div class="step"><span class="s-n">02</span><div><div class="s-c">No coloring problem</div><div class="s-d">Every function is the same — no <code class="inl">async/await/suspend</code> split</div></div></div>
+                <div class="step"><span class="s-n">03</span><div><div class="s-c">Preemptive</div><div class="s-d">The runtime switches even CPU-bound goroutines automatically</div></div></div>
+                <div class="step"><span class="s-n">04</span><div><div class="s-c">Consistent ecosystem</div><div class="s-d">The whole standard library is designed around goroutines</div></div></div>
+              </div>
+            </div>
+            <div class="card red">
+              <p class="card-t" style="color:var(--red);">Weaknesses</p>
+              <div class="steps">
+                <div class="step"><span class="s-n">01</span><div><div class="s-c">No structured concurrency</div><div class="s-d">Parent–child ties are not in the language. You manage <code class="inl">Context</code> and <code class="inl">WaitGroup</code> <b>by hand</b></div></div></div>
+                <div class="step"><span class="s-n">02</span><div><div class="s-c">Panic propagation</div><div class="s-d">A <code class="inl">panic</code> in a goroutine can <b>terminate the whole program</b></div></div></div>
+              </div>
+              <div class="callout" style="margin-top:14px;">
+                <span class="lbl">Coming next</span>
+                What happens when you get lazy about "managing it by hand" — that is a goroutine leak.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">The weakness card is the bridge into the next chapter. Go straight to Chapter 5 from here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 30 Chapter 5 ═══════════ -->
+    <div class="holder" data-n="30" data-chapter="5">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">05</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Goroutine leak</h2>
+            <p class="chap-d">As easy as they are to create, <b>they are just as easy to forget to clean up.</b>
+            A leaked goroutine is not reclaimed by the GC either.</p>
+          </div>
+        </div>
+        <div class="notes-src">The chapter that touches real work most directly. Even when time is short, keep this one.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 31 What a leak is ═══════════ -->
+    <div class="holder" data-n="31">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · Leak</span><span class="stamp">what &amp; why</span></div>
+        <h2 class="slide-title">A goroutine that <span class="em">stays alive</span> instead of ending</h2>
+        <p class="slide-lede">It is no longer needed yet never finishes. It holds memory and <b>is not a GC candidate</b>, so usage keeps climbing over time.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a" style="align-items:center;">
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>Typical cause</th><th>In what code</th></tr></thead>
+                <tbody>
+                  <tr class="on"><td>Channel wait</td><td>Blocked forever on a channel nobody receives from or sends to</td></tr>
+                  <tr><td>Infinite loop</td><td>A goroutine with no exit condition</td></tr>
+                  <tr><td>No context</td><td>A goroutine with no way to receive a cancel signal</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">Why the GC cannot catch it</span>
+                A running goroutine is a <b>live root</b>. Even blocked, it counts as "running", so it is not reclaimable.
+              </div>
+              <pre class="code sm plain"><span class="t-cm">// counting live goroutines shows it</span>
+runtime.<span class="t-fn">NumGoroutine</span>()</pre>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">"I have heard of memory leaks but never goroutine leaks" is a common reaction. Tell them that on a long-running server, NumGoroutine trending upward is the signal. Part 9 covers catching it with pprof.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 32 Leaky code → Context (toggle) ═══════════ -->
+    <div class="holder" data-n="32">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · Leak</span><span class="stamp">before → after</span></div>
+        <h2 class="slide-title">The leaky code, and the <span class="em">fixed code</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="stack tight">
+            <div class="toggle">
+              <button class="tg" type="button" data-swap="leak" data-target="bad" aria-pressed="true">leaky code</button>
+              <button class="tg" type="button" data-swap="leak" data-target="fix" aria-pressed="false">fixed with context</button>
+            </div>
+            <div class="cols c-2" style="align-items:start;">
+              <div class="swap" data-swap-group="leak">
+                <div class="swap-i on stack tight" data-swap-item="bad">
+                  <pre class="code xs red">leakyFunc := <span class="t-key">func</span>() &lt;-<span class="t-key">chan</span> <span class="t-key">int</span> {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>)
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        ch &lt;- <span class="t-num">42</span> <span class="t-cm">// blocks forever if nobody receives</span>
+    }()
+    <span class="t-key">return</span> ch
+}
+
+_ = <span class="t-fn">leakyFunc</span>() <span class="t-cm">// returned but never used → leak!</span>
+
+time.<span class="t-fn">Sleep</span>(<span class="t-num">50</span> * time.Millisecond)
+runtime.<span class="t-fn">NumGoroutine</span>() <span class="t-cm">// 2 at start → 3 after the leak</span></pre>
+                </div>
+                <div class="swap-i stack tight" data-swap-item="fix">
+                  <pre class="code xs teal">safeFunc := <span class="t-key">func</span>(ctx context.Context) &lt;-<span class="t-key">chan</span> <span class="t-key">int</span> {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">1</span>) <span class="t-cm">// buffered → send never blocks</span>
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        <span class="t-key">defer</span> <span class="t-fn">close</span>(ch)
+        <span class="t-key">select</span> {
+        <span class="t-key">case</span> ch &lt;- <span class="t-num">42</span>:     <span class="t-cm">// value delivered normally</span>
+        <span class="t-key">case</span> &lt;-ctx.<span class="t-fn">Done</span>(): <span class="t-cm">// exit when context is cancelled</span>
+            <span class="t-key">return</span>
+        }
+    }()
+    <span class="t-key">return</span> ch
+}
+
+ctx, cancel := context.<span class="t-fn">WithCancel</span>(context.<span class="t-fn">Background</span>())
+ch := <span class="t-fn">safeFunc</span>(ctx)
+<span class="t-fn">cancel</span>() <span class="t-cm">// cancelling cleans the goroutine up</span></pre>
+                </div>
+              </div>
+              <div class="swap" data-swap-group="leak">
+                <div class="swap-i on stack" data-swap-item="bad">
+                  <ul class="bul red">
+                    <li>The channel is unbuffered, so the send finishes only once <b>a receiver shows up</b></li>
+                    <li>If the caller never reads it, the goroutine stops <b>forever</b> at <code class="inl">ch &lt;- 42</code></li>
+                    <li>Repeat this per request and goroutines <b>pile up</b></li>
+                  </ul>
+                  <div class="callout">
+                    <span class="lbl">The symptom</span>
+                    Memory usage climbs <b>slowly but steadily</b>. A restart makes it fine for a while.
+                  </div>
+                </div>
+                <div class="swap-i stack" data-swap-item="fix">
+                  <ul class="bul teal">
+                    <li><b>Buffered channel</b> — the send does not block even with no receiver</li>
+                    <li><b><code class="inl">select</code> + <code class="inl">ctx.Done()</code></b> — on cancel it leaves via <code class="inl">return</code></li>
+                    <li><b><code class="inl">defer close(ch)</code></b> — the channel is cleaned up on exit too</li>
+                  </ul>
+                  <div class="callout teal">
+                    <span class="lbl">What changed</span>
+                    The goroutine now has <b>a way to be ended from outside</b>.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Press the two buttons alternately to compare. Ask "can you see why this code leaks?" first, and if no answer comes, hint only that a send on an unbuffered channel blocks. Ties to quiz Q6.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 33 The core rule ═══════════ -->
+    <div class="holder" data-n="33">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · Leak</span><span class="stamp">the rule</span></div>
+        <h2 class="slide-title">When you create a goroutine, create its <span class="em">exit path</span> too</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-3">
+            <div class="card">
+              <p class="card-t" style="color:var(--accent);">context</p>
+              <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">Slot <code class="inl">ctx.Done()</code> into a <code class="inl">select</code>. Cancel, timeout and deadline all arrive here.</p>
+            </div>
+            <div class="card">
+              <p class="card-t" style="color:var(--accent);">done channel</p>
+              <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">For sending only a stop signal where context is awkward. Closing it wakes every receiver.</p>
+            </div>
+            <div class="card">
+              <p class="card-t" style="color:var(--accent);">close</p>
+              <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">The sender announces it is done sending. Pair it with <code class="inl">defer close(ch)</code>.</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">One question to ask in code review</span>
+            “<b>When and by whom</b> does this goroutine end?” — if there is no answer, it is a leak.
+          </div>
+          <p class="dim" style="margin:0;font-size:17px;">The full picture of Context is in <b>Part 5</b>, and actually catching leaked goroutines is in <b>Part 9</b>.</p>
+        </div>
+        <div class="notes-src">If you take exactly one line from today's talk, it is this callout. Stress that it was given in a form you can use in a real code review.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 34 Recap ═══════════ -->
+    <div class="holder" data-n="34">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">wrap-up</span><span class="stamp">recap</span></div>
+        <h2 class="slide-title">What to take away today</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <ul class="bul" style="font-size:20px;gap:17px;">
+            <li>Concurrency is <b>structure</b>, parallelism is <b>execution</b> — write the structure, the runtime supplies the execution</li>
+            <li>Go picked CSP — <b>do not communicate by sharing memory; share memory by communicating</b></li>
+            <li>A goroutine is a <b>~2KB</b> unit made with one <code class="inl">go</code>. Tens of thousands is normal</li>
+            <li><b>Order is not guaranteed</b>, and <b>when main ends everything ends</b> — build it yourself if needed</li>
+            <li>Scheduling is three pieces, <b>G · M · P</b>. <code class="inl">GOMAXPROCS</code> (default = core count) sets how many run at once</li>
+            <li>Always create the <b>exit path</b> along with the goroutine — otherwise it leaks</li>
+          </ul>
+        </div>
+        <div class="notes-src">Reading the six lines out loud is enough of a summary. You can start taking questions from here.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 35 Quiz ═══════════ -->
+    <div class="holder" data-n="35">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">check</span><span class="stamp">click to reveal</span></div>
+        <h2 class="slide-title">Answer these yourself</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>Does concurrency hold on a single-core machine?</span></button>
+              <div class="q-a">Yes. Concurrency is the <b>structure of dealing with</b> many tasks at once; needing several CPUs is parallelism. On one core they simply take turns. <span class="ref">→ Slide 06</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>I launched 10 goroutines in order but the output is not <code class="inl">0..9</code>. A bug?</span></button>
+              <div class="q-a">No. Execution order is <b>not guaranteed</b>. If you need order, build it yourself with a channel or <code class="inl">sync</code>. <span class="ref">→ Slide 16</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span>What happens if <code class="inl">main</code> launches a goroutine and returns right away?</span></button>
+              <div class="q-a">The process exits and the goroutine never completes. Not even <code class="inl">defer</code> runs. Wait with a <code class="inl">WaitGroup</code> or a channel. <span class="ref">→ Slide 17 · 18</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span>With <code class="inl">GOMAXPROCS=1</code>, is only one goroutine created?</span></button>
+              <div class="q-a">No. There is just one <code class="inl">P</code>, so <b>only one runs at a time</b>. You can still create any number of goroutines: concurrency without parallelism. <span class="ref">→ Slide 23</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>The two biggest differences between Kotlin's <code class="inl">suspend</code> and a goroutine?</span></button>
+              <div class="q-a">① Scheduling — Kotlin is <b>cooperative</b> and yields only at suspend points; Go is <b>preemptive</b> and the runtime forces a switch. ② <b>Function coloring</b> — Go has no <code class="inl">suspend</code>-style split. <span class="ref">→ Slide 26 · 27</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q6</span><span>A goroutine sends on an unbuffered channel and nobody receives. Then what?</span></button>
+              <div class="q-a">The send <b>blocks forever</b> and the GC cannot reclaim it — a goroutine leak. Build an exit path with a buffered channel plus <code class="inl">select</code>/<code class="inl">ctx.Done()</code>. <span class="ref">→ Slide 32</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Let the audience answer first, then click to open. If time is tight, picking just Q4 and Q6 is enough.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 36 Next part ═══════════ -->
+    <div class="holder" data-n="36">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">next</span><span class="stamp">part 2</span></div>
+        <h2 class="slide-title">Next up — Channels in Depth</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <p class="dim" style="margin:0;font-size:18px;line-height:1.6;">Today covered only the <b>unit of execution</b>. Even if you can launch many goroutines,
+              there is nothing you can do if they <b>cannot pass data between them</b>.
+              Next time we take the other half of CSP, <b>channels</b>, from start to finish.</p>
+              <div class="callout">
+                <span class="lbl">Left for later today</span>
+                Unbuffered vs buffered, what <code class="inl">close</code> exactly means, directional channels —
+                everything the leak slide brushed past is the subject of the next part.
+              </div>
+            </div>
+            <div class="card">
+              <p class="card-t">References</p>
+              <ul class="bul" style="font-size:16.5px;gap:9px;">
+                <li>Full code — <code class="inl">github.com/kenshin579/tutorials-go</code> <span class="faint">/golang/concurrency</span></li>
+                <li>Effective Go — Concurrency <span class="faint">go.dev/doc/effective_go#concurrency</span></li>
+                <li>Concurrency is not parallelism <span class="faint">go.dev/blog/waza-talk</span></li>
+                <li>Share Memory By Communicating <span class="faint">go.dev/blog/codelab-share</span></li>
+                <li>Go Proverbs <span class="faint">go-proverbs.github.io</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">Thank you</span>
+            Questions welcome — <code class="inl">advenoh.pe.kr</code>
+          </div>
+        </div>
+        <div class="notes-src">Take Q&amp;A with the GitHub repository address left on screen.</div>
+      </section>
+    </div>
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">Speaker notes</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">Goroutine Basics · Go Concurrency 1</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 36</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="Overview (O)">Overview</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="Speaker notes (N)">Notes</button>
+      <button class="kbtn" id="btnTheme" type="button" title="Toggle theme (T)">Theme</button>
+      <button class="kbtn" id="btnHelp" type="button" title="Shortcuts (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>Shortcuts</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>Next slide</dd>
+        <dt>← · PgUp</dt><dd>Previous slide</dd>
+        <dt>Home · End</dt><dd>First · Last</dd>
+        <dt>O</dt><dd>Slide overview</dd>
+        <dt>N</dt><dd>Speaker notes</dd>
+        <dt>T</dt><dd>Light / dark theme</dd>
+        <dt>F</dt><dd>Fullscreen</dd>
+        <dt>Esc</dt><dd>Close</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "Slide " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 숫자 오도미터 ─────────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 코드 토글 ─────────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지: goroutine 스케줄 타임라인 ───────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  /* [goroutine 번호, 시작 비율, 끝 비율] — 난수 없이 재현 가능하게 고정 */
+  var LANES = [
+    [[1, 0, .13], [4, .13, .29], [2, .29, .38], [7, .38, .56], [1, .56, .69], [5, .69, .85], [3, .85, 1]],
+    [[2, 0, .10], [3, .10, .25], [6, .25, .42], [4, .42, .53], [8, .53, .72], [2, .72, .87], [6, .87, 1]]
+  ];
+
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+
+    var accent = css("--accent") || "#4FD3F4";
+    var teal   = css("--teal")   || "#4FC48F";
+    var amber  = css("--amber")  || "#E8B84B";
+    var line   = css("--line")   || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+    var surf2  = css("--surface-2") || "#1B212A";
+    var bg     = css("--bg") || "#0E1117";
+    var palette = [accent, teal, amber];
+
+    var padL = 76, padR = 16, padT = 48, laneH = 152, gap = 56;
+    var trackW = W - padL - padR;
+    var bottom = padT + laneH * 2 + gap;
+
+    function render(p) {
+      ctx.clearRect(0, 0, W, H);
+
+      /* 시간 격자 */
+      ctx.strokeStyle = line;
+      ctx.lineWidth = 1;
+      for (var i = 0; i <= 6; i++) {
+        var gx = Math.round(padL + trackW / 6 * i) + .5;
+        ctx.beginPath();
+        ctx.moveTo(gx, padT - 14);
+        ctx.lineTo(gx, bottom + 10);
+        ctx.stroke();
+      }
+
+      LANES.forEach(function (lane, li) {
+        var y = padT + li * (laneH + gap);
+
+        /* 빈 트랙 */
+        ctx.fillStyle = surf2;
+        ctx.fillRect(padL, y, trackW, laneH);
+
+        /* 레인 이름 */
+        ctx.font = "600 26px ui-monospace, Menlo, monospace";
+        ctx.fillStyle = faint;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText("M" + (li + 1), 8, y + laneH / 2);
+
+        /* 실행 블록 */
+        var limit = padL + trackW * p;
+        lane.forEach(function (b) {
+          var x0 = padL + trackW * b[1];
+          var x1 = padL + trackW * b[2];
+          if (x0 >= limit) { return; }
+          var w = Math.min(x1, limit) - x0 - 4;
+          if (w <= 0) { return; }
+          ctx.fillStyle = palette[(b[0] - 1) % 3];
+          ctx.fillRect(x0, y, w, laneH);
+          if (w > 46) {
+            ctx.font = "600 24px ui-monospace, Menlo, monospace";
+            ctx.fillStyle = bg;
+            ctx.textAlign = "center";
+            ctx.fillText("G" + b[0], x0 + w / 2, y + laneH / 2);
+          }
+        });
+      });
+
+      /* 시간 축 */
+      ctx.font = "500 22px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText("time →", padL, bottom + 40);
+      ctx.textAlign = "right";
+      ctx.fillText("goroutine 8", W - padR, bottom + 40);
+    }
+
+    if (reduce) { render(1); return; }
+    var t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1300);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(.02, e));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>

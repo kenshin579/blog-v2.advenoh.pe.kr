@@ -53,6 +53,8 @@ Here is what this article covers.
 
 > The full code used in this article is available on [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/monitoring/grafana-metrics).
 
+<!-- slides -->
+
 # 2. Prometheus Core Concepts
 
 ## 2.1 Architecture — Pull-based Metric Collection

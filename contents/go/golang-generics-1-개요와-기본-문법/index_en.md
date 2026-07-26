@@ -24,6 +24,8 @@ Generics is a programming technique that lets you define functions or types **wi
 
 The biggest reason generics are needed is **eliminating code duplication**. It solves the problem of having to write the same logic multiple times for functions that differ only in type.
 
+<!-- slides -->
+
 # 2. The Background of Generics' Introduction in Go
 
 Go is a language designed from the start with **simplicity** as its core philosophy. The Go designers, including Rob Pike, deliberately left out many features to keep the language's complexity low, and generics was long among them.

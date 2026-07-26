@@ -31,6 +31,8 @@ ch := make(chan int)       // unbuffered channel (int type)
 ch := make(chan string, 5) // buffered channel (string type, buffer size 5)
 ```
 
+<!-- slides -->
+
 # 2. Send / Receive Behavior
 
 To send a value to a channel, use the `<-` operator.

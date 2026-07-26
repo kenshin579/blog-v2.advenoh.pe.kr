@@ -57,6 +57,8 @@ Go's creator Rob Pike explains it this way:
 
 In Go, concurrency is about the **structure** of a program. Separating code into independently executable units is concurrency, and actually running them simultaneously on multiple CPUs is parallelism. If you design a Go program to be concurrent, the runtime takes care of leveraging parallelism.
 
+<!-- slides -->
+
 # 2. Why Is Go Strong at Concurrency?
 
 ## 2.1 The CSP Model

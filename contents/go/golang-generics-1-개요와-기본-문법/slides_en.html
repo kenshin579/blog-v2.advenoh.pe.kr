@@ -1,0 +1,1770 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Golang Generics Part 1 — Overview and Basic Syntax</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 따뜻한 표시등
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0A6E8A;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(10, 110, 138, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #3FC7EF;
+    --accent-ink:#031A20;
+    --accent-soft: rgba(63, 199, 239, .14);
+    --teal:      #46C7B0;
+    --teal-soft: rgba(70, 199, 176, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #3FC7EF;
+  --accent-ink:#031A20;
+  --accent-soft: rgba(63, 199, 239, .14);
+  --teal:      #46C7B0;
+  --teal-soft: rgba(70, 199, 176, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0A6E8A;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(10, 110, 138, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: 0 0;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+/* 높이를 채우는 2단 조판에서는 각 열이 늘어나고, 내용은 열 안에서 세로 중앙에 놓인다 */
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 그림 ──────────────────────────────────────────────────── */
+.figure { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+.figure img {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  background: var(--surface-2);
+}
+.figure figcaption, .cap {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.fit img { max-height: 100%; }
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+
+/* ── 트리 ──────────────────────────────────────────────────── */
+.tree { font-family: var(--f-mono); font-size: 15px; line-height: 2.05; }
+.tree .lv { display: block; white-space: pre; }
+.tree .k { color: var(--accent); font-weight: 600; }
+.tree .v { color: var(--ink-dim); }
+
+/* ── 쿼리 해부도 ───────────────────────────────────────────── */
+.anat { display: flex; flex-direction: column; gap: 14px; }
+.anat-q {
+  font-family: var(--f-mono);
+  font-size: 24px;
+  letter-spacing: -.01em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.anat-q .p { padding: 3px 2px; border-bottom: 2px solid transparent; }
+.anat-q .p1 { border-bottom-color: var(--accent); }
+.anat-q .p2 { border-bottom-color: var(--teal); }
+.anat-q .p3 { border-bottom-color: var(--amber); }
+.anat-q .p4 { border-bottom-color: var(--ink-faint); }
+.legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.legend .lg-i { display: flex; flex-direction: column; gap: 4px; }
+.legend .lg-b { height: 3px; width: 34px; }
+.legend .lg-n { font-size: 15px; font-weight: 700; }
+.legend .lg-d { font-size: 14px; color: var(--ink-dim); line-height: 1.42; }
+
+/* ── 카디널리티 계산기 ─────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 (Counter 슬라이드) ───────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+    <!-- ═══════════ 01 Cover ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">Go · Language Features</div>
+            <h1 class="cover-title">Golang Generics<br />Part 1 — Overview and Basic Syntax</h1>
+            <p class="cover-sub">Write a function without fixing its types up front<br />— what Go 1.18 changed</p>
+            <div class="cover-meta">
+              <span class="chip on">type parameter</span>
+              <span class="chip">constraint</span>
+              <span class="chip">generic struct</span>
+              <span class="chip">type inference</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>The syntax we cover today</span>
+              <span>Go 1.18+</span>
+            </div>
+            <div class="panel-body" style="display:block;padding:22px 20px;">
+              <div class="tree">
+                <span class="lv"><span class="k">Generics</span></span>
+                <span class="lv">├─ type parameters <span class="v">[T any]</span></span>
+                <span class="lv">│  ├─ <span class="v">generic functions</span></span>
+                <span class="lv">│  └─ <span class="v">generic structs</span></span>
+                <span class="lv">├─ constraints <span class="v">any · union · interface</span></span>
+                <span class="lv">└─ <span class="k">type inference</span> <span class="v">usually omittable</span></span>
+              </div>
+            </div>
+            <div class="panel-foot">
+              <span>Part 2 digs into constraints</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">We look at Generics, which landed in Go 1.18 (March 2022), starting from "what problem did it come to solve" rather than memorizing syntax. Say up front that Part 1 covers the overview and basic syntax, and that constraints themselves are Part 2. Asking for a show of hands on who wrote pre-1.18 code makes the rest land much better.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 [CH 01] ═══════════ -->
+    <div class="holder" data-n="02" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">What Generics Are</h2>
+            <p class="chap-d">When the type gets decided — that single thing is what changes.
+            And why Go held this feature back for twelve years.</p>
+          </div>
+        </div>
+        <div class="notes-src">Three to four minutes. Keep the definition itself short and spend more time on "why was Go so late." That background is what makes the simplicity of Go Generics read as a choice rather than a shortfall.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 Concept ═══════════ -->
+    <div class="holder" data-n="03">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">concept</span><span class="stamp">definition</span></div>
+        <h2 class="slide-title">Generics defer the type decision to the call site</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>The type is fixed <b>when used</b>, not when defined</li>
+              <li>Java · C++ · Rust have had this for years</li>
+              <li>Go got it officially in <b>1.18</b> (March 2022)</li>
+              <li>The case for it was one thing — <b>removing duplication</b></li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">// T is a type that has not been decided yet</span>
+<span class="t-key">func</span> <span class="t-fn">printAny</span>[T <span class="t-key">any</span>](a T) {
+    fmt.<span class="t-fn">Println</span>(a)
+}
+
+<span class="t-cm">// decided at the moment of the call</span>
+<span class="t-fn">printAny</span>(<span class="t-num">10</span>)      <span class="t-cm">// T = int</span>
+<span class="t-fn">printAny</span>(<span class="t-str">"hello"</span>) <span class="t-cm">// T = string</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">in one line</span>
+            A device that stops you from writing the same logic <b>over and over</b> just because the types differ.
+          </div>
+        </div>
+        <div class="notes-src">"Generics" sounds heavy but the essence is one line — leave the type slot blank and fill it in later. Do not explain the syntax in detail here. Just note that brackets appear, and move on. Syntax gets proper treatment in chapter 03.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 Background ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">background</span><span class="stamp">why only now</span></div>
+        <h2 class="slide-title">Go held out for a long time to protect simplicity</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">Why they deferred it</div>
+              <p>Go's core philosophy is <b>simplicity</b>. Rob Pike and the other designers deliberately left many features out to keep language complexity down.</p>
+              <p class="dim">Generics were on that list for years</p>
+            </div>
+            <div class="card">
+              <div class="card-t">Why they finally added it</div>
+              <p>It was the <b>most requested feature</b> from the community. Ian Lance Taylor's Type Parameters Proposal was accepted and shipped in 1.18.</p>
+              <p class="dim">The <code class="inl">interface{}</code> workaround had clear limits</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">design direction</span>
+            C++ template metaprogramming and Haskell's higher-kinded types were <b>left out on purpose</b>; only pragmatic type parameters went in.
+          </div>
+        </div>
+        <div class="notes-src">Plenty of people compare Go Generics to other languages and call them anemic, but that is an explicit choice, not a defect. Nailing this down here makes the later "why can't I do X?" questions easy to answer. Expect: "what happens to pre-1.18 code?" → backward compatibility is fully preserved.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 [CH 02] ═══════════ -->
+    <div class="holder" data-n="05" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Two Pains From the Pre-Generics Era</h2>
+            <p class="chap-d"><code class="inl">interface{}</code>, which defers type checking to runtime,
+            and copy-pasted functions that multiply with every type. These two were the real case for adoption.</p>
+          </div>
+        </div>
+        <div class="notes-src">This chapter is the persuasion segment. Lead with syntax and you get "so what is it good for?"; lead with the pain and the syntax reads as the answer. Budget five to six minutes.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 The interface{} problem ═══════════ -->
+    <div class="holder" data-n="06">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">limits</span><span class="stamp">before → after</span></div>
+        <h2 class="slide-title">interface{} defers type checking until runtime</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm">// interface{} based — the return is interface{}, so an assertion is required</span>
+<span class="t-key">func</span> <span class="t-fn">foo1</span>(a <span class="t-key">interface</span>{}) <span class="t-key">interface</span>{} { <span class="t-key">return</span> a }
+
+<span class="t-cm">// generics based — the return is T, so no assertion is needed</span>
+<span class="t-key">func</span> <span class="t-fn">foo2</span>[T <span class="t-key">any</span>](a T) T { <span class="t-key">return</span> a }
+
+<span class="t-key">func</span> <span class="t-fn">main</span>() {
+    <span class="t-key">var</span> a, b <span class="t-key">int</span> = <span class="t-num">10</span>, <span class="t-num">20</span>
+    <span class="t-key">var</span> c <span class="t-key">int</span>
+
+    c = <span class="t-fn">foo1</span>(a).(<span class="t-key">int</span>)  <span class="t-bad">// assertion required — can fail at runtime</span>
+    c = <span class="t-fn">foo2</span>(b)         <span class="t-cm">// type decided automatically — safe at compile time</span>
+}</pre>
+          <div class="callout">
+            <span class="lbl">what changed</span>
+            One fragment, <code class="inl">.(int)</code>, disappeared. But what disappeared is not syntax — it is <b>the possibility of a runtime panic</b>.
+          </div>
+        </div>
+        <div class="notes-src">Point at exactly one line here: `.(int)`. foo1 passes the compiler without it knowing "this is an int," and you pay the cost at runtime when you are wrong. foo2, the compiler knows. If time is short, keep this slide and skip the next two.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 Type assertion ═══════════ -->
+    <div class="holder" data-n="07">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">aside</span><span class="stamp">type assertion</span></div>
+        <h2 class="slide-title">A type assertion is "unwrap it, and blow up if it's wrong"</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>The operation that <b>pulls a concrete type</b> out of <code class="inl">interface{}</code></li>
+              <li>Written as <code class="inl">value.(Type)</code></li>
+              <li>Wrong type means a <b>runtime panic</b></li>
+              <li>The second return value <code class="inl">ok</code> makes it safe</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">var</span> val <span class="t-key">interface</span>{} = <span class="t-str">"hello"</span>
+
+s := val.(<span class="t-key">string</span>) <span class="t-cm">// OK</span>
+i := val.(<span class="t-key">int</span>)    <span class="t-bad">// panic!</span>
+
+<span class="t-cm">// the safe form</span>
+s, ok := val.(<span class="t-key">string</span>) <span class="t-cm">// true</span>
+i, ok := val.(<span class="t-key">int</span>)    <span class="t-cm">// false, 0</span></pre>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">with Generics</span>
+            The type is fixed at compile time, so <b>the assertion itself becomes unnecessary</b>.
+          </div>
+        </div>
+        <div class="notes-src">If the audience already knows this, spend thirty seconds. If some do not, stress that `i := val.(int)` compiles fine — that is the heart of the problem. Add that the `, ok` form only prevents the panic; the type-branching code stays.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 Three costs ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">summary</span><span class="stamp">three costs</span></div>
+        <h2 class="slide-title">The flexibility of interface{} has a price tag</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-3">
+            <div class="card">
+              <div class="card-t">Weak type safety</div>
+              <p>A wrong assertion surfaces as a <b>runtime panic</b>, not a compile error.</p>
+              <p class="dim">If tests miss it, you meet it after deploy</p>
+            </div>
+            <div class="card">
+              <div class="card-t">Casting overhead</div>
+              <p>You repeat <code class="inl">.(Type)</code> every time you use the value.</p>
+              <p class="dim">Call sites get noisy</p>
+            </div>
+            <div class="card">
+              <div class="card-t">Poor IDE support</div>
+              <p>The return type is <code class="inl">interface{}</code>, so completion and type checking are blocked.</p>
+              <p class="dim">The editor cannot help you</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">one shared cause</span>
+            All three come from <b>not telling the compiler the type</b>.
+          </div>
+        </div>
+        <div class="notes-src">Do not read the three cards one by one — say only the closing callout: three symptoms, one cause. A war story helps here (an outage caused by a type-assertion panic in production, for instance).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 Duplication ═══════════ -->
+    <div class="holder" data-n="09">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">limits</span><span class="stamp">copy-paste hell</span></div>
+        <h2 class="slide-title">Writing the same function three times for three types</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">minInt</span>(a, b <span class="t-key">int</span>) <span class="t-key">int</span> {
+    <span class="t-key">if</span> a &lt; b { <span class="t-key">return</span> a }
+    <span class="t-key">return</span> b
+}
+
+<span class="t-key">func</span> <span class="t-fn">minInt16</span>(a, b <span class="t-key">int16</span>) <span class="t-key">int16</span> {
+    <span class="t-key">if</span> a &lt; b { <span class="t-key">return</span> a }   <span class="t-bad">// logic is completely identical</span>
+    <span class="t-key">return</span> b
+}
+
+<span class="t-key">func</span> <span class="t-fn">minFloat64</span>(a, b <span class="t-key">float64</span>) <span class="t-key">float64</span> {
+    <span class="t-key">if</span> a &lt; b { <span class="t-key">return</span> a }   <span class="t-bad">// the same logic again...</span>
+    <span class="t-key">return</span> b
+}</pre>
+          <div class="callout">
+            <span class="lbl">the real problem</span>
+            Fixing a bug means <b>fixing all three</b>. It grows linearly with every type you support.
+          </div>
+        </div>
+        <div class="notes-src">Mentioning that the Go standard library carried plenty of these traces resonates. The real-world pain is not the duplication itself but forgetting one when you fix something. This slide is the hook into the next chapter — "let's cut this down to one."</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 [CH 03] ═══════════ -->
+    <div class="holder" data-n="10" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Basic Generics Syntax</h2>
+            <p class="chap-d">From declaring type parameters to generic functions, constraints, and generic structs.
+            We follow how the <code class="inl">min</code> duplication we just saw collapses into one.</p>
+          </div>
+        </div>
+        <div class="notes-src">The main body of the talk. Budget ten minutes or more. Do not enumerate syntax — attach "what earlier problem does this solve" to every slide as you move.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 Syntax anatomy ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">syntax</span><span class="stamp">anatomy</span></div>
+        <h2 class="slide-title">Type parameters are declared inside square brackets</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="steps">
+            <div class="step"><span class="s-n">1</span><div><div class="s-c">func name[T constraint](param T) T</div><div class="s-d">The brackets come right after the function name, before the parentheses</div></div></div>
+            <div class="step"><span class="s-n">2</span><div><div class="s-c">T</div><div class="s-d">The type parameter's name. By convention a single uppercase letter</div></div></div>
+            <div class="step"><span class="s-n">3</span><div><div class="s-c">constraint</div><div class="s-d">The condition limiting which types may appear. <code class="inl">any</code> is the loosest</div></div></div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">only one thing to memorize</span>
+            Parentheses take <b>values</b>; brackets take <b>types</b>.
+          </div>
+        </div>
+        <div class="notes-src">Go used brackets instead of Java's &lt;T&gt; because of parsing ambiguity (angle brackets collide with comparison operators). Someone always asks, so have it ready. The callout is the whole slide.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 any ═══════════ -->
+    <div class="holder" data-n="12">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">syntax</span><span class="stamp">generic function</span></div>
+        <h2 class="slide-title">any accepts everything, and so can do nothing</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">any</code> is the constraint that allows <b>every type</b></li>
+              <li>Fits work that <b>ignores the type</b>, like printing or passing along</li>
+              <li>In exchange, operations like <code class="inl">&lt;</code> and <code class="inl">+</code> are unavailable</li>
+              <li>If you need operations, you must <b>narrow the allowed types</b></li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">// any = every type allowed</span>
+<span class="t-key">func</span> <span class="t-fn">printAny</span>[T <span class="t-key">any</span>](a T) {
+    fmt.<span class="t-fn">Println</span>(a)
+}
+
+<span class="t-key">func</span> <span class="t-fn">main</span>() {
+    <span class="t-fn">printAny</span>(<span class="t-num">10</span>)      <span class="t-cm">// T = int</span>
+    <span class="t-fn">printAny</span>(<span class="t-num">3.14</span>)    <span class="t-cm">// T = float64</span>
+    <span class="t-fn">printAny</span>(<span class="t-str">"hello"</span>) <span class="t-cm">// T = string</span>
+}</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">the rule</span>
+            <b>The looser the constraint, the more types you accept and the less you can do inside</b>.
+          </div>
+        </div>
+        <div class="notes-src">This trade-off is the whole of constraint design. Get a feel for it here and Part 2 is far easier. Mention in one line that `any` was added in Go 1.18 as an alias for `interface{}`.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 union constraint ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">solution</span><span class="stamp">union type</span></div>
+        <h2 class="slide-title">Three mins collapse into one</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm">// list the allowed types with | (union type constraint)</span>
+<span class="t-key">func</span> <span class="t-fn">minType</span>[T <span class="t-key">int</span> | <span class="t-key">int16</span> | <span class="t-key">int32</span> | <span class="t-key">int64</span> | <span class="t-key">float32</span> | <span class="t-key">float64</span>](a, b T) T {
+    <span class="t-key">if</span> a &lt; b {
+        <span class="t-key">return</span> a
+    }
+    <span class="t-key">return</span> b
+}
+
+<span class="t-key">func</span> <span class="t-fn">main</span>() {
+    fmt.<span class="t-fn">Println</span>(<span class="t-fn">minType</span>(<span class="t-num">10</span>, <span class="t-num">20</span>))                 <span class="t-cm">// int: 10</span>
+    fmt.<span class="t-fn">Println</span>(<span class="t-fn">minType</span>(<span class="t-key">int16</span>(<span class="t-num">10</span>), <span class="t-key">int16</span>(<span class="t-num">20</span>)))  <span class="t-cm">// int16: 10</span>
+    fmt.<span class="t-fn">Println</span>(<span class="t-fn">minType</span>(<span class="t-num">3.14</span>, <span class="t-num">1.14</span>))             <span class="t-cm">// float64: 1.14</span>
+}</pre>
+          <div class="callout">
+            <span class="lbl">why not any</span>
+            <code class="inl">any</code> does not guarantee the <code class="inl">&lt;</code> operation. To compare, you must accept <b>only comparable types</b>.
+          </div>
+        </div>
+        <div class="notes-src">Pulling slide 09 (the three copies) back up for contrast works well. Union syntax itself gets proper treatment in Part 2 including tilde (~), so here just "you list them with |". Being honest that Go 1.21 added built-in min/max, making this example purely didactic, is worth a line.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 Custom constraint ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">syntax</span><span class="stamp">custom constraint</span></div>
+        <h2 class="slide-title">Name a constraint and it becomes reusable</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>Listing types inline every time is wasteful</li>
+              <li>The <code class="inl">interface</code> keyword makes a <b>named constraint</b></li>
+              <li>Constraints can also be <b>composed</b></li>
+              <li>Here it defines a <b>type set</b>, not a method set</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">type</span> IntegerType <span class="t-key">interface</span> {
+    <span class="t-key">int</span> | <span class="t-key">int16</span> | <span class="t-key">int32</span> | <span class="t-key">int64</span>
+}
+
+<span class="t-key">type</span> Float <span class="t-key">interface</span> {
+    <span class="t-key">float32</span> | <span class="t-key">float64</span>
+}
+
+<span class="t-cm">// composition works too</span>
+<span class="t-key">type</span> ComparableNumbers <span class="t-key">interface</span> {
+    IntegerType | Float
+}</pre>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">using it</span>
+            <code class="inl">func minComparableNumbers[T ComparableNumbers](a, b T) T</code>
+          </div>
+        </div>
+        <div class="notes-src">"Wasn't interface a set of methods?" always comes up. Answer that Go 1.18 widened the meaning of interface to a type set. Worth adding the caveat that this widened interface cannot be used as a variable type — only in constraint position.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 generic struct ═══════════ -->
+    <div class="holder" data-n="15">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">syntax</span><span class="stamp">generic struct</span></div>
+        <h2 class="slide-title">Structs can take type parameters too</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">type</span> Node[T <span class="t-key">any</span>] <span class="t-key">struct</span> {
+    val  T
+    next *Node[T]      <span class="t-cm">// it references itself through T as well</span>
+}
+
+<span class="t-key">func</span> <span class="t-fn">NewNode</span>[T <span class="t-key">any</span>](v T) *Node[T] {
+    <span class="t-key">return</span> &amp;Node[T]{val: v}
+}
+
+<span class="t-cm">// usage</span>
+node := <span class="t-fn">NewNode</span>(<span class="t-num">1</span>)          <span class="t-cm">// *Node[int]</span>
+node.<span class="t-fn">Push</span>(<span class="t-num">2</span>).<span class="t-fn">Push</span>(<span class="t-num">3</span>).<span class="t-fn">Push</span>(<span class="t-num">4</span>)
+
+strNode := <span class="t-fn">NewNode</span>(<span class="t-str">"hello"</span>) <span class="t-cm">// *Node[string]</span>
+strNode.<span class="t-fn">Push</span>(<span class="t-str">"world"</span>)</pre>
+          <div class="callout">
+            <span class="lbl">what you gain</span>
+            No need to define <code class="inl">IntNode</code> and <code class="inl">StringNode</code> separately. <b>Data-structure duplication disappears</b>.
+          </div>
+        </div>
+        <div class="notes-src">Data structures — linked lists, stacks, queues — are the most natural home for Generics. Point out that a type can reference itself recursively, as in `*Node[T]`. Drawing attention to the missing [int] at the NewNode call site sets up chapter 04 (inference) nicely.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 Method restriction ═══════════ -->
+    <div class="holder" data-n="16">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">careful</span><span class="stamp">restriction</span></div>
+        <h2 class="slide-title">Methods cannot declare new type parameters</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">Allowed — using the struct's T</div>
+              <p><code class="inl">func (n *Node[T]) Push(v T) *Node[T]</code></p>
+              <p class="dim">Type parameters declared on the struct are free to use in methods</p>
+            </div>
+            <div class="card">
+              <div class="card-t">Not allowed — a new T on the method</div>
+              <p><code class="inl">func (n *Node[T]) Push[F any](f F)</code></p>
+              <p class="dim">Compile error. Go does not permit this syntax</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">the workaround</span>
+            When you need a new type parameter, <b>pull it out into a plain function</b> instead of a method.
+          </div>
+        </div>
+        <div class="notes-src">The wall people hit most often in practice. Java and C# folks assume it works and get stuck. The reason is that the method set would grow without bound per type, making interface satisfaction undecidable — that much is enough if asked. The Map function on the next slide is exactly the "pulled out into a function" case.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 Map ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">applied</span><span class="stamp">two type parameters</span></div>
+        <h2 class="slide-title">Two parameters let you express a transformation</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm">// F: input element type, T: output element type</span>
+<span class="t-key">func</span> <span class="t-fn">Map</span>[F, T <span class="t-key">any</span>](s []F, f <span class="t-key">func</span>(F) T) []T {
+    rst := <span class="t-fn">make</span>([]T, <span class="t-fn">len</span>(s))
+    <span class="t-key">for</span> i, v := <span class="t-key">range</span> s {
+        rst[i] = <span class="t-fn">f</span>(v)
+    }
+    <span class="t-key">return</span> rst
+}
+
+doubled := <span class="t-fn">Map</span>([]<span class="t-key">int</span>{<span class="t-num">1</span>, <span class="t-num">2</span>, <span class="t-num">3</span>}, <span class="t-key">func</span>(i <span class="t-key">int</span>) <span class="t-key">int</span> {
+    <span class="t-key">return</span> i * <span class="t-num">2</span>
+})                                   <span class="t-cm">// [2 4 6]</span>
+
+uppered := <span class="t-fn">Map</span>([]<span class="t-key">string</span>{<span class="t-str">"Hello"</span>, <span class="t-str">"world"</span>}, strings.ToUpper)
+                                     <span class="t-cm">// [HELLO WORLD]</span></pre>
+          <div class="callout teal">
+            <span class="lbl">the point</span>
+            What matters is that <code class="inl">F</code> and <code class="inl">T</code> <b>are allowed to differ</b>. That is what lets one function also do <code class="inl">[]int → []string</code>.
+          </div>
+        </div>
+        <div class="notes-src">Functional utilities were simply impossible before Generics. Note that if F and T are always the same type, there is no reason to have two. Mentioning that golang.org/x/exp/slices and maps were built this way, and that much of it landed in the Go 1.21+ standard library, connects it to real work.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 [CH 04] ═══════════ -->
+    <div class="holder" data-n="18" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Type Inference</h2>
+            <p class="chap-d">So far we have barely written <code class="inl">[int]</code> at any call site.
+            The compiler works the type out from the arguments — we look at when it can and when it cannot.</p>
+          </div>
+        </div>
+        <div class="notes-src">Three to four minutes. This is why Generics syntax does not actually feel heavy in practice. Open by having people recall the call sites from earlier slides.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 Explicit vs inferred ═══════════ -->
+    <div class="holder" data-n="19">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">inference</span><span class="stamp">explicit vs inferred</span></div>
+        <h2 class="slide-title">With arguments present, you can skip the type</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>The compiler infers type parameters <b>from the arguments</b></li>
+              <li>Explicit and inferred forms produce <b>exactly the same result</b></li>
+              <li>When inference works, <b>the inferred form is preferred</b></li>
+              <li>Be explicit only when the reader cannot see the type</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">identity</span>[T <span class="t-key">any</span>](v T) T { <span class="t-key">return</span> v }
+
+<span class="t-cm">// explicit type argument</span>
+r1 := <span class="t-fn">identity</span>[<span class="t-key">int</span>](<span class="t-num">42</span>)
+r2 := <span class="t-fn">identity</span>[<span class="t-key">string</span>](<span class="t-str">"hello"</span>)
+
+<span class="t-cm">// type inference — taken from the arguments</span>
+r3 := <span class="t-fn">identity</span>(<span class="t-num">42</span>)      <span class="t-cm">// T = int</span>
+r4 := <span class="t-fn">identity</span>(<span class="t-str">"hello"</span>) <span class="t-cm">// T = string</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">how it feels</span>
+            Look only at the call site and it is <b>indistinguishable from a plain function</b>. That is why Generics do not weigh the code down.
+          </div>
+        </div>
+        <div class="notes-src">Anyone who has suffered Java generics' angle-bracket noise appreciates this point. To "so when do I write it explicitly?" there are two answers — when inference fails (slide 21), and when being explicit simply reads better.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 Multiple parameters ═══════════ -->
+    <div class="holder" data-n="20">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">inference</span><span class="stamp">multiple parameters</span></div>
+        <h2 class="slide-title">Several parameters are each inferred separately</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>Each type parameter is decided from <b>its matching argument</b></li>
+              <li>Mixing different types is no problem</li>
+              <li>If one infers and another does not, <b>you must write them all</b></li>
+            </ul>
+            <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">pair</span>[T, U <span class="t-key">any</span>](a T, b U) <span class="t-key">string</span> {
+    <span class="t-key">return</span> fmt.<span class="t-fn">Sprintf</span>(<span class="t-str">"(%v, %v)"</span>, a, b)
+}
+
+<span class="t-cm">// all inferable</span>
+<span class="t-fn">pair</span>(<span class="t-num">1</span>, <span class="t-str">"hello"</span>) <span class="t-cm">// T=int, U=string</span>
+<span class="t-fn">pair</span>(<span class="t-num">3.14</span>, <span class="t-key">true</span>)  <span class="t-cm">// T=float64, U=bool</span></pre>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">careful</span>
+            Type parameters <b>cannot be partially specified</b>. To be explicit, write them all, as in <code class="inl">pair[int, string](...)</code>.
+          </div>
+        </div>
+        <div class="notes-src">The no-partial-specification rule is a genuine stumbling block. Go has no syntax for writing the leading parameter and inferring the rest. Briefly revisiting slide 17's Map, where both F and T come from arguments, connects well.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 Inference failure ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">inference</span><span class="stamp">failure cases</span></div>
+        <h2 class="slide-title">Inference comes only from arguments — no arguments, no inference</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">toSlice</span>[T <span class="t-key">any</span>](args ...T) []T {
+    <span class="t-key">return</span> args
+}
+
+<span class="t-cm">// inference succeeds — type comes from the arguments</span>
+ints := <span class="t-fn">toSlice</span>(<span class="t-num">1</span>, <span class="t-num">2</span>, <span class="t-num">3</span>)          <span class="t-cm">// T = int</span>
+
+<span class="t-cm">// inference fails — no arguments, so it must be explicit</span>
+emptyInts := <span class="t-fn">toSlice</span>[<span class="t-key">int</span>]()
+emptyStrings := <span class="t-fn">toSlice</span>[<span class="t-key">string</span>]()
+
+result := <span class="t-fn">toSlice</span>()   <span class="t-bad">// compile error: cannot infer T</span></pre>
+          <div class="callout">
+            <span class="lbl">three failing cases</span>
+            No arguments · when <b>the return type alone</b> cannot decide it · when argument types are ambiguous
+          </div>
+        </div>
+        <div class="notes-src">"It does not infer from the return type" is what surprises people most. The Go compiler does not look at the assignment target to decide T. Asking whether anyone has actually seen `cannot infer T` gets a reaction. The fix is always the same — write it in brackets.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 Summary table ═══════════ -->
+    <div class="holder" data-n="22">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">summary</span><span class="stamp">before vs after</span></div>
+        <h2 class="slide-title">What changed, in one table</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>Aspect</th><th>Before Generics</th><th>After Generics</th></tr></thead>
+              <tbody>
+                <tr><td>Supporting many types</td><td><code class="inl">interface{}</code> + assertions</td><td>Type parameters <code class="inl">[T any]</code></td></tr>
+                <tr class="on"><td>Type safety</td><td>Risk of runtime panic</td><td>Verified at compile time</td></tr>
+                <tr><td>Code duplication</td><td>One function per type</td><td>A single generic function</td></tr>
+                <tr><td>Data structures</td><td>One struct per type</td><td>Generic struct <code class="inl">[T any]</code></td></tr>
+                <tr><td>IDE support</td><td class="faint">limited</td><td>Full type inference</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">how to choose</span>
+            Do not read the table — just one line: <b>does the compiler know the type or not</b>. Everything else follows.
+          </div>
+        </div>
+        <div class="notes-src">Do not read all five rows; point only at the highlighted "type safety" row. Saying the other four are consequences of that one compresses the table into a sentence.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 Quiz ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">check</span><span class="stamp">click to reveal</span></div>
+        <h2 class="slide-title">Check yourself</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span><code class="inl">interface{}</code> can also accept many types — so what do Generics actually remove?</span></button>
+              <div class="q-a">The type assertion and the runtime panic that rides along with it. The return type is <code class="inl">T</code>, so the type is settled at compile time. <span class="ref">→ Slide 06 · 08</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>Why does <code class="inl">func min[T any](a, b T) T</code> fail to compile?</span></button>
+              <div class="q-a"><code class="inl">any</code> does not guarantee the <code class="inl">&lt;</code> operation. To compare, narrow it with a union type so only comparable types are accepted. <span class="ref">→ Slide 12 · 13</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span>Can a method declare a new type parameter?</span></button>
+              <div class="q-a">No. It can only use type parameters declared on the struct; if you need a new one, pull it out into a plain function. <span class="ref">→ Slide 16</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span>Why does <code class="inl">toSlice()</code> give a <code class="inl">cannot infer T</code> error?</span></button>
+              <div class="q-a">Inference happens only from arguments, and there are none. You have to be explicit, as in <code class="inl">toSlice[int]()</code>. <span class="ref">→ Slide 21</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>With two type parameters, can you specify only the first one?</span></button>
+              <div class="q-a">Partial specification is not allowed. To be explicit, write them all, as in <code class="inl">pair[int, string](...)</code>. <span class="ref">→ Slide 20</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Wait five to ten seconds per question before opening it. Q2 and Q4 are where people actually get stuck in practice, so spend more time there. If short on time, skip Q1, Q3, and Q5 and leave them as takeaways.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 Closing ═══════════ -->
+    <div class="holder" data-n="24">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">closing</span><span class="stamp">next part</span></div>
+        <h2 class="slide-title">Next up: a deep dive into Type Constraints</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">Today's takeaway</div>
+              <p>Leave the type slot open with brackets, and let the constraint decide how wide that slot stays.</p>
+              <p class="dim">Call sites stay almost unchanged, thanks to inference</p>
+            </div>
+            <div class="card">
+              <div class="card-t">Coming in Part 2</div>
+              <p><code class="inl">any</code> · <code class="inl">comparable</code> · union (<code class="inl">|</code>) · tilde (<code class="inl">~</code>) · designing custom constraints.</p>
+              <p class="dim">The questions we left open today get answered there</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">references</span>
+            go.dev/doc/tutorial/generics · go.dev/blog/intro-generics · go.dev/ref/spec#Type_parameter_declarations
+          </div>
+        </div>
+        <div class="notes-src">Part 1 was "how do you use it"; Part 2 is "how wide do you leave it open." Close by flagging that constraint design is the real difficulty of Generics. Leave about three minutes for questions.</div>
+      </section>
+    </div>
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">Speaker notes</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">Go Generics · Part 1</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 24</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="Overview (O)">Overview</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="Speaker notes (N)">Notes</button>
+      <button class="kbtn" id="btnTheme" type="button" title="Toggle theme (T)">Theme</button>
+      <button class="kbtn" id="btnHelp" type="button" title="Shortcuts (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>Shortcuts</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>Next slide</dd>
+        <dt>← · PgUp</dt><dd>Previous slide</dd>
+        <dt>Home · End</dt><dd>First · Last</dd>
+        <dt>O</dt><dd>Slide overview</dd>
+        <dt>N</dt><dd>Speaker notes</dd>
+        <dt>T</dt><dd>Light / dark theme</dd>
+        <dt>F</dt><dd>Fullscreen</dd>
+        <dt>Esc</dt><dd>Close</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "Slide " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 카디널리티 카운터 ─────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 이미지 토글 ───────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지 스파크라인 ───────────────────────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+
+    var accent = css("--accent") || "#3FC7EF";
+    var line   = css("--line") || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+
+    /* 격자 */
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    var i, y, x;
+    for (i = 1; i <= 4; i++) {
+      y = Math.round((H / 5) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (i = 1; i <= 5; i++) {
+      x = Math.round((W / 6) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    /* 결정적인 CPU 곡선 (난수 없이 재현 가능하게) */
+    var N = 180, pts = [];
+    for (i = 0; i < N; i++) {
+      var t = i / (N - 1);
+      var v = 0.42
+        + 0.16 * Math.sin(t * 8.1 + 0.6)
+        + 0.09 * Math.sin(t * 21.3 + 1.9)
+        + 0.05 * Math.sin(t * 47.7 + 4.2)
+        + 0.10 * Math.exp(-Math.pow((t - 0.68) * 9, 2));
+      v = Math.max(0.08, Math.min(0.92, v));
+      pts.push([6 + t * (W - 12), H - v * H]);
+    }
+
+    var steps = reduce ? N : 0;
+    function render(n) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = line;
+      for (i = 1; i <= 4; i++) {
+        y = Math.round((H / 5) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      for (i = 1; i <= 5; i++) {
+        x = Math.round((W / 6) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      var m = Math.max(2, n);
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, accent + "55");
+      grad.addColorStop(1, accent + "00");
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], H);
+      for (i = 0; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(pts[m - 1][0], H);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.4;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      /* 마지막 점 강조 */
+      ctx.beginPath();
+      ctx.arc(pts[m - 1][0], pts[m - 1][1], 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = accent;
+      ctx.fill();
+
+      ctx.font = "500 20px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.fillText("100%", 8, 22);
+      ctx.fillText("0", 8, H - 8);
+    }
+
+    if (reduce) { render(N); return; }
+    var n0 = 2, t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1100);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(n0, Math.round(N * e)));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>
