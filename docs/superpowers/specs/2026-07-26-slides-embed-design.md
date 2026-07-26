@@ -88,6 +88,8 @@ https://blog.advenoh.pe.kr/en/{글폴더}/slides/    ← 영문
 - 기존 mtime·size 비교 스킵 로직을 그대로 재사용한다
 - 이제 이미지만 복사하지 않으므로 파일명을 `copy-assets.ts`로 바꾸고 `package.json`의 `copy:images` → `copy:assets`, `build` 체인 문자열을 함께 수정한다
 
+> **갱신 (2026-07-26)**: 슬라이드는 이제 복사 시 테마 동기화 스크립트가 주입되어 배포본이 원본과 동일하지 않다. 원본은 여전히 자기완결형으로 유지된다. `2026-07-26-slides-theme-sync-design.md` 참조.
+
 ### 4. 마커 → 임베드 렌더 — `lib/markdown.ts`
 
 `parseMarkdown(markdown, slug)`에 `lang: 'ko' | 'en' = 'ko'` 인자를 추가한다. 호출처는 `lib/articles.ts:94` 한 곳뿐이다.
