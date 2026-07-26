@@ -38,7 +38,8 @@ function countSlides(slidesPath: string): number {
   try {
     const html = fs.readFileSync(slidesPath, 'utf-8');
     return (html.match(/data-n="\d+"/g) ?? []).length;
-  } catch {
+  } catch (error) {
+    console.warn(`⚠️  ${slidesPath} 를 읽는 중 오류가 발생해 슬라이드 수를 셀 수 없습니다:`, error);
     return 0;
   }
 }
