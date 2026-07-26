@@ -156,6 +156,8 @@ const THEME_SYNC_SCRIPT = `<!-- 아래 블록은 scripts/copy-assets.ts 가 배�
  * 첫 페인트 전에 테마가 확정되어야 깜빡임이 없다.
  */
 function injectThemeSync(html: string, label: string): string {
+  // 방어적 가드다. copySlides 는 매번 원본(마커 없음)에서 새로 읽으므로 현재 호출
+  // 경로에서는 발동하지 않는다. 실제 멱등성은 "원본 불변 + 결정적 변환"에서 나온다.
   if (html.includes(THEME_SYNC_MARKER)) return html;
 
   const idx = html.lastIndexOf('</head>');
