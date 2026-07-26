@@ -14,6 +14,8 @@ interface ManifestArticle {
   seriesOrder?: number;
   firstImage?: string;
   readTime?: number;
+  hasSlides?: boolean;
+  slideCount?: number;
 }
 
 interface Manifest {
