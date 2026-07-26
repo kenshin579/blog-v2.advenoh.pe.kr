@@ -1,0 +1,303 @@
+<!--
+  발표 슬라이드 스니펫 모음
+  ─────────────────────────────────────────────────────────────
+  이 파일은 그 자체로 열리는 슬라이드가 아니다. 필요한 블록을 복사해
+  deck-template.html 의 <div class="stage"> 안에 붙여 넣고 내용만 바꾼다.
+
+  공통 규칙
+  - 각 슬라이드는 <div class="holder" data-n="NN"> 로 감싼다. NN 은 01 부터 연속.
+  - 장 구분 슬라이드에는 data-chapter="1" 을 추가한다 (하단 레일에 눈금이 굵게 표시됨).
+  - 모든 슬라이드 끝에 <div class="notes-src"> 발표자 노트를 쓴다 (n 키로 열림).
+  - 무대는 1280x720 고정이다. 아래 각 블록의 "분량" 주석을 반드시 지킬 것 —
+    넘치면 화면 밖으로 잘려 나가고, 개요 모드에서는 잘 보이지 않아 놓치기 쉽다.
+
+  인라인 요소 (본문 어디서나)
+  - <code class="inl">fx.Provide</code>   인라인 코드
+  - <b>강조</b>  ·  <span class="dim">흐리게</span>  ·  <span class="faint">더 흐리게</span>
+  - 코드 안 토큰: t-key(키워드) t-str(문자열) t-num(숫자) t-fn(함수) t-cm(주석) t-bad(에러/문제)
+  - HTML 이스케이프 주의: 코드 안의 <  &  는 각각 &lt;  &amp; 로 쓴다.
+-->
+
+
+<!-- ══════════════════════════════════════════════════════════
+     1. 장 구분 (chapter)
+     언제: 큰 주제가 바뀔 때. 3~5장마다 하나가 적당하다.
+     분량: 제목 1줄 + 설명 2~3줄. 그 이상은 다음 슬라이드로.
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="05" data-chapter="1">
+  <section class="slide" data-kind="chapter">
+    <div class="chap">
+      <div class="chap-n">01</div>
+      <div class="chap-l">
+        <h2 class="chap-t">장 제목</h2>
+        <p class="chap-d">이 장에서 무엇을 다루는지 두세 줄로.
+        왜 지금 이 이야기를 하는지까지 적으면 청중이 따라오기 쉽다.</p>
+      </div>
+    </div>
+    <div class="notes-src">이 장의 목표와, 시간이 부족하면 어디를 줄일지 적어둔다.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     2. 불릿 + 코드 2단 (가장 많이 쓰는 형태)
+     언제: 설명과 코드를 나란히 보여줄 때.
+     분량: 불릿 4~5개(각 1~2줄) + 코드 12~14줄. 콜아웃까지 넣으면 코드는 10줄로 줄인다.
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="06">
+  <section class="slide">
+    <div class="slide-head"><span class="eyebrow">분류</span><span class="stamp">키워드</span></div>
+    <h2 class="slide-title">한 문장으로 된 주장</h2>
+    <div class="rule"></div>
+    <div class="slide-body">
+      <div class="cols c-2a">
+        <ul class="bul">
+          <li>첫 번째 근거</li>
+          <li><b>강조할</b> 두 번째 근거</li>
+          <li>세 번째 근거</li>
+          <li>네 번째 근거</li>
+        </ul>
+        <pre class="code sm"><span class="t-cm">// 주석</span>
+app := fx.<span class="t-fn">New</span>(
+    fx.<span class="t-fn">Provide</span>(
+        NewLogger,
+        NewRepo,
+    ),
+    fx.<span class="t-fn">Invoke</span>(<span class="t-key">func</span>(s *Service) {
+        <span class="t-cm">// 부수 효과</span>
+    }),
+)</pre>
+      </div>
+      <div class="callout">
+        <span class="lbl">한 줄 요약</span>
+        이 슬라이드에서 딱 하나만 가져간다면 이것.
+      </div>
+    </div>
+    <div class="notes-src">발표자 노트.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     3. 코드 전면
+     언제: 코드 자체가 주인공일 때.
+     분량: 최대 16~18줄. 그보다 길면 잘라서 두 장으로 나누거나 핵심만 발췌한다.
+           class 에 sm(기본) / xs(더 작게) / plain(하이라이트 없음) 을 조합한다.
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="07">
+  <section class="slide">
+    <div class="slide-head"><span class="eyebrow">실전</span><span class="stamp">before → after</span></div>
+    <h2 class="slide-title">코드가 주인공인 슬라이드</h2>
+    <div class="rule"></div>
+    <div class="slide-body">
+      <pre class="code sm"><span class="t-cm">// cmd/main.go</span>
+app := fx.<span class="t-fn">New</span>(
+    fx.<span class="t-fn">Provide</span>(
+        config.New,              <span class="t-cm">// *config.Config</span>
+        database.New,            <span class="t-cm">// *sql.DB</span>
+    ),
+    fx.<span class="t-fn">Invoke</span>(registerHooks),
+)</pre>
+      <div class="callout teal">
+        <span class="lbl">달라진 것</span>
+        코드를 보여준 뒤 <b>무엇이 달라졌는지</b>를 한 줄로 못 박는다.
+      </div>
+    </div>
+    <div class="notes-src">발표자 노트.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     4. 표
+     언제: 항목을 나란히 비교할 때.
+     분량: ★ 본문에 표만 있으면 최대 9행, 콜아웃을 함께 두면 5~6행.
+           그 이상은 반드시 두 장으로 나눈다 (넘치면 아래가 통째로 잘린다).
+           강조할 행에 class="on", 흐리게 할 칸에 class="faint".
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="08">
+  <section class="slide">
+    <div class="slide-head"><span class="eyebrow">비교</span><span class="stamp">A vs B</span></div>
+    <h2 class="slide-title">무엇을 언제 고를까</h2>
+    <div class="rule"></div>
+    <div class="slide-body">
+      <div class="tbl-wrap">
+        <table class="tbl">
+          <thead><tr><th>항목</th><th>용도</th><th>주의</th></tr></thead>
+          <tbody>
+            <tr class="on"><td><code class="inl">방법 A</code></td><td>이럴 때 쓴다</td><td>이 점을 조심</td></tr>
+            <tr><td><code class="inl">방법 B</code></td><td>저럴 때 쓴다</td><td class="faint">—</td></tr>
+            <tr><td><code class="inl">방법 C</code></td><td>드물게</td><td class="faint">—</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="callout">
+        <span class="lbl">고르는 기준</span>
+        표를 읽어 내려가지 말고, <b>기준 한 줄</b>만 말하고 넘어간다.
+      </div>
+    </div>
+    <div class="notes-src">표는 자료로 남기고 발표에서는 한두 행만 짚는다고 안내한다.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     5. 카드 2단 비교
+     언제: 두 개념을 대비시킬 때. 표보다 덜 빽빽하고 눈에 잘 들어온다.
+     분량: 카드당 제목 1줄 + 본문 2~3줄. c-3 으로 3단도 가능하지만 카드가 좁아진다.
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="09">
+  <section class="slide">
+    <div class="slide-head"><span class="eyebrow">개념</span><span class="stamp">둘의 차이</span></div>
+    <h2 class="slide-title">헷갈리는 둘을 갈라놓기</h2>
+    <div class="rule"></div>
+    <div class="slide-body">
+      <div class="cols c-2">
+        <div class="card">
+          <div class="card-t">왼쪽 개념</div>
+          <p>무엇을 하는지 한두 줄.</p>
+          <p class="dim">언제 쓰는지 보조 설명</p>
+        </div>
+        <div class="card">
+          <div class="card-t">오른쪽 개념</div>
+          <p>무엇을 하는지 한두 줄.</p>
+          <p class="dim">언제 쓰는지 보조 설명</p>
+        </div>
+      </div>
+      <div class="callout">
+        <span class="lbl">기억법</span>
+        외우기 쉬운 한 문장으로 만들어 준다.
+      </div>
+    </div>
+    <div class="notes-src">발표자 노트.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     6. 아키텍처 다이어그램
+     언제: 구성 요소 사이의 흐름을 보여줄 때.
+     분량: 열 3개 이하, 열당 노드 3개 이하. 그 이상은 읽히지 않는다.
+           node 에 hero(강조) / mute(흐리게) 를 붙일 수 있다.
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="10">
+  <section class="slide">
+    <div class="slide-head"><span class="eyebrow">구조</span><span class="stamp">architecture</span></div>
+    <h2 class="slide-title">전체가 어떻게 맞물리는가</h2>
+    <div class="rule"></div>
+    <div class="slide-body">
+      <div class="arch">
+        <div class="arch-col">
+          <div class="node"><span class="n-t">구성요소 A</span><span class="n-p">부가 설명</span></div>
+          <div class="node"><span class="n-t">구성요소 B</span><span class="n-p">부가 설명</span></div>
+        </div>
+        <div class="arch-link"><span class="l-lbl">관계</span><span class="l-line"></span><span class="l-lbl">주기</span></div>
+        <div class="arch-col">
+          <div class="node hero"><span class="n-t">중심 구성요소</span><span class="n-p">가장 중요한 것</span></div>
+        </div>
+        <div class="arch-link"><span class="l-lbl">관계</span><span class="l-line"></span></div>
+        <div class="arch-col">
+          <div class="node"><span class="n-t">구성요소 C</span><span class="n-p">부가 설명</span></div>
+          <div class="node mute"><span class="n-t">구성요소 D</span><span class="n-p">부차적</span></div>
+        </div>
+      </div>
+      <p class="cap">화살표가 무엇을 뜻하는지 한 줄로 밝혀둔다 — 데이터 흐름인지 호출 방향인지 헷갈리기 쉽다.</p>
+    </div>
+    <div class="notes-src">발표자 노트.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     7. 단계 목록
+     언제: 순서가 있는 과정을 풀어 보여줄 때. 쿼리 해부, 실행 흐름 등.
+     분량: 3~5단계. 각 단계는 코드 1줄 + 설명 1~2줄.
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="11">
+  <section class="slide">
+    <div class="slide-head"><span class="eyebrow">순서</span><span class="stamp">step by step</span></div>
+    <h2 class="slide-title">언제 무슨 일이 일어나는가</h2>
+    <div class="rule"></div>
+    <div class="slide-body">
+      <div class="steps">
+        <div class="step"><span class="s-n">1</span><div><div class="s-c">첫 단계의 코드나 명령</div><div class="s-d">여기서 실제로 무슨 일이 일어나는지</div></div></div>
+        <div class="step"><span class="s-n">2</span><div><div class="s-c">두 번째 단계</div><div class="s-d">설명</div></div></div>
+        <div class="step"><span class="s-n">3</span><div><div class="s-c">세 번째 단계</div><div class="s-d">설명</div></div></div>
+      </div>
+      <div class="callout teal">
+        <span class="lbl">왜 이 순서인가</span>
+        단계를 나열만 하지 말고 <b>왜 이렇게 나뉘는지</b>를 덧붙인다.
+      </div>
+    </div>
+    <div class="notes-src">발표자 노트.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     8. 트리
+     언제: 계층 구조를 보여줄 때. 표지 패널에도 잘 어울린다.
+     ★ 반드시 각 줄을 <span class="lv"> 로 감쌀 것.
+       raw 텍스트로 넣으면 white-space 가 걸리지 않아 한 줄로 흘러버린다.
+     분량: 8줄 이하. k(강조) / v(흐리게) 로 색을 준다.
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="12">
+  <section class="slide">
+    <div class="slide-head"><span class="eyebrow">구조</span><span class="stamp">tree</span></div>
+    <h2 class="slide-title">계층으로 보기</h2>
+    <div class="rule"></div>
+    <div class="slide-body">
+      <div class="tree">
+        <span class="lv"><span class="k">최상위</span></span>
+        <span class="lv">├─ 하위 항목</span>
+        <span class="lv">│  ├─ <span class="v">더 아래</span></span>
+        <span class="lv">│  └─ <span class="v">더 아래</span></span>
+        <span class="lv">└─ <span class="k">다른 갈래</span></span>
+      </div>
+    </div>
+    <div class="notes-src">발표자 노트.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     9. 퀴즈 (클릭하면 답이 열림)
+     언제: 장이 끝난 뒤 또는 발표 마무리 직전.
+     분량: ★ 한 장에 5문항. 그 이상은 두 장으로 나눈다 (①② 로 제목을 붙인다).
+           질문은 1~2줄, 답은 2~3줄. 답 끝에 참조 슬라이드 번호를 단다.
+     ★ 슬라이드를 나중에 추가/삭제하면 <span class="ref"> 번호가 어긋난다. 반드시 다시 확인할 것.
+     ══════════════════════════════════════════════════════════ -->
+<div class="holder" data-n="13">
+  <section class="slide">
+    <div class="slide-head"><span class="eyebrow">확인</span><span class="stamp">클릭하면 답이 열립니다</span></div>
+    <h2 class="slide-title">스스로 답해보기</h2>
+    <div class="rule"></div>
+    <div class="slide-body">
+      <div class="quiz">
+        <div class="q">
+          <button class="q-btn" type="button"><span class="q-n">Q1</span><span>질문을 한두 줄로. 실무에서 실제로 막히는 지점이면 좋다.</span></button>
+          <div class="q-a">답을 두세 줄로. 왜 그런지까지 설명한다. <span class="ref">→ 슬라이드 08</span></div>
+        </div>
+        <div class="q">
+          <button class="q-btn" type="button"><span class="q-n">Q2</span><span>두 번째 질문</span></button>
+          <div class="q-a">답. <span class="ref">→ 슬라이드 09 · 10</span></div>
+        </div>
+      </div>
+    </div>
+    <div class="notes-src">한 문제씩 열기 전에 몇 초 기다린다고 적어둔다.</div>
+  </section>
+</div>
+
+
+<!-- ══════════════════════════════════════════════════════════
+     콜아웃 변형 (위 블록들 안에서 자유롭게)
+     ══════════════════════════════════════════════════════════ -->
+<div class="callout">
+  <span class="lbl">기본</span>
+  액센트 색 강조. 핵심 주장에 쓴다.
+</div>
+
+<div class="callout teal">
+  <span class="lbl">보조</span>
+  teal 색. 부연이나 팁에 쓴다. 한 슬라이드에 기본+teal 을 하나씩 두면 균형이 좋다.
+</div>
