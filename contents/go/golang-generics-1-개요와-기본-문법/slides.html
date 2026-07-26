@@ -1,0 +1,1772 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Golang Generics 1편 — 개요와 기본 문법</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 따뜻한 표시등
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0A6E8A;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(10, 110, 138, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #3FC7EF;
+    --accent-ink:#031A20;
+    --accent-soft: rgba(63, 199, 239, .14);
+    --teal:      #46C7B0;
+    --teal-soft: rgba(70, 199, 176, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #3FC7EF;
+  --accent-ink:#031A20;
+  --accent-soft: rgba(63, 199, 239, .14);
+  --teal:      #46C7B0;
+  --teal-soft: rgba(70, 199, 176, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0A6E8A;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(10, 110, 138, .09);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: 0 0;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+/* 높이를 채우는 2단 조판에서는 각 열이 늘어나고, 내용은 열 안에서 세로 중앙에 놓인다 */
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 그림 ──────────────────────────────────────────────────── */
+.figure { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+.figure img {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  background: var(--surface-2);
+}
+.figure figcaption, .cap {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.fit img { max-height: 100%; }
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+
+/* ── 트리 ──────────────────────────────────────────────────── */
+.tree { font-family: var(--f-mono); font-size: 15px; line-height: 2.05; }
+.tree .lv { display: block; white-space: pre; }
+.tree .k { color: var(--accent); font-weight: 600; }
+.tree .v { color: var(--ink-dim); }
+
+/* ── 쿼리 해부도 ───────────────────────────────────────────── */
+.anat { display: flex; flex-direction: column; gap: 14px; }
+.anat-q {
+  font-family: var(--f-mono);
+  font-size: 24px;
+  letter-spacing: -.01em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.anat-q .p { padding: 3px 2px; border-bottom: 2px solid transparent; }
+.anat-q .p1 { border-bottom-color: var(--accent); }
+.anat-q .p2 { border-bottom-color: var(--teal); }
+.anat-q .p3 { border-bottom-color: var(--amber); }
+.anat-q .p4 { border-bottom-color: var(--ink-faint); }
+.legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.legend .lg-i { display: flex; flex-direction: column; gap: 4px; }
+.legend .lg-b { height: 3px; width: 34px; }
+.legend .lg-n { font-size: 15px; font-weight: 700; }
+.legend .lg-d { font-size: 14px; color: var(--ink-dim); line-height: 1.42; }
+
+/* ── 카디널리티 계산기 ─────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 (Counter 슬라이드) ───────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+
+    <!-- ═══════════ 01 표지 ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">Go · 언어 기능</div>
+            <h1 class="cover-title">Golang Generics<br />1편 — 개요와 기본 문법</h1>
+            <p class="cover-sub">타입을 미리 정하지 않고 함수를 쓴다<br />— Go 1.18이 바꿔 놓은 것</p>
+            <div class="cover-meta">
+              <span class="chip on">type parameter</span>
+              <span class="chip">constraint</span>
+              <span class="chip">generic struct</span>
+              <span class="chip">type inference</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>오늘 배울 문법</span>
+              <span>Go 1.18+</span>
+            </div>
+            <div class="panel-body" style="display:block;padding:22px 20px;">
+              <div class="tree">
+                <span class="lv"><span class="k">Generics</span></span>
+                <span class="lv">├─ 타입 파라미터 <span class="v">[T any]</span></span>
+                <span class="lv">│  ├─ <span class="v">generic 함수</span></span>
+                <span class="lv">│  └─ <span class="v">generic 구조체</span></span>
+                <span class="lv">├─ constraint <span class="v">any · union · interface</span></span>
+                <span class="lv">└─ <span class="k">타입 추론</span> <span class="v">대부분 생략 가능</span></span>
+              </div>
+            </div>
+            <div class="panel-foot">
+              <span>2편에서는 constraint를 깊게 판다</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Go 1.18(2022년 3월)에 들어온 Generics를, 문법을 외우는 방식이 아니라 "무슨 문제를 풀려고 들어왔는가"부터 시작해서 본다. 1편은 개요와 기본 문법까지, constraint 자체는 2편에서 다룬다고 미리 못 박아 둔다. 청중에게 Go 1.18 이전 코드를 짜 본 사람이 있는지 손을 들어보게 하면 뒤 이야기가 훨씬 잘 붙는다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 장 구분 01 ═══════════ -->
+    <div class="holder" data-n="02" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Generics란 무엇인가</h2>
+            <p class="chap-d">타입을 언제 결정하는가 — 이 한 가지만 바뀐다.
+            그리고 Go가 왜 12년 동안 이 기능을 미뤘는지도 함께 본다.</p>
+          </div>
+        </div>
+        <div class="notes-src">여기는 3~4분. 개념 정의 자체는 짧게 끝내고, "왜 Go만 늦었나"에 시간을 더 쓴다. 그 배경을 알아야 뒤에 나오는 Go Generics의 단순함이 결핍이 아니라 선택으로 읽힌다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 개념 ═══════════ -->
+    <div class="holder" data-n="03">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">개념</span><span class="stamp">정의</span></div>
+        <h2 class="slide-title">Generics는 타입 결정을 사용 시점으로 미룬다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>정의할 때가 아니라 <b>쓸 때</b> 타입이 정해진다</li>
+              <li>Java · C++ · Rust에는 이미 있던 기능</li>
+              <li>Go는 <b>1.18</b>(2022년 3월)에 정식 도입</li>
+              <li>도입 명분은 단 하나 — <b>코드 중복 제거</b></li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">// T는 아직 정해지지 않은 타입</span>
+<span class="t-key">func</span> <span class="t-fn">printAny</span>[T <span class="t-key">any</span>](a T) {
+    fmt.<span class="t-fn">Println</span>(a)
+}
+
+<span class="t-cm">// 호출하는 순간 결정된다</span>
+<span class="t-fn">printAny</span>(<span class="t-num">10</span>)      <span class="t-cm">// T = int</span>
+<span class="t-fn">printAny</span>(<span class="t-str">"hello"</span>) <span class="t-cm">// T = string</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">한 줄 요약</span>
+            로직은 같은데 타입만 다른 함수를 <b>여러 번 쓰지 않게</b> 하는 장치다.
+          </div>
+        </div>
+        <div class="notes-src">"제네릭"이라는 말이 어렵게 들리지만 본질은 이 한 줄이다 — 타입 자리를 비워두고 나중에 채운다. 여기서 문법을 자세히 설명하지 말 것. 대괄호가 보인다는 것만 짚고 넘어간다. 문법은 3장에서 제대로 다룬다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 배경 ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">배경</span><span class="stamp">왜 이제서야</span></div>
+        <h2 class="slide-title">Go는 단순함을 지키려고 오래 버텼다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">미룬 이유</div>
+              <p>Go의 핵심 철학은 <b>단순함</b>. Rob Pike를 비롯한 설계자들은 언어 복잡도를 낮추려 많은 기능을 의도적으로 뺐다.</p>
+              <p class="dim">Generics도 오랫동안 그 대상이었다</p>
+            </div>
+            <div class="card">
+              <div class="card-t">결국 넣은 이유</div>
+              <p>커뮤니티에서 <b>가장 많이 요청된 기능</b>이었다. Ian Lance Taylor의 Type Parameters Proposal이 채택돼 1.18에 들어갔다.</p>
+              <p class="dim"><code class="inl">interface{}</code> 우회는 한계가 뚜렷했다</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">설계 방향</span>
+            C++ 템플릿 메타프로그래밍이나 Haskell의 higher-kinded types는 <b>일부러 빼고</b>, 실용적인 수준의 타입 파라미터만 넣었다.
+          </div>
+        </div>
+        <div class="notes-src">Go Generics를 다른 언어와 비교하며 "빈약하다"고 말하는 사람이 많은데, 그건 결함이 아니라 명시적 선택이다. 이 슬라이드에서 그 점을 못 박아 두면 뒤에서 "왜 이건 안 되나요" 질문이 나올 때 답하기 쉽다. 질문 예상: "Go 1.18 이전 코드는 어떻게 되나?" → 하위 호환은 완전히 유지된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 장 구분 02 ═══════════ -->
+    <div class="holder" data-n="05" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Generics 없던 시절의 두 가지 통증</h2>
+            <p class="chap-d">타입 안전성을 런타임까지 미루는 <code class="inl">interface{}</code>,
+            그리고 타입 수만큼 늘어나는 복붙 함수. 이 둘이 도입의 실제 명분이다.</p>
+          </div>
+        </div>
+        <div class="notes-src">이 장이 발표의 설득 구간이다. 문법을 먼저 보여주면 "그래서 뭐가 좋은데?"가 남는데, 아픔을 먼저 보여주면 문법이 해답으로 읽힌다. 5~6분 배정.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 interface{} 문제 ═══════════ -->
+    <div class="holder" data-n="06">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">한계</span><span class="stamp">before → after</span></div>
+        <h2 class="slide-title">interface{}는 타입 검증을 런타임까지 미룬다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm">// interface{} 기반 — 리턴이 interface{}라 타입 단언이 필요하다</span>
+<span class="t-key">func</span> <span class="t-fn">foo1</span>(a <span class="t-key">interface</span>{}) <span class="t-key">interface</span>{} { <span class="t-key">return</span> a }
+
+<span class="t-cm">// generics 기반 — 리턴이 T라 단언이 필요 없다</span>
+<span class="t-key">func</span> <span class="t-fn">foo2</span>[T <span class="t-key">any</span>](a T) T { <span class="t-key">return</span> a }
+
+<span class="t-key">func</span> <span class="t-fn">main</span>() {
+    <span class="t-key">var</span> a, b <span class="t-key">int</span> = <span class="t-num">10</span>, <span class="t-num">20</span>
+    <span class="t-key">var</span> c <span class="t-key">int</span>
+
+    c = <span class="t-fn">foo1</span>(a).(<span class="t-key">int</span>)  <span class="t-bad">// 타입 단언 필요 — 런타임에 실패 가능</span>
+    c = <span class="t-fn">foo2</span>(b)         <span class="t-cm">// 타입이 자동 결정 — 컴파일 타임 안전</span>
+}</pre>
+          <div class="callout">
+            <span class="lbl">달라진 것</span>
+            <code class="inl">.(int)</code> 한 조각이 사라졌다. 그런데 사라진 건 문법이 아니라 <b>런타임 panic 가능성</b>이다.
+          </div>
+        </div>
+        <div class="notes-src">여기서 손가락으로 짚어야 할 곳은 딱 한 줄, `.(int)`이다. foo1은 컴파일러가 "이건 int다"를 모른 채 통과시키고, 틀렸을 때 비용을 런타임에 지불한다. foo2는 컴파일러가 안다. 시간이 부족하면 이 슬라이드만 남기고 다음 두 장은 넘겨도 된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 타입 단언 ═══════════ -->
+    <div class="holder" data-n="07">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">보충</span><span class="stamp">type assertion</span></div>
+        <h2 class="slide-title">타입 단언은 "꺼내 보고 아니면 터진다"</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">interface{}</code>에서 <b>구체 타입을 꺼내는</b> 연산</li>
+              <li>형태는 <code class="inl">value.(Type)</code></li>
+              <li>타입이 안 맞으면 <b>런타임 panic</b></li>
+              <li>두 번째 반환값 <code class="inl">ok</code>로 안전하게 받을 수 있다</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">var</span> val <span class="t-key">interface</span>{} = <span class="t-str">"hello"</span>
+
+s := val.(<span class="t-key">string</span>) <span class="t-cm">// OK</span>
+i := val.(<span class="t-key">int</span>)    <span class="t-bad">// panic!</span>
+
+<span class="t-cm">// 안전한 형태</span>
+s, ok := val.(<span class="t-key">string</span>) <span class="t-cm">// true</span>
+i, ok := val.(<span class="t-key">int</span>)    <span class="t-cm">// false, 0</span></pre>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">Generics를 쓰면</span>
+            타입이 컴파일 타임에 정해지므로 <b>단언 자체가 필요 없어진다</b>.
+          </div>
+        </div>
+        <div class="notes-src">이 개념을 이미 아는 청중이면 30초로 넘긴다. 모르는 사람이 섞여 있으면 `i := val.(int)`가 컴파일은 통과한다는 점을 반드시 강조한다 — 그게 문제의 핵심이다. `, ok` 형태는 panic을 막을 뿐 타입 분기 코드는 그대로 남는다는 것도 덧붙인다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 세 가지 비용 ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">정리</span><span class="stamp">비용 3가지</span></div>
+        <h2 class="slide-title">interface{}로 얻는 유연함에는 값이 붙는다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-3">
+            <div class="card">
+              <div class="card-t">타입 안전성 부족</div>
+              <p>잘못된 단언은 컴파일이 아니라 <b>런타임 panic</b>으로 드러난다.</p>
+              <p class="dim">테스트가 안 짚으면 배포 후에 만난다</p>
+            </div>
+            <div class="card">
+              <div class="card-t">캐스팅 비용</div>
+              <p>값을 쓸 때마다 <code class="inl">.(Type)</code>을 반복해서 붙여야 한다.</p>
+              <p class="dim">호출부가 지저분해진다</p>
+            </div>
+            <div class="card">
+              <div class="card-t">IDE 지원 부족</div>
+              <p>반환 타입이 <code class="inl">interface{}</code>라 자동완성·타입 체크가 막힌다.</p>
+              <p class="dim">에디터가 도와줄 수 없다</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">공통 원인</span>
+            세 가지 모두 <b>컴파일러에게 타입을 알려주지 않은</b> 데서 나온다.
+          </div>
+        </div>
+        <div class="notes-src">세 카드를 하나씩 읽지 말고 마지막 콜아웃만 말한다 — 증상은 셋인데 원인은 하나다. 실무 경험담을 하나 붙이면 좋다(운영에서 type assertion panic으로 장애 났던 경험 등).</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 코드 중복 ═══════════ -->
+    <div class="holder" data-n="09">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">한계</span><span class="stamp">복붙 지옥</span></div>
+        <h2 class="slide-title">타입만 다른 같은 함수를 세 번 쓴다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">minInt</span>(a, b <span class="t-key">int</span>) <span class="t-key">int</span> {
+    <span class="t-key">if</span> a &lt; b { <span class="t-key">return</span> a }
+    <span class="t-key">return</span> b
+}
+
+<span class="t-key">func</span> <span class="t-fn">minInt16</span>(a, b <span class="t-key">int16</span>) <span class="t-key">int16</span> {
+    <span class="t-key">if</span> a &lt; b { <span class="t-key">return</span> a }   <span class="t-bad">// 로직이 완전히 동일</span>
+    <span class="t-key">return</span> b
+}
+
+<span class="t-key">func</span> <span class="t-fn">minFloat64</span>(a, b <span class="t-key">float64</span>) <span class="t-key">float64</span> {
+    <span class="t-key">if</span> a &lt; b { <span class="t-key">return</span> a }   <span class="t-bad">// 또 동일한 로직...</span>
+    <span class="t-key">return</span> b
+}</pre>
+          <div class="callout">
+            <span class="lbl">진짜 문제</span>
+            버그를 고칠 때도 <b>세 곳을 다 고쳐야 한다</b>. 지원 타입이 늘수록 선형으로 커진다.
+          </div>
+        </div>
+        <div class="notes-src">Go 표준 라이브러리에도 이런 흔적이 많았다고 언급하면 공감이 크다. 중복 자체보다 "고칠 때 빠뜨린다"는 점이 실무의 진짜 통증이다. 이 슬라이드가 다음 장(문법)의 훅이 된다 — "이걸 한 줄로 줄여보자"로 넘어간다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 장 구분 03 ═══════════ -->
+    <div class="holder" data-n="10" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Generics 기본 문법</h2>
+            <p class="chap-d">타입 파라미터 선언부터 generic 함수 · constraint · generic 구조체까지.
+            앞에서 본 <code class="inl">min</code> 중복이 어떻게 한 개로 줄어드는지 따라간다.</p>
+          </div>
+        </div>
+        <div class="notes-src">발표의 본론. 10분 이상 배정한다. 문법을 나열하지 말고, 매 슬라이드마다 "앞의 무엇을 해결하는가"를 붙여서 넘어간다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 문법 해부 ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">문법</span><span class="stamp">해부</span></div>
+        <h2 class="slide-title">타입 파라미터는 대괄호 안에 선언한다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="steps">
+            <div class="step"><span class="s-n">1</span><div><div class="s-c">func 함수명[T constraint](매개변수 T) T</div><div class="s-d">함수 이름 바로 뒤, 소괄호 앞에 대괄호가 온다</div></div></div>
+            <div class="step"><span class="s-n">2</span><div><div class="s-c">T</div><div class="s-d">타입 파라미터 이름. 관례적으로 대문자 한 글자를 쓴다</div></div></div>
+            <div class="step"><span class="s-n">3</span><div><div class="s-c">constraint</div><div class="s-d">어떤 타입이 올 수 있는지 제한하는 조건. <code class="inl">any</code>가 가장 느슨하다</div></div></div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">외울 것은 하나</span>
+            소괄호는 <b>값</b>을 받고, 대괄호는 <b>타입</b>을 받는다.
+          </div>
+        </div>
+        <div class="notes-src">Java의 &lt;T&gt; 대신 Go가 대괄호를 쓴 이유는 파싱 모호성 때문이다(꺾쇠는 비교 연산자와 충돌). 궁금해하는 사람이 꼭 있으니 미리 준비해 둔다. 콜아웃 한 문장이 이 슬라이드의 전부다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 any ═══════════ -->
+    <div class="holder" data-n="12">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">문법</span><span class="stamp">generic 함수</span></div>
+        <h2 class="slide-title">any는 다 받지만, 그래서 아무 연산도 못 한다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">any</code>는 <b>모든 타입</b>을 허용하는 constraint</li>
+              <li>출력·전달처럼 <b>타입을 안 따지는</b> 일에 알맞다</li>
+              <li>대신 <code class="inl">&lt;</code> <code class="inl">+</code> 같은 연산은 쓸 수 없다</li>
+              <li>연산이 필요하면 <b>허용 타입을 좁혀야</b> 한다</li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">// any = 모든 타입 허용</span>
+<span class="t-key">func</span> <span class="t-fn">printAny</span>[T <span class="t-key">any</span>](a T) {
+    fmt.<span class="t-fn">Println</span>(a)
+}
+
+<span class="t-key">func</span> <span class="t-fn">main</span>() {
+    <span class="t-fn">printAny</span>(<span class="t-num">10</span>)      <span class="t-cm">// T = int</span>
+    <span class="t-fn">printAny</span>(<span class="t-num">3.14</span>)    <span class="t-cm">// T = float64</span>
+    <span class="t-fn">printAny</span>(<span class="t-str">"hello"</span>) <span class="t-cm">// T = string</span>
+}</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">규칙</span>
+            constraint가 <b>느슨할수록 받을 수 있는 타입은 늘고, 안에서 할 수 있는 일은 준다</b>.
+          </div>
+        </div>
+        <div class="notes-src">이 트레이드오프가 constraint 설계의 전부다. 여기서 감을 잡아두면 2편이 훨씬 쉽다. `any`는 Go 1.18에서 `interface{}`의 별칭으로 추가된 것이라는 점도 한 줄 언급.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 union constraint ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">해결</span><span class="stamp">union type</span></div>
+        <h2 class="slide-title">세 개였던 min이 하나로 줄어든다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm">// 허용할 타입을 | 로 나열한다 (union type constraint)</span>
+<span class="t-key">func</span> <span class="t-fn">minType</span>[T <span class="t-key">int</span> | <span class="t-key">int16</span> | <span class="t-key">int32</span> | <span class="t-key">int64</span> | <span class="t-key">float32</span> | <span class="t-key">float64</span>](a, b T) T {
+    <span class="t-key">if</span> a &lt; b {
+        <span class="t-key">return</span> a
+    }
+    <span class="t-key">return</span> b
+}
+
+<span class="t-key">func</span> <span class="t-fn">main</span>() {
+    fmt.<span class="t-fn">Println</span>(<span class="t-fn">minType</span>(<span class="t-num">10</span>, <span class="t-num">20</span>))                 <span class="t-cm">// int: 10</span>
+    fmt.<span class="t-fn">Println</span>(<span class="t-fn">minType</span>(<span class="t-key">int16</span>(<span class="t-num">10</span>), <span class="t-key">int16</span>(<span class="t-num">20</span>)))  <span class="t-cm">// int16: 10</span>
+    fmt.<span class="t-fn">Println</span>(<span class="t-fn">minType</span>(<span class="t-num">3.14</span>, <span class="t-num">1.14</span>))             <span class="t-cm">// float64: 1.14</span>
+}</pre>
+          <div class="callout">
+            <span class="lbl">왜 any가 아닌가</span>
+            <code class="inl">any</code>는 <code class="inl">&lt;</code> 연산을 보장하지 않는다. 비교하려면 <b>비교 가능한 타입만</b> 받아야 한다.
+          </div>
+        </div>
+        <div class="notes-src">앞의 9번 슬라이드(복붙 세 개)를 다시 띄워서 대비시키면 효과가 크다. union 문법 자체는 2편에서 tilde(~)까지 포함해 제대로 다루니 여기서는 "| 로 나열한다" 정도만. 참고로 Go 1.21부터는 내장 min/max가 생겨 이 예제는 학습용이라는 점을 덧붙이면 정직하다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 커스텀 constraint ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">문법</span><span class="stamp">custom constraint</span></div>
+        <h2 class="slide-title">constraint에 이름을 붙이면 재사용된다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>매번 인라인으로 나열하는 건 비효율</li>
+              <li><code class="inl">interface</code> 키워드로 <b>이름 붙인 constraint</b>를 만든다</li>
+              <li>constraint끼리 <b>합성</b>도 된다</li>
+              <li>메서드 집합이 아니라 <b>타입 집합</b>을 정의하는 용법</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">type</span> IntegerType <span class="t-key">interface</span> {
+    <span class="t-key">int</span> | <span class="t-key">int16</span> | <span class="t-key">int32</span> | <span class="t-key">int64</span>
+}
+
+<span class="t-key">type</span> Float <span class="t-key">interface</span> {
+    <span class="t-key">float32</span> | <span class="t-key">float64</span>
+}
+
+<span class="t-cm">// 합성도 가능하다</span>
+<span class="t-key">type</span> ComparableNumbers <span class="t-key">interface</span> {
+    IntegerType | Float
+}</pre>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">쓸 때는</span>
+            <code class="inl">func minComparableNumbers[T ComparableNumbers](a, b T) T</code>
+          </div>
+        </div>
+        <div class="notes-src">"interface가 원래 메서드 모음 아니었나?"라는 질문이 반드시 나온다. Go 1.18에서 interface의 의미가 타입 집합(type set)으로 확장됐다고 답한다. 다만 이 확장된 interface는 변수 타입으로는 못 쓰고 constraint 자리에서만 쓸 수 있다 — 이 제약도 함께 언급하면 좋다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 generic struct ═══════════ -->
+    <div class="holder" data-n="15">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">문법</span><span class="stamp">generic struct</span></div>
+        <h2 class="slide-title">구조체에도 타입 파라미터를 붙일 수 있다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">type</span> Node[T <span class="t-key">any</span>] <span class="t-key">struct</span> {
+    val  T
+    next *Node[T]      <span class="t-cm">// 자기 자신도 T로 참조한다</span>
+}
+
+<span class="t-key">func</span> <span class="t-fn">NewNode</span>[T <span class="t-key">any</span>](v T) *Node[T] {
+    <span class="t-key">return</span> &amp;Node[T]{val: v}
+}
+
+<span class="t-cm">// 사용</span>
+node := <span class="t-fn">NewNode</span>(<span class="t-num">1</span>)          <span class="t-cm">// *Node[int]</span>
+node.<span class="t-fn">Push</span>(<span class="t-num">2</span>).<span class="t-fn">Push</span>(<span class="t-num">3</span>).<span class="t-fn">Push</span>(<span class="t-num">4</span>)
+
+strNode := <span class="t-fn">NewNode</span>(<span class="t-str">"hello"</span>) <span class="t-cm">// *Node[string]</span>
+strNode.<span class="t-fn">Push</span>(<span class="t-str">"world"</span>)</pre>
+          <div class="callout">
+            <span class="lbl">여기서 얻는 것</span>
+            <code class="inl">IntNode</code> · <code class="inl">StringNode</code>를 따로 정의할 필요가 없다. <b>자료구조 중복이 사라진다</b>.
+          </div>
+        </div>
+        <div class="notes-src">링크드 리스트·스택·큐 같은 자료구조가 Generics의 가장 자연스러운 사용처다. `*Node[T]`처럼 재귀적으로 자기 타입을 참조할 수 있다는 점을 짚는다. NewNode 호출부에 [int]를 안 쓴 것도 미리 눈에 띄게 해두면 5장(타입 추론) 연결이 매끄럽다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 메서드 제약 ═══════════ -->
+    <div class="holder" data-n="16">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">주의</span><span class="stamp">제약</span></div>
+        <h2 class="slide-title">메서드에는 새 타입 파라미터를 붙일 수 없다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">가능 — 구조체의 T 사용</div>
+              <p><code class="inl">func (n *Node[T]) Push(v T) *Node[T]</code></p>
+              <p class="dim">구조체에 선언된 타입 파라미터는 메서드에서 자유롭게 쓴다</p>
+            </div>
+            <div class="card">
+              <div class="card-t">불가 — 메서드에 새 T 선언</div>
+              <p><code class="inl">func (n *Node[T]) Push[F any](f F)</code></p>
+              <p class="dim">컴파일 에러. Go는 이 문법을 허용하지 않는다</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">우회 방법</span>
+            새 타입 파라미터가 필요하면 메서드가 아니라 <b>일반 함수로 빼서</b> 선언한다.
+          </div>
+        </div>
+        <div class="notes-src">실무에서 가장 자주 부딪히는 벽이다. Java·C#을 하던 사람은 당연히 될 거라 생각하고 짜다가 막힌다. 이유는 메서드 집합이 타입마다 무한히 늘어나 인터페이스 만족 여부를 결정할 수 없기 때문 — 궁금해하면 이 정도로 답한다. 다음 슬라이드의 Map 함수가 바로 "함수로 뺀" 예다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 Map ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">활용</span><span class="stamp">타입 파라미터 2개</span></div>
+        <h2 class="slide-title">파라미터가 둘이면 변환을 표현할 수 있다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm">// F: 입력 요소 타입, T: 출력 요소 타입</span>
+<span class="t-key">func</span> <span class="t-fn">Map</span>[F, T <span class="t-key">any</span>](s []F, f <span class="t-key">func</span>(F) T) []T {
+    rst := <span class="t-fn">make</span>([]T, <span class="t-fn">len</span>(s))
+    <span class="t-key">for</span> i, v := <span class="t-key">range</span> s {
+        rst[i] = <span class="t-fn">f</span>(v)
+    }
+    <span class="t-key">return</span> rst
+}
+
+doubled := <span class="t-fn">Map</span>([]<span class="t-key">int</span>{<span class="t-num">1</span>, <span class="t-num">2</span>, <span class="t-num">3</span>}, <span class="t-key">func</span>(i <span class="t-key">int</span>) <span class="t-key">int</span> {
+    <span class="t-key">return</span> i * <span class="t-num">2</span>
+})                                   <span class="t-cm">// [2 4 6]</span>
+
+uppered := <span class="t-fn">Map</span>([]<span class="t-key">string</span>{<span class="t-str">"Hello"</span>, <span class="t-str">"world"</span>}, strings.ToUpper)
+                                     <span class="t-cm">// [HELLO WORLD]</span></pre>
+          <div class="callout teal">
+            <span class="lbl">핵심</span>
+            <code class="inl">F</code>와 <code class="inl">T</code>가 <b>달라도 되는 것</b>이 요점이다. 그래야 <code class="inl">[]int → []string</code> 변환도 같은 함수로 쓴다.
+          </div>
+        </div>
+        <div class="notes-src">함수형 유틸리티가 Generics 없이는 아예 못 만들던 영역이다. F와 T를 같은 타입으로만 쓰면 굳이 두 개일 이유가 없다는 점을 짚는다. golang.org/x/exp/slices, maps 패키지가 이 방식으로 만들어져 있고 상당수가 Go 1.21+ 표준 라이브러리에 들어갔다고 안내하면 실무 연결이 된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 장 구분 04 ═══════════ -->
+    <div class="holder" data-n="18" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">타입 추론</h2>
+            <p class="chap-d">지금까지 호출부에 <code class="inl">[int]</code>를 거의 안 썼다.
+            컴파일러가 인자에서 타입을 알아내기 때문이다 — 언제 되고 언제 안 되는지 본다.</p>
+          </div>
+        </div>
+        <div class="notes-src">3~4분. Generics 문법이 실제로 "안 무거워 보이는" 이유가 여기 있다. 앞 슬라이드들의 호출부를 다시 떠올리게 하면서 시작한다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 명시 vs 추론 ═══════════ -->
+    <div class="holder" data-n="19">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">추론</span><span class="stamp">명시 vs 추론</span></div>
+        <h2 class="slide-title">인자가 있으면 타입을 안 써도 된다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>컴파일러가 <b>인자에서</b> 타입 파라미터를 추론한다</li>
+              <li>명시 방식과 추론 방식은 <b>결과가 완전히 같다</b></li>
+              <li>추론이 가능하면 <b>추론 쪽이 권장</b>된다</li>
+              <li>읽는 사람에게 타입이 안 보일 때만 명시한다</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">identity</span>[T <span class="t-key">any</span>](v T) T { <span class="t-key">return</span> v }
+
+<span class="t-cm">// 명시적 타입 지정</span>
+r1 := <span class="t-fn">identity</span>[<span class="t-key">int</span>](<span class="t-num">42</span>)
+r2 := <span class="t-fn">identity</span>[<span class="t-key">string</span>](<span class="t-str">"hello"</span>)
+
+<span class="t-cm">// 타입 추론 — 인자로부터 자동</span>
+r3 := <span class="t-fn">identity</span>(<span class="t-num">42</span>)      <span class="t-cm">// T = int</span>
+r4 := <span class="t-fn">identity</span>(<span class="t-str">"hello"</span>) <span class="t-cm">// T = string</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">체감</span>
+            호출부만 보면 <b>일반 함수와 구분되지 않는다</b>. Generics가 코드를 무겁게 만들지 않는 이유다.
+          </div>
+        </div>
+        <div class="notes-src">Java 제네릭의 꺾쇠 노이즈를 겪어본 사람에게는 이 지점이 반갑다. "그럼 언제 명시하나?"에는 두 가지로 답한다 — 추론이 실패할 때(21번 슬라이드), 그리고 명시하는 편이 읽기 좋을 때.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 여러 파라미터 추론 ═══════════ -->
+    <div class="holder" data-n="20">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">추론</span><span class="stamp">파라미터 여러 개</span></div>
+        <h2 class="slide-title">파라미터가 여러 개여도 각각 따로 추론한다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>타입 파라미터마다 <b>대응하는 인자</b>에서 결정된다</li>
+              <li>서로 다른 타입이 섞여도 문제없다</li>
+              <li>하나만 추론되고 하나는 안 되는 경우는 <b>전부 명시</b>해야 한다</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">pair</span>[T, U <span class="t-key">any</span>](a T, b U) <span class="t-key">string</span> {
+    <span class="t-key">return</span> fmt.<span class="t-fn">Sprintf</span>(<span class="t-str">"(%v, %v)"</span>, a, b)
+}
+
+<span class="t-cm">// 모두 추론 가능</span>
+<span class="t-fn">pair</span>(<span class="t-num">1</span>, <span class="t-str">"hello"</span>) <span class="t-cm">// T=int, U=string</span>
+<span class="t-fn">pair</span>(<span class="t-num">3.14</span>, <span class="t-key">true</span>)  <span class="t-cm">// T=float64, U=bool</span></pre>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">주의</span>
+            타입 파라미터는 <b>부분 지정이 안 된다</b>. 명시하려면 <code class="inl">pair[int, string](...)</code>처럼 전부 적는다.
+          </div>
+        </div>
+        <div class="notes-src">부분 지정 불가는 실제로 걸려 넘어지는 지점이다. 앞쪽 파라미터만 쓰고 뒤는 추론시키는 문법은 Go에 없다. 17번 Map 함수도 F·T 둘 다 인자에서 추론된다는 걸 잠깐 되짚으면 연결이 좋다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 추론 실패 ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">추론</span><span class="stamp">실패 조건</span></div>
+        <h2 class="slide-title">추론은 인자에서만 나온다 — 인자가 없으면 실패한다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">toSlice</span>[T <span class="t-key">any</span>](args ...T) []T {
+    <span class="t-key">return</span> args
+}
+
+<span class="t-cm">// 추론 성공 — 인자에서 타입 결정</span>
+ints := <span class="t-fn">toSlice</span>(<span class="t-num">1</span>, <span class="t-num">2</span>, <span class="t-num">3</span>)          <span class="t-cm">// T = int</span>
+
+<span class="t-cm">// 추론 실패 — 인자가 없어 결정 불가, 명시 필요</span>
+emptyInts := <span class="t-fn">toSlice</span>[<span class="t-key">int</span>]()
+emptyStrings := <span class="t-fn">toSlice</span>[<span class="t-key">string</span>]()
+
+result := <span class="t-fn">toSlice</span>()   <span class="t-bad">// 컴파일 에러: cannot infer T</span></pre>
+          <div class="callout">
+            <span class="lbl">실패하는 세 경우</span>
+            인자가 없을 때 · <b>리턴 타입만으로는</b> 결정할 수 없을 때 · 인자 타입이 모호할 때
+          </div>
+        </div>
+        <div class="notes-src">"리턴 타입으로는 추론하지 않는다"가 가장 자주 놀라는 지점이다. Go 컴파일러는 대입 대상 타입을 보고 T를 정하지 않는다. `cannot infer T` 에러 메시지를 실제로 본 적 있는지 물어보면 반응이 온다. 해법은 언제나 같다 — 대괄호로 직접 적어준다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 정리 표 ═══════════ -->
+    <div class="holder" data-n="22">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">정리</span><span class="stamp">before vs after</span></div>
+        <h2 class="slide-title">달라진 것을 한 표로</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>항목</th><th>Generics 도입 전</th><th>Generics 도입 후</th></tr></thead>
+              <tbody>
+                <tr><td>여러 타입 지원</td><td><code class="inl">interface{}</code> + 타입 단언</td><td>타입 파라미터 <code class="inl">[T any]</code></td></tr>
+                <tr class="on"><td>타입 안전성</td><td>런타임 panic 위험</td><td>컴파일 타임 검증</td></tr>
+                <tr><td>코드 중복</td><td>타입별 함수 반복 작성</td><td>하나의 Generic 함수</td></tr>
+                <tr><td>자료구조</td><td>타입별 struct 정의</td><td>Generic struct <code class="inl">[T any]</code></td></tr>
+                <tr><td>IDE 지원</td><td class="faint">제한적</td><td>완전한 타입 추론</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">고르는 기준</span>
+            표를 읽지 말고 한 줄만 — <b>컴파일러가 타입을 아느냐 모르느냐</b>, 나머지는 그 결과다.
+          </div>
+        </div>
+        <div class="notes-src">다섯 행을 다 읽지 말고 강조된 "타입 안전성" 행만 짚는다. 나머지 네 행은 그 하나에서 파생된 결과라고 말하면 표가 한 문장으로 압축된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 퀴즈 ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">확인</span><span class="stamp">클릭하면 답이 열립니다</span></div>
+        <h2 class="slide-title">스스로 답해보기</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span><code class="inl">interface{}</code>로도 여러 타입을 받을 수 있는데, Generics가 실제로 없애는 건 무엇인가?</span></button>
+              <div class="q-a">타입 단언과 그에 딸린 런타임 panic 가능성. 반환 타입이 <code class="inl">T</code>이므로 컴파일 타임에 타입이 확정된다. <span class="ref">→ 슬라이드 06 · 08</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span><code class="inl">func min[T any](a, b T) T</code>가 컴파일되지 않는 이유는?</span></button>
+              <div class="q-a"><code class="inl">any</code>는 <code class="inl">&lt;</code> 연산을 보장하지 않는다. 비교하려면 union type 등으로 비교 가능한 타입만 받도록 좁혀야 한다. <span class="ref">→ 슬라이드 12 · 13</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span>메서드에 새로운 타입 파라미터를 선언할 수 있는가?</span></button>
+              <div class="q-a">없다. 구조체에 선언된 타입 파라미터만 쓸 수 있고, 새 파라미터가 필요하면 일반 함수로 빼야 한다. <span class="ref">→ 슬라이드 16</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span><code class="inl">toSlice()</code>는 왜 <code class="inl">cannot infer T</code> 에러가 나는가?</span></button>
+              <div class="q-a">추론은 인자에서만 이뤄지는데 인자가 하나도 없다. <code class="inl">toSlice[int]()</code>처럼 명시해야 한다. <span class="ref">→ 슬라이드 21</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>타입 파라미터가 두 개일 때 앞의 하나만 명시할 수 있는가?</span></button>
+              <div class="q-a">부분 지정은 안 된다. 명시하려면 <code class="inl">pair[int, string](...)</code>처럼 전부 적는다. <span class="ref">→ 슬라이드 20</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">한 문제씩 5~10초 기다린 뒤 연다. Q2와 Q4가 실무에서 실제로 막히는 지점이니 여기에 시간을 더 쓴다. 시간이 부족하면 Q1·Q3·Q5는 건너뛰고 자료로 넘긴다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 마무리 ═══════════ -->
+    <div class="holder" data-n="24">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">마무리</span><span class="stamp">다음 편</span></div>
+        <h2 class="slide-title">다음은 Type Constraint를 깊게 판다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">오늘 가져갈 것</div>
+              <p>대괄호로 타입 자리를 비워두고, constraint로 그 자리를 얼마나 열어둘지 정한다.</p>
+              <p class="dim">호출부는 추론 덕분에 거의 그대로다</p>
+            </div>
+            <div class="card">
+              <div class="card-t">2편에서 다룰 것</div>
+              <p><code class="inl">any</code> · <code class="inl">comparable</code> · union(<code class="inl">|</code>) · tilde(<code class="inl">~</code>) · 커스텀 constraint 설계.</p>
+              <p class="dim">오늘 남겨둔 질문들이 여기서 풀린다</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">참고</span>
+            go.dev/doc/tutorial/generics · go.dev/blog/intro-generics · go.dev/ref/spec#Type_parameter_declarations
+          </div>
+        </div>
+        <div class="notes-src">1편은 "어떻게 쓰는가"였고 2편은 "얼마나 열어둘 것인가"다. constraint 설계가 Generics의 진짜 난이도라고 예고하며 닫는다. 질문 시간을 3분 정도 남겨둔다.</div>
+      </section>
+    </div>
+
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">발표자 노트</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">Go Generics · 1편</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 24</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="개요 (O)">개요</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="발표자 노트 (N)">노트</button>
+      <button class="kbtn" id="btnTheme" type="button" title="테마 전환 (T)">테마</button>
+      <button class="kbtn" id="btnHelp" type="button" title="단축키 (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>단축키</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>다음 슬라이드</dd>
+        <dt>← · PgUp</dt><dd>이전 슬라이드</dd>
+        <dt>Home · End</dt><dd>처음 · 마지막</dd>
+        <dt>O</dt><dd>전체 슬라이드 개요</dd>
+        <dt>N</dt><dd>발표자 노트</dd>
+        <dt>T</dt><dd>밝은 테마 / 어두운 테마</dd>
+        <dt>F</dt><dd>전체 화면</dd>
+        <dt>Esc</dt><dd>닫기</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "슬라이드 " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 카디널리티 카운터 ─────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 이미지 토글 ───────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지 스파크라인 ───────────────────────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+
+    var accent = css("--accent") || "#3FC7EF";
+    var line   = css("--line") || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+
+    /* 격자 */
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    var i, y, x;
+    for (i = 1; i <= 4; i++) {
+      y = Math.round((H / 5) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (i = 1; i <= 5; i++) {
+      x = Math.round((W / 6) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    /* 결정적인 CPU 곡선 (난수 없이 재현 가능하게) */
+    var N = 180, pts = [];
+    for (i = 0; i < N; i++) {
+      var t = i / (N - 1);
+      var v = 0.42
+        + 0.16 * Math.sin(t * 8.1 + 0.6)
+        + 0.09 * Math.sin(t * 21.3 + 1.9)
+        + 0.05 * Math.sin(t * 47.7 + 4.2)
+        + 0.10 * Math.exp(-Math.pow((t - 0.68) * 9, 2));
+      v = Math.max(0.08, Math.min(0.92, v));
+      pts.push([6 + t * (W - 12), H - v * H]);
+    }
+
+    var steps = reduce ? N : 0;
+    function render(n) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = line;
+      for (i = 1; i <= 4; i++) {
+        y = Math.round((H / 5) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      for (i = 1; i <= 5; i++) {
+        x = Math.round((W / 6) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      var m = Math.max(2, n);
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, accent + "55");
+      grad.addColorStop(1, accent + "00");
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], H);
+      for (i = 0; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(pts[m - 1][0], H);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.4;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      /* 마지막 점 강조 */
+      ctx.beginPath();
+      ctx.arc(pts[m - 1][0], pts[m - 1][1], 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = accent;
+      ctx.fill();
+
+      ctx.font = "500 20px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.fillText("100%", 8, 22);
+      ctx.fillText("0", 8, H - 8);
+    }
+
+    if (reduce) { render(N); return; }
+    var n0 = 2, t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1100);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(n0, Math.round(N * e)));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>
