@@ -18,7 +18,9 @@ export default async function SlidesPage() {
         <h1 className="mt-2 text-3xl font-bold tracking-tighter text-bento-ink md:text-4xl">
           Slides
         </h1>
-        <p className="mt-2 text-sm text-bento-dim">{decks.length} slide decks</p>
+        <p className="mt-2 text-sm text-bento-dim">
+          {decks.length} slide deck{decks.length === 1 ? '' : 's'}
+        </p>
       </header>
 
       {decks.length === 0 ? (
