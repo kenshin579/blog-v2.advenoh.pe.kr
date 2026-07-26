@@ -23,7 +23,7 @@ export function HeroCard({
   seriesOrder,
   totalEpisodes,
   tags,
-  author = 'Frank Advenoh',
+  author = 'Frank',
 }: Props) {
   return (
     <section className="mx-auto max-w-canvas px-6 pt-2 md:px-10">

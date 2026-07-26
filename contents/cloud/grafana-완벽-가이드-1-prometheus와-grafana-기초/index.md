@@ -53,6 +53,8 @@ series: "Grafana 완벽 가이드"
 
 > 이 글에서 사용한 전체 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/monitoring/grafana-metrics)에서 확인할 수 있다.
 
+<!-- slides -->
+
 # 2. Prometheus 핵심 개념
 
 ## 2.1 아키텍처 — Pull 기반 메트릭 수집
@@ -933,8 +935,6 @@ rate(node_network_transmit_bytes_total{device!="lo"}[5m])
 다음 편에서는 node-exporter가 주는 시스템 메트릭에서 한 걸음 더 들어가, Go 애플리케이션에 직접 메트릭을 심는다. HTTP 요청 수와 응답 시간은 물론 주문 건수 같은 비즈니스 지표까지 계측해서 Grafana에 올려본다.
 
 > 이 글에서 사용한 전체 코드는 [GitHub](https://github.com/kenshin579/tutorials-go/tree/master/monitoring/grafana-metrics)에서 확인할 수 있다.
-
-<!-- slides -->
 
 # 7. 참고
 
