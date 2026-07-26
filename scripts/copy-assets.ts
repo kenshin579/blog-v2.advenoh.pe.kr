@@ -232,20 +232,24 @@ const BACK_LINK_HEAD = `<!-- 아래 블록은 scripts/copy-assets.ts 가 배포 
  * </head> 앞에 스타일·스크립트를, .chrome 안 맨 앞에 링크를 넣는다.
  * .chrome 은 flex row 라 항목이 하나 느는 것뿐이다.
  */
-function injectBackLink(html: string, source: SlideSource, logLabel: string): string {
+function injectBackLink(html: string, source: SlideSource, label: string): string {
+  // 방어적 가드다. copySlides 는 매번 원본(마커 없음)에서 새로 읽으므로 현재 호출
+  // 경로에서는 발동하지 않는다. 실제 멱등성은 "원본 불변 + 결정적 변환"에서 나온다.
   if (html.includes(BACK_LINK_MARKER)) return html;
 
   const headIdx = html.lastIndexOf('</head>');
   if (headIdx === -1) {
-    console.warn(`⚠️  ${logLabel}: </head> 를 찾을 수 없어 돌아가기 링크를 주입하지 못했습니다`);
+    console.warn(`⚠️  ${label}: </head> 를 찾을 수 없어 돌아가기 링크를 주입하지 못했습니다`);
     return html;
   }
   let out = html.slice(0, headIdx) + BACK_LINK_HEAD + html.slice(headIdx);
 
   const anchor = '<span class="deck-id">';
-  const chromeIdx = out.indexOf(anchor);
+  // 진짜 chrome 바는 body 맨 끝(슬라이드 holder 뒤)에 있으므로 마지막 매치가 항상 옳다.
+  // 데크 본문이 예시로 같은 마크업을 보여주는 경우 indexOf 는 엉뚱한 곳에 꽂힌다.
+  const chromeIdx = out.lastIndexOf(anchor);
   if (chromeIdx === -1) {
-    console.warn(`⚠️  ${logLabel}: .chrome 의 deck-id 를 찾을 수 없어 돌아가기 링크를 넣지 못했습니다`);
+    console.warn(`⚠️  ${label}: .chrome 의 deck-id 를 찾을 수 없어 돌아가기 링크를 넣지 못했습니다`);
     return out;
   }
 
