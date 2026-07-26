@@ -88,6 +88,8 @@ https://blog.advenoh.pe.kr/en/{글폴더}/slides/    ← 영문
 - 기존 mtime·size 비교 스킵 로직을 그대로 재사용한다
 - 이제 이미지만 복사하지 않으므로 파일명을 `copy-assets.ts`로 바꾸고 `package.json`의 `copy:images` → `copy:assets`, `build` 체인 문자열을 함께 수정한다
 
+> **갱신 (2026-07-26)**: 슬라이드는 이제 복사 시 테마 동기화 스크립트가 주입되어 배포본이 원본과 동일하지 않다. 원본은 여전히 자기완결형으로 유지된다. `2026-07-26-slides-theme-sync-design.md` 참조.
+
 ### 4. 마커 → 임베드 렌더 — `lib/markdown.ts`
 
 `parseMarkdown(markdown, slug)`에 `lang: 'ko' | 'en' = 'ko'` 인자를 추가한다. 호출처는 `lib/articles.ts:94` 한 곳뿐이다.
@@ -136,7 +138,7 @@ base: lang === 'en' ? `/en/{글폴더}` : `/{글폴더}`   ({글폴더} = slug�
 
 모바일 폭 360px에서는 데크 스케일이 0.28이라 글자를 읽을 수 없다. 미디어 쿼리 하나로 갈라 모바일 독자는 새 탭에서 가로로 보게 한다. JS 분기는 쓰지 않는다.
 
-데크에는 `t` 키 테마 토글이 들어 있어 라이트/다크 대응은 데크가 자체적으로 처리한다. 블로그 테마와 연동하지 않는다.
+데크에는 `t` 키 테마 토글이 들어 있어 라이트/다크 대응은 데크가 자체적으로 처리한다. ~~블로그 테마와 연동하지 않는다.~~ → **철회 (2026-07-26)**: 후속 작업에서 연동했다. 배포 시 주입되는 스크립트가 블로그의 테마 설정을 따라간다. `2026-07-26-slides-theme-sync-design.md` 참조.
 
 ### 7. 빌드 검증 경고 — `scripts/generate-content-manifest.ts`
 
@@ -190,6 +192,6 @@ grafana 1편 `contents/cloud/grafana-완벽-가이드-1-prometheus와-grafana-�
 - 짧은 공유 별칭(`/s/{id}`) — 필요해지면 Netlify 리다이렉트로 추가
 - 슬라이드 전용 og 이미지·메타 태그·sitemap 등록
 - 슬라이드 목록 페이지
-- 블로그 테마와 데크 테마 연동
+- ~~블로그 테마와 데크 테마 연동~~ → **후속 작업에서 구현됨 (2026-07-26)**. `2026-07-26-slides-theme-sync-design.md` 참조
 - 클릭 로드(파사드) 방식 — `loading="lazy"`로 이미 해결
 - 다른 글로의 소급 적용

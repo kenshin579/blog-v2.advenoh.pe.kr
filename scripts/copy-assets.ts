@@ -81,6 +81,120 @@ function findSlides(contentsDir: string): Map<string, string> {
 }
 
 /**
+ * 배포되는 슬라이드에 주입할 테마 동기화 스크립트.
+ * 슬라이드 원본(contents 아래 slides.html)은 건드리지 않는다 — 원본은 외부 의존성 없는
+ * 자기완결형으로 유지하고, public/ 으로 복사되는 사본에만 이 기능을 얹는다.
+ *
+ * 슬라이드는 블로그와 같은 오리진에서 서빙되므로 localStorage 를 공유한다.
+ * 그래서 블로그의 next-themes 값을 그대로 읽을 수 있다.
+ */
+const THEME_SYNC_MARKER = 'data-slides-theme-sync';
+
+const THEME_SYNC_SCRIPT = `<!-- 아래 블록은 scripts/copy-assets.ts 가 배포 시 주입한다. 원본 slides.html 에는 없다. -->
+<script ${THEME_SYNC_MARKER}>
+(function () {
+  "use strict";
+  var BLOG_KEY = "theme";      /* next-themes 기본 storageKey */
+  var DECK_KEY = "deck-theme"; /* 슬라이드 자체 저장 키 */
+
+  function prefersDark() {
+    return window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+
+  /* 블로그 테마를 light/dark 로 확정한다. "system" 이거나 값이 없으면 OS 설정을 따른다. */
+  function resolveBlogTheme() {
+    var v = null;
+    try { v = localStorage.getItem(BLOG_KEY); } catch (e) {}
+    if (v === "light" || v === "dark") { return v; }
+    return prefersDark() ? "dark" : "light";
+  }
+
+  function apply(theme) {
+    document.documentElement.setAttribute("data-theme", theme);
+    /* 슬라이드 자체 초기화 코드가 문서 하단에서 deck-theme 를 읽어 속성을 다시 설정한다.
+       미리 같은 값으로 맞춰 두면 서로 싸우지 않고, 이전에 슬라이드에서 토글해 둔 값이
+       블로그 값으로 덮여 "다시 열면 블로그 기준" 규칙이 성립한다. */
+    try { localStorage.setItem(DECK_KEY, theme); } catch (e) {}
+  }
+
+  /* 슬라이드의 테마 전환 경로를 그대로 탄다.
+     toggleTheme() 이 표지 스파크라인을 다시 그리는 drawHero() 를 부르는데,
+     그 함수들이 IIFE 안에 있어 밖에서 직접 호출할 수 없기 때문이다. */
+  function switchTo(theme) {
+    if (document.documentElement.getAttribute("data-theme") === theme) { return; }
+    var btn = document.getElementById("btnTheme");
+    if (btn) { btn.click(); } else { apply(theme); }
+  }
+
+  apply(resolveBlogTheme());
+
+  /* 블로그에서 테마를 바꾸면 같은 오리진의 이 문서로 storage 이벤트가 온다.
+     (값을 바꾼 문서 자신에게는 오지 않는다)
+     임베드된 경우에는 부모가 본문 innerHTML 을 다시 써서 iframe 자체가 재생성되므로
+     이 리스너보다 재로드가 먼저 일어난다. 이 리스너는 슬라이드를 별도 탭에 띄워 둔
+     상태에서 블로그 탭의 테마를 바꾸는 경우를 위한 것이다. */
+  window.addEventListener("storage", function (e) {
+    if (e.key !== BLOG_KEY) { return; }
+    switchTo(resolveBlogTheme());
+  });
+
+  /* 블로그가 "system" 인 동안 OS 테마가 바뀌는 경우 */
+  try {
+    window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", function () {
+      var v = null;
+      try { v = localStorage.getItem(BLOG_KEY); } catch (e) {}
+      if (v === "light" || v === "dark") { return; } /* 명시 설정이면 OS 변화를 무시 */
+      switchTo(prefersDark() ? "dark" : "light");
+    });
+  } catch (e) {}
+})();
+</script>
+`;
+
+/**
+ * </head> 바로 앞에 테마 동기화 스크립트를 끼워 넣는다.
+ * 첫 페인트 전에 테마가 확정되어야 깜빡임이 없다.
+ */
+function injectThemeSync(html: string, label: string): string {
+  // 방어적 가드다. copySlides 는 매번 원본(마커 없음)에서 새로 읽으므로 현재 호출
+  // 경로에서는 발동하지 않는다. 실제 멱등성은 "원본 불변 + 결정적 변환"에서 나온다.
+  if (html.includes(THEME_SYNC_MARKER)) return html;
+
+  const idx = html.lastIndexOf('</head>');
+  if (idx === -1) {
+    console.warn(`⚠️  ${label}: </head> 를 찾을 수 없어 테마 동기화 스크립트를 주입하지 못했습니다`);
+    return html;
+  }
+
+  return html.slice(0, idx) + THEME_SYNC_SCRIPT + html.slice(idx);
+}
+
+/**
+ * 슬라이드를 주입과 함께 복사한다.
+ * 내용이 바뀌므로 copyFiles() 의 fs.copyFileSync 경로를 쓸 수 없고,
+ * mtime/size 스킵도 적용하지 않는다 (주입으로 크기가 달라져 매번 다시 쓴다).
+ * 슬라이드는 글당 1~2개뿐이라 비용이 무시할 수준이다.
+ */
+function copySlides(slides: Map<string, string>, destRoot: string) {
+  let copiedCount = 0;
+
+  for (const [relativePath, sourcePath] of slides) {
+    const destPath = path.join(destRoot, relativePath);
+    fs.mkdirSync(path.dirname(destPath), { recursive: true });
+
+    try {
+      const html = injectThemeSync(fs.readFileSync(sourcePath, 'utf-8'), relativePath);
+      fs.writeFileSync(destPath, html, 'utf-8');
+      copiedCount++;
+    } catch (error) {
+      console.error(`❌ Failed to copy ${relativePath}:`, error);
+    }
+  }
+
+  return copiedCount;
+}
+
+/**
  * 자산 맵을 목적지 루트로 복사한다.
  * key = 목적지 루트 기준 상대 경로, value = 원본 절대 경로
  */
@@ -157,8 +271,8 @@ function main() {
   console.log(`✅ Found ${slides.size} slide decks`);
 
   if (slides.size > 0) {
-    const { copiedCount, skippedCount } = copyFiles(slides, publicDir);
-    console.log(`✅ Slides copied: ${copiedCount}, skipped: ${skippedCount}`);
+    const copiedCount = copySlides(slides, publicDir);
+    console.log(`✅ Slides copied: ${copiedCount} (테마 동기화 스크립트 주입)`);
   } else {
     console.log('ℹ️  No slides to copy from contents/');
   }
