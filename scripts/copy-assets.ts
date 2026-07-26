@@ -39,20 +39,28 @@ function findImages(dir: string, baseDir: string, images: Map<string, string>) {
  * en: public/en/{글폴더}/slides/index.html
  */
 const SLIDE_VARIANTS = [
-  { file: 'slides.html', prefix: '' },
-  { file: 'slides_en.html', prefix: 'en' },
+  { file: 'slides.html', prefix: '', lang: 'ko' as const },
+  { file: 'slides_en.html', prefix: 'en', lang: 'en' as const },
 ];
+
+interface SlideSource {
+  /** contents 아래 원본 절대 경로 */
+  sourcePath: string;
+  /** 이 데크가 속한 글의 주소. 돌아가기 링크의 목적지 */
+  articleUrl: string;
+  lang: 'ko' | 'en';
+}
 
 /**
  * contents/{category}/{글폴더}/slides*.html 을 찾아
- * [목적지 상대 경로, 원본 절대 경로] 맵으로 반환한다.
+ * [목적지 상대 경로, SlideSource] 맵으로 반환한다.
  *
  * 목적지에서 category 를 떼는 규칙은 라우트가 쓰는
  * lib/articles.ts 의 getArticleTitleFromSlug() 와 동일하다.
  * (script 는 단독 node 프로세스이므로 의존성 최소화 위해 inline)
  */
-function findSlides(contentsDir: string): Map<string, string> {
-  const slides = new Map<string, string>();
+function findSlides(contentsDir: string): Map<string, SlideSource> {
+  const slides = new Map<string, SlideSource>();
 
   const categories = fs
     .readdirSync(contentsDir, { withFileTypes: true })
@@ -67,12 +75,15 @@ function findSlides(contentsDir: string): Map<string, string> {
       .map((dirent) => dirent.name);
 
     for (const articleDir of articleDirs) {
-      for (const { file, prefix } of SLIDE_VARIANTS) {
+      for (const { file, prefix, lang } of SLIDE_VARIANTS) {
         const sourcePath = path.join(categoryPath, articleDir, file);
         if (!fs.existsSync(sourcePath)) continue;
 
         const destPath = path.join(prefix, articleDir, 'slides', 'index.html');
-        slides.set(destPath, sourcePath);
+        // 글 주소에는 카테고리가 들어가지 않는다 (라우트 규칙과 동일).
+        // 한글 폴더명은 인코딩하지 않는다 — lib/markdown.ts 의 임베드 src 와 같은 방식이다.
+        const articleUrl = prefix ? `/${prefix}/${articleDir}/` : `/${articleDir}/`;
+        slides.set(destPath, { sourcePath, articleUrl, lang });
       }
     }
   }
@@ -170,20 +181,100 @@ function injectThemeSync(html: string, label: string): string {
 }
 
 /**
+ * 배포되는 슬라이드에 주입할 "글로 돌아가기" 링크.
+ * 원본(contents 아래 slides.html)은 건드리지 않는다 — 테마 동기화와 같은 원칙이다.
+ *
+ * 데크는 글 본문에 iframe 으로도 박힌다. 그 경우 이 링크는 자기를 감싼 글로 가는
+ * 링크가 되어 클릭하면 iframe 안에 글이 중첩된다. 그래서 프레임 안에서는 숨긴다.
+ * 검사를 </head> 안에서 하는 이유는 첫 페인트 전에 끝내기 위해서다 — body 에서
+ * 지우면 가장 흔한 화면인 글 임베드에서 링크가 한 번 깜빡였다 사라진다.
+ */
+const BACK_LINK_MARKER = 'data-slides-back-link';
+
+/** 라벨 원본: lib/i18n/dictionaries.ts 의 t.slides. 이 스크립트는 tsx 로 도는
+ *  독립 프로세스라 @/ 별칭을 해석하지 못해 여기에 복제해 둔다. */
+const BACK_LABEL: Record<'ko' | 'en', string> = {
+  ko: '← 글 보기',
+  en: '← Article',
+};
+
+const BACK_LINK_HEAD = `<!-- 아래 블록은 scripts/copy-assets.ts 가 배포 시 주입한다. 원본 slides.html 에는 없다. -->
+<style ${BACK_LINK_MARKER}>
+.deck-back {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .15s;
+}
+.deck-back:hover { color: var(--accent); }
+.deck-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+[data-framed] .deck-back { display: none; }
+</style>
+<script ${BACK_LINK_MARKER}>
+/* 임베드(iframe) 안이면 돌아가기 링크를 감춘다. 첫 페인트 전에 확정해야 깜빡임이 없다. */
+(function () {
+  try {
+    if (window.self !== window.top) {
+      document.documentElement.setAttribute("data-framed", "");
+    }
+  } catch (e) {
+    /* 크로스 오리진 접근 차단도 프레임 안이라는 뜻이다 */
+    document.documentElement.setAttribute("data-framed", "");
+  }
+})();
+</script>
+`;
+
+/**
+ * </head> 앞에 스타일·스크립트를, .chrome 안 맨 앞에 링크를 넣는다.
+ * .chrome 은 flex row 라 항목이 하나 느는 것뿐이다.
+ */
+function injectBackLink(html: string, source: SlideSource, label: string): string {
+  // 방어적 가드다. copySlides 는 매번 원본(마커 없음)에서 새로 읽으므로 현재 호출
+  // 경로에서는 발동하지 않는다. 실제 멱등성은 "원본 불변 + 결정적 변환"에서 나온다.
+  if (html.includes(BACK_LINK_MARKER)) return html;
+
+  const headIdx = html.lastIndexOf('</head>');
+  if (headIdx === -1) {
+    console.warn(`⚠️  ${label}: </head> 를 찾을 수 없어 돌아가기 링크를 주입하지 못했습니다`);
+    return html;
+  }
+  let out = html.slice(0, headIdx) + BACK_LINK_HEAD + html.slice(headIdx);
+
+  const anchor = '<span class="deck-id">';
+  // 진짜 chrome 바는 body 맨 끝(슬라이드 holder 뒤)에 있으므로 마지막 매치가 항상 옳다.
+  // 데크 본문이 예시로 같은 마크업을 보여주는 경우 indexOf 는 엉뚱한 곳에 꽂힌다.
+  const chromeIdx = out.lastIndexOf(anchor);
+  if (chromeIdx === -1) {
+    console.warn(`⚠️  ${label}: .chrome 의 deck-id 를 찾을 수 없어 돌아가기 링크를 넣지 못했습니다`);
+    return out;
+  }
+
+  const link = `<a class="deck-back" href="${source.articleUrl}">${BACK_LABEL[source.lang]}</a>\n    `;
+  out = out.slice(0, chromeIdx) + link + out.slice(chromeIdx);
+
+  return out;
+}
+
+/**
  * 슬라이드를 주입과 함께 복사한다.
  * 내용이 바뀌므로 copyFiles() 의 fs.copyFileSync 경로를 쓸 수 없고,
  * mtime/size 스킵도 적용하지 않는다 (주입으로 크기가 달라져 매번 다시 쓴다).
  * 슬라이드는 글당 1~2개뿐이라 비용이 무시할 수준이다.
  */
-function copySlides(slides: Map<string, string>, destRoot: string) {
+function copySlides(slides: Map<string, SlideSource>, destRoot: string) {
   let copiedCount = 0;
 
-  for (const [relativePath, sourcePath] of slides) {
+  for (const [relativePath, source] of slides) {
     const destPath = path.join(destRoot, relativePath);
     fs.mkdirSync(path.dirname(destPath), { recursive: true });
 
     try {
-      const html = injectThemeSync(fs.readFileSync(sourcePath, 'utf-8'), relativePath);
+      const raw = fs.readFileSync(source.sourcePath, 'utf-8');
+      const html = injectBackLink(injectThemeSync(raw, relativePath), source, relativePath);
       fs.writeFileSync(destPath, html, 'utf-8');
       copiedCount++;
     } catch (error) {

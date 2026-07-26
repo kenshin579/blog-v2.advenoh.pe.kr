@@ -14,6 +14,10 @@ interface ArticleMetadata {
   seriesOrder?: number;
   firstImage?: string;
   readTime?: number;
+  /** slides.html(en: slides_en.html) 파일이 존재하는가. 본문 마커와 무관하다 */
+  hasSlides?: boolean;
+  /** 데크의 슬라이드 장 수. 0이면 필드를 생략한다 */
+  slideCount?: number;
 }
 
 /**
@@ -24,6 +28,20 @@ function calculateReadingTime(content: string): number {
   const wordsPerMinute = 200;
   const words = content.trim().split(/\s+/).length;
   return Math.ceil(words / wordsPerMinute);
+}
+
+/**
+ * 데크 HTML에서 슬라이드 장 수를 센다.
+ * 슬라이드 한 장은 <div class="holder" data-n="NN"> 하나에 대응한다.
+ */
+function countSlides(slidesPath: string): number {
+  try {
+    const html = fs.readFileSync(slidesPath, 'utf-8');
+    return (html.match(/data-n="\d+"/g) ?? []).length;
+  } catch (error) {
+    console.warn(`⚠️  ${slidesPath} 를 읽는 중 오류가 발생해 슬라이드 수를 셀 수 없습니다:`, error);
+    return 0;
+  }
 }
 
 interface Manifest {
@@ -78,6 +96,9 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
             .replace(/```[\s\S]*?```/g, '')
             .replace(/`[^`]+`/g, '');
           const hasSlidesMarker = /<!--\s*slides\s*-->/.test(contentWithoutCode);
+          const slideCount = hasSlidesFile
+            ? countSlides(path.join(dirPath, slidesFile))
+            : 0;
 
           if (hasSlidesFile && !hasSlidesMarker) {
             console.warn(
@@ -106,6 +127,8 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
             seriesOrder: data.seriesOrder,
             firstImage,
             readTime: calculateReadingTime(content),
+            hasSlides: hasSlidesFile || undefined,
+            slideCount: slideCount || undefined,
           });
         } catch (error) {
           console.error(`❌ Error processing ${category}/${articleDir} (${file}):`, error);
