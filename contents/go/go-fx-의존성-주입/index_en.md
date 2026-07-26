@@ -29,6 +29,8 @@ The scope of this article is as follows.
 - Module encapsulation: `fx.Private`
 - Testing strategies: `fxtest.New`, `fx.Replace`, `fx.Populate`
 
+<!-- slides -->
+
 # 2. fx Basics
 
 ## 2.1 Why DI Is Needed in Go

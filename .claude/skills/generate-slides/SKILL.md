@@ -1,6 +1,6 @@
 ---
 name: generate-slides
-description: Use when creating a presentation slide deck for a blog article (contents/{category}/{slug}/slides.html) and embedding it into the article
+description: Use when creating a presentation slide deck for a blog article (contents/{category}/{slug}/slides.html), translating an existing deck into English (slides_en.html), and embedding it into the article
 ---
 
 # Generate Presentation Slides (slides.html)
@@ -16,12 +16,14 @@ description: Use when creating a presentation slide deck for a blog article (con
 ## When to Use
 
 - 특정 글의 발표 자료를 만들 때 (`contents/{category}/{slug}/` → 같은 폴더 `slides.html`)
-- 이미 `slides.html`이 있으면 덮어쓰기 전에 사용자에게 확인
+- 기존 데크의 **영문판**을 만들 때 (`slides.html` → 같은 폴더 `slides_en.html`) — 아래 "영문 데크" 절로 간다
+- 이미 대상 파일이 있으면 덮어쓰기 전에 사용자에게 확인
 
 ## 대상 지정
 
 - **단일 글**: slug(`go/go-fx-의존성-주입`) 또는 `index.md` 경로
 - 한 번에 **한 글만** 처리한다. 슬라이드는 글 내용을 재구성하는 작업이라 배치로 돌리면 품질이 급격히 떨어진다.
+- **언어**: 지정이 없으면 한국어 데크로 본다. 영문판은 한국어 데크가 **이미 있을 때만** 만든다 — 글에서 새로 설계하지 않는다.
 
 ## Procedure
 
@@ -117,7 +119,7 @@ print('퀴즈 참조:',sorted(set(re.findall(r'슬라이드 [0-9][0-9 ·]*',s)))
 섹션 이름은 글마다 다르므로(`들어가며`·`개요`·`시작하며`) **이름이 아니라 위치**로 찾는다. 첫 섹션에 넣는 이유는 마무리에 두면 끝까지 읽은 사람만 보게 되기 때문이다.
 
 - 이미 마커가 있으면 **건너뛰고 보고**한다
-- **`index_en.md`는 건드리지 않는다** — 영문 슬라이드(`slides_en.html`)가 없으면 존재하지 않는 경로를 가리키는 깨진 임베드가 된다
+- **`index_en.md`는 건드리지 않는다** — 영문 슬라이드(`slides_en.html`)가 없으면 존재하지 않는 경로를 가리키는 깨진 임베드가 된다. 영문 데크를 만들었다면 "영문 데크" 절의 5번에서 넣는다
 - 사용자가 위치를 지정하거나 넣지 말라고 하면 그에 따른다
 
 ### 7. 검증한다
@@ -158,6 +160,93 @@ npx serve@latest out -l 3100 &
 
 데크를 만들면 `/slides` 목록 페이지에 자동으로 올라간다. 별도 등록 작업은 없다. 빌드 후 `out/slides/index.html`에 카드가 하나 늘었는지 함께 확인하면 좋다.
 
+## 영문 데크 (slides_en.html)
+
+한국어 데크가 이미 있는 글에 영문판을 붙인다. **새로 설계하지 않는다** — 구조·장수·번호·액센트를 그대로 두고 **텍스트만 번역**한다. 그래야 두 데크가 같은 발표로 남고, 나중에 한쪽을 고칠 때 다른 쪽을 찾아가기 쉽다.
+
+번역 규칙은 `translate-article-en` 스킬을 따른다: **코드의 로직·식별자는 한 글자도 바꾸지 않고, 코드 안의 한글 주석·문자열만 영어로.**
+
+### 1. 세 조각으로 자른다
+
+엔진을 손으로 다시 옮기면 반드시 어긋난다. 스크립트로 자르고 본문만 새로 쓴 뒤 도로 붙인다.
+
+```bash
+python3 - <<'PY'
+from pathlib import Path
+src = Path('contents/{category}/{slug}/slides.html').read_text(encoding='utf-8')
+lines = src.split('\n')
+i = next(n for n, l in enumerate(lines) if 'id="stage"' in l) + 1   # head 끝
+j = next(n for n, l in enumerate(lines) if '/stage -->' in l)       # tail 시작
+Path('/tmp/head.html').write_text('\n'.join(lines[:i]), encoding='utf-8')
+Path('/tmp/tail.html').write_text('\n'.join(lines[j:]), encoding='utf-8')
+print('본문 범위', i + 1, '~', j)
+PY
+```
+
+head(`<!doctype>`+CSS)와 tail(chrome+help+JS)은 **바이트 그대로 재사용**하고, 정해진 문자열만 치환한다.
+
+### 2. 본문을 번역해 새로 쓴다
+
+잘라낸 본문 범위를 영어로 다시 쓴다. `data-n`·`class`·`data-chapter`·코드 하이라이팅 `<span>`은 전부 그대로 두고 텍스트 노드만 바꾼다.
+
+`eyebrow`·`stamp`처럼 짧은 라벨은 소문자 한 단어로 옮기면(`문제`→`problem`, `확장`→`scaling`) 원본의 밀도가 유지된다. **발표자 노트(`notes-src`)도 빠짐없이 번역한다** — 노트가 한국어로 남으면 영문 발표에 쓸 수 없다.
+
+### 3. head · tail의 정해진 자리를 치환한다
+
+| 조각 | 바꿀 것 |
+|---|---|
+| head | `<html lang="ko">` → `lang="en"` · `<title>` |
+| tail | `deck-id` · `발표자 노트` → `Speaker notes` · 버튼 4개(`개요`/`노트`/`테마`/`?`)와 각 `title` 속성 · `단축키` 도움말 `<h3>`과 `<dd>` 8개 |
+| tail(JS) | `t.title = "슬라이드 "` → `"Slide "` |
+
+치환은 **건수를 검증하며** 하는 게 안전하다. 각 문자열이 정확히 1건 매칭되지 않으면 중단시킨다.
+
+**엔진의 CSS/JS 주석은 한국어로 그대로 둔다.** 화면에 안 보이고, 엔진을 원본과 동일하게 유지해야 나중에 엔진을 고칠 때 diff가 깨끗하다.
+
+액센트 색은 **바꾸지 않는다.** 같은 글의 두 데크는 같은 색을 쓴다.
+
+### 4. 합치고 검증한다
+
+```bash
+cat /tmp/head.html body_en.html /tmp/tail.html > "contents/{category}/{slug}/slides_en.html"
+file -I "contents/{category}/{slug}/slides_en.html"   # charset=utf-8 확인
+```
+
+5번(번호 맞추기)을 **영문 데크에도 그대로** 돌린다. 장 수·카운터가 한국어 데크와 같아야 하고, 퀴즈 참조는 `→ 슬라이드 NN`이 아니라 `→ Slide NN`이 된다.
+
+그리고 화면에 노출되는 한글이 남았는지 훑는다 — 주석 밖에 한글이 있으면 번역을 빠뜨린 것이다.
+
+```bash
+python3 -c "
+import re
+for i, l in enumerate(open('contents/{category}/{slug}/slides_en.html',encoding='utf-8'), 1):
+    s = l.strip()
+    if re.search(r'[가-힣]', l) and not s.startswith(('/*','*','//','<!--')):
+        print(i, s[:100])
+"
+```
+
+### 5. 마커를 `index_en.md`에 넣는다
+
+**영문 데크를 만든 뒤에만** 넣는다. 위치는 한국어와 같은 규칙 — 첫 번째 `#` 섹션 끝, 두 번째 `#` 헤딩 바로 앞.
+
+### 6. 넘침을 다시 검사한다
+
+**영문은 같은 내용이라도 한국어보다 길어져 넘치기 쉽다.** 한국어 데크가 멀쩡했다는 건 아무 보장도 아니므로, 7번의 넘침 검사 스크립트를 `/en/{slug}/slides/`에 대해 **반드시 다시 돌린다.**
+
+표가 많은 장(9행 이상)과 퀴즈 장이 가장 위험하다. 넘치면 문장을 줄이는 쪽을 먼저 시도하고, 그래도 넘치면 장을 나눈 뒤 **양쪽 데크의 번호를 함께** 맞춘다.
+
+하단 크롬도 함께 본다. 버튼 라벨이 영어로 길어지므로 `.chrome`·`.keys`의 가로 넘침과 `deck-id` 잘림을 확인한다. `deck-id`는 대문자 변환·nowrap이라 길면 레일을 밀어낸다 — 짧게 잡는다(예: `uber/fx · Go DI`).
+
+```js
+() => {
+  const c = document.querySelector('.chrome'), id = document.querySelector('.deck-id');
+  return { chromeOverflowX: c.scrollWidth - c.clientWidth, deckIdClipped: id.scrollWidth > id.clientWidth };
+}
+```
+
+마지막으로 `/en/slides` 목록에 카드가 늘었는지, 영문 글의 임베드 `src`가 `/en/...`을 가리키는지 확인한다.
+
 ## 슬라이드 작성 원칙
 
 - **한 장에 한 가지 주장.** 제목이 곧 그 주장이 되게 쓴다 ("fx.Provide 설명" ❌ → "Provide는 등록만 한다 — 실행은 미룬다" ✅)
@@ -171,18 +260,23 @@ npx serve@latest out -l 3100 &
 - ❌ 표에 10행 넘게 넣음 → ✅ 본문에 표만 있으면 9행, 콜아웃과 함께면 5~6행. 넘치면 두 장으로
 - ❌ 슬라이드를 나눈 뒤 뒤 번호를 안 고침 → ✅ `data-n`·카운터·퀴즈 참조를 모두 갱신 (특히 `슬라이드 08 · 09`의 뒤 숫자)
 - ❌ 액센트를 CSS만 바꾸고 JS 폴백을 빠뜨림 → ✅ `grep -c` 로 템플릿 기본색이 0인지 확인
-- ❌ `index_en.md`에도 마커를 넣음 → ✅ 영문 슬라이드가 없으면 넣지 않는다
+- ❌ 영문 데크 없이 `index_en.md`에 마커를 넣음 → ✅ `slides_en.html`을 먼저 만든다
+- ❌ 영문 데크를 글(`index_en.md`)에서 새로 설계함 → ✅ 한국어 데크를 번역한다. 구조가 갈리면 두 데크가 다른 발표가 된다
+- ❌ 영문 데크에서 넘침 검사를 생략함 → ✅ 영어가 길어 새로 넘치는 장이 생긴다. 한국어가 멀쩡했던 건 보장이 아니다
+- ❌ 엔진의 한국어 CSS/JS 주석까지 번역함 → ✅ 그대로 둔다. 엔진은 두 데크가 동일해야 한다
 - ❌ 코드 안의 `<`·`&`를 그대로 씀 → ✅ `&lt;`·`&amp;`로 이스케이프. `[]Notifier`, `&Config{}` 같은 코드에서 자주 걸린다
 - ❌ 넘침 검사를 생략하고 눈으로만 확인 → ✅ 잘린 슬라이드는 개요 모드에서도 멀쩡해 보인다. 반드시 스크립트로 검사
 - ❌ 엔진(CSS/JS)을 손봄 → ✅ 템플릿에서 그대로 가져온다. 무대 정렬·테마 동기화 등이 이미 맞춰져 있다
 
 ## 엔진을 고쳐야 할 때
 
-CSS나 JS 자체를 고쳐야 하는 상황이면 **템플릿과 기존 슬라이드를 모두** 갱신해야 한다. 현재 엔진 복사본이 있는 곳:
+CSS나 JS 자체를 고쳐야 하는 상황이면 **템플릿과 기존 슬라이드를 모두** 갱신해야 한다. 정본은 `.claude/skills/generate-slides/assets/deck-template.html`이고, 나머지 복사본은 이걸로 찾는다:
 
-- `.claude/skills/generate-slides/assets/deck-template.html` (정본)
-- `contents/cloud/grafana-완벽-가이드-1-prometheus와-grafana-기초/slides.html`
-- `contents/go/go-fx-의존성-주입/slides.html`
+```bash
+find .claude/skills/generate-slides/assets contents -name "slides.html" -o -name "slides_en.html" -o -name "deck-template.html"
+```
+
+**영문 데크는 복사본을 두 배로 늘린다.** 이미 정본 1 + 데크 8벌이라 아래 임계를 넘겼다.
 
 복사본이 5벌을 넘어가면 `copy-assets.ts`가 빌드 시 엔진을 주입하는 구조로 바꾸는 걸 검토한다(테마 동기화 스크립트를 주입하는 것과 같은 방식). 다만 그렇게 하면 슬라이드 원본이 자기완결형이 아니게 되므로, 그 트레이드오프를 사용자와 상의할 것.
 
@@ -191,3 +285,5 @@ CSS나 JS 자체를 고쳐야 하는 상황이면 **템플릿과 기존 슬라�
 - 슬라이드 임베드 규약: `CLAUDE.md`의 "슬라이드 데크" 절
 - 설계 배경: `docs/superpowers/specs/2026-07-26-slides-embed-design.md`, `2026-07-26-slides-theme-sync-design.md`
 - 실제 사례: `contents/go/go-fx-의존성-주입/slides.html` (32장), `contents/cloud/grafana-완벽-가이드-1-.../slides.html` (38장)
+- 영문 데크 실제 사례: `contents/go/go-fx-의존성-주입/slides_en.html` (한국어판과 32장 동일)
+- 번역 규칙 원본: `translate-article-en` 스킬
