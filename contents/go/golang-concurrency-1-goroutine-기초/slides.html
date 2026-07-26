@@ -1,0 +1,2324 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>개요와 Goroutine 기초 — Golang Concurrency 편 1</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 Gopher Blue
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0B6E8C;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(11, 110, 140, .10);
+  --teal:      #146B4E;
+  --teal-ink:  #FFFFFF;
+  --teal-soft: rgba(20, 107, 78, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #4FD3F4;
+    --accent-ink:#04222C;
+    --accent-soft: rgba(79, 211, 244, .13);
+    --teal:      #4FC48F;
+    --teal-ink:  #06231A;
+    --teal-soft: rgba(79, 196, 143, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #4FD3F4;
+  --accent-ink:#04222C;
+  --accent-soft: rgba(79, 211, 244, .13);
+  --teal:      #4FC48F;
+  --teal-ink:  #06231A;
+  --teal-soft: rgba(79, 196, 143, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0B6E8C;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(11, 110, 140, .10);
+  --teal:      #146B4E;
+  --teal-ink:  #FFFFFF;
+  --teal-soft: rgba(20, 107, 78, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: 0 0;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+ul.bul.red > li::before { background: var(--red); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+table.tbl col.on + col, table.tbl .col-on { background: var(--accent-soft); }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.code.red { border-left-color: var(--red); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card.teal { border-color: var(--teal); }
+.card.red { border-color: var(--red); }
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 인용 ──────────────────────────────────────────────────── */
+.quote {
+  font-family: var(--f-display);
+  font-size: 38px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: -.02em;
+  margin: 0;
+  text-wrap: balance;
+}
+.quote .em { color: var(--accent); }
+.quote .em2 { color: var(--teal); }
+.quote-by {
+  font-family: var(--f-mono);
+  font-size: 14px;
+  letter-spacing: .1em;
+  color: var(--ink-faint);
+  margin: 18px 0 0;
+}
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.teal { border-color: var(--teal); background: var(--teal-soft); }
+.node.teal .n-t { color: var(--teal); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+.arch-link.teal .l-line::after { border-left-color: var(--teal); }
+
+/* ── 공유 메모리 다이어그램 ────────────────────────────────── */
+.share { display: grid; grid-template-columns: 1fr 1fr; gap: 8px 14px; }
+.share .sh-full { grid-column: 1 / -1; }
+.share .sh-a {
+  text-align: center;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+
+/* ── 실행 레인 (동시성 vs 병렬성) ──────────────────────────── */
+.lanes { display: flex; flex-direction: column; gap: 20px; }
+.lane-h {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin-bottom: 8px;
+}
+.lane-t { display: flex; gap: 3px; height: 40px; }
+.lane-t + .lane-t { margin-top: 3px; }
+.blk {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  font-weight: 600;
+  border-radius: 2px;
+  min-width: 0;
+}
+.blk.a { background: var(--accent); color: var(--accent-ink); }
+.blk.b { background: var(--teal); color: var(--teal-ink); }
+.blk.idle {
+  background: var(--surface-2);
+  border: 1px dashed var(--line);
+  color: var(--ink-faint);
+  font-weight: 400;
+}
+.axis {
+  display: flex;
+  justify-content: space-between;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  color: var(--ink-faint);
+  margin-top: 7px;
+}
+
+/* ── 스택 크기 스케일 ──────────────────────────────────────── */
+.scale { display: flex; flex-direction: column; gap: 16px; }
+.sc-row { display: grid; grid-template-columns: 132px 1fr 92px; align-items: center; gap: 14px; }
+.sc-lbl { font-size: 16.5px; font-weight: 700; }
+.sc-bar { height: 26px; background: var(--surface-2); border: 1px solid var(--line); border-radius: 2px; overflow: hidden; }
+.sc-bar > span { display: block; height: 100%; background: var(--accent); min-width: 2px; }
+.sc-bar > span.teal { background: var(--teal); }
+.sc-val { font-family: var(--f-mono); font-size: 16px; color: var(--ink-dim); text-align: right; }
+
+/* ── 숫자 오도미터 ─────────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+.agenda .step { padding: 13px 0; }
+.agenda .s-c {
+  font-family: var(--f-display);
+  font-size: 21px;
+  font-weight: 700;
+  letter-spacing: -.015em;
+}
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 ──────────────────────────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+
+    <!-- ═══════════ 01 표지 ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">Golang Concurrency · 편 1 / 11</div>
+            <h1 class="cover-title">개요와<br />Goroutine 기초</h1>
+            <p class="cover-sub">동시성은 <b>구조</b>고, 병렬성은 <b>실행</b>이다<br />— <code class="inl">go</code> 한 줄이 실제로 무슨 일을 하는지</p>
+            <div class="cover-meta">
+              <span class="chip on">Concurrency</span>
+              <span class="chip">Goroutine</span>
+              <span class="chip">GMP 스케줄러</span>
+              <span class="chip">Leak 방지</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>goroutine 스케줄 타임라인</span>
+              <span>GOMAXPROCS = 2</span>
+            </div>
+            <div class="panel-body"><canvas id="heroCanvas" width="1000" height="464"></canvas></div>
+            <div class="panel-foot">
+              <span>go func() { … }()  ×8</span>
+              <span>M = OS thread</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">인사 + 오늘은 시리즈 11편 중 1편. 오른쪽 그림이 오늘의 결론이라고 미리 말해둔다 — goroutine 8개가 OS thread 2개 위에서 번갈아 실행되는 그림. 이 한 장을 이해하는 게 오늘 목표다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 문제 제기 ═══════════ -->
+    <div class="holder" data-n="02">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">문제</span><span class="stamp">why concurrency</span></div>
+        <h2 class="slide-title">기다리는 시간이 그대로 <span class="em">벽시계 시간</span>이 된다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>외부 API 세 곳을 호출해 결과를 합쳐야 한다</li>
+              <li>각각 100ms — 그런데 그 100ms는 대부분 <b>응답을 기다리는 시간</b>이다</li>
+              <li>순차로 부르면 300ms. 그동안 CPU는 <b>놀고 있다</b></li>
+              <li>세 호출은 서로 <b>독립적</b>이다. 겹쳐서 기다리지 못할 이유가 없다</li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">// 순차 — 기다림이 쌓인다</span>
+a := fetch(u1)   <span class="t-cm">// 100ms</span>
+b := fetch(u2)   <span class="t-cm">// 100ms</span>
+c := fetch(u3)   <span class="t-cm">// 100ms</span>
+<span class="t-cm">// 합계 300ms</span>
+
+<span class="t-cm">// 동시 — 기다림이 겹친다</span>
+<span class="t-key">for</span> i, u := <span class="t-key">range</span> urls {
+    <span class="t-key">go</span> <span class="t-fn">func</span>() { out[i] = fetch(u) }()
+}
+wg.<span class="t-fn">Wait</span>()
+<span class="t-cm">// 합계 ~100ms</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">Go의 답</span>
+            <code class="inl">go</code> 키워드와 <code class="inl">channel</code>을 <b>언어 차원에서</b> 제공한다. 라이브러리를 고르는 단계가 없다.
+          </div>
+        </div>
+        <div class="notes-src">"세 API를 순서대로 부르는 코드 짜본 적 있는 분?"으로 시작하면 공감이 빠르다. 핵심은 CPU가 바쁜 게 아니라 기다리고 있다는 점. 뒤의 3장(언제 쓰나)에서 반대 경우 — CPU-bound — 도 다룬다고 예고.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 시리즈 로드맵 ═══════════ -->
+    <div class="holder" data-n="03">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">시리즈</span><span class="stamp">11 parts</span></div>
+        <h2 class="slide-title">전체 시리즈 안에서 오늘의 위치</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>편</th><th>제목</th><th>다루는 영역</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>편 1</td><td>개요와 Goroutine 기초</td><td>실행 단위</td></tr>
+                <tr><td>편 2 · 3</td><td>Channel 완전 정복 / Select와 Channel 심화 패턴</td><td>통신</td></tr>
+                <tr><td>편 4 · 5</td><td>sync 패키지 완벽 가이드 / Context 완벽 가이드</td><td>동기화 · 생명주기</td></tr>
+                <tr><td>편 6 · 7</td><td>동시성 패턴 실전 / 에러 처리 전략</td><td>설계 패턴</td></tr>
+                <tr><td>편 8 · 9</td><td>Go Memory Model과 Atomic / Debugging과 Race Detector</td><td>저수준 · 디버깅</td></tr>
+                <tr><td>편 10 · 11</td><td>실전 프로젝트와 Best Practices / go tool trace 시각화</td><td>실전 · 도구</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="dim" style="margin:0;font-size:17px;">오늘은 첫 편이다. 나머지 열 편이 전부 이 위에 얹히기 때문에,
+          <b>goroutine이 무엇이고 어떻게 스케줄되는지</b>를 여기서 확실히 깔고 간다.</p>
+        </div>
+        <div class="notes-src">시리즈 전체를 다 소개하려 하지 말고 "오늘은 바닥을 까는 편"이라는 위치만 짚는다. Channel은 다음 편이라고 선을 그어두면 질문이 앞서가지 않는다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 목차 ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">목차</span><span class="stamp">agenda</span></div>
+        <h2 class="slide-title">오늘 다루는 것</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="steps agenda">
+            <div class="step">
+              <span class="s-n">01</span>
+              <div><div class="s-c">Concurrency란 무엇인가</div>
+              <div class="s-d">Concurrency vs Parallelism · CSP 모델 · 언제 쓰고 언제 쓰지 않나</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">02</span>
+              <div><div class="s-c">Goroutine 기초</div>
+              <div class="s-d"><code class="inl">go</code> 키워드 · OS thread와의 차이 · 실행 순서와 생명주기</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">03</span>
+              <div><div class="s-c">GMP 스케줄러</div>
+              <div class="s-d">G · M · P의 역할 · work stealing · <code class="inl">GOMAXPROCS</code></div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">04</span>
+              <div><div class="s-c">다른 언어와의 비교</div>
+              <div class="s-d">Kotlin Coroutine · Java Platform / Virtual Thread · 함수 색칠 문제</div></div>
+            </div>
+            <div class="step">
+              <span class="s-n">05</span>
+              <div><div class="s-c">Goroutine Leak</div>
+              <div class="s-d">왜 새는가 · <code class="inl">context</code>로 막는 법 · 종료 경로라는 원칙</div></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">1·2장이 개념과 기초, 3장이 원리, 4장은 배경지식 있는 청중용, 5장이 실무 함정. 시간이 모자라면 4장(다른 언어 비교)을 통째로 줄이고 5장을 살린다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 챕터 1 ═══════════ -->
+    <div class="holder" data-n="05" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Concurrency란 무엇인가</h2>
+            <p class="chap-d">동시성과 병렬성은 다른 말이다. 이 구분에서 출발해
+            Go가 왜 CSP를 골랐는지, 그리고 <b>언제 쓰면 안 되는지</b>까지 본다.</p>
+          </div>
+        </div>
+        <div class="notes-src">이 장은 개념이라 지루해지기 쉽다. 표 한 장 → 그림 한 장 → 인용 한 장으로 리듬을 바꿔가며 빠르게 넘긴다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 Concurrency vs Parallelism ═══════════ -->
+    <div class="holder" data-n="06">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 개념</span><span class="stamp">concurrency vs parallelism</span></div>
+        <h2 class="slide-title">자주 섞어 쓰지만, <span class="em">다른 말</span>이다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>구분</th><th>Concurrency (동시성)</th><th>Parallelism (병렬성)</th></tr></thead>
+              <tbody>
+                <tr><td>정의</td><td>여러 작업을 <b>동시에 다루는</b> 구조</td><td>여러 작업을 <b>동시에 실행하는</b> 것</td></tr>
+                <tr><td>핵심</td><td>작업의 <b>구성</b> — composition</td><td>작업의 <b>실행</b> — execution</td></tr>
+                <tr><td>CPU</td><td class="hl">1개의 CPU에서도 성립한다</td><td>여러 CPU가 필요하다</td></tr>
+                <tr><td>비유</td><td>한 사람이 여러 일을 번갈아 처리</td><td>여러 사람이 각자 일을 동시에 처리</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">여기만 기억하면 된다</span>
+            싱글 코어 머신에서도 concurrency는 성립한다. <b>동시에 다루는 것</b>과 <b>동시에 실행되는 것</b>은 별개다.
+          </div>
+        </div>
+        <div class="notes-src">"CPU 1개에서도 동시성이 가능한가?"를 청중에게 먼저 물어보면 대부분 아니라고 답한다. 여기서 한 번 뒤집어주면 나머지가 쉬워진다. 퀴즈 Q1과 직결.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 실행 레인 그림 ═══════════ -->
+    <div class="holder" data-n="07">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 개념</span><span class="stamp">timeline</span></div>
+        <h2 class="slide-title">같은 두 작업, 다른 두 그림</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="lanes">
+            <div>
+              <div class="lane-h">Concurrency — CPU 1개 · 번갈아 처리</div>
+              <div class="lane-t">
+                <span class="blk a" style="flex:2.2">A</span>
+                <span class="blk b" style="flex:1.6">B</span>
+                <span class="blk a" style="flex:1.2">A</span>
+                <span class="blk b" style="flex:2.4">B</span>
+                <span class="blk a" style="flex:1.8">A</span>
+                <span class="blk b" style="flex:1.4">B</span>
+                <span class="blk a" style="flex:1.4">A</span>
+              </div>
+            </div>
+            <div>
+              <div class="lane-h">Parallelism — CPU 2개 · 진짜로 동시에</div>
+              <div class="lane-t"><span class="blk a" style="flex:0 0 55%">Task A</span><span class="blk idle" style="flex:1">쉼</span></div>
+              <div class="lane-t"><span class="blk b" style="flex:0 0 45%">Task B</span><span class="blk idle" style="flex:1">쉼</span></div>
+            </div>
+            <div class="axis"><span>시작</span><span>time →</span><span>끝</span></div>
+          </div>
+          <div class="callout">
+            <span class="lbl">Go의 입장</span>
+            프로그램을 <b>concurrent하게 설계</b>하는 것이 개발자의 몫이고, 그걸 몇 개의 CPU에 얹을지는 <b>runtime이 알아서</b> 한다.
+          </div>
+        </div>
+        <div class="notes-src">같은 작업량인데 아래 두 레인이 더 일찍 끝난다는 점(가로 길이)을 손으로 짚어준다. 다만 concurrency의 목적이 항상 속도는 아니라는 것도 한 마디 — 구조가 먼저다. CPU가 1개뿐이면 위 그림이 되고, 그래도 concurrency는 성립한다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 Rob Pike 인용 ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 개념</span><span class="stamp">rob pike</span></div>
+        <h2 class="slide-title">Go 창시자의 한 문장</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div>
+            <p class="quote">“Concurrency is about <span class="em">dealing with</span> lots of things at once.<br />
+            Parallelism is about <span class="em2">doing</span> lots of things at once.”</p>
+            <p class="quote-by">— Rob Pike</p>
+          </div>
+          <div class="cols c-2">
+            <div class="card">
+              <p class="card-t" style="color:var(--accent);">Dealing with — 다루기</p>
+              <p style="margin:0;font-size:17px;line-height:1.5;" class="dim">코드를 <b>독립적으로 실행 가능한 단위</b>로 쪼개는 일. 프로그램의 <b>구조</b>에 관한 이야기다.</p>
+            </div>
+            <div class="card">
+              <p class="card-t" style="color:var(--teal);">Doing — 하기</p>
+              <p style="margin:0;font-size:17px;line-height:1.5;" class="dim">쪼개진 단위를 실제로 여러 CPU에서 <b>동시에 굴리는</b> 일. 이건 runtime과 하드웨어의 몫이다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">이 문장은 Go Blog "Concurrency is not parallelism" 강연에서 나온 것. 원문 영상 링크는 마지막 참고 슬라이드에 있다. 여기서 잠깐 멈춰 읽을 시간을 준다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 CSP 모델 ═══════════ -->
+    <div class="holder" data-n="09">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 개념</span><span class="stamp">csp</span></div>
+        <h2 class="slide-title">Go가 고른 모델 — <span class="em">CSP</span></h2>
+        <p class="slide-lede">Communicating Sequential Processes. 1978년 Tony Hoare가 제안했다. 핵심은 하나다 — <b>독립적인 프로세스들이 메시지 전달로 통신한다.</b></p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b" style="align-items:center;">
+            <div class="tbl-wrap">
+              <table class="tbl sm">
+                <thead><tr><th>CSP 개념</th><th>Go의 구현</th></tr></thead>
+                <tbody>
+                  <tr><td>독립적인 실행 단위</td><td class="num-col hl">goroutine</td></tr>
+                  <tr><td>메시지 전달 수단</td><td class="num-col hl">channel</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="arch" style="grid-template-columns:1fr 150px 1fr;">
+              <div class="arch-col">
+                <div class="node hero"><span class="n-t">Goroutine A</span><span class="n-p">데이터 소유</span></div>
+              </div>
+              <div class="arch-link teal"><span class="l-lbl">channel</span><span class="l-line"></span><span class="l-lbl">소유권 이전</span></div>
+              <div class="arch-col">
+                <div class="node teal"><span class="n-t">Goroutine B</span><span class="n-p">데이터 수신</span></div>
+              </div>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">왜 이게 안전한가</span>
+            데이터의 <b>소유권이 channel을 통해 넘어가므로</b>, 한 시점에 하나의 goroutine만 그 데이터에 접근한다.
+          </div>
+        </div>
+        <div class="notes-src">CSP라는 이름 자체는 중요하지 않다. "메시지로 주고받는다"는 한 줄만 남기면 된다. Erlang/Akka의 actor 모델과 비교 질문이 나오면 "메일박스 대신 channel이 1급 객체"라고만 짚고 넘어간다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 Go 격언 ═══════════ -->
+    <div class="holder" data-n="10">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 개념</span><span class="stamp">go proverb</span></div>
+        <h2 class="slide-title">메모리를 공유해서 통신하지 말고, <span class="em">통신해서 메모리를 공유하라</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card red">
+              <p class="card-t" style="color:var(--red);">전통적 방식 — Shared Memory + Lock</p>
+              <div class="share">
+                <div class="node"><span class="n-t">Thread A</span></div>
+                <div class="node"><span class="n-t">Thread B</span></div>
+                <div class="sh-a sh-full">↓ &nbsp; lock / unlock &nbsp; ↓</div>
+                <div class="node sh-full mute"><span class="n-t">Shared Data</span><span class="n-p">mutex 로 보호</span></div>
+              </div>
+              <p class="dim" style="margin:12px 0 0;font-size:16px;line-height:1.45;">보호를 <b>사람이</b> 걸어야 한다. deadlock, race condition이 여기서 나온다.</p>
+            </div>
+            <div class="card teal">
+              <p class="card-t" style="color:var(--teal);">Go 방식 — Message Passing</p>
+              <div class="arch" style="grid-template-columns:1fr 100px 1fr;">
+                <div class="arch-col"><div class="node teal"><span class="n-t">Goroutine A</span></div></div>
+                <div class="arch-link teal"><span class="l-lbl">chan</span><span class="l-line"></span></div>
+                <div class="arch-col"><div class="node teal"><span class="n-t">Goroutine B</span></div></div>
+              </div>
+              <p class="dim" style="margin:12px 0 0;font-size:16px;line-height:1.45;">소유권이 <b>넘어가므로</b> 동시에 두 곳에서 만질 일이 없다. lock이 필요 없어진다.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">단, 절대 규칙은 아니다</span>
+            Go에도 <code class="inl">sync.Mutex</code>는 있고 필요할 때 쓴다. 다만 <b>기본 선택지가 channel</b>이라는 것이 Go의 태도다.
+          </div>
+        </div>
+        <div class="notes-src">"그럼 mutex는 쓰면 안 되나요?" 질문이 반드시 나온다. 마지막 콜아웃이 그 답이다. 상태를 공유해야만 하는 카운터 같은 경우는 4편(sync 패키지)에서 다룬다고 넘긴다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 언제 쓰나 ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 개념</span><span class="stamp">when to use</span></div>
+        <h2 class="slide-title">동시성은 <span class="em">공짜가 아니다</span></h2>
+        <p class="slide-lede">goroutine을 뿌린다고 빨라지지 않는다. 복잡도라는 비용을 먼저 지불한다.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2 grow">
+            <div class="card teal">
+              <p class="card-t" style="color:var(--teal);">쓸 만한 경우</p>
+              <ul class="bul teal" style="font-size:17px;">
+                <li><b>I/O 대기가 많은 작업</b> — HTTP 요청, DB 쿼리, 파일 읽기/쓰기</li>
+                <li><b>독립적인 작업의 병렬 처리</b> — 여러 API를 동시에 호출</li>
+                <li><b>이벤트 기반 처리</b> — 웹 서버의 요청 처리</li>
+                <li><b>파이프라인 처리</b> — 데이터 변환 스테이지 체이닝</li>
+              </ul>
+            </div>
+            <div class="card red">
+              <p class="card-t" style="color:var(--red);">오버엔지니어링인 경우</p>
+              <ul class="bul red" style="font-size:17px;">
+                <li>단순 순차 처리로 충분한 경우 — 간단한 데이터 변환</li>
+                <li><b>CPU-bound 작업</b>에서 goroutine을 과도하게 생성하는 경우</li>
+                <li>공유 상태가 많아 lock이 복잡해지는 경우 — 설계를 다시 본다</li>
+                <li>디버깅이 어려워질 정도로 복잡한 경우</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">오른쪽 카드가 더 중요하다. 특히 CPU-bound에 goroutine을 1만 개 뿌려도 코어 수 이상으로는 빨라지지 않는다는 점 — 3장 GOMAXPROCS에서 다시 연결된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 챕터 2 ═══════════ -->
+    <div class="holder" data-n="12" data-chapter="2">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Goroutine 기초</h2>
+            <p class="chap-d">키워드 하나로 만들어지는 실행 단위. 얼마나 가볍고,
+            무엇을 <b>보장하지 않는지</b>를 정확히 알아야 사고가 안 난다.</p>
+          </div>
+        </div>
+        <div class="notes-src">이 장의 핵심은 "가볍다"가 아니라 "순서를 보장하지 않는다"와 "main이 끝나면 다 끝난다" 두 가지다. 실습 중 가장 많이 밟는 지뢰가 여기 있다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 go 키워드 ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">go keyword</span></div>
+        <h2 class="slide-title">함수 호출 앞에 <span class="em">go</span> 를 붙인다. 그게 전부다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <pre class="code"><span class="t-cm">// goroutine 생성 — go 키워드 사용</span>
+<span class="t-key">go</span> <span class="t-fn">func</span>() {
+    fmt.<span class="t-fn">Println</span>(<span class="t-str">"goroutine 실행됨"</span>)
+}()
+
+<span class="t-cm">// 이름 있는 함수도 가능</span>
+<span class="t-key">go</span> <span class="t-fn">sayHello</span>(<span class="t-str">"World"</span>)</pre>
+            <ul class="bul">
+              <li>Go runtime이 관리하는 <b>경량 실행 단위</b>다 — OS thread가 아니다</li>
+              <li>별도 라이브러리도, 스레드 풀 설정도, <code class="inl">async/await</code>도 없다</li>
+              <li>호출은 <b>즉시 반환</b>된다. 함수는 다른 데서 돌기 시작한다</li>
+              <li>표준 라이브러리 전체가 이 전제 위에 설계되어 있다</li>
+            </ul>
+          </div>
+          <div class="callout">
+            <span class="lbl">대신 따라오는 것</span>
+            만들기가 쉬운 만큼 <b>정리하기를 잊기도 쉽다.</b> 5장에서 이 대가를 치른다.
+          </div>
+        </div>
+        <div class="notes-src">여기서 데모를 하나 돌려도 좋다. go 붙인 Println이 출력되지 않는 걸 보여주면 17번(main goroutine) 슬라이드로 자연스럽게 이어진다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 Goroutine vs OS Thread ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">vs os thread</span></div>
+        <h2 class="slide-title">OS Thread와 무엇이 다른가</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>구분</th><th>Goroutine</th><th>OS Thread</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>초기 스택 크기</td><td>~2KB — 필요하면 동적으로 증가</td><td>~1MB 고정</td></tr>
+                <tr><td>생성 비용</td><td>매우 저렴</td><td>상대적으로 비쌈</td></tr>
+                <tr><td>스케줄링</td><td class="hl">Go runtime — 사용자 공간</td><td>OS 커널</td></tr>
+                <tr><td>동시 실행 수</td><td>수십만 개 가능</td><td>수천 개 수준</td></tr>
+                <tr><td>컨텍스트 스위칭</td><td>빠름 — 레지스터 3개</td><td>느림 — 전체 레지스터</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">핵심 문장</span>
+            goroutine은 OS thread 위에서 <b>멀티플렉싱</b>된다. 수천~수만 개가 소수의 OS thread에서 돌아간다.
+          </div>
+        </div>
+        <div class="notes-src">"사용자 공간에서 스케줄링한다"가 왜 빠른가 — 커널 모드 전환이 없기 때문. 여기서 자세히 들어가지 말고 3장 GMP에서 그림으로 풀겠다고 넘긴다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 스택 크기 스케일 ═══════════ -->
+    <div class="holder" data-n="15">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">stack size</span></div>
+        <h2 class="slide-title">2KB와 1MB를 <span class="em">같은 축</span>에 그리면</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b" style="align-items:center;">
+            <div class="stack">
+              <div class="factor"><span>1 MB</span><span>÷</span><span>2 KB</span><span>=</span></div>
+              <div class="odo-row">
+                <span class="odo" data-odo="512">0</span>
+                <span class="odo-cap">배 — 같은 메모리로 그만큼 더 만든다</span>
+              </div>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">그래서 goroutine은 <b>수십만 개</b>, OS thread는 <b>수천 개</b>가 현실적인 한계선이 된다.
+              게다가 goroutine 스택은 고정이 아니라 <b>필요할 때 늘어난다</b>.</p>
+            </div>
+            <div class="scale">
+              <div class="sc-row">
+                <span class="sc-lbl">OS Thread</span>
+                <span class="sc-bar"><span style="width:100%"></span></span>
+                <span class="sc-val">1 MB</span>
+              </div>
+              <div class="sc-row">
+                <span class="sc-lbl">Goroutine</span>
+                <span class="sc-bar"><span class="teal" style="width:0.195%"></span></span>
+                <span class="sc-val">2 KB</span>
+              </div>
+              <p class="dim" style="margin:0;font-size:15.5px;line-height:1.45;">아래 막대가 <b>선 한 줄</b>로 보이는 게 오류가 아니다. 실제 비율이 저렇다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">숫자가 올라가는 동안 잠깐 멈춘다. 512라는 수가 체감되면 "goroutine 1만 개"가 왜 놀랄 일이 아닌지 뒤(19번)에서 바로 이해된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 실행 순서 비결정적 ═══════════ -->
+    <div class="holder" data-n="16">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">non-deterministic</span></div>
+        <h2 class="slide-title">실행 순서는 <span class="em">보장되지 않는다</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b" style="align-items:center;">
+            <div class="stack">
+              <ul class="bul">
+                <li>10개를 순서대로 띄웠다고 순서대로 실행되지 않는다</li>
+                <li>스케줄러가 어떤 <code class="inl">P</code>의 큐에 넣고 언제 꺼낼지는 <b>매 실행마다 다르다</b></li>
+                <li>테스트가 어쩌다 통과한다면 그건 <b>운</b>이다</li>
+              </ul>
+              <div class="callout">
+                <span class="lbl">순서가 필요하다면</span>
+                channel이나 <code class="inl">sync</code>로 <b>직접 만들어야</b> 한다. 기본값으로 주어지지 않는다.
+              </div>
+            </div>
+            <pre class="code sm"><span class="t-key">const</span> numGoroutines = <span class="t-num">10</span>
+wg.<span class="t-fn">Add</span>(numGoroutines)
+
+<span class="t-key">for</span> i := <span class="t-key">range</span> numGoroutines {
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+        mu.<span class="t-fn">Lock</span>()
+        order = <span class="t-fn">append</span>(order, i)
+        mu.<span class="t-fn">Unlock</span>()
+    }()
+}
+wg.<span class="t-fn">Wait</span>()
+t.<span class="t-fn">Logf</span>(<span class="t-str">"실행 순서: %v"</span>, order)
+
+<span class="t-cm">// 실행 순서: [1 4 2 3 5 9 8 0 6 7]</span></pre>
+          </div>
+        </div>
+        <div class="notes-src">데모로 두세 번 돌려서 매번 다른 결과가 나오는 걸 보여주면 설명이 필요 없다. 참고로 Go 1.22부터 for 루프 변수가 반복마다 새로 생기므로 예전처럼 i를 인자로 넘길 필요가 없다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 main goroutine ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">lifecycle</span></div>
+        <h2 class="slide-title">main이 끝나면 <span class="em">전부 끝난다</span></h2>
+        <p class="slide-lede"><code class="inl">main()</code>은 main goroutine에서 실행된다. 이게 반환되면 다른 goroutine의 완료 여부와 <b>상관없이</b> 프로세스가 종료된다.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <pre class="code sm red"><span class="t-key">func</span> <span class="t-fn">TestMainExitKillsGoroutines</span>(t *testing.T) {
+    <span class="t-key">var</span> completed atomic.Bool
+
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        time.<span class="t-fn">Sleep</span>(<span class="t-num">100</span> * time.Millisecond)
+        completed.<span class="t-fn">Store</span>(<span class="t-key">true</span>)
+    }()
+
+    <span class="t-cm">// 기다리지 않으면 완료되지 않는다</span>
+    assert.<span class="t-fn">False</span>(t, completed.<span class="t-fn">Load</span>())
+}</pre>
+            <div class="stack">
+              <ul class="bul">
+                <li>goroutine은 <b>정리 기회를 못 받고</b> 그냥 사라진다 — <code class="inl">defer</code>도 실행되지 않는다</li>
+                <li>로그 flush, 커넥션 close 같은 마무리도 날아간다</li>
+                <li>“왜 아무것도 출력이 안 되죠?”의 90%가 이것이다</li>
+              </ul>
+              <div class="callout">
+                <span class="lbl">규칙</span>
+                goroutine을 만들었으면 <b>누가 기다릴지</b>를 같이 정한다.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">13번에서 go Println 데모를 했다면 여기서 답을 준다. time.Sleep으로 때우는 코드를 본 적 있을 텐데, 그게 왜 나쁜지는 다음 장에서 WaitGroup으로 대체하며 설명.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 기다리는 법 ═══════════ -->
+    <div class="holder" data-n="18">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">waitgroup</span></div>
+        <h2 class="slide-title">기다리는 방법 — <code class="inl">sync.WaitGroup</code></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <pre class="code sm teal"><span class="t-key">func</span> <span class="t-fn">TestWaitGroupSolution</span>(t *testing.T) {
+    <span class="t-key">var</span> completed atomic.Bool
+    <span class="t-key">var</span> wg sync.WaitGroup
+
+    wg.<span class="t-fn">Add</span>(<span class="t-num">1</span>)
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+        time.<span class="t-fn">Sleep</span>(<span class="t-num">50</span> * time.Millisecond)
+        completed.<span class="t-fn">Store</span>(<span class="t-key">true</span>)
+    }()
+
+    wg.<span class="t-fn">Wait</span>() <span class="t-cm">// 완료될 때까지 대기</span>
+    assert.<span class="t-fn">True</span>(t, completed.<span class="t-fn">Load</span>())
+}</pre>
+            <div class="stack">
+              <div class="steps">
+                <div class="step"><span class="s-n">01</span><div><div class="s-c">wg.Add(n)</div><div class="s-d">기다릴 개수를 <b>goroutine을 띄우기 전에</b> 올린다</div></div></div>
+                <div class="step"><span class="s-n">02</span><div><div class="s-c">defer wg.Done()</div><div class="s-d">goroutine 안 <b>첫 줄</b>에 defer로 둔다 — panic이 나도 카운터가 내려간다</div></div></div>
+                <div class="step"><span class="s-n">03</span><div><div class="s-c">wg.Wait()</div><div class="s-d">0이 될 때까지 블로킹한다</div></div></div>
+              </div>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">channel로도 같은 일을 할 수 있다.
+              <code class="inl">time.Sleep</code>으로 때우는 코드는 <b>대기가 아니라 도박</b>이다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Add를 goroutine 안에서 호출하면 경쟁이 생긴다는 함정을 한 줄 짚어준다. WaitGroup의 나머지 세부는 4편에서 다룬다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 1만 개 ═══════════ -->
+    <div class="holder" data-n="19">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Goroutine</span><span class="stamp">lightweight</span></div>
+        <h2 class="slide-title">1만 개를 만들어도 <span class="em">아무 일도 일어나지 않는다</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2b" style="align-items:center;">
+            <div class="stack">
+              <div class="odo-row">
+                <span class="odo" data-odo="10000">0</span>
+                <span class="odo-cap">개 goroutine — 전부 정상 완료</span>
+              </div>
+              <div class="tbl-wrap">
+                <table class="tbl sm">
+                  <thead><tr><th>1만 개를 만들면</th><th>초기 스택 합계</th></tr></thead>
+                  <tbody>
+                    <tr class="on"><td>Goroutine (~2KB)</td><td class="num-col">약 20 MB</td></tr>
+                    <tr><td>OS Thread (~1MB)</td><td class="num-col">약 10 GB</td></tr>
+                  </tbody>
+                </table>
+              </div>
+              <p class="faint" style="margin:0;font-size:15px;">앞 슬라이드 스택 크기로 계산한 단순 산술값이다.</p>
+            </div>
+            <pre class="code sm"><span class="t-key">const</span> numGoroutines = <span class="t-num">10000</span>
+<span class="t-key">var</span> counter atomic.Int64
+<span class="t-key">var</span> wg sync.WaitGroup
+wg.<span class="t-fn">Add</span>(numGoroutines)
+
+<span class="t-key">for</span> <span class="t-key">range</span> numGoroutines {
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+        counter.<span class="t-fn">Add</span>(<span class="t-num">1</span>)
+    }()
+}
+
+wg.<span class="t-fn">Wait</span>()
+assert.<span class="t-fn">Equal</span>(t, <span class="t-fn">int64</span>(numGoroutines), counter.<span class="t-fn">Load</span>())</pre>
+          </div>
+        </div>
+        <div class="notes-src">"1만 개"가 감탄 포인트가 아니라 기본값이라는 톤으로 말한다. 다만 무한정 만들어도 된다는 뜻은 아니고, 개수 제한이 필요하면 semaphore 패턴(6편)을 쓴다고 한 줄 예고.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 챕터 3 ═══════════ -->
+    <div class="holder" data-n="20" data-chapter="3">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">GMP 스케줄러</h2>
+            <p class="chap-d">OS가 goroutine을 모르는데 어떻게 돌아가는가.
+            Go runtime이 <b>사용자 공간에서</b> 직접 스케줄링하는 구조를 본다.</p>
+          </div>
+        </div>
+        <div class="notes-src">내부 구조라 깊게 들어가면 끝이 없다. G·M·P 세 글자와 work stealing, GOMAXPROCS 세 가지만 남기는 것이 목표.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 GMP 모델 ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · 스케줄러</span><span class="stamp">gmp model</span></div>
+        <h2 class="slide-title">세 글자로 된 구조 — <span class="em">G · M · P</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node teal"><span class="n-t">G1</span><span class="n-p">실행 중</span></div>
+              <div class="node"><span class="n-t">G2</span><span class="n-p">대기 — run queue</span></div>
+              <div class="node"><span class="n-t">G3</span><span class="n-p">대기 — run queue</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">run queue</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">P1</span><span class="n-p">논리 프로세서 · 실행 큐 관리</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">bind</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">M1</span><span class="n-p">OS Thread — 실제 CPU 실행</span></div>
+              <div class="node mute"><span class="n-t">CPU Core</span><span class="n-p">hardware</span></div>
+            </div>
+          </div>
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>구성 요소</th><th>역할</th></tr></thead>
+              <tbody>
+                <tr><td>G — Goroutine</td><td>실행할 함수와 스택 정보를 담은 경량 실행 단위</td></tr>
+                <tr><td>M — Machine</td><td>OS thread. 실제로 CPU에서 코드를 실행한다</td></tr>
+                <tr class="on"><td>P — Processor</td><td>논리 프로세서. goroutine의 실행 큐(run queue)를 관리한다</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+        <div class="notes-src">P가 왜 필요한지가 매번 나오는 질문. "M(스레드)은 blocking될 수 있으니, 실행할 일감 목록(P)을 스레드에서 떼어낸 것"이라고 설명하면 다음 슬라이드 3단계와 맞물린다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 스케줄링 흐름 ═══════════ -->
+    <div class="holder" data-n="22">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · 스케줄러</span><span class="stamp">scheduling flow</span></div>
+        <h2 class="slide-title">한 바퀴 도는 순서</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a" style="align-items:center;">
+            <div class="steps">
+              <div class="step"><span class="s-n">01</span><div><div class="s-c">go f()</div><div class="s-d">새 <code class="inl">G</code>가 생성되면 현재 <code class="inl">P</code>의 <b>로컬 run queue</b>에 들어간다</div></div></div>
+              <div class="step"><span class="s-n">02</span><div><div class="s-c">P → M</div><div class="s-d"><code class="inl">P</code>는 바인딩된 <code class="inl">M</code>에서 큐의 goroutine을 하나씩 꺼내 실행한다</div></div></div>
+              <div class="step"><span class="s-n">03</span><div><div class="s-c">block → switch</div><div class="s-d">I/O · channel 대기 · <code class="inl">time.Sleep</code>으로 막히면 <b>즉시 다음 G로 전환</b>한다</div></div></div>
+              <div class="step"><span class="s-n">04</span><div><div class="s-c">work stealing</div><div class="s-d">로컬 큐가 비면 <b>다른 P의 큐에서 훔쳐 온다</b></div></div></div>
+            </div>
+            <div class="stack">
+              <div class="callout teal">
+                <span class="lbl">이 전환이 싼 이유</span>
+                커널을 거치지 않는다. <b>사용자 공간에서</b> 레지스터 몇 개만 바꿔 끼우면 끝이다.
+              </div>
+              <div class="callout">
+                <span class="lbl">work stealing이 하는 일</span>
+                일이 몰린 <code class="inl">P</code>와 노는 <code class="inl">P</code>가 생기지 않도록 <b>부하를 스스로 고르게</b> 만든다.
+              </div>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">Go 1.14부터는 <b>선점형(preemptive)</b>이라,
+              CPU만 오래 붙잡고 있는 goroutine도 runtime이 강제로 끌어내린다.</p>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">3번이 오늘 슬라이드 2번(I/O 대기)의 답이다. 기다리는 동안 M이 노는 게 아니라 다음 G를 잡는다는 그림을 연결해준다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 GOMAXPROCS ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · 스케줄러</span><span class="stamp">gomaxprocs</span></div>
+        <h2 class="slide-title"><code class="inl">GOMAXPROCS</code> — 동시에 <span class="em">실행</span>될 수 있는 개수</h2>
+        <p class="slide-lede">goroutine을 <b>몇 개 만들 수 있는지</b>가 아니라, <code class="inl">P</code>를 몇 개 둘지를 정하는 값이다. 기본값은 CPU 코어 수.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">TestGOMAXPROCS</span>(t *testing.T) {
+    <span class="t-cm">// 0 을 주면 값을 바꾸지 않고 현재 값만 반환</span>
+    currentProcs := runtime.<span class="t-fn">GOMAXPROCS</span>(<span class="t-num">0</span>)
+    numCPU := runtime.<span class="t-fn">NumCPU</span>()
+
+    t.<span class="t-fn">Logf</span>(<span class="t-str">"CPU 수: %d"</span>, numCPU)              <span class="t-cm">// 12</span>
+    t.<span class="t-fn">Logf</span>(<span class="t-str">"현재 GOMAXPROCS: %d"</span>, currentProcs) <span class="t-cm">// 12</span>
+
+    runtime.<span class="t-fn">GOMAXPROCS</span>(<span class="t-num">1</span>) <span class="t-cm">// P 를 1개로</span>
+}</pre>
+            <div class="stack">
+              <div class="card">
+                <p class="card-t" style="color:var(--accent);">GOMAXPROCS = 1</p>
+                <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">goroutine은 여전히 <b>얼마든지 만들어진다.</b> 다만 한 번에 하나만 실행된다 — concurrency는 있고 parallelism은 없다. <b>race 재현·디버깅에 유용</b>하다.</p>
+              </div>
+              <div class="card teal">
+                <p class="card-t" style="color:var(--teal);">GOMAXPROCS = N</p>
+                <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">최대 N개가 물리적으로 동시에 실행된다. <b>기본값을 그대로 두는 것이 권장</b>된다. 컨테이너 환경이라면 CPU limit과 맞는지만 확인한다.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">"goroutine 개수 제한값 아니냐"는 오해가 가장 흔하다. 퀴즈 Q4가 이걸 묻는다. 컨테이너에서 GOMAXPROCS가 호스트 코어 수로 잡히는 이슈는 깊게 들어가지 말고 한 줄만.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 챕터 4 ═══════════ -->
+    <div class="holder" data-n="24" data-chapter="4">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">다른 언어와의 비교</h2>
+            <p class="chap-d">Kotlin Coroutine, Java Thread와 나란히 놓고 보면
+            goroutine이 <b>무엇을 포기하고 무엇을 얻었는지</b>가 선명해진다.</p>
+          </div>
+        </div>
+        <div class="notes-src">청중 배경에 따라 비중을 조절한다. JVM 경험자가 많으면 여기가 제일 잘 통하는 장이고, 아니면 표 한 장만 보고 넘어가도 된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 25 전체 비교표 ═══════════ -->
+    <div class="holder" data-n="25">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 비교</span><span class="stamp">side by side</span></div>
+        <h2 class="slide-title">넷을 나란히 놓으면</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl sm">
+              <thead><tr><th>구분</th><th>Go Goroutine</th><th>Kotlin Coroutine</th><th>Java Platform Thread</th><th>Java Virtual Thread (21+)</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>스택 크기</td><td>~2KB · 동적 증가</td><td>stackless · 힙 객체</td><td>~1MB 고정</td><td>~수KB · 동적</td></tr>
+                <tr><td>스케줄링</td><td>Go runtime · <b>preemptive</b></td><td>협력적 · suspend/resume</td><td>OS 커널</td><td>JVM · cooperative</td></tr>
+                <tr><td>생성 비용</td><td>매우 저렴</td><td>매우 저렴</td><td>비쌈</td><td>저렴</td></tr>
+                <tr><td>동시 실행 수</td><td>수십만 개</td><td>수십만 개</td><td>수천 개</td><td>수백만 개</td></tr>
+                <tr><td>통신 방식</td><td class="hl">Channel — CSP</td><td>Flow, Channel</td><td>synchronized, Lock</td><td>synchronized, Lock</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">표에서 눈여겨볼 줄</span>
+            숫자가 아니라 <b>스케줄링</b>과 <b>통신 방식</b> 두 줄이다. 나머지 슬라이드는 이 둘을 풀어 쓴 것이다.
+          </div>
+        </div>
+        <div class="notes-src">표를 한 칸씩 읽지 말 것. 두 줄만 짚고 다음으로 넘어간다. Virtual Thread의 "수백만 개"에 반응이 오면, 대신 channel이 없다는 점을 28번에서 다룬다고 예고.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 26 preemptive vs cooperative ═══════════ -->
+    <div class="holder" data-n="26">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 비교</span><span class="stamp">preemptive vs cooperative</span></div>
+        <h2 class="slide-title">가장 큰 차이는 <span class="em">언제 양보하는가</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack tight">
+              <p class="card-t" style="margin:0;">Kotlin — 협력적 (cooperative)</p>
+              <pre class="code sm plain"><span class="t-cm">// suspend 지점에서만 중단된다</span>
+<span class="t-key">suspend fun</span> <span class="t-fn">fetchData</span>() {
+    <span class="t-fn">delay</span>(<span class="t-num">1000</span>)  <span class="t-cm">// 여기서 양보</span>
+
+    <span class="t-cm">// suspend 없는 CPU 작업은</span>
+    <span class="t-cm">// 양보하지 않는다</span>
+}</pre>
+              <p class="dim" style="margin:0;font-size:16px;line-height:1.45;">CPU만 붙잡고 도는 코드는 <b>스레드를 점유한 채</b> 놓지 않는다.</p>
+            </div>
+            <div class="stack tight">
+              <p class="card-t" style="margin:0;color:var(--accent);">Go — 선점형 (preemptive)</p>
+              <pre class="code sm"><span class="t-cm">// 별도 키워드 없이 runtime이 전환</span>
+<span class="t-key">func</span> <span class="t-fn">fetchData</span>() {
+    time.<span class="t-fn">Sleep</span>(time.Second)
+
+    <span class="t-cm">// CPU-bound 작업도</span>
+    <span class="t-cm">// runtime이 강제 전환 (Go 1.14+)</span>
+}</pre>
+              <p class="dim" style="margin:0;font-size:16px;line-height:1.45;">goroutine이 CPU를 오래 점유하면 <b>runtime이 끌어내린다</b>.</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">실무에서 체감되는 지점</span>
+            Go에서는 “양보 지점을 넣는 것”을 개발자가 신경 쓸 필요가 없다.
+          </div>
+        </div>
+        <div class="notes-src">Go 1.14 이전에는 tight loop이 스케줄러를 굶기는 문제가 실제로 있었다는 역사도 한 줄. 지금은 signal 기반 비동기 선점이 들어가 있다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 27 함수 색칠 문제 ═══════════ -->
+    <div class="holder" data-n="27">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 비교</span><span class="stamp">function coloring</span></div>
+        <h2 class="slide-title">함수 색칠 문제 — Go에는 <span class="em">색이 없다</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack tight">
+              <p class="card-t" style="margin:0;">Kotlin — 색이 전파된다</p>
+              <pre class="code sm plain"><span class="t-key">suspend fun</span> <span class="t-fn">a</span>() = <span class="t-fn">b</span>()
+<span class="t-key">suspend fun</span> <span class="t-fn">b</span>() = <span class="t-fn">c</span>()
+<span class="t-key">suspend fun</span> <span class="t-fn">c</span>() = <span class="t-fn">delay</span>(<span class="t-num">100</span>)
+
+<span class="t-cm">// c 를 suspend 로 바꾸는 순간</span>
+<span class="t-cm">// 호출 체인 전체에 suspend 가 번진다</span></pre>
+              <p class="dim" style="margin:0;font-size:16px;line-height:1.45;"><code class="inl">suspend</code> 함수는 <code class="inl">suspend</code> 함수나 coroutine 안에서만 호출된다.</p>
+            </div>
+            <div class="stack tight">
+              <p class="card-t" style="margin:0;color:var(--accent);">Go — 전부 같은 함수다</p>
+              <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">a</span>() { <span class="t-fn">b</span>() }
+<span class="t-key">func</span> <span class="t-fn">b</span>() { <span class="t-fn">c</span>() }
+<span class="t-key">func</span> <span class="t-fn">c</span>() { time.<span class="t-fn">Sleep</span>(t) }
+
+<span class="t-key">go</span> <span class="t-fn">a</span>()  <span class="t-cm">// 아무 함수나 goroutine 으로</span>
+<span class="t-fn">a</span>()     <span class="t-cm">// 그냥 불러도 된다</span></pre>
+              <p class="dim" style="margin:0;font-size:16px;line-height:1.45;"><code class="inl">async</code> · <code class="inl">await</code> · <code class="inl">suspend</code> 같은 구분 자체가 없다.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">반대로 Kotlin이 나은 점</span>
+            <b>Structured Concurrency</b>가 언어에 내장돼 부모가 취소되면 자식도 자동 취소되고,
+            <code class="inl">CoroutineExceptionHandler</code>로 <b>에러 전파</b>가 체계적이다.
+          </div>
+        </div>
+        <div class="notes-src">균형을 잡아주는 슬라이드. Go가 이겼다는 톤으로 가면 JVM 진영 청중이 닫힌다. Go는 structured concurrency가 없어 Context/WaitGroup을 손으로 관리해야 한다는 점을 다음 슬라이드에서 명시한다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 28 Java Thread ═══════════ -->
+    <div class="holder" data-n="28">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 비교</span><span class="stamp">java</span></div>
+        <h2 class="slide-title">Java — Virtual Thread로 <span class="em">가까워졌지만</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2" style="align-items:center;">
+            <div class="stack tight">
+              <pre class="code sm plain"><span class="t-cm">// Platform Thread — OS thread 1:1 매핑</span>
+<span class="t-key">new</span> <span class="t-fn">Thread</span>(() -&gt; <span class="t-fn">doWork</span>()).<span class="t-fn">start</span>();
+<span class="t-cm">// ~1MB 스택 할당</span>
+
+<span class="t-cm">// Virtual Thread (Java 21+) — goroutine 유사</span>
+Thread.<span class="t-fn">startVirtualThread</span>(() -&gt; <span class="t-fn">doWork</span>());</pre>
+              <p class="dim" style="margin:0;font-size:16.5px;line-height:1.5;">Platform Thread는 수천 개만 넘어가도 메모리와 컨텍스트 스위칭 비용이 급증한다. Virtual Thread는 그 문제를 개념적으로 <b>goroutine과 같은 방식</b>으로 푼다.</p>
+            </div>
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">남는 차이</span>
+                Java에는 <b>Channel 같은 통신 메커니즘이 언어에 내장돼 있지 않다.</b>
+                <code class="inl">BlockingQueue</code>나 <code class="inl">CompletableFuture</code> 같은 별도 도구를 골라 써야 한다.
+              </div>
+              <div class="callout teal">
+                <span class="lbl">그래서 결론</span>
+                “가벼운 실행 단위”는 이제 Go만의 것이 아니다. Go가 여전히 다른 지점은
+                <b>실행 단위와 통신 수단이 한 세트로 언어에 들어있다</b>는 점이다.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Loom/Virtual Thread를 아는 청중이 있으면 여기서 대화가 길어질 수 있다. "언어 내장 통신 수단"이라는 축으로 돌려놓고 다음으로 넘긴다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 29 강점과 약점 ═══════════ -->
+    <div class="holder" data-n="29">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · 비교</span><span class="stamp">summary</span></div>
+        <h2 class="slide-title">정리 — goroutine이 얻은 것과 못 얻은 것</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2 grow">
+            <div class="card teal">
+              <p class="card-t" style="color:var(--teal);">강점</p>
+              <div class="steps">
+                <div class="step"><span class="s-n">01</span><div><div class="s-c">언어 내장</div><div class="s-d"><code class="inl">go</code> + <code class="inl">chan</code>이 키워드로 제공되어 별도 라이브러리가 필요 없다</div></div></div>
+                <div class="step"><span class="s-n">02</span><div><div class="s-c">색칠 문제 없음</div><div class="s-d"><code class="inl">async/await/suspend</code> 구분 없이 모든 함수가 동일하다</div></div></div>
+                <div class="step"><span class="s-n">03</span><div><div class="s-c">preemptive</div><div class="s-d">CPU-bound goroutine도 runtime이 자동 전환한다</div></div></div>
+                <div class="step"><span class="s-n">04</span><div><div class="s-c">일관된 생태계</div><div class="s-d">표준 라이브러리 전체가 goroutine 기반으로 설계되어 있다</div></div></div>
+              </div>
+            </div>
+            <div class="card red">
+              <p class="card-t" style="color:var(--red);">약점</p>
+              <div class="steps">
+                <div class="step"><span class="s-n">01</span><div><div class="s-c">structured concurrency 부재</div><div class="s-d">부모–자식 관계가 언어에 없다. <code class="inl">Context</code>와 <code class="inl">WaitGroup</code>으로 <b>손수</b> 관리해야 한다</div></div></div>
+                <div class="step"><span class="s-n">02</span><div><div class="s-c">panic 전파</div><div class="s-d">goroutine에서 <code class="inl">panic</code>이 나면 <b>프로그램 전체가 종료</b>될 수 있다</div></div></div>
+              </div>
+              <div class="callout" style="margin-top:14px;">
+                <span class="lbl">다음 장 예고</span>
+                “손수 관리해야 한다”를 게을리하면 어떻게 되는지 — 그게 Goroutine Leak이다.
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">약점 카드가 다음 챕터로 넘어가는 다리 역할이다. 여기서 바로 5장으로 넘긴다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 30 챕터 5 ═══════════ -->
+    <div class="holder" data-n="30" data-chapter="5">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">05</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Goroutine Leak</h2>
+            <p class="chap-d">만들기 쉬운 만큼 <b>정리하기를 잊기 쉽다.</b>
+            새는 goroutine은 GC도 회수하지 못한다.</p>
+          </div>
+        </div>
+        <div class="notes-src">오늘 발표에서 실무에 가장 직접 닿는 장. 시간이 부족해도 여기는 살린다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 31 Leak이란 ═══════════ -->
+    <div class="holder" data-n="31">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · Leak</span><span class="stamp">what &amp; why</span></div>
+        <h2 class="slide-title">종료되지 않고 <span class="em">계속 살아있는</span> goroutine</h2>
+        <p class="slide-lede">더 이상 필요 없는데 끝나지 않는 상태다. 메모리를 점유한 채 <b>GC 대상이 되지도 않으므로</b>, 시간이 지날수록 사용량이 계속 올라간다.</p>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a" style="align-items:center;">
+            <div class="tbl-wrap">
+              <table class="tbl">
+                <thead><tr><th>대표적인 원인</th><th>어떤 코드에서</th></tr></thead>
+                <tbody>
+                  <tr class="on"><td>Channel 대기</td><td>아무도 receive/send하지 않는 channel에서 영원히 blocking</td></tr>
+                  <tr><td>무한 루프</td><td>종료 조건이 없는 goroutine</td></tr>
+                  <tr><td>Context 미사용</td><td>취소 신호를 받을 방법 없이 실행되는 goroutine</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <div class="stack">
+              <div class="callout">
+                <span class="lbl">왜 GC가 못 잡는가</span>
+                실행 중인 goroutine은 <b>살아있는 루트</b>다. 블로킹돼 있어도 “실행 중”이라 회수 대상이 아니다.
+              </div>
+              <pre class="code sm plain"><span class="t-cm">// 현재 goroutine 수를 세어보면 보인다</span>
+runtime.<span class="t-fn">NumGoroutine</span>()</pre>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">"메모리 누수는 들어봤는데 goroutine 누수는 처음"이라는 반응이 흔하다. 장시간 뜨는 서버에서 NumGoroutine이 우상향하면 그게 신호라고 알려준다. 9편에서 pprof로 잡는 법을 다룬다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 32 Leak 코드 → Context (토글) ═══════════ -->
+    <div class="holder" data-n="32">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · Leak</span><span class="stamp">before → after</span></div>
+        <h2 class="slide-title">새는 코드와, <span class="em">막은 코드</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="stack tight">
+            <div class="toggle">
+              <button class="tg" type="button" data-swap="leak" data-target="bad" aria-pressed="true">새는 코드</button>
+              <button class="tg" type="button" data-swap="leak" data-target="fix" aria-pressed="false">context로 막은 코드</button>
+            </div>
+            <div class="cols c-2" style="align-items:start;">
+              <div class="swap" data-swap-group="leak">
+                <div class="swap-i on stack tight" data-swap-item="bad">
+                  <pre class="code xs red">leakyFunc := <span class="t-key">func</span>() &lt;-<span class="t-key">chan</span> <span class="t-key">int</span> {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>)
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        ch &lt;- <span class="t-num">42</span> <span class="t-cm">// 아무도 receive하지 않으면 영원히 blocking</span>
+    }()
+    <span class="t-key">return</span> ch
+}
+
+_ = <span class="t-fn">leakyFunc</span>() <span class="t-cm">// 반환은 받지만 쓰지 않는다 → leak!</span>
+
+time.<span class="t-fn">Sleep</span>(<span class="t-num">50</span> * time.Millisecond)
+runtime.<span class="t-fn">NumGoroutine</span>() <span class="t-cm">// 초기 2 → leak 후 3</span></pre>
+                </div>
+                <div class="swap-i stack tight" data-swap-item="fix">
+                  <pre class="code xs teal">safeFunc := <span class="t-key">func</span>(ctx context.Context) &lt;-<span class="t-key">chan</span> <span class="t-key">int</span> {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">1</span>) <span class="t-cm">// buffered → send가 안 막힌다</span>
+    <span class="t-key">go</span> <span class="t-fn">func</span>() {
+        <span class="t-key">defer</span> <span class="t-fn">close</span>(ch)
+        <span class="t-key">select</span> {
+        <span class="t-key">case</span> ch &lt;- <span class="t-num">42</span>:     <span class="t-cm">// 정상적으로 값 전달</span>
+        <span class="t-key">case</span> &lt;-ctx.<span class="t-fn">Done</span>(): <span class="t-cm">// context 취소 시 종료</span>
+            <span class="t-key">return</span>
+        }
+    }()
+    <span class="t-key">return</span> ch
+}
+
+ctx, cancel := context.<span class="t-fn">WithCancel</span>(context.<span class="t-fn">Background</span>())
+ch := <span class="t-fn">safeFunc</span>(ctx)
+<span class="t-fn">cancel</span>() <span class="t-cm">// 취소하면 goroutine이 정리된다</span></pre>
+                </div>
+              </div>
+              <div class="swap" data-swap-group="leak">
+                <div class="swap-i on stack" data-swap-item="bad">
+                  <ul class="bul red">
+                    <li>unbuffered channel이라 <b>받는 쪽이 붙어야</b> send가 끝난다</li>
+                    <li>호출한 쪽이 channel을 안 읽으면 goroutine은 <code class="inl">ch &lt;- 42</code>에서 <b>영원히</b> 멈춘다</li>
+                    <li>이 패턴이 요청마다 반복되면 goroutine이 <b>계속 쌓인다</b></li>
+                  </ul>
+                  <div class="callout">
+                    <span class="lbl">징후</span>
+                    메모리 사용량이 <b>천천히, 꾸준히</b> 오른다. 재시작하면 잠깐 괜찮아진다.
+                  </div>
+                </div>
+                <div class="swap-i stack" data-swap-item="fix">
+                  <ul class="bul teal">
+                    <li><b>buffered channel</b> — 수신자가 없어도 send가 blocking되지 않는다</li>
+                    <li><b><code class="inl">select</code> + <code class="inl">ctx.Done()</code></b> — 취소되면 <code class="inl">return</code>으로 빠져나간다</li>
+                    <li><b><code class="inl">defer close(ch)</code></b> — 종료 시 channel도 함께 정리된다</li>
+                  </ul>
+                  <div class="callout teal">
+                    <span class="lbl">달라진 점</span>
+                    goroutine에게 <b>바깥에서 끝내는 방법</b>이 생겼다.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">두 버튼을 번갈아 눌러 비교한다. 먼저 "이 코드가 왜 새는지 보이시나요?"를 묻고, 답이 안 나오면 unbuffered channel의 send가 블로킹이라는 점만 힌트로 준다. 퀴즈 Q6과 연결.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 33 핵심 원칙 ═══════════ -->
+    <div class="holder" data-n="33">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · Leak</span><span class="stamp">the rule</span></div>
+        <h2 class="slide-title">goroutine을 만들 때는 <span class="em">종료 경로</span>를 함께 만든다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-3">
+            <div class="card">
+              <p class="card-t" style="color:var(--accent);">context</p>
+              <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim"><code class="inl">ctx.Done()</code>을 <code class="inl">select</code>에 끼워 넣는다. 취소·타임아웃·데드라인이 전부 여기로 온다.</p>
+            </div>
+            <div class="card">
+              <p class="card-t" style="color:var(--accent);">done channel</p>
+              <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">context를 쓰기 어려운 자리에서 종료 신호만 따로 보낼 때. 닫히면 모든 수신자가 깨어난다.</p>
+            </div>
+            <div class="card">
+              <p class="card-t" style="color:var(--accent);">close</p>
+              <p style="margin:0;font-size:16.5px;line-height:1.5;" class="dim">보내는 쪽이 다 보냈음을 알린다. <code class="inl">defer close(ch)</code>로 짝을 맞춘다.</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">코드 리뷰에서 던질 질문 하나</span>
+            “이 goroutine은 <b>언제, 누가</b> 끝내나요?” — 답이 안 나오면 그건 leak이다.
+          </div>
+          <p class="dim" style="margin:0;font-size:17px;">Context의 전체 그림은 <b>편 5</b>에서, 새는 goroutine을 실제로 잡아내는 방법은 <b>편 9</b>에서 다룬다.</p>
+        </div>
+        <div class="notes-src">오늘 발표에서 딱 한 줄만 가져간다면 이 콜아웃이다. 실제 코드 리뷰에서 써먹을 수 있는 형태로 줬다는 점을 강조.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 34 정리 ═══════════ -->
+    <div class="holder" data-n="34">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">마무리</span><span class="stamp">recap</span></div>
+        <h2 class="slide-title">오늘 가져갈 것</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <ul class="bul" style="font-size:20px;gap:17px;">
+            <li>Concurrency는 <b>구조</b>, Parallelism은 <b>실행</b>이다 — 구조를 짜면 실행은 runtime이 붙인다</li>
+            <li>Go는 CSP를 골랐다 — <b>메모리를 공유해 통신하지 말고, 통신해서 공유하라</b></li>
+            <li>goroutine은 <code class="inl">go</code> 한 줄로 만드는 <b>~2KB</b> 실행 단위다. 수만 개가 정상이다</li>
+            <li>실행 <b>순서는 보장되지 않고</b>, <b>main이 끝나면 전부 끝난다</b> — 필요하면 직접 만든다</li>
+            <li>스케줄링은 <b>G · M · P</b> 세 조각. 동시 실행 수는 <code class="inl">GOMAXPROCS</code>(기본 = CPU 코어 수)가 정한다</li>
+            <li>goroutine을 만들 때는 반드시 <b>종료 경로</b>를 함께 만든다 — 안 그러면 샌다</li>
+          </ul>
+        </div>
+        <div class="notes-src">여섯 줄을 소리 내어 읽는 것만으로 정리가 된다. 여기서부터 질문을 받아도 좋다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 35 퀴즈 ═══════════ -->
+    <div class="holder" data-n="35">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">확인</span><span class="stamp">클릭하면 답이 열립니다</span></div>
+        <h2 class="slide-title">스스로 답해보기</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>코어가 1개인 머신에서도 concurrency가 성립하나?</span></button>
+              <div class="q-a">성립한다. concurrency는 여러 작업을 <b>동시에 다루는 구조</b>이고, 여러 CPU가 필요한 건 parallelism이다. 코어 1개에서는 번갈아 실행될 뿐이다. <span class="ref">→ 슬라이드 06</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>goroutine 10개를 순서대로 띄웠는데 출력이 <code class="inl">0..9</code> 순이 아니다. 버그인가?</span></button>
+              <div class="q-a">아니다. 실행 순서는 <b>보장되지 않는다</b>. 순서가 필요하면 channel이나 <code class="inl">sync</code>로 직접 만들어야 한다. <span class="ref">→ 슬라이드 16</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span><code class="inl">main</code>에서 goroutine을 띄우고 바로 반환하면 어떻게 되나?</span></button>
+              <div class="q-a">프로세스가 종료되면서 goroutine은 완료되지 않는다. <code class="inl">defer</code>조차 실행되지 않는다. <code class="inl">WaitGroup</code>이나 channel로 기다려야 한다. <span class="ref">→ 슬라이드 17 · 18</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span><code class="inl">GOMAXPROCS=1</code>로 두면 goroutine이 하나만 만들어지나?</span></button>
+              <div class="q-a">아니다. <code class="inl">P</code>가 1개일 뿐이라 <b>한 번에 하나만 실행</b>된다. goroutine 자체는 얼마든지 만들어진다. concurrency는 있고 parallelism이 없는 상태다. <span class="ref">→ 슬라이드 23</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>Kotlin의 <code class="inl">suspend</code>와 goroutine의 가장 큰 차이 둘은?</span></button>
+              <div class="q-a">① 스케줄링 — Kotlin은 <b>협력적</b>이라 suspend 지점에서만 양보하고, Go는 <b>선점형</b>이라 runtime이 강제 전환한다. ② <b>함수 색칠 문제</b> — Go에는 <code class="inl">suspend</code> 같은 구분이 없다. <span class="ref">→ 슬라이드 26 · 27</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q6</span><span>unbuffered channel에 값을 보내는 goroutine을 띄웠는데 아무도 받지 않으면?</span></button>
+              <div class="q-a">send에서 <b>영원히 blocking</b>되고 GC도 회수하지 못한다 — goroutine leak이다. buffered channel + <code class="inl">select</code>/<code class="inl">ctx.Done()</code>으로 종료 경로를 만들어야 한다. <span class="ref">→ 슬라이드 32</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">청중에게 먼저 답하게 한 뒤 클릭해서 연다. 시간이 없으면 Q4와 Q6 두 개만 골라도 충분하다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 36 다음 편 ═══════════ -->
+    <div class="holder" data-n="36">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">다음</span><span class="stamp">part 2</span></div>
+        <h2 class="slide-title">다음 편 — Channel 완전 정복</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <p class="dim" style="margin:0;font-size:18px;line-height:1.6;">오늘은 <b>실행 단위</b>만 다뤘다. goroutine 여러 개를 띄울 줄 알아도,
+              그들 사이에 <b>데이터를 주고받지 못하면</b> 할 수 있는 일이 없다.
+              다음 편에서는 CSP의 나머지 절반인 <b>channel</b>을 처음부터 끝까지 본다.</p>
+              <div class="callout">
+                <span class="lbl">오늘 미뤄둔 것들</span>
+                unbuffered와 buffered의 차이, <code class="inl">close</code>의 정확한 의미, 방향이 있는 channel —
+                오늘 leak 슬라이드에서 스쳐 간 것들이 전부 다음 편의 주제다.
+              </div>
+            </div>
+            <div class="card">
+              <p class="card-t">참고 자료</p>
+              <ul class="bul" style="font-size:16.5px;gap:9px;">
+                <li>전체 코드 — <code class="inl">github.com/kenshin579/tutorials-go</code> <span class="faint">/golang/concurrency</span></li>
+                <li>Effective Go — Concurrency <span class="faint">go.dev/doc/effective_go#concurrency</span></li>
+                <li>Concurrency is not parallelism <span class="faint">go.dev/blog/waza-talk</span></li>
+                <li>Share Memory By Communicating <span class="faint">go.dev/blog/codelab-share</span></li>
+                <li>Go Proverbs <span class="faint">go-proverbs.github.io</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">감사합니다</span>
+            질문 환영합니다 — <code class="inl">advenoh.pe.kr</code>
+          </div>
+        </div>
+        <div class="notes-src">GitHub 저장소 주소를 띄워둔 채로 Q&amp;A를 받는다.</div>
+      </section>
+    </div>
+
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">발표자 노트</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">Goroutine 기초 · Golang Concurrency 1</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 36</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="개요 (O)">개요</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="발표자 노트 (N)">노트</button>
+      <button class="kbtn" id="btnTheme" type="button" title="테마 전환 (T)">테마</button>
+      <button class="kbtn" id="btnHelp" type="button" title="단축키 (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>단축키</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>다음 슬라이드</dd>
+        <dt>← · PgUp</dt><dd>이전 슬라이드</dd>
+        <dt>Home · End</dt><dd>처음 · 마지막</dd>
+        <dt>O</dt><dd>전체 슬라이드 개요</dd>
+        <dt>N</dt><dd>발표자 노트</dd>
+        <dt>T</dt><dd>밝은 테마 / 어두운 테마</dd>
+        <dt>F</dt><dd>전체 화면</dd>
+        <dt>Esc</dt><dd>닫기</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "슬라이드 " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 숫자 오도미터 ─────────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 코드 토글 ─────────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지: goroutine 스케줄 타임라인 ───────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  /* [goroutine 번호, 시작 비율, 끝 비율] — 난수 없이 재현 가능하게 고정 */
+  var LANES = [
+    [[1, 0, .13], [4, .13, .29], [2, .29, .38], [7, .38, .56], [1, .56, .69], [5, .69, .85], [3, .85, 1]],
+    [[2, 0, .10], [3, .10, .25], [6, .25, .42], [4, .42, .53], [8, .53, .72], [2, .72, .87], [6, .87, 1]]
+  ];
+
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+
+    var accent = css("--accent") || "#4FD3F4";
+    var teal   = css("--teal")   || "#4FC48F";
+    var amber  = css("--amber")  || "#E8B84B";
+    var line   = css("--line")   || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+    var surf2  = css("--surface-2") || "#1B212A";
+    var bg     = css("--bg") || "#0E1117";
+    var palette = [accent, teal, amber];
+
+    var padL = 76, padR = 16, padT = 48, laneH = 152, gap = 56;
+    var trackW = W - padL - padR;
+    var bottom = padT + laneH * 2 + gap;
+
+    function render(p) {
+      ctx.clearRect(0, 0, W, H);
+
+      /* 시간 격자 */
+      ctx.strokeStyle = line;
+      ctx.lineWidth = 1;
+      for (var i = 0; i <= 6; i++) {
+        var gx = Math.round(padL + trackW / 6 * i) + .5;
+        ctx.beginPath();
+        ctx.moveTo(gx, padT - 14);
+        ctx.lineTo(gx, bottom + 10);
+        ctx.stroke();
+      }
+
+      LANES.forEach(function (lane, li) {
+        var y = padT + li * (laneH + gap);
+
+        /* 빈 트랙 */
+        ctx.fillStyle = surf2;
+        ctx.fillRect(padL, y, trackW, laneH);
+
+        /* 레인 이름 */
+        ctx.font = "600 26px ui-monospace, Menlo, monospace";
+        ctx.fillStyle = faint;
+        ctx.textAlign = "left";
+        ctx.textBaseline = "middle";
+        ctx.fillText("M" + (li + 1), 8, y + laneH / 2);
+
+        /* 실행 블록 */
+        var limit = padL + trackW * p;
+        lane.forEach(function (b) {
+          var x0 = padL + trackW * b[1];
+          var x1 = padL + trackW * b[2];
+          if (x0 >= limit) { return; }
+          var w = Math.min(x1, limit) - x0 - 4;
+          if (w <= 0) { return; }
+          ctx.fillStyle = palette[(b[0] - 1) % 3];
+          ctx.fillRect(x0, y, w, laneH);
+          if (w > 46) {
+            ctx.font = "600 24px ui-monospace, Menlo, monospace";
+            ctx.fillStyle = bg;
+            ctx.textAlign = "center";
+            ctx.fillText("G" + b[0], x0 + w / 2, y + laneH / 2);
+          }
+        });
+      });
+
+      /* 시간 축 */
+      ctx.font = "500 22px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.textBaseline = "alphabetic";
+      ctx.fillText("time →", padL, bottom + 40);
+      ctx.textAlign = "right";
+      ctx.fillText("goroutine 8", W - padR, bottom + 40);
+    }
+
+    if (reduce) { render(1); return; }
+    var t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1300);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(.02, e));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>
