@@ -27,9 +27,25 @@ const NAV = [
 
 const FOCUS_RING = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-bento-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bento-bg';
 
-function isActive(pathname: string, href: string): boolean {
-  if (href === '/') return pathname === '/';
-  return pathname === href || pathname.startsWith(href + '/');
+/** 끝 슬래시를 떼어 경로를 비교 가능한 형태로 맞춘다.
+ *  next.config.js 의 trailingSlash: true 때문에 pathname 과 href 의
+ *  끝 슬래시 유무가 어긋날 수 있다. */
+function normalizePath(p: string): string {
+  return p !== '/' && p.endsWith('/') ? p.slice(0, -1) : p;
+}
+
+/**
+ * 현재 경로가 이 메뉴 항목에 속하는가.
+ *
+ * exact 는 홈 전용이다. 홈 주소는 다른 모든 경로의 접두사라서
+ * (한국어 `/`, 영문 `/en`) 접두사 규칙을 그대로 적용하면 어느 페이지에서나
+ * 홈이 활성으로 켜진다.
+ */
+function isActive(pathname: string, href: string, exact = false): boolean {
+  const p = normalizePath(pathname);
+  const h = normalizePath(href);
+  if (exact) return p === h;
+  return p === h || p.startsWith(h + '/');
 }
 
 export function SiteHeader() {
@@ -81,7 +97,7 @@ export function SiteHeader() {
           >
             {NAV.map((n) => {
               const href = localizeHref(n.href, lang);
-              const active = isActive(pathname, href);
+              const active = isActive(pathname, href, n.key === 'home');
               return (
                 <Link
                   key={n.key}
@@ -212,7 +228,7 @@ export function SiteHeader() {
                 <nav aria-label="모바일 메뉴" className="mt-6 flex flex-col gap-1">
                   {NAV.map((n) => {
                     const href = localizeHref(n.href, lang);
-                    const active = isActive(pathname, href);
+                    const active = isActive(pathname, href, n.key === 'home');
                     return (
                       <Link
                         key={n.key}
