@@ -77,7 +77,7 @@ export function SiteHeader() {
           {/* Desktop pill nav */}
           <nav
             aria-label="주요 메뉴"
-            className="hidden gap-1 rounded-full bg-bento-ink/[0.06] p-1 dark:bg-white/10 md:flex"
+            className="hidden gap-1 rounded-full bg-bento-ink/[0.06] p-1 dark:bg-white/10 lg:flex"
           >
             {NAV.map((n) => {
               const href = localizeHref(n.href, lang);
@@ -88,7 +88,7 @@ export function SiteHeader() {
                   href={href}
                   aria-current={active ? 'page' : undefined}
                   className={[
-                    'rounded-full px-3 py-1.5 text-[13px] font-medium no-underline transition',
+                    'rounded-full px-4 py-1.5 text-[13px] font-medium no-underline transition',
                     active
                       ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-bg'
                       : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white',
@@ -108,7 +108,7 @@ export function SiteHeader() {
               type="button"
               onClick={() => setSearchOpen(true)}
               aria-label="검색 열기"
-              className={`hidden items-center gap-2.5 rounded-full bg-bento-ink/[0.06] px-3.5 py-2 text-[13px] text-bento-dim transition hover:bg-bento-ink/10 md:flex dark:bg-white/10 dark:hover:bg-white/15 ${FOCUS_RING}`}
+              className={`hidden items-center gap-2.5 rounded-full bg-bento-ink/[0.06] px-3.5 py-2 text-[13px] text-bento-dim transition hover:bg-bento-ink/10 lg:flex dark:bg-white/10 dark:hover:bg-white/15 ${FOCUS_RING}`}
             >
               <Search aria-hidden="true" className="h-3.5 w-3.5" />
               <span>Search</span>
@@ -122,14 +122,14 @@ export function SiteHeader() {
               size="icon"
               onClick={() => setSearchOpen(true)}
               aria-label="검색 열기"
-              className="md:hidden"
+              className="lg:hidden"
             >
               <Search aria-hidden="true" className="h-5 w-5" />
             </Button>
 
             {/* Language toggle (desktop) */}
             <div
-              className="hidden items-center gap-1.5 px-1 text-[13px] md:flex"
+              className="hidden items-center gap-1.5 px-1 text-[13px] lg:flex"
               aria-label="Language"
             >
               <Link
@@ -176,7 +176,7 @@ export function SiteHeader() {
             <Link
               href="/rss.xml"
               aria-label="RSS 피드"
-              className={`hidden rounded-full bg-bento-ink px-4 py-2 text-[13px] font-medium text-white no-underline md:inline-block dark:bg-white dark:text-bento-bg ${FOCUS_RING}`}
+              className={`hidden rounded-full bg-bento-ink px-4 py-2 text-[13px] font-medium text-white no-underline lg:inline-block dark:bg-white dark:text-bento-bg ${FOCUS_RING}`}
             >
               RSS
             </Link>
@@ -185,7 +185,7 @@ export function SiteHeader() {
               variant="ghost"
               size="icon"
               asChild
-              className="md:hidden"
+              className="lg:hidden"
             >
               <Link href="/rss.xml" aria-label="RSS 피드">
                 <Rss aria-hidden="true" className="h-5 w-5" />
@@ -200,7 +200,7 @@ export function SiteHeader() {
                   variant="ghost"
                   size="icon"
                   aria-label="메뉴 열기"
-                  className="md:hidden"
+                  className="lg:hidden"
                 >
                   <Menu aria-hidden="true" className="h-5 w-5" />
                 </Button>

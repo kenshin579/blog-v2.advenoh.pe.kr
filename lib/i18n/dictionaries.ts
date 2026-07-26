@@ -10,7 +10,7 @@ type Dict = {
 };
 
 const ko: Dict = {
-  nav: { home: '홈', posts: '글', series: '시리즈', slides: '발표', tags: '태그' },
+  nav: { home: '홈', posts: '글', series: '시리즈', slides: '슬라이드', tags: '태그' },
   article: { related: '관련 글', prev: '이전 글', next: '다음 글', toc: '목차' },
   posts: { all: '전체 글', categories: '카테고리' },
   language: { ko: '한국어', en: 'English' },
