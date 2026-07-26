@@ -66,6 +66,8 @@ func TestSelectMultipleReady(t *testing.T) {
 }
 ```
 
+<!-- slides -->
+
 # 2. Default Case 활용
 
 `default` case를 추가하면 **non-blocking** 동작이 된다. 모든 channel이 준비되지 않았을 때 즉시 default가 실행된다.
