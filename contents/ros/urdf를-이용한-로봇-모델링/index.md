@@ -35,6 +35,8 @@ tags:
     - `URDF`와 함께 사용되며, 로봇의 그룹, 경로 계획, 충돌 검사 등의 정보를 정의하는 XML 형식의 파일이고 [MoveIt](https://moveit.ros.org/) 에서 사용된다
     - Setup Assistant 프로그램을 통해 URDF → SRDF로 쉽게 변환 가능하다
 
+<!-- slides -->
+
 # 2. 모델링 하려는 로봇 정보  - 매니플레이터
 
 > 매니플레이터(manipulator)는 로봇의 한 유형으로 인간의 팔과 유사한 동작을 하는 로봇이다.
