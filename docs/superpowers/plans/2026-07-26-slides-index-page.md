@@ -265,6 +265,8 @@ export interface SlideCardProps {
   lang: 'ko' | 'en';
   /** 분량 단위. ko: "장", en: "slides" */
   countLabel: string;
+  /** 스크린 리더용 링크 설명. ko: "{제목} 발표 슬라이드 보기", en: "View slides for {title}" */
+  ariaLabel: string;
 }
 
 export function SlideCard({
@@ -275,15 +277,17 @@ export function SlideCard({
   slideCount,
   lang,
   countLabel,
+  ariaLabel,
 }: SlideCardProps) {
   // 글 주소에는 카테고리가 들어가지 않는다. manifest slug 는 {category}/{articleDir} 이므로
   // 뒤쪽만 쓴다 (lib/articles.ts 의 getArticleTitleFromSlug 와 같은 규칙).
-  const articleDir = slug.split('/')[1] ?? slug;
+  const articleDir = slug.split('/').pop() ?? slug;
   const href = lang === 'en' ? `/en/${articleDir}/slides/` : `/${articleDir}/slides/`;
 
   return (
     <Link
       href={href}
+      aria-label={ariaLabel}
       className={[
         'col-span-12 flex flex-col rounded-card-xl bg-bento-butter p-6 text-bento-ink no-underline md:col-span-6 md:p-7',
         FOCUS_RING,
@@ -379,6 +383,7 @@ export default async function SlidesPage() {
               slideCount={d.slideCount}
               lang="ko"
               countLabel="장"
+              ariaLabel={`${d.title} 발표 슬라이드 보기`}
             />
           ))}
         </section>
@@ -464,6 +469,7 @@ export default async function SlidesPage() {
               slideCount={d.slideCount}
               lang="en"
               countLabel=" slides"
+              ariaLabel={`View slides for ${d.title}`}
             />
           ))}
         </section>
