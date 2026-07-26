@@ -29,6 +29,8 @@ Go 애플리케이션이 커지면 의존성 조립이 복잡해진다. `main()`
 - Module 캡슐화: `fx.Private`
 - 테스트 전략: `fxtest.New`, `fx.Replace`, `fx.Populate`
 
+<!-- slides -->
+
 # 2. fx 기초
 
 ## 2.1 Go에서 DI가 필요한 이유
