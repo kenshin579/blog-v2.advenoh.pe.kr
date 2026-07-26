@@ -69,6 +69,27 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
           const raw = fs.readFileSync(indexPath, 'utf-8');
           const { data, content } = matter(raw);
 
+          // 슬라이드 데크와 본문 마커의 짝이 맞는지 검사한다 (경고만, 빌드는 계속)
+          const slidesFile = lang === 'en' ? 'slides_en.html' : 'slides.html';
+          const hasSlidesFile = fs.existsSync(path.join(dirPath, slidesFile));
+          // 코드펜스 안의 마커 예시를 실제 마커로 오탐하지 않도록 코드부터 제거한다.
+          // (제거 순서는 scripts/generate-search-index.ts 와 동일)
+          const contentWithoutCode = content
+            .replace(/```[\s\S]*?```/g, '')
+            .replace(/`[^`]+`/g, '');
+          const hasSlidesMarker = /<!--\s*slides\s*-->/.test(contentWithoutCode);
+
+          if (hasSlidesFile && !hasSlidesMarker) {
+            console.warn(
+              `⚠️  ${category}/${articleDir} (${lang}): ${slidesFile} 는 있는데 본문에 <!-- slides --> 마커가 없습니다`
+            );
+          }
+          if (hasSlidesMarker && !hasSlidesFile) {
+            console.warn(
+              `⚠️  ${category}/${articleDir} (${lang}): <!-- slides --> 마커는 있는데 ${slidesFile} 가 없습니다`
+            );
+          }
+
           const mdImageMatch = raw.match(/!\[([^\]]*)]\(([^)]+)\)/);
           const htmlImageMatch = raw.match(/<img\s[^>]*src=["']([^"']+)["']/);
           const firstImage = mdImageMatch ? mdImageMatch[2] : htmlImageMatch ? htmlImageMatch[1] : undefined;

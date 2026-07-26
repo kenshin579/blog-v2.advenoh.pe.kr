@@ -543,6 +543,52 @@ pre[class*="language-"] {
   @apply mb-0;
 }
 
+/* ----- 슬라이드 임베드 ----- */
+/* 데크가 1280x720 고정 무대를 컨테이너 크기에 맞춰 스케일하므로 16:9 비율만 주면 된다. */
+.prose .slides-embed,
+.prose-bento .slides-embed {
+  @apply my-6;
+}
+
+.prose .slides-embed__frame,
+.prose-bento .slides-embed__frame {
+  @apply w-full rounded-xl border;
+  aspect-ratio: 16 / 9;
+  background: hsl(var(--muted) / 0.4);
+}
+
+.prose .slides-embed__open,
+.prose-bento .slides-embed__open {
+  @apply mt-2 inline-block text-sm font-medium no-underline;
+}
+
+.prose .slides-embed__hint,
+.prose-bento .slides-embed__hint {
+  @apply mt-1 text-xs text-muted-foreground;
+}
+
+.prose .slides-embed__hint kbd,
+.prose-bento .slides-embed__hint kbd {
+  @apply rounded border px-1 py-0.5 font-mono text-[0.7rem];
+}
+
+/* 모바일 폭에서는 데크 스케일이 0.3 미만이라 글자를 읽을 수 없다.
+   프레임을 숨기고 새 탭 링크를 카드형 버튼으로 승격한다. */
+@media (max-width: 767px) {
+  .prose .slides-embed__frame,
+  .prose-bento .slides-embed__frame,
+  .prose .slides-embed__hint,
+  .prose-bento .slides-embed__hint {
+    display: none;
+  }
+
+  .prose .slides-embed__open,
+  .prose-bento .slides-embed__open {
+    @apply mt-0 block rounded-xl border px-5 py-4 text-center;
+    background: hsl(var(--muted) / 0.4);
+  }
+}
+
 /* ----- Bento utilities ----- */
 .bento-card {
   border-radius: 24px;

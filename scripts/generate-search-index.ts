@@ -29,6 +29,13 @@ function createSearchDocument(
     const cleanContent = content
       .replace(/```[\s\S]*?```/g, '') // 코드 블록 제거
       .replace(/`[^`]+`/g, '') // 인라인 코드 제거
+      .replace(/<!--[\s\S]*?-->/g, '') // HTML 주석 제거 (<!-- slides --> 마커 포함)
+      .replace(
+        /<\/?(?:a|b|i|u|s|em|strong|small|sup|sub|mark|code|pre|kbd|br|hr|p|div|span|img|figure|figcaption|blockquote|details|summary|iframe|video|audio|source|table|thead|tbody|tfoot|tr|td|th|ul|ol|li|dl|dt|dd|h[1-6])(?:\s[^>]*)?\/?>/gi,
+        ''
+      ) // HTML 태그 제거 — 태그명 화이트리스트로 판정한다.
+        // <[^>]+> 나 <[a-zA-Z]...> 방식은 코드펜스 밖의 List<Comment>, <path> 같은
+        // 제네릭·CLI 표기를 태그로 오인해 지운다 (검색 대상 기술 용어가 사라진다).
       .replace(/!\[([^\]]*)]\(([^)]+)\)/g, '') // 이미지 제거
       .replace(/\[([^\]]+)]\(([^)]+)\)/g, '$1') // 링크는 텍스트만
       .replace(/#{1,6}\s+/g, '') // 헤딩 마크 제거

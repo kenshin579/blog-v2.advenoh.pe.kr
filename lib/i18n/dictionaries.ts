@@ -6,6 +6,7 @@ type Dict = {
   posts: { all: string; categories: string };
   language: { ko: string; en: string };
   footer: { tagline: string; categories: string; info: string; rss: string; sitemap: string; series: string };
+  slides: { frameTitle: string; open: string; hint: string };
 };
 
 const ko: Dict = {
@@ -21,6 +22,11 @@ const ko: Dict = {
     sitemap: '사이트맵',
     series: '시리즈',
   },
+  slides: {
+    frameTitle: '슬라이드',
+    open: '슬라이드 새 탭에서 열기 →',
+    hint: '슬라이드를 클릭한 뒤 <kbd>←</kbd> <kbd>→</kbd> 이동 · <kbd>f</kbd> 전체화면 · <kbd>?</kbd> 도움말',
+  },
 };
 
 const en: Dict = {
@@ -35,6 +41,11 @@ const en: Dict = {
     rss: 'RSS',
     sitemap: 'Sitemap',
     series: 'Series',
+  },
+  slides: {
+    frameTitle: 'slides',
+    open: 'Open slides in a new tab →',
+    hint: 'Click the slides, then <kbd>←</kbd> <kbd>→</kbd> to navigate · <kbd>f</kbd> fullscreen · <kbd>?</kbd> help',
   },
 };
 

@@ -8,6 +8,7 @@ import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrism from 'rehype-prism-plus';
 import rehypeStringify from 'rehype-stringify';
+import { getDictionary } from './i18n/dictionaries';
 
 export interface ArticleFrontmatter {
   title: string;
@@ -34,11 +35,73 @@ export interface TOCItem {
 }
 
 /**
+ * HTML 속성값에 넣기 전 이스케이프
+ */
+function escapeHtmlAttribute(text: string): string {
+  return text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;');
+}
+
+/**
+ * 렌더링된 HTML에서 <!-- slides --> 마커를 슬라이드 임베드 블록으로 치환한다.
+ * 마커가 없으면 원본을 그대로 돌려준다.
+ *
+ * 반드시 markdown → HTML 변환이 끝난 뒤(파싱 후) 호출해야 한다. 코드펜스 안에
+ * 마커 사용법을 예시로 적어둔 경우, rehype-stringify 가 그 리터럴 텍스트를
+ * `&#x3C;!-- slides -->` 형태로 엔티티 인코딩하기 때문에 실제 블록 레벨 HTML
+ * 주석(그대로 살아남는다)과 자동으로 구분된다. 파싱 전 raw markdown에 대고
+ * 치환하면 코드펜스 안의 예시까지 오탐한다.
+ *
+ * 마커는 본문에서 자기 줄에 단독으로 있어야 한다. 문단 중간에 인라인으로 넣으면
+ * <p> 안에 <div>가 중첩된 유효하지 않은 HTML이 만들어진다.
+ */
+function replaceSlidesMarker(
+  html: string,
+  slug: string,
+  lang: 'ko' | 'en',
+  title: string
+): string {
+  if (!/<!--\s*slides\s*-->/.test(html)) return html;
+
+  const t = getDictionary(lang);
+  // slug 은 {category}/{글폴더} 형태. URL 에는 글폴더만 쓴다.
+  // 같은 규칙을 lib/articles.ts 의 getArticleTitleFromSlug() 와
+  // scripts/copy-assets.ts 도 각자 구현한다. 한 곳을 바꾸면 나머지도 맞춰야 한다.
+  // (articles.ts 가 이 파일을 import 하므로 역참조하면 순환 임포트가 된다)
+  const articleDir = slug.split('/').pop() ?? slug;
+  const src = lang === 'en' ? `/en/${articleDir}/slides/` : `/${articleDir}/slides/`;
+  const safeTitle = escapeHtmlAttribute(title);
+
+  const embed = [
+    '<div class="slides-embed">',
+    `<iframe class="slides-embed__frame" src="${src}" title="${safeTitle} ${t.slides.frameTitle}" loading="lazy" allowfullscreen></iframe>`,
+    `<a class="slides-embed__open" href="${src}" target="_blank" rel="noopener">${t.slides.open}</a>`,
+    `<p class="slides-embed__hint">${t.slides.hint}</p>`,
+    '</div>',
+  ].join('\n');
+
+  return html.replace(/<!--\s*slides\s*-->/g, embed);
+}
+
+/**
  * Markdown을 HTML로 변환
  */
-export async function parseMarkdown(markdown: string, slug: string): Promise<Article> {
+export async function parseMarkdown(
+  markdown: string,
+  slug: string,
+  lang: 'ko' | 'en' = 'ko'
+): Promise<Article> {
   // gray-matter로 frontmatter 파싱
   const { data, content } = matter(markdown);
+
+  const frontmatter = data as ArticleFrontmatter;
+  // Normalize description → excerpt (markdown 파일은 description 키 사용, UI는 excerpt 사용)
+  if (!frontmatter.excerpt && frontmatter.description) {
+    frontmatter.excerpt = frontmatter.description;
+  }
 
   // unified로 markdown → HTML 변환
   const result = await unified()
@@ -65,13 +128,10 @@ export async function parseMarkdown(markdown: string, slug: string): Promise<Art
     `<img$1 src="/images/${slug}/$2"`
   );
 
-  const firstImage = extractFirstImage(content);
+  // <!-- slides --> 마커를 슬라이드 임베드 블록으로 치환한다 (파싱 후 HTML 단계).
+  html = replaceSlidesMarker(html, slug, lang, frontmatter.title ?? '');
 
-  const frontmatter = data as ArticleFrontmatter;
-  // Normalize description → excerpt (markdown 파일은 description 키 사용, UI는 excerpt 사용)
-  if (!frontmatter.excerpt && frontmatter.description) {
-    frontmatter.excerpt = frontmatter.description;
-  }
+  const firstImage = extractFirstImage(content);
 
   return {
     slug,
