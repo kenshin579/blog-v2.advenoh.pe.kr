@@ -21,6 +21,7 @@ const NAV = [
   { key: 'home', href: '/' },
   { key: 'posts', href: '/posts' },
   { key: 'series', href: '/series' },
+  { key: 'slides', href: '/slides' },
   { key: 'tags', href: '/tags' },
 ] as const;
 
@@ -87,7 +88,7 @@ export function SiteHeader() {
                   href={href}
                   aria-current={active ? 'page' : undefined}
                   className={[
-                    'rounded-full px-4 py-1.5 text-[13px] font-medium no-underline transition',
+                    'rounded-full px-3 py-1.5 text-[13px] font-medium no-underline transition',
                     active
                       ? 'bg-bento-ink text-white dark:bg-white dark:text-bento-bg'
                       : 'text-bento-ink hover:bg-bento-ink/5 dark:text-white',
