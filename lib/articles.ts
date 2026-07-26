@@ -84,6 +84,19 @@ export async function getArticlesBySeries(series: string, lang: 'ko' | 'en' = 'k
 }
 
 /**
+ * 발표 슬라이드가 있는 아티클 가져오기 (최신순)
+ *
+ * hasSlides 는 데크 파일 존재만으로 정해진다. 본문에 <!-- slides --> 마커가
+ * 없어도 데크는 /{articleDir}/slides/ 로 배포되므로 목록에 포함해야 한다.
+ */
+export async function getArticlesWithSlides(lang: 'ko' | 'en' = 'ko'): Promise<ManifestArticle[]> {
+  const manifest = await loadManifest();
+  return manifest.articles
+    .filter(a => a.hasSlides === true && a.lang === lang)
+    .sort((x, y) => new Date(y.date).getTime() - new Date(x.date).getTime());
+}
+
+/**
  * 특정 아티클 가져오기 (전체 콘텐츠 포함)
  */
 export async function getArticle(slug: string, lang: 'ko' | 'en' = 'ko'): Promise<Article | null> {
