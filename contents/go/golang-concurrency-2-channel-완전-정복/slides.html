@@ -1,0 +1,2112 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Channel 완전 정복 — Golang Concurrency 편 2</title>
+<style>
+/* ─────────────────────────────────────────────────────────────
+   계기판(instrument panel) — 차가운 슬레이트 바탕 위 따뜻한 표시등
+   ───────────────────────────────────────────────────────────── */
+:root {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0B6E8C;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(11, 110, 140, .10);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+
+  --f-display: "Avenir Next", "Apple SD Gothic Neo", "Helvetica Neue", system-ui, sans-serif;
+  --f-body:    "Apple SD Gothic Neo", -apple-system, "Helvetica Neue", "Noto Sans KR", sans-serif;
+  --f-mono:    "MesloLGS NF", "SF Mono", ui-monospace, Menlo, "D2Coding", monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg:        #0E1117;
+    --surface:   #161B23;
+    --surface-2: #1B212A;
+    --ink:       #E6E9EE;
+    --ink-dim:   #98A2B0;
+    --ink-faint: #6B7688;
+    --line:      #272F3A;
+    --line-soft: #1E252E;
+    --grid:      rgba(255, 255, 255, .038);
+    --accent:    #4FD3F4;
+    --accent-ink:#04222C;
+    --accent-soft: rgba(79, 211, 244, .13);
+    --teal:      #46C7B0;
+    --teal-soft: rgba(70, 199, 176, .13);
+    --amber:     #E8B84B;
+    --red:       #F0625E;
+    --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+  }
+}
+
+:root[data-theme="dark"] {
+  --bg:        #0E1117;
+  --surface:   #161B23;
+  --surface-2: #1B212A;
+  --ink:       #E6E9EE;
+  --ink-dim:   #98A2B0;
+  --ink-faint: #6B7688;
+  --line:      #272F3A;
+  --line-soft: #1E252E;
+  --grid:      rgba(255, 255, 255, .038);
+  --accent:    #4FD3F4;
+  --accent-ink:#04222C;
+  --accent-soft: rgba(79, 211, 244, .13);
+  --teal:      #46C7B0;
+  --teal-soft: rgba(70, 199, 176, .13);
+  --amber:     #E8B84B;
+  --red:       #F0625E;
+  --shadow:    0 1px 2px rgba(0, 0, 0, .4), 0 16px 34px -18px rgba(0, 0, 0, .8);
+}
+
+:root[data-theme="light"] {
+  --bg:        #EFF1F4;
+  --surface:   #FFFFFF;
+  --surface-2: #F4F6F9;
+  --ink:       #14181E;
+  --ink-dim:   #525C6B;
+  --ink-faint: #8B95A3;
+  --line:      #D5DCE4;
+  --line-soft: #E5EAF0;
+  --grid:      rgba(20, 24, 30, .05);
+  --accent:    #0B6E8C;
+  --accent-ink:#FFFFFF;
+  --accent-soft: rgba(11, 110, 140, .10);
+  --teal:      #0B7264;
+  --teal-soft: rgba(11, 114, 100, .10);
+  --amber:     #8F6205;
+  --red:       #BC322F;
+  --shadow:    0 1px 2px rgba(16, 22, 30, .06), 0 12px 28px -14px rgba(16, 22, 30, .30);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--f-body);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* ── 무대: 1280×720 고정, 뷰포트에 맞춰 축소 ───────────────── */
+.stage-wrap {
+  position: fixed;
+  inset: 0 0 52px 0;
+  display: grid;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
+  overflow: hidden;
+}
+.stage {
+  width: 1280px;
+  height: 720px;
+  position: relative;
+  transform-origin: 0 0;
+  flex: none;
+}
+.holder {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity .22s ease;
+}
+.holder.is-active { opacity: 1; visibility: visible; }
+@media (prefers-reduced-motion: reduce) { .holder { transition: none; } }
+
+.slide {
+  width: 1280px;
+  height: 720px;
+  padding: 52px 68px 56px;
+  display: flex;
+  flex-direction: column;
+  background:
+    linear-gradient(var(--grid) 1px, transparent 1px) 0 0 / 100% 40px,
+    linear-gradient(90deg, var(--grid) 1px, transparent 1px) 0 0 / 40px 100%,
+    var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+.slide::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: 0;
+  height: 3px;
+  background: linear-gradient(90deg, var(--accent) 0 34%, var(--line) 34% 100%);
+  opacity: .55;
+}
+
+/* ── 슬라이드 머리 ─────────────────────────────────────────── */
+.slide-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 18px;
+  flex: none;
+}
+.eyebrow {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  letter-spacing: .18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  font-weight: 600;
+}
+.stamp {
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+}
+.slide-title {
+  font-family: var(--f-display);
+  font-size: 42px;
+  line-height: 1.16;
+  font-weight: 700;
+  letter-spacing: -.022em;
+  margin: 0 0 6px;
+  text-wrap: balance;
+}
+.slide-title .em { color: var(--accent); }
+.slide-lede {
+  font-size: 19px;
+  line-height: 1.55;
+  color: var(--ink-dim);
+  margin: 0 0 4px;
+  max-width: 72ch;
+}
+.rule {
+  height: 1px;
+  background: var(--line);
+  margin: 18px 0 22px;
+  flex: none;
+}
+.slide-body {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 20px;
+  font-size: 19px;
+  line-height: 1.6;
+}
+.slide-body.top { justify-content: flex-start; }
+
+/* ── 공용 조판 ─────────────────────────────────────────────── */
+.cols { display: grid; gap: 30px; align-items: start; }
+.c-2  { grid-template-columns: 1fr 1fr; }
+.c-2a { grid-template-columns: 1.15fr .85fr; }
+.c-2b { grid-template-columns: .82fr 1.18fr; }
+.c-3  { grid-template-columns: repeat(3, 1fr); }
+.stack { display: flex; flex-direction: column; gap: 16px; }
+.stack.tight { gap: 10px; }
+.grow { flex: 1; min-height: 0; }
+/* 높이를 채우는 2단 조판에서는 각 열이 늘어나고, 내용은 열 안에서 세로 중앙에 놓인다 */
+.cols.grow { align-items: stretch; }
+.cols.grow > .stack { justify-content: center; }
+
+ul.bul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 13px; }
+ul.bul > li { position: relative; padding-left: 26px; }
+ul.bul > li::before {
+  content: "";
+  position: absolute;
+  left: 4px; top: .62em;
+  width: 9px; height: 2px;
+  background: var(--accent);
+}
+ul.bul.teal > li::before { background: var(--teal); }
+.dim { color: var(--ink-dim); }
+.faint { color: var(--ink-faint); }
+.hl { color: var(--accent); font-weight: 600; }
+.hl-teal { color: var(--teal); font-weight: 600; }
+b, strong { font-weight: 700; }
+
+/* ── 표 ────────────────────────────────────────────────────── */
+.tbl-wrap { overflow-x: auto; }
+table.tbl {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 17px;
+  font-variant-numeric: tabular-nums;
+}
+table.tbl th {
+  text-align: left;
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  font-weight: 600;
+  color: var(--ink-faint);
+  padding: 0 14px 9px 0;
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+table.tbl td {
+  padding: 11px 14px 11px 0;
+  border-bottom: 1px solid var(--line-soft);
+  vertical-align: top;
+  line-height: 1.45;
+}
+table.tbl tr:last-child td { border-bottom: none; }
+table.tbl td:first-child { font-weight: 600; white-space: nowrap; }
+table.tbl.sm { font-size: 15.5px; }
+table.tbl.sm td { padding: 8px 12px 8px 0; }
+table.tbl tr.on td { background: var(--accent-soft); }
+table.tbl tr.on td:first-child { color: var(--accent); box-shadow: inset 3px 0 0 var(--accent); padding-left: 12px; }
+.num-col { font-family: var(--f-mono); }
+
+/* ── 코드 ──────────────────────────────────────────────────── */
+.code {
+  font-family: var(--f-mono);
+  font-size: 15.5px;
+  line-height: 1.72;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--accent);
+  border-radius: 3px;
+  padding: 14px 18px;
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--ink);
+  tab-size: 2;
+}
+.code.sm { font-size: 14px; line-height: 1.66; padding: 12px 15px; }
+.code.xs { font-size: 12.6px; line-height: 1.6; padding: 11px 14px; }
+.code.plain { border-left-color: var(--line); }
+.code.teal { border-left-color: var(--teal); }
+.t-fn  { color: var(--accent); }
+.t-str { color: var(--teal); }
+.t-cm  { color: var(--ink-faint); }
+.t-num { color: var(--ink); font-weight: 600; }
+.t-key { color: var(--accent); font-weight: 600; }
+.t-bad { color: var(--red); }
+code.inl {
+  font-family: var(--f-mono);
+  font-size: .88em;
+  background: var(--surface-2);
+  border: 1px solid var(--line-soft);
+  border-radius: 3px;
+  padding: .08em .34em;
+  white-space: nowrap;
+}
+
+/* ── 카드 / 콜아웃 ─────────────────────────────────────────── */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+}
+.card-t {
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .14em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  margin: 0 0 9px;
+  font-weight: 600;
+}
+.callout {
+  border-left: 3px solid var(--accent);
+  background: var(--accent-soft);
+  padding: 14px 20px;
+  border-radius: 0 3px 3px 0;
+  font-size: 18px;
+  line-height: 1.55;
+}
+.callout.teal { border-left-color: var(--teal); background: var(--teal-soft); }
+.callout .lbl {
+  display: block;
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 5px;
+  font-weight: 600;
+}
+.callout.teal .lbl { color: var(--teal); }
+
+/* ── 그림 ──────────────────────────────────────────────────── */
+.figure { display: flex; flex-direction: column; justify-content: center; gap: 10px; min-height: 0; }
+.figure img {
+  display: block;
+  width: 100%;
+  min-height: 0;
+  object-fit: contain;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  box-shadow: var(--shadow);
+  background: var(--surface-2);
+}
+.figure figcaption, .cap {
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  margin: 0;
+}
+.fit img { max-height: 100%; }
+
+/* ── 아키텍처 다이어그램 ───────────────────────────────────── */
+.arch {
+  display: grid;
+  grid-template-columns: 1fr 104px 1.02fr 104px 1fr;
+  align-items: center;
+  gap: 0;
+}
+.arch-col { display: flex; flex-direction: column; gap: 11px; }
+.node {
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 4px;
+  padding: 11px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.node .n-t { font-size: 16px; font-weight: 700; letter-spacing: -.01em; }
+.node .n-p { font-family: var(--f-mono); font-size: 12.5px; color: var(--ink-faint); }
+.node.hero {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  padding: 20px 18px;
+}
+.node.hero .n-t { font-size: 22px; color: var(--accent); }
+.node.hero .n-p { color: var(--ink-dim); }
+.node.mute { border-style: dashed; background: transparent; }
+.arch-link { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+.arch-link .l-lbl {
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+}
+.arch-link .l-line {
+  width: 100%;
+  height: 1px;
+  background: var(--line);
+  position: relative;
+}
+.arch-link .l-line::after {
+  content: "";
+  position: absolute;
+  right: 8px; top: -4px;
+  border: 4.5px solid transparent;
+  border-left-color: var(--accent);
+}
+
+/* ── 트리 ──────────────────────────────────────────────────── */
+.tree { font-family: var(--f-mono); font-size: 15px; line-height: 2.05; }
+.tree .lv { display: block; white-space: pre; }
+.tree .k { color: var(--accent); font-weight: 600; }
+.tree .v { color: var(--ink-dim); }
+
+/* ── 쿼리 해부도 ───────────────────────────────────────────── */
+.anat { display: flex; flex-direction: column; gap: 14px; }
+.anat-q {
+  font-family: var(--f-mono);
+  font-size: 24px;
+  letter-spacing: -.01em;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 18px 20px;
+  white-space: nowrap;
+  overflow-x: auto;
+}
+.anat-q .p { padding: 3px 2px; border-bottom: 2px solid transparent; }
+.anat-q .p1 { border-bottom-color: var(--accent); }
+.anat-q .p2 { border-bottom-color: var(--teal); }
+.anat-q .p3 { border-bottom-color: var(--amber); }
+.anat-q .p4 { border-bottom-color: var(--ink-faint); }
+.legend { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.legend .lg-i { display: flex; flex-direction: column; gap: 4px; }
+.legend .lg-b { height: 3px; width: 34px; }
+.legend .lg-n { font-size: 15px; font-weight: 700; }
+.legend .lg-d { font-size: 14px; color: var(--ink-dim); line-height: 1.42; }
+
+/* ── 카디널리티 계산기 ─────────────────────────────────────── */
+.odo-row { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
+.odo {
+  font-family: var(--f-mono);
+  font-variant-numeric: tabular-nums;
+  font-size: 62px;
+  font-weight: 700;
+  letter-spacing: -.03em;
+  color: var(--accent);
+  line-height: 1.1;
+}
+.odo.sm { font-size: 34px; color: var(--ink); }
+.odo-cap { font-size: 15px; color: var(--ink-dim); }
+.factor {
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-family: var(--f-mono);
+  font-size: 19px;
+  color: var(--ink-dim);
+}
+.factor b { color: var(--ink); font-size: 22px; }
+
+/* ── 단계 목록 ─────────────────────────────────────────────── */
+.steps { display: flex; flex-direction: column; gap: 0; }
+.step {
+  display: grid;
+  grid-template-columns: 34px 1fr;
+  gap: 14px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line-soft);
+  align-items: start;
+}
+.step:last-child { border-bottom: none; }
+.step .s-n {
+  font-family: var(--f-mono);
+  font-size: 13px;
+  color: var(--accent);
+  font-weight: 600;
+  padding-top: 3px;
+}
+.step .s-c { font-family: var(--f-mono); font-size: 14.5px; color: var(--ink); }
+.step .s-d { font-size: 15.5px; color: var(--ink-dim); line-height: 1.45; margin-top: 3px; }
+
+/* ── 표지 ──────────────────────────────────────────────────── */
+.cover { display: grid; grid-template-columns: 1.06fr .94fr; gap: 46px; align-items: center; height: 100%; }
+.cover-title {
+  font-family: var(--f-display);
+  font-size: 62px;
+  line-height: 1.08;
+  font-weight: 700;
+  letter-spacing: -.032em;
+  margin: 14px 0 18px;
+  text-wrap: balance;
+}
+.cover-sub { font-size: 21px; color: var(--ink-dim); line-height: 1.5; margin: 0 0 30px; }
+.cover-meta {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-family: var(--f-mono);
+  font-size: 12.5px;
+  letter-spacing: .06em;
+}
+.chip {
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 5px 13px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.chip.on { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 5px;
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 11px 15px;
+  border-bottom: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+.panel-head .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--teal); display: inline-block; margin-right: 7px; vertical-align: 1px; }
+.panel-body { padding: 12px 8px 8px; }
+.panel canvas { display: block; width: 100%; height: 232px; }
+.panel-foot {
+  display: flex;
+  justify-content: space-between;
+  padding: 9px 15px 13px;
+  font-family: var(--f-mono);
+  font-size: 12px;
+  color: var(--ink-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ── 챕터 구분 ─────────────────────────────────────────────── */
+.slide[data-kind="chapter"] { justify-content: center; }
+.chap { display: grid; grid-template-columns: auto 1fr; gap: 46px; align-items: center; }
+.chap-n {
+  font-family: var(--f-mono);
+  font-size: 168px;
+  font-weight: 700;
+  line-height: .82;
+  letter-spacing: -.06em;
+  color: var(--accent);
+}
+.chap-t {
+  font-family: var(--f-display);
+  font-size: 50px;
+  font-weight: 700;
+  letter-spacing: -.028em;
+  line-height: 1.12;
+  margin: 0 0 14px;
+}
+.chap-d { font-size: 19px; color: var(--ink-dim); line-height: 1.55; margin: 0; max-width: 56ch; }
+.chap-l { border-left: 1px solid var(--line); padding-left: 46px; }
+
+/* ── 퀴즈 ──────────────────────────────────────────────────── */
+.quiz { display: grid; grid-template-columns: 1fr 1fr; gap: 14px 20px; }
+.q {
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  background: var(--surface);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.q-btn {
+  all: unset;
+  cursor: pointer;
+  display: flex;
+  gap: 10px;
+  align-items: baseline;
+  font-size: 16.5px;
+  line-height: 1.42;
+  font-weight: 600;
+}
+.q-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 2px; }
+.q-btn .q-n { font-family: var(--f-mono); font-size: 12.5px; color: var(--accent); flex: none; }
+.q-a {
+  display: none;
+  font-size: 15.5px;
+  line-height: 1.5;
+  color: var(--ink-dim);
+  border-top: 1px solid var(--line-soft);
+  padding-top: 9px;
+}
+.q.is-open .q-a { display: block; }
+.q-a .ref { font-family: var(--f-mono); font-size: 12px; color: var(--ink-faint); }
+
+/* ── 토글 (Counter 슬라이드) ───────────────────────────────── */
+.toggle { display: flex; gap: 8px; }
+.tg {
+  all: unset;
+  cursor: pointer;
+  font-family: var(--f-mono);
+  font-size: 13.5px;
+  padding: 8px 14px;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  color: var(--ink-dim);
+  background: var(--surface);
+}
+.tg[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+.tg:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.swap > .swap-i { display: none; }
+.swap > .swap-i.on { display: flex; }
+.swap > img.swap-i.on { display: block; }
+
+/* ── 하단 크롬 ─────────────────────────────────────────────── */
+.chrome {
+  position: fixed;
+  left: 0; right: 0; bottom: 0;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 0 18px;
+  background: var(--bg);
+  border-top: 1px solid var(--line);
+  font-family: var(--f-mono);
+  font-size: 11.5px;
+  letter-spacing: .08em;
+  color: var(--ink-faint);
+  z-index: 20;
+}
+.chrome .deck-id { text-transform: uppercase; white-space: nowrap; }
+.rail { flex: 1; display: flex; gap: 2px; align-items: center; height: 22px; min-width: 0; }
+.tick { flex: 1; height: 4px; background: var(--line); border-radius: 1px; transition: background .18s ease, height .18s ease; }
+.tick.done { background: var(--ink-faint); }
+.tick.now  { background: var(--accent); height: 14px; }
+.tick.chap { height: 10px; }
+.counter { font-variant-numeric: tabular-nums; white-space: nowrap; color: var(--ink-dim); }
+.counter .cur { color: var(--accent); font-weight: 600; }
+.keys { display: flex; gap: 6px; }
+.kbtn {
+  all: unset;
+  cursor: pointer;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  padding: 4px 8px;
+  color: var(--ink-dim);
+  font-family: var(--f-mono);
+  font-size: 11px;
+  letter-spacing: .06em;
+}
+.kbtn:hover { border-color: var(--accent); color: var(--accent); }
+.kbtn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.kbtn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: var(--accent-soft); }
+
+/* ── 발표자 노트 ───────────────────────────────────────────── */
+.notes-src { display: none; }
+.notes {
+  position: fixed;
+  left: 0; right: 0; bottom: 52px;
+  max-height: 30vh;
+  overflow-y: auto;
+  padding: 16px 22px;
+  background: var(--surface);
+  border-top: 1px solid var(--line);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--ink-dim);
+  display: none;
+  z-index: 19;
+}
+.notes.on { display: block; }
+.notes .n-h {
+  font-family: var(--f-mono);
+  font-size: 10.5px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
+}
+
+/* ── 개요(썸네일) 모드 ─────────────────────────────────────── */
+.deck.is-overview .stage-wrap { place-items: start center; overflow: auto; padding: 24px 18px; }
+.deck.is-overview .stage {
+  width: 100%; height: auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, 256px);
+  gap: 16px;
+  justify-content: center;
+}
+.deck.is-overview .holder {
+  position: relative;
+  inset: auto;
+  opacity: 1;
+  visibility: visible;
+  width: 256px;
+  height: 144px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  cursor: pointer;
+}
+.deck.is-overview .holder.is-active { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-soft); }
+.deck.is-overview .holder::after {
+  content: attr(data-n);
+  position: absolute;
+  right: 5px; bottom: 4px;
+  font-family: var(--f-mono);
+  font-size: 9px;
+  color: var(--ink-faint);
+  background: var(--bg);
+  padding: 1px 4px;
+  border-radius: 2px;
+}
+.deck.is-overview .slide {
+  position: absolute;
+  top: 0; left: 0;
+  transform: scale(.2);
+  transform-origin: 0 0;
+  pointer-events: none;
+}
+
+/* ── 도움말 ────────────────────────────────────────────────── */
+.help {
+  position: fixed;
+  inset: 0;
+  background: color-mix(in srgb, var(--bg) 88%, transparent);
+  display: none;
+  place-items: center;
+  z-index: 40;
+  padding: 24px;
+}
+.help.on { display: grid; }
+.help-box {
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  box-shadow: var(--shadow);
+  padding: 26px 30px;
+  min-width: 360px;
+}
+.help-box h3 {
+  font-family: var(--f-mono);
+  font-size: 12px;
+  letter-spacing: .16em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin: 0 0 16px;
+}
+.help-box dl { display: grid; grid-template-columns: auto 1fr; gap: 9px 20px; margin: 0; font-size: 15px; }
+.help-box dt { font-family: var(--f-mono); font-size: 13px; color: var(--ink); }
+.help-box dd { margin: 0; color: var(--ink-dim); }
+
+/* ── 인쇄 ──────────────────────────────────────────────────── */
+@media print {
+  @page { size: 1280px 720px; margin: 0; }
+  body { overflow: visible; background: #fff; }
+  .chrome, .notes, .help { display: none !important; }
+  .stage-wrap { position: static; display: block; inset: auto; overflow: visible; }
+  .stage { width: auto; height: auto; transform: none !important; display: block; }
+  .holder { position: static; opacity: 1; visibility: visible; break-after: page; }
+  .slide { box-shadow: none; }
+}
+</style>
+</head>
+<body>
+<div class="deck" id="deck">
+  <div class="stage-wrap" id="stageWrap">
+    <div class="stage" id="stage">
+
+    <!-- ═══════════ 01 표지 ═══════════ -->
+    <div class="holder" data-n="01">
+      <section class="slide" data-kind="cover">
+        <div class="cover">
+          <div>
+            <div class="eyebrow">Golang Concurrency · 편 2 / 11</div>
+            <h1 class="cover-title">Channel<br />완전 정복</h1>
+            <p class="cover-sub">메모리를 공유해 통신하지 말고, <b>통신해서 공유하라</b><br />— 파이프 하나가 어떻게 동기화까지 대신하는가</p>
+            <div class="cover-meta">
+              <span class="chip on">Unbuffered</span>
+              <span class="chip">Buffered</span>
+              <span class="chip">방향 제한</span>
+              <span class="chip">close · range</span>
+            </div>
+          </div>
+          <div class="panel">
+            <div class="panel-head">
+              <span><span class="dot"></span>channel 한 살이</span>
+              <span>make → send → close</span>
+            </div>
+            <div class="panel-body" style="display:block;padding:22px 20px;">
+              <div class="tree">
+                <span class="lv"><span class="k">make(chan T, n)</span> <span class="v">타입 있는 파이프를 연다</span></span>
+                <span class="lv">├─ n = 0 <span class="v">unbuffered · 핸드셰이크</span></span>
+                <span class="lv">└─ n &gt; 0 <span class="v">buffered · 큐</span></span>
+                <span class="lv"> </span>
+                <span class="lv"><span class="k">ch &lt;- v</span> <span class="v">보내는 쪽</span></span>
+                <span class="lv"><span class="k">v, ok := &lt;-ch</span> <span class="v">받는 쪽</span></span>
+                <span class="lv"> </span>
+                <span class="lv"><span class="k">close(ch)</span> <span class="v">더 안 보낸다는 선언</span></span>
+                <span class="lv">└─ <span class="v">range 는 이 신호를 보고 멈춘다</span></span>
+              </div>
+            </div>
+            <div class="panel-foot">
+              <span>보내는 쪽이 만들고 · 보내고 · 닫는다</span>
+              <span>받는 쪽은 받기만 한다</span>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">인사 + 시리즈 11편 중 2편. 1편에서 goroutine을 "띄우는 것"까지 했으니, 오늘은 그들 사이에 값을 흘려보내는 이야기라고 연결한다. 오른쪽 트리가 오늘의 목차이자 결론 — 이 여섯 줄만 몸에 붙으면 채널 코드의 90%는 읽힌다고 말해둔다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 02 문제 제기 ═══════════ -->
+    <div class="holder" data-n="02">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">문제</span><span class="stamp">why channel</span></div>
+        <h2 class="slide-title">goroutine을 띄웠는데, <span class="em">결과를 받아올 길</span>이 없다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>1편에서 배운 건 <b>실행 단위</b>까지였다 — 값을 주고받는 방법은 아직 없다</li>
+              <li>공유 변수 + 뮤텍스로도 되지만, <b>잠그는 순서를 사람이 기억</b>해야 한다</li>
+              <li>Go의 답은 CSP — 값을 <b>건네주면</b> 소유권도 함께 넘어간다</li>
+              <li>channel은 <b>통신과 동기화를 한 번에</b> 해결한다. 잠글 것이 없다</li>
+            </ul>
+            <pre class="code sm"><span class="t-cm">// 공유 메모리 — 잠금 순서를 사람이 지킨다</span>
+mu.<span class="t-fn">Lock</span>()
+result = <span class="t-num">42</span>
+mu.<span class="t-fn">Unlock</span>()
+
+<span class="t-cm">// channel — 건네주면 소유권도 넘어간다</span>
+ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>)
+<span class="t-key">go</span> <span class="t-key">func</span>() { ch &lt;- <span class="t-num">42</span> }()
+v := &lt;-ch</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">Go Proverb</span>
+            Don't communicate by sharing memory; <b>share memory by communicating.</b>
+          </div>
+        </div>
+        <div class="notes-src">"goroutine 세 개 띄워서 결과 모아본 적 있으세요?"로 시작하면 좋다. 뮤텍스가 나쁘다는 얘기가 아니라(4편에서 sync를 제대로 다룬다), 값을 넘기는 문제에는 channel이 더 맞는 도구라는 정도로만 말한다. 여기서 오래 끌지 말 것 — 1분.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 03 장 구분 01 ═══════════ -->
+    <div class="holder" data-n="03" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">01</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Channel 기본</h2>
+            <p class="chap-d">만드는 법과 값을 넣고 빼는 법. 문법은 십 분이면 끝나지만,
+            여기서 정확히 읽는 훈련을 해두지 않으면 뒤의 blocking·close가 전부 헷갈린다.</p>
+          </div>
+        </div>
+        <div class="notes-src">목표는 "코드를 보고 방향을 바로 읽는 것". 문법 자체는 짧으니 3~4분에 끊고 blocking으로 넘어간다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 04 make ═══════════ -->
+    <div class="holder" data-n="04">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 기본</span><span class="stamp">make</span></div>
+        <h2 class="slide-title">Channel은 <span class="em">타입이 정해진 파이프</span>다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">make(chan T)</code> — T 타입만 흐른다. 다른 타입은 <b>컴파일 에러</b></li>
+              <li>두 번째 인자가 <b>버퍼 크기</b>다. 생략하면 0</li>
+              <li>이 숫자 하나가 동기화 성질을 바꾼다 — 0이면 핸드셰이크, 1 이상이면 큐</li>
+              <li>zero value는 <code class="inl">nil</code>이다. nil channel은 send·receive 모두 <b>영원히</b> 멈춘다</li>
+            </ul>
+            <pre class="code sm">ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>)        <span class="t-cm">// unbuffered</span>
+ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">string</span>, <span class="t-num">5</span>) <span class="t-cm">// buffered (5칸)</span>
+
+ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> Result)     <span class="t-cm">// 구조체도 된다</span>
+ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">chan</span> <span class="t-key">int</span>)   <span class="t-cm">// channel의 channel도</span>
+
+<span class="t-key">var</span> ch <span class="t-key">chan</span> <span class="t-key">int</span>             <span class="t-cm">// nil — 절대 진행되지 않는다</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">숫자 하나의 무게</span>
+            <code class="inl">make(chan int)</code>과 <code class="inl">make(chan int, 1)</code>은 <b>타입이 같다</b>. 그런데 동기화 성질은 완전히 다르다.
+          </div>
+        </div>
+        <div class="notes-src">nil channel 얘기는 여기서는 "그런 게 있다" 정도로만. 3편 select에서 "케이스를 끄는 스위치"로 쓰이면서 다시 나온다고 예고하면 좋다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 05 send / receive ═══════════ -->
+    <div class="holder" data-n="05">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 기본</span><span class="stamp">&lt;-</span></div>
+        <h2 class="slide-title">화살표의 <span class="em">위치</span> 하나로 send와 receive가 갈린다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>화살표가 channel <b>오른쪽</b>이면 send — <code class="inl">ch &lt;- v</code></li>
+              <li>화살표가 channel <b>왼쪽</b>이면 receive — <code class="inl">v := &lt;-ch</code></li>
+              <li>값을 안 받아도 된다. <code class="inl">&lt;-ch</code>만 쓰면 "올 때까지 <b>기다린다</b>"는 뜻</li>
+              <li>두 값 형태 <code class="inl">v, ok := &lt;-ch</code>의 <code class="inl">ok</code>는 channel이 <b>살아 있는지</b>를 알려준다</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">TestChannelSendReceive</span>(t *testing.T) {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>)
+
+    <span class="t-key">go</span> <span class="t-key">func</span>() {
+        ch &lt;- <span class="t-num">42</span> <span class="t-cm">// send</span>
+    }()
+
+    value := &lt;-ch <span class="t-cm">// send될 때까지 blocking</span>
+    assert.<span class="t-fn">Equal</span>(t, <span class="t-num">42</span>, value)
+}</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">읽는 요령</span>
+            화살표는 언제나 <b>값이 흐르는 방향</b>을 가리킨다. channel로 들어가면 send, 밖으로 나오면 receive.
+          </div>
+        </div>
+        <div class="notes-src">여기서 한 번 멈추고 청중에게 코드를 소리 내어 읽게 해도 좋다. <code>value := &lt;-ch</code> 줄이 "42가 올 때까지 여기서 멈춘다"는 뜻이라는 걸 짚는 게 이 장의 전부다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 06 struct 전달 ═══════════ -->
+    <div class="holder" data-n="06">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">01 · 기본</span><span class="stamp">any type</span></div>
+        <h2 class="slide-title">구조체를 보내면 <span class="em">결과와 에러가 함께</span> 온다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">TestChannelStructType</span>(t *testing.T) {
+    <span class="t-key">type</span> Result <span class="t-key">struct</span> {
+        Value <span class="t-key">int</span>
+        Err   <span class="t-key">error</span>
+    }
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> Result)
+
+    <span class="t-key">go</span> <span class="t-key">func</span>() {
+        ch &lt;- Result{Value: <span class="t-num">100</span>, Err: <span class="t-key">nil</span>}
+    }()
+
+    result := &lt;-ch
+    assert.<span class="t-fn">Equal</span>(t, <span class="t-num">100</span>, result.Value)
+    assert.<span class="t-fn">NoError</span>(t, result.Err)
+}</pre>
+          <div class="callout teal">
+            <span class="lbl">왜 이렇게 쓰나</span>
+            에러용 channel을 따로 두면 <b>둘의 짝을 맞추는 일</b>이 새로 생긴다. 값과 에러를 한 구조체로 묶어 보내면 그 문제가 사라진다.
+          </div>
+        </div>
+        <div class="notes-src">실무에서 가장 자주 쓰는 형태다. "채널 두 개(result, err)로 나눠본 분?" 하고 물어보면 반응이 온다 — 그 경우 select에서 둘 중 뭐가 먼저 올지 순서 문제가 생긴다는 얘기까지만 하고 3편으로 넘긴다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 07 장 구분 02 ═══════════ -->
+    <div class="holder" data-n="07" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">02</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Blocking과 버퍼</h2>
+            <p class="chap-d">channel의 본질은 "값을 옮긴다"가 아니라 "<b>기다린다</b>"에 있다.
+            언제 멈추는지를 알면 unbuffered와 buffered의 차이는 저절로 따라온다.</p>
+          </div>
+        </div>
+        <div class="notes-src">오늘 발표의 중심. 시간이 부족하면 다른 장을 줄이고 여기에 쓴다. 8~12분.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 08 blocking은 기능이다 ═══════════ -->
+    <div class="holder" data-n="08">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Blocking</span><span class="stamp">by design</span></div>
+        <h2 class="slide-title">Blocking은 부작용이 아니라 <span class="em">동기화 장치</span>다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">Unbuffered — 만나야 진행</div>
+              <p>send와 receive가 <b>동시에 준비</b>되어야 값이 건너간다.</p>
+              <p class="dim">먼저 도착한 쪽이 상대를 기다린다. 만나는 그 순간이 두 goroutine의 동기화 지점이 된다.</p>
+            </div>
+            <div class="card">
+              <div class="card-t">Buffered — 자리가 있으면 통과</div>
+              <p>버퍼에 빈칸이 있으면 send는 <b>즉시</b> 끝난다.</p>
+              <p class="dim">가득 차면 그때부터 sender가 기다리고, 비면 receiver가 기다린다. 큐가 하나 끼어든 셈이다.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">한 줄 요약</span>
+            기다림 자체가 <b>순서를 만든다</b>. channel을 쓰면 lock 없이도 "A 다음에 B"가 보장되는 이유다.
+          </div>
+        </div>
+        <div class="notes-src">"blocking = 나쁜 것"이라는 선입견을 여기서 깬다. 뒤의 두 장(09·10)이 이 카드 두 개를 그림으로 푼 것이라고 미리 말해두면 따라오기 쉽다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 09 unbuffered 그림 ═══════════ -->
+    <div class="holder" data-n="09">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Blocking</span><span class="stamp">unbuffered</span></div>
+        <h2 class="slide-title">Unbuffered — <span class="em">양쪽이 만나야</span> 값이 건너간다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Goroutine A</span><span class="n-p">ch &lt;- 42 — 여기서 대기</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">기다림</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">핸드셰이크</span><span class="n-p">둘이 동시에 진행</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">기다림</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Goroutine B</span><span class="n-p">v := &lt;-ch — 여기서 대기</span></div>
+            </div>
+          </div>
+          <p class="cap">가운데가 <b>만나는 지점</b>이다. 어느 쪽이 먼저 도착하든 상대가 올 때까지 멈춰 서 있는다.</p>
+          <div class="callout">
+            <span class="lbl">그래서 쓸모가 있다</span>
+            값이 건너간 시점에 <b>양쪽 모두 그 사실을 안다</b>. 이 성질이 그대로 "작업 완료 확인"이 된다.
+          </div>
+        </div>
+        <div class="notes-src">"악수"라는 비유가 잘 먹힌다 — 한 사람만 손을 내밀면 악수가 아니다. buffered와 대비시키려고 일부러 같은 그림 틀을 다음 장에서 반복한다고 말해둔다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 10 buffered 그림 ═══════════ -->
+    <div class="holder" data-n="10">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Blocking</span><span class="stamp">buffered</span></div>
+        <h2 class="slide-title">Buffered — 버퍼가 <span class="em">속도 차를 흡수</span>한다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="arch">
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Producer</span><span class="n-p">send ×3 즉시 통과</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">채운다</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node hero"><span class="n-t">Buffer (크기 3)</span><span class="n-p">4번째 send부터 blocking</span></div>
+            </div>
+            <div class="arch-link"><span class="l-lbl">꺼낸다</span><span class="l-line"></span></div>
+            <div class="arch-col">
+              <div class="node"><span class="n-t">Consumer</span><span class="n-p">비어 있으면 receive가 대기</span></div>
+            </div>
+          </div>
+          <p class="cap">선은 값이 흐르는 방향이다. 버퍼는 <b>FIFO</b> — 넣은 순서 그대로 나온다.</p>
+          <div class="callout">
+            <span class="lbl">착각하기 쉬운 것</span>
+            버퍼는 <b>순간적인 뾰족함</b>만 흡수한다. 평균 생산 속도가 소비 속도보다 빠르면 크기를 얼마로 잡든 결국 막힌다.
+          </div>
+        </div>
+        <div class="notes-src">"버퍼를 키우면 성능이 좋아지나요?" 질문이 자주 나온다. 답은 콜아웃에 있다 — 평균 속도가 뒤집히지 않는 한 버퍼는 문제를 미룰 뿐이다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 11 unbuffered 코드 ═══════════ -->
+    <div class="holder" data-n="11">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Blocking</span><span class="stamp">코드로 확인</span></div>
+        <h2 class="slide-title">Unbuffered — sender는 <span class="em">receiver를 기다리며</span> 서 있다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">TestUnbufferedChannel</span>(t *testing.T) {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>) <span class="t-cm">// 버퍼 크기 0</span>
+
+    <span class="t-key">go</span> <span class="t-key">func</span>() {
+        ch &lt;- <span class="t-num">42</span> <span class="t-cm">// receiver가 준비될 때까지 여기서 blocking</span>
+    }()
+
+    time.<span class="t-fn">Sleep</span>(<span class="t-num">100</span> * time.Millisecond) <span class="t-cm">// sender는 이미 대기 중</span>
+    value := &lt;-ch                      <span class="t-cm">// 받는 순간 sender도 풀린다</span>
+    assert.<span class="t-fn">Equal</span>(t, <span class="t-num">42</span>, value)
+}</pre>
+          <div class="callout">
+            <span class="lbl">여기서 <code class="inl">go</code>를 지우면?</span>
+            main goroutine이 자기 자신을 기다리게 된다 — <span class="hl"><b>fatal error: all goroutines are asleep - deadlock!</b></span>
+          </div>
+        </div>
+        <div class="notes-src">Sleep은 설명용이지 실무 코드가 아니라는 걸 반드시 짚는다. 콜아웃의 deadlock 메시지는 다들 한 번쯤 본 것이라 여기서 웃음이 나온다 — 왜 그 메시지가 뜨는지 이제 설명할 수 있게 됐다고 마무리.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 12 buffered 코드 ═══════════ -->
+    <div class="holder" data-n="12">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Blocking</span><span class="stamp">코드로 확인</span></div>
+        <h2 class="slide-title">Buffered — receiver가 없어도 <span class="em">버퍼만큼은</span> 통과한다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">TestBufferedChannel</span>(t *testing.T) {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">3</span>)
+
+    <span class="t-cm">// receiver가 없어도 3개까지는 send가 즉시 끝난다</span>
+    ch &lt;- <span class="t-num">1</span>
+    ch &lt;- <span class="t-num">2</span>
+    ch &lt;- <span class="t-num">3</span>
+    <span class="t-bad">// ch &lt;- 4 → 여기서 blocking (버퍼 가득 참)</span>
+
+    assert.<span class="t-fn">Equal</span>(t, <span class="t-num">1</span>, &lt;-ch)
+    assert.<span class="t-fn">Equal</span>(t, <span class="t-num">2</span>, &lt;-ch)
+    assert.<span class="t-fn">Equal</span>(t, <span class="t-num">3</span>, &lt;-ch)
+}</pre>
+          <div class="callout teal">
+            <span class="lbl">달라진 것</span>
+            goroutine이 <b>하나도 없다</b>. unbuffered였다면 첫 줄 <code class="inl">ch &lt;- 1</code>에서 바로 deadlock이다.
+          </div>
+        </div>
+        <div class="notes-src">앞 장과 나란히 두고 "goroutine이 사라졌다"는 점을 짚는 게 이 장의 핵심. 주석 처리된 4번째 send를 살리면 어떻게 되는지 물어보고 답을 받아본다 — 퀴즈 Q2와 연결된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 13 cap / len ═══════════ -->
+    <div class="holder" data-n="13">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Blocking</span><span class="stamp">cap · len</span></div>
+        <h2 class="slide-title"><span class="em">cap</span>은 그릇의 크기, <span class="em">len</span>은 지금 담긴 양</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">cap(ch)</code> — 만들 때 정한 <b>버퍼 용량</b>. 끝까지 변하지 않는다</li>
+              <li><code class="inl">len(ch)</code> — 지금 버퍼에 <b>쌓여 있는 값의 개수</b></li>
+              <li>unbuffered channel은 언제나 <code class="inl">cap 0</code>, <code class="inl">len 0</code></li>
+              <li>모니터링·로그에는 쓸 만하다. 하지만 <b>흐름 제어에 쓰면 안 된다</b></li>
+            </ul>
+            <pre class="code sm">ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">string</span>, <span class="t-num">5</span>)
+
+assert.<span class="t-fn">Equal</span>(t, <span class="t-num">5</span>, <span class="t-fn">cap</span>(ch)) <span class="t-cm">// 용량</span>
+assert.<span class="t-fn">Equal</span>(t, <span class="t-num">0</span>, <span class="t-fn">len</span>(ch)) <span class="t-cm">// 대기 중인 값</span>
+
+ch &lt;- <span class="t-str">"a"</span>
+ch &lt;- <span class="t-str">"b"</span>
+
+assert.<span class="t-fn">Equal</span>(t, <span class="t-num">5</span>, <span class="t-fn">cap</span>(ch))
+assert.<span class="t-fn">Equal</span>(t, <span class="t-num">2</span>, <span class="t-fn">len</span>(ch))</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">len으로 분기하지 말 것</span>
+            <code class="inl">if len(ch) &lt; cap(ch) { ch &lt;- v }</code> — 확인과 send 사이에 다른 goroutine이 채워 넣을 수 있다. 그 자리는 <code class="inl">select</code>의 <code class="inl">default</code>가 맡는다(편 3).
+          </div>
+        </div>
+        <div class="notes-src">읽는 순간 이미 옛날 값이라는 점 — 전형적인 TOCTOU다. 여기서 3편 예고를 한 번 더 깔아둔다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 14 선택 기준 ═══════════ -->
+    <div class="holder" data-n="14">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">02 · Blocking</span><span class="stamp">고르는 법</span></div>
+        <h2 class="slide-title">언제 어떤 것을 고를까</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>상황</th><th>선택</th><th>이유</th></tr></thead>
+              <tbody>
+                <tr class="on"><td>goroutine 간 핸드셰이크</td><td><code class="inl">Unbuffered</code></td><td>만나는 순간이 곧 동기화 지점</td></tr>
+                <tr class="on"><td>완료 · 종료 신호 (done, quit)</td><td><code class="inl">Unbuffered</code></td><td>신호는 쌓일 이유가 없다</td></tr>
+                <tr><td>생산 · 소비 속도 차 완충</td><td><code class="inl">Buffered</code></td><td>짧게 몰리는 구간을 흡수</td></tr>
+                <tr><td>Producer / Consumer</td><td><code class="inl">Buffered</code></td><td>서로를 매번 기다리지 않는다</td></tr>
+                <tr><td>대량 데이터 전달</td><td><code class="inl">Buffered</code></td><td>컨텍스트 전환 횟수가 줄어든다</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">고민되면 unbuffered</span>
+            버퍼는 문제를 <b>숨기는 쪽</b>으로 작동한다. 병목이 실제로 보일 때 크기를 정해 붙이는 편이 낫다.
+          </div>
+        </div>
+        <div class="notes-src">표를 읽어 내리지 말고 콜아웃 한 줄만 말한다. "버퍼 크기는 몇으로?" 질문에는 "측정 없이 정하지 마세요"가 정답 — 대개 1이나 코어 수 같은 근거 없는 숫자가 박혀 있다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 15 장 구분 03 ═══════════ -->
+    <div class="holder" data-n="15" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">03</div>
+          <div class="chap-l">
+            <h2 class="chap-t">방향 제한</h2>
+            <p class="chap-d">타입에 방향을 새겨 넣으면, 잘못된 사용이 <b>컴파일 단계에서</b> 걸린다.
+            런타임 비용은 0이고 문법은 화살표 하나 옮기는 게 전부다.</p>
+          </div>
+        </div>
+        <div class="notes-src">짧게 4분. 문법이 간단해서 빨리 지나갈 수 있지만 "시그니처가 문서다"라는 메시지는 꼭 남긴다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 16 방향 문법 ═══════════ -->
+    <div class="holder" data-n="16">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · 방향</span><span class="stamp">chan&lt;- · &lt;-chan</span></div>
+        <h2 class="slide-title">화살표를 <span class="em">chan 뒤에 두면 넣기</span>, 앞에 두면 꺼내기</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">chan&lt;- int</code> — <b>send 전용</b>. 받으려 하면 컴파일 에러</li>
+              <li><code class="inl">&lt;-chan int</code> — <b>receive 전용</b>. 보내거나 닫으면 컴파일 에러</li>
+              <li>런타임 비용은 <b>0</b>이다. 순수하게 컴파일 타임 검사</li>
+              <li>주로 <b>함수 파라미터와 반환 타입</b>에 쓴다. 변수 선언에 쓸 일은 드물다</li>
+            </ul>
+            <pre class="code sm"><span class="t-key">chan</span> <span class="t-key">int</span>     <span class="t-cm">// 양방향</span>
+<span class="t-key">chan</span>&lt;- <span class="t-key">int</span>   <span class="t-cm">// send-only — 넣기만</span>
+&lt;-<span class="t-key">chan</span> <span class="t-key">int</span>   <span class="t-cm">// receive-only — 꺼내기만</span>
+
+<span class="t-key">func</span> <span class="t-fn">produce</span>(ch <span class="t-key">chan</span>&lt;- <span class="t-key">int</span>) { ch &lt;- <span class="t-num">1</span> } <span class="t-cm">// OK</span>
+<span class="t-key">func</span> <span class="t-fn">consume</span>(ch &lt;-<span class="t-key">chan</span> <span class="t-key">int</span>) { &lt;-ch }   <span class="t-cm">// OK</span>
+
+<span class="t-key">func</span> <span class="t-fn">bad</span>(ch &lt;-<span class="t-key">chan</span> <span class="t-key">int</span>) { <span class="t-fn">close</span>(ch) } <span class="t-bad">// 컴파일 에러</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">타입이 곧 문서다</span>
+            시그니처만 보고도 이 함수가 <b>넣는 쪽인지 꺼내는 쪽인지</b> 알 수 있다. 주석보다 강한 계약이다.
+          </div>
+        </div>
+        <div class="notes-src">외우는 요령: 화살표가 chan 쪽을 향하면 들어가는 것, chan에서 빠져나오면 나오는 것. 헷갈리면 <code>ch &lt;- v</code>·<code>&lt;-ch</code> 두 표현을 떠올리면 된다고 알려준다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 17 producer / consumer 시그니처 ═══════════ -->
+    <div class="holder" data-n="17">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · 방향</span><span class="stamp">계약</span></div>
+        <h2 class="slide-title">시그니처가 곧 <span class="em">역할 선언</span>이다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-cm">// producer — send-only. 여기서는 받을 수 없다</span>
+<span class="t-key">func</span> <span class="t-fn">produce</span>(ch <span class="t-key">chan</span>&lt;- <span class="t-key">int</span>, values []<span class="t-key">int</span>) {
+    <span class="t-key">for</span> _, v := <span class="t-key">range</span> values {
+        ch &lt;- v
+    }
+    <span class="t-fn">close</span>(ch) <span class="t-cm">// 보낸 쪽이 닫는다</span>
+}
+<span class="t-cm">// consumer — receive-only. 여기서는 닫을 수 없다</span>
+<span class="t-key">func</span> <span class="t-fn">consume</span>(ch &lt;-<span class="t-key">chan</span> <span class="t-key">int</span>) []<span class="t-key">int</span> {
+    <span class="t-key">var</span> out []<span class="t-key">int</span>
+    <span class="t-key">for</span> v := <span class="t-key">range</span> ch {
+        out = <span class="t-fn">append</span>(out, v)
+    }
+    <span class="t-key">return</span> out
+}</pre>
+          <div class="callout">
+            <span class="lbl">이 한 쌍이 기본형</span>
+            <b>보내는 함수가 닫고</b>, 받는 함수는 <code class="inl">range</code>로 끝까지 읽는다. 오늘 나머지 예제는 전부 이 모양의 변주다.
+          </div>
+        </div>
+        <div class="notes-src">호출부에서는 양방향 <code>ch := make(chan int, 5)</code>를 그냥 넘기면 된다는 점을 말해준다 — 변환이 자동이라 호출하는 쪽 코드는 하나도 안 바뀐다. 그 얘기가 다음 장이다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 18 변환 방향 ═══════════ -->
+    <div class="holder" data-n="18">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">03 · 방향</span><span class="stamp">한 방향뿐</span></div>
+        <h2 class="slide-title">권한은 <span class="em">좁히는 쪽</span>으로만 흐른다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">되는 방향 — 암묵적 변환</div>
+              <p><code class="inl">chan int</code> → <code class="inl">chan&lt;- int</code></p>
+              <p><code class="inl">chan int</code> → <code class="inl">&lt;-chan int</code></p>
+              <p class="dim">대입도, 함수 인자 전달도 그냥 된다. 캐스팅을 따로 쓸 필요가 없다.</p>
+            </div>
+            <div class="card">
+              <div class="card-t">안 되는 방향 — 컴파일 에러</div>
+              <p><code class="inl">chan&lt;- int</code> ⇸ <code class="inl">chan int</code></p>
+              <p><code class="inl">&lt;-chan int</code> ⇸ <code class="inl">chan int</code></p>
+              <p class="dim">한 번 좁힌 권한은 되돌릴 수 없다. 넓히려면 원래의 양방향 channel을 직접 들고 있어야 한다.</p>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">설계에 쓰는 법</span>
+            양방향 channel은 <b>만든 곳에만</b> 두고, 밖으로는 좁힌 타입만 내보낸다. 그러면 규칙을 어길 방법 자체가 없어진다.
+          </div>
+        </div>
+        <div class="notes-src">"private 필드를 getter로만 노출하는 것과 같은 발상"이라고 비유하면 객체지향 배경이 있는 청중에게 잘 전달된다. 23번 generator 패턴이 정확히 이 얘기의 코드판이다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 19 장 구분 04 ═══════════ -->
+    <div class="holder" data-n="19" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">04</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Close</h2>
+            <p class="chap-d">close는 채널을 없애는 게 아니라 "<b>더 이상 보내지 않겠다</b>"고 알리는 일이다.
+            규칙 셋을 어기면 컴파일이 아니라 <b>런타임 panic</b>으로 터진다.</p>
+          </div>
+        </div>
+        <div class="notes-src">여기가 실무 사고가 가장 많이 나는 지점. 규칙 표(22)와 generator 패턴(23)에 시간을 쓴다. 6~8분.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 20 close의 의미 ═══════════ -->
+    <div class="holder" data-n="20">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · Close</span><span class="stamp">선언</span></div>
+        <h2 class="slide-title">close는 파괴가 아니라 <span class="em">선언</span>이다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li>채널을 없애지 않는다. 버퍼에 남은 값은 <b>그대로 다 꺼낼 수 있다</b></li>
+              <li>"값이 다 갔다"가 아니라 "<b>더 안 보낸다</b>"는 뜻이다</li>
+              <li>그래서 <b>보내는 쪽만</b> 닫을 수 있다 — 받는 쪽은 끝을 알 방법이 없다</li>
+              <li>항상 닫아야 하는 건 아니다. <b><code class="inl">range</code>로 받는 쪽이 있을 때</b> 필요하다</li>
+            </ul>
+            <pre class="code sm">ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">2</span>)
+ch &lt;- <span class="t-num">1</span>
+ch &lt;- <span class="t-num">2</span>
+<span class="t-fn">close</span>(ch) <span class="t-cm">// 더 보내지 않겠다</span>
+
+fmt.<span class="t-fn">Println</span>(&lt;-ch) <span class="t-cm">// 1 — 남은 값은 그대로</span>
+fmt.<span class="t-fn">Println</span>(&lt;-ch) <span class="t-cm">// 2</span>
+fmt.<span class="t-fn">Println</span>(&lt;-ch) <span class="t-cm">// 0 — 다 비었다</span></pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">메모리와는 무관하다</span>
+            close하지 않아도 참조가 사라지면 GC가 회수한다. close는 <b>정리가 아니라 신호</b>다.
+          </div>
+        </div>
+        <div class="notes-src">"파일 닫듯이 반드시 닫아야 하나요?" 질문이 꼭 나온다. 답은 콜아웃 — 리소스 해제가 아니라 프로토콜이다. 닫는 이유는 오직 받는 쪽에게 끝을 알리기 위해서다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 21 닫힌 채널 receive ═══════════ -->
+    <div class="holder" data-n="21">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · Close</span><span class="stamp">v, ok</span></div>
+        <h2 class="slide-title">닫힌 channel은 <span class="em">zero value + false</span>를 즉시 돌려준다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">TestReceiveFromClosedChannel</span>(t *testing.T) {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">1</span>)
+    ch &lt;- <span class="t-num">42</span>
+    <span class="t-fn">close</span>(ch)
+
+    <span class="t-cm">// 버퍼에 값이 남아 있으면 정상 반환</span>
+    val, ok := &lt;-ch
+    assert.<span class="t-fn">Equal</span>(t, <span class="t-num">42</span>, val)
+    assert.<span class="t-fn">True</span>(t, ok) <span class="t-cm">// 유효한 값</span>
+
+    <span class="t-cm">// 버퍼가 비고 닫혔으면 → zero value + false</span>
+    val, ok = &lt;-ch
+    assert.<span class="t-fn">Equal</span>(t, <span class="t-num">0</span>, val) <span class="t-cm">// int의 zero value</span>
+    assert.<span class="t-fn">False</span>(t, ok)     <span class="t-cm">// 닫힘 표시</span>
+}</pre>
+          <div class="callout">
+            <span class="lbl">ok 없이는 구분할 수 없다</span>
+            닫혀서 나온 <code class="inl">0</code>인지 sender가 진짜 보낸 <code class="inl">0</code>인지는 <b>오직 <code class="inl">ok</code>만</b> 안다. 그리고 blocking도 하지 않는다 — 즉시 돌아온다.
+          </div>
+        </div>
+        <div class="notes-src">"닫힌 채널에서 계속 받으면 무한 루프 돌지 않나요?" — 그렇다, blocking 없이 zero value가 무한히 나온다. 그래서 <code>ok</code> 검사나 <code>range</code>가 필요하다. 다음 장으로 자연스럽게 연결된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 22 close 규칙 ═══════════ -->
+    <div class="holder" data-n="22">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · Close</span><span class="stamp">규칙 넷</span></div>
+        <h2 class="slide-title">셋은 <span class="em">panic</span>, 하나는 안전</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>규칙</th><th>어기면</th></tr></thead>
+              <tbody>
+                <tr class="on"><td><b>sender가 close한다</b></td><td>receiver가 닫으면 sender가 닫힌 channel에 send → <span class="hl">panic</span></td></tr>
+                <tr><td><b>두 번 close하지 않는다</b></td><td><code class="inl">panic: close of closed channel</code></td></tr>
+                <tr><td><b>닫힌 channel에 send하지 않는다</b></td><td><code class="inl">panic: send on closed channel</code></td></tr>
+                <tr><td>닫힌 channel에서 receive는 <b>안전</b>하다</td><td class="faint">허용 — zero value + false를 즉시 반환</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">컴파일러는 못 잡는다</span>
+            셋 다 <b>런타임</b>에 터진다. 그래서 "<b>누가 언제 닫는가</b>"를 코드가 아니라 <b>설계</b>로 못 박아야 한다.
+          </div>
+        </div>
+        <div class="notes-src">여기서 실제 장애 경험 하나를 얹으면 좋다 — 재시도 로직이 close를 두 번 부르는 형태가 흔하다. 해법은 sync.Once나 "닫는 주체를 하나로 모으기"인데, 후자가 다음 장이다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 23 generator 패턴 ═══════════ -->
+    <div class="holder" data-n="23">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">04 · Close</span><span class="stamp">generator</span></div>
+        <h2 class="slide-title">만들고 · 보내고 · 닫는 일을 <span class="em">한 곳에 모은다</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">generator</span>() &lt;-<span class="t-key">chan</span> <span class="t-key">int</span> {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>)
+    <span class="t-key">go</span> <span class="t-key">func</span>() {
+        <span class="t-key">defer</span> <span class="t-fn">close</span>(ch) <span class="t-cm">// 보낸 쪽이 닫는다</span>
+        <span class="t-key">for</span> i := <span class="t-key">range</span> <span class="t-num">5</span> {
+            ch &lt;- i
+        }
+    }()
+    <span class="t-key">return</span> ch <span class="t-cm">// receive-only — 밖에서는 닫을 수 없다</span>
+}
+
+<span class="t-key">for</span> v := <span class="t-key">range</span> <span class="t-fn">generator</span>() {
+    fmt.<span class="t-fn">Println</span>(v) <span class="t-cm">// 0 1 2 3 4</span>
+}</pre>
+          <div class="callout teal">
+            <span class="lbl">규칙을 어길 방법이 없다</span>
+            반환 타입을 <code class="inl">&lt;-chan</code>으로 좁혔으니 <b>호출자는 close도 send도 못 한다</b>. 22번 규칙 셋이 전부 컴파일 에러로 바뀐 셈이다.
+          </div>
+        </div>
+        <div class="notes-src">오늘 발표에서 딱 한 장만 사진 찍으라면 이 장이라고 말해도 좋다. <code>defer close(ch)</code>가 goroutine 안 첫 줄에 있다는 점 — panic이 나도 닫힌다. 파이프라인(3편)의 기본 벽돌이기도 하다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 24 장 구분 05 ═══════════ -->
+    <div class="holder" data-n="24" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">05</div>
+          <div class="chap-l">
+            <h2 class="chap-t">Range와 신호</h2>
+            <p class="chap-d">받는 쪽의 관용구인 <code class="inl">range</code>, 그리고 값을 담지 않는 채널 <code class="inl">chan struct{}</code>.
+            둘 다 앞에서 배운 close 위에 얹혀 있다.</p>
+          </div>
+        </div>
+        <div class="notes-src">close 규칙을 방금 했으니 자연스럽게 이어진다. 5~6분.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 25 range ═══════════ -->
+    <div class="holder" data-n="25">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · Range</span><span class="stamp">for range ch</span></div>
+        <h2 class="slide-title">range의 종료 조건은 <span class="em">오직 close 하나</span>다</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">for v := range ch</code> — 값이 올 때까지 기다렸다가 하나씩 꺼낸다</li>
+              <li>끝나는 경우는 딱 하나, <b>channel이 닫히는 것</b>. 개수를 세지 않는다</li>
+              <li>close를 잊으면 <b>영원히 blocking</b>된다 — goroutine leak의 단골 원인</li>
+              <li><code class="inl">v, ok := &lt;-ch</code>를 직접 쓰는 것과 같지만 <b><code class="inl">ok</code> 검사를 대신</b>해준다</li>
+            </ul>
+            <pre class="code sm">ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">5</span>)
+<span class="t-key">go</span> <span class="t-key">func</span>() {
+    <span class="t-key">for</span> i := <span class="t-num">1</span>; i &lt;= <span class="t-num">5</span>; i++ {
+        ch &lt;- i
+    }
+    <span class="t-fn">close</span>(ch) <span class="t-bad">// 없으면 range가 끝나지 않는다</span>
+}()
+
+<span class="t-key">for</span> v := <span class="t-key">range</span> ch { <span class="t-cm">// 1 2 3 4 5</span>
+    out = <span class="t-fn">append</span>(out, v)
+}</pre>
+          </div>
+          <div class="callout">
+            <span class="lbl">짝을 맞춘다</span>
+            <code class="inl">range</code>로 읽는 코드를 쓰는 순간, 그 channel을 <b>누가 언제 닫는지</b>도 함께 정해야 한다. 둘은 한 세트다.
+          </div>
+        </div>
+        <div class="notes-src">"range는 몇 번 도나요?"라는 질문에 "닫힐 때까지"라고 답할 수 있으면 이 장은 끝. 무한 대기는 3편의 select + ctx.Done()으로 끊는다고 예고.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 26 chan struct{} ═══════════ -->
+    <div class="holder" data-n="26">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · 신호</span><span class="stamp">chan struct{}</span></div>
+        <h2 class="slide-title">데이터가 아니라 <span class="em">"끝났다"</span>만 보내고 싶을 때</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2a">
+            <ul class="bul">
+              <li><code class="inl">struct{}</code>는 필드가 없어 <b>0바이트</b>다 — 값을 담지 않겠다는 의도가 타입에 드러난다</li>
+              <li><code class="inl">chan bool</code>을 쓰면 "true는 뭐고 false는 뭐지?"라는 질문이 따라온다</li>
+              <li>신호는 쌓일 이유가 없으니 보통 <b>unbuffered</b>로 만든다</li>
+              <li>이름은 관례적으로 <code class="inl">done</code>, <code class="inl">quit</code>, <code class="inl">ready</code></li>
+            </ul>
+            <pre class="code sm">done := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">struct</span>{})
+
+<span class="t-key">go</span> <span class="t-key">func</span>() {
+    <span class="t-cm">// 작업 수행...</span>
+    <span class="t-fn">close</span>(done) <span class="t-cm">// 완료 신호</span>
+}()
+
+&lt;-done <span class="t-cm">// 완료될 때까지 대기</span></pre>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">비용</span>
+            <code class="inl">unsafe.Sizeof(struct{}{})</code>는 <b>0</b>이다 — 오가는 값에 드는 비용이 없다. (channel 자체의 비용은 별개다)
+          </div>
+        </div>
+        <div class="notes-src">"왜 굳이 struct{}냐, bool 쓰면 안 되냐"는 질문이 반드시 나온다. 답은 성능이 아니라 <b>의도 표현</b>이라고 정리한다 — 값에 의미가 없다는 걸 타입으로 못 박는 것.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 27 close vs send ═══════════ -->
+    <div class="holder" data-n="27">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · 신호</span><span class="stamp">브로드캐스트</span></div>
+        <h2 class="slide-title">close는 <span class="em">전원에게</span>, send는 한 명에게</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="card">
+              <div class="card-t">done &lt;- struct{}{}</div>
+              <p>기다리는 receiver <b>한 명</b>만 깨운다.</p>
+              <p class="dim">셋이 기다리면 세 번 보내야 한다. 즉 sender가 <b>수신자 수를 알고 있어야</b> 한다.</p>
+            </div>
+            <div class="card">
+              <div class="card-t">close(done)</div>
+              <p>기다리는 <b>전원</b>이 동시에 깨어난다.</p>
+              <p class="dim">몇 명이든 상관없고, <b>닫힌 뒤에 도착한</b> receiver도 즉시 통과한다. 신호를 놓칠 수 없다.</p>
+            </div>
+          </div>
+          <div class="callout">
+            <span class="lbl">그래서 취소·종료에는 close</span>
+            수신자 수를 몰라도 되고 늦게 온 쪽도 놓치지 않는다. <code class="inl">context.Done()</code>이 정확히 이 방식이다 — 편 5에서 다시 만난다.
+          </div>
+        </div>
+        <div class="notes-src">"신호를 놓칠 수 없다"가 핵심 — send 방식은 receiver가 늦게 도착하면 이미 지나간 신호를 못 받는다. context가 왜 채널을 닫는 방식으로 설계됐는지 여기서 납득시킨다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 28 struct{} vs struct{}{} ═══════════ -->
+    <div class="holder" data-n="28">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">05 · 신호</span><span class="stamp">FAQ</span></div>
+        <h2 class="slide-title"><span class="em">struct{}</span>는 설계도, <span class="em">struct{}{}</span>는 실물</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="tbl-wrap">
+            <table class="tbl">
+              <thead><tr><th>표현</th><th>의미</th><th>비유</th></tr></thead>
+              <tbody>
+                <tr><td><code class="inl">int</code></td><td>int 타입</td><td class="faint">설계도</td></tr>
+                <tr><td><code class="inl">42</code></td><td>int 값</td><td class="faint">실물</td></tr>
+                <tr class="on"><td><code class="inl">struct{}</code></td><td>빈 구조체 <b>타입</b></td><td>설계도 — 필드가 없는</td></tr>
+                <tr class="on"><td><code class="inl">struct{}{}</code></td><td>빈 구조체 <b>값</b></td><td>실물 — 내용이 없는</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="callout">
+            <span class="lbl">끊어 읽는 법</span>
+            <code class="inl">struct{}</code> + <code class="inl">{}</code> — 앞이 타입, 뒤가 빈 리터럴이다. <code class="inl">Person{}</code>이 <code class="inl">Person</code> + <code class="inl">{}</code>인 것과 똑같다.
+            그래서 <code class="inl">make(chan struct{})</code>에는 타입이, <code class="inl">done &lt;- struct{}{}</code>에는 값이 온다.
+          </div>
+        </div>
+        <div class="notes-src">중괄호 네 개가 붙어 있는 게 이상해 보일 뿐, 규칙은 평범하다는 걸 보여주는 장. 30초면 충분하니 빨리 넘어간다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 29 장 구분 06 ═══════════ -->
+    <div class="holder" data-n="29" data-chapter="1">
+      <section class="slide" data-kind="chapter">
+        <div class="chap">
+          <div class="chap-n">06</div>
+          <div class="chap-l">
+            <h2 class="chap-t">실습 — Producer / Consumer</h2>
+            <p class="chap-d">지금까지 배운 것을 한 코드에 모은다. producer가 여럿이 되는 순간
+            "<b>누가 닫는가</b>"라는 질문이 실제 설계 문제로 바뀐다.</p>
+          </div>
+        </div>
+        <div class="notes-src">여기부터는 앞의 조각들을 조립하는 시간. 새 개념은 WaitGroup 하나뿐이고 그건 4편 주제라고 미리 선을 긋는다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 30 producer/consumer 기본형 ═══════════ -->
+    <div class="holder" data-n="30">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">06 · 실습</span><span class="stamp">1 : 1</span></div>
+        <h2 class="slide-title">Producer 하나, Consumer 하나 — <span class="em">기본형</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code sm"><span class="t-key">func</span> <span class="t-fn">TestProducerConsumer</span>(t *testing.T) {
+    ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">10</span>)
+    <span class="t-key">var</span> results []<span class="t-key">int</span>
+
+    <span class="t-key">go</span> <span class="t-key">func</span>() { <span class="t-cm">// Producer — 제곱수를 만든다</span>
+        <span class="t-key">for</span> i := <span class="t-num">1</span>; i &lt;= <span class="t-num">10</span>; i++ {
+            ch &lt;- i * i
+        }
+        <span class="t-fn">close</span>(ch) <span class="t-cm">// 다 보냈다는 선언</span>
+    }()
+    <span class="t-key">for</span> val := <span class="t-key">range</span> ch { <span class="t-cm">// Consumer — 닫힐 때까지 모은다</span>
+        results = <span class="t-fn">append</span>(results, val)
+    }
+    assert.<span class="t-fn">Len</span>(t, results, <span class="t-num">10</span>)
+}</pre>
+          <div class="callout">
+            <span class="lbl">버퍼 10의 역할</span>
+            producer가 consumer를 <b>매번 기다리지 않아도</b> 된다. 0으로 바꿔도 결과는 같지만, 그때는 한 값마다 손을 맞잡는다.
+          </div>
+        </div>
+        <div class="notes-src">앞의 모든 조각이 들어 있다 — make, send, close, range, 그리고 buffered의 이유까지. 코드를 위에서 아래로 한 번 짚어주면 복습이 된다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 31 여러 producer ═══════════ -->
+    <div class="holder" data-n="31">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">06 · 실습</span><span class="stamp">N : 1</span></div>
+        <h2 class="slide-title">Producer가 여럿이면 <span class="em">아무도 혼자 닫을 수 없다</span></h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <pre class="code xs">ch := <span class="t-fn">make</span>(<span class="t-key">chan</span> <span class="t-key">int</span>, <span class="t-num">20</span>)
+<span class="t-key">var</span> wg sync.WaitGroup
+
+<span class="t-key">for</span> p := <span class="t-key">range</span> <span class="t-num">3</span> { <span class="t-cm">// Producer 3개</span>
+    wg.<span class="t-fn">Add</span>(<span class="t-num">1</span>)
+    <span class="t-key">go</span> <span class="t-key">func</span>() {
+        <span class="t-key">defer</span> wg.<span class="t-fn">Done</span>()
+        <span class="t-key">for</span> i := <span class="t-key">range</span> <span class="t-num">5</span> {
+            ch &lt;- p*<span class="t-num">100</span> + i
+        }
+    }()
+}
+
+<span class="t-key">go</span> <span class="t-key">func</span>() { <span class="t-cm">// 감시자 — 전원이 끝나야 닫는다</span>
+    wg.<span class="t-fn">Wait</span>()
+    <span class="t-fn">close</span>(ch)
+}()</pre>
+          <div class="callout">
+            <span class="lbl">닫는 역할을 따로 세운다</span>
+            producer 셋 중 누구도 "내가 마지막"인지 모른다. <b>WaitGroup을 기다리는 네 번째 goroutine</b>이 그 역할을 맡는다. 받는 쪽은 앞 장과 같다.
+          </div>
+        </div>
+        <div class="notes-src">"producer 안에서 close하면 안 되나요?" — 두 번 close로 panic. 여기가 22번 규칙이 현실에서 부딪히는 지점이다. WaitGroup 자체는 4편에서 제대로 다룬다고 선을 긋는다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 32 종료 순서 ═══════════ -->
+    <div class="holder" data-n="32">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">06 · 실습</span><span class="stamp">step by step</span></div>
+        <h2 class="slide-title">닫히기까지 <span class="em">무슨 일이 순서대로</span> 일어나는가</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="steps">
+            <div class="step"><span class="s-n">1</span><div><div class="s-c">wg.Add(1) — goroutine을 띄우기 <b>전에</b></div><div class="s-d">goroutine 안에서 Add하면 Wait이 먼저 지나가 버릴 수 있다</div></div></div>
+            <div class="step"><span class="s-n">2</span><div><div class="s-c">defer wg.Done() — 각 producer가 자기 몫의 종료를 알린다</div><div class="s-d">defer로 걸어야 panic이 나도 카운터가 줄어든다</div></div></div>
+            <div class="step"><span class="s-n">3</span><div><div class="s-c">wg.Wait() → close(ch) — 전원이 끝난 뒤에만 닫힌다</div><div class="s-d">이 일을 별도 goroutine에 맡겨야 아래 range가 먼저 돌 수 있다</div></div></div>
+            <div class="step"><span class="s-n">4</span><div><div class="s-c">for range ch — close 신호를 보고 루프가 스스로 끝난다</div><div class="s-d">consumer는 producer가 몇 개인지 끝까지 알 필요가 없다</div></div></div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">왜 감시자를 따로 두나</span>
+            <code class="inl">wg.Wait()</code>을 main에서 부르면, 버퍼가 차는 순간 producer가 멈추고 main은 Wait에서 멈춘다 — <b>서로를 기다리다 죽는다</b>.
+          </div>
+        </div>
+        <div class="notes-src">4번이 이 패턴의 진짜 값어치다 — consumer가 producer 개수와 완전히 분리된다. fan-in의 원형이고, 3편에서 이 모양을 그대로 확장한다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 33 정리 ═══════════ -->
+    <div class="holder" data-n="33">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">마무리</span><span class="stamp">recap</span></div>
+        <h2 class="slide-title">오늘 가져갈 것</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <ul class="bul" style="font-size:20px;gap:17px;">
+            <li>Channel은 goroutine 사이의 <b>타입 안전한 파이프</b>다 — 통신과 동기화를 한 번에 한다</li>
+            <li><b>Unbuffered</b>는 핸드셰이크, <b>Buffered</b>는 큐 — <code class="inl">make</code>의 숫자 하나가 성질을 바꾼다</li>
+            <li><code class="inl">chan&lt;-</code> · <code class="inl">&lt;-chan</code>으로 방향을 좁히면 <b>컴파일러가</b> 잘못된 사용을 막는다</li>
+            <li><code class="inl">close</code>는 "더 안 보낸다"는 선언이고, 반드시 <b>보내는 쪽</b>이 한다 — 두 번 닫으면 panic</li>
+            <li>닫힌 channel은 <b>zero value + false</b>를 즉시 돌려준다. <code class="inl">range</code>는 그 신호를 보고 끝난다</li>
+            <li>신호에는 <code class="inl">chan struct{}</code> — 전원에게 알려야 하면 보내지 말고 <b>닫는다</b></li>
+          </ul>
+        </div>
+        <div class="notes-src">여섯 줄을 소리 내어 읽는 것만으로 정리가 된다. 여기서부터 질문을 받아도 좋다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 34 퀴즈 ① ═══════════ -->
+    <div class="holder" data-n="34">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">확인 ①</span><span class="stamp">클릭하면 답이 열립니다</span></div>
+        <h2 class="slide-title">스스로 답해보기 — 버퍼와 방향</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>unbuffered channel에 값을 보냈는데 아무도 받지 않으면?</span></button>
+              <div class="q-a">sender가 receiver를 만날 때까지 <b>계속 blocking</b>된다. 프로그램 안의 모든 goroutine이 그 상태면 런타임이 <code class="inl">all goroutines are asleep - deadlock!</code>로 죽인다. <span class="ref">→ 슬라이드 09 · 11</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span><code class="inl">make(chan int, 3)</code>에 receiver 없이 4번 send하면?</span></button>
+              <div class="q-a">앞의 3개는 <b>즉시 통과</b>하고 4번째에서 blocking된다. 버퍼는 순간적인 속도 차만 흡수할 뿐, 무한 큐가 아니다. <span class="ref">→ 슬라이드 10 · 12</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span><code class="inl">if len(ch) &lt; cap(ch) { ch &lt;- v }</code>는 왜 위험한가?</span></button>
+              <div class="q-a">확인과 send <b>사이에</b> 다른 goroutine이 버퍼를 채울 수 있다. 읽은 순간 이미 옛날 값이다. 논블로킹 send는 <code class="inl">select</code> + <code class="inl">default</code>로 해야 한다. <span class="ref">→ 슬라이드 13</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span>함수 파라미터를 <code class="inl">&lt;-chan int</code>로 받으면 무엇이 금지되나?</span></button>
+              <div class="q-a"><b>send와 close 둘 다</b>. 받기만 가능하다. 런타임이 아니라 <b>컴파일 타임</b>에 막히므로 테스트 없이도 걸린다. <span class="ref">→ 슬라이드 16 · 17</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span><code class="inl">&lt;-chan int</code>를 <code class="inl">chan int</code> 변수에 대입할 수 있나?</span></button>
+              <div class="q-a">없다. 변환은 <b>좁히는 방향</b>으로만 자동으로 일어난다. 넓히려면 원래의 양방향 channel을 직접 들고 있어야 한다. <span class="ref">→ 슬라이드 18</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">먼저 답하게 한 뒤 클릭해서 연다. 시간이 없으면 Q2와 Q3만 골라도 충분하다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 35 퀴즈 ② ═══════════ -->
+    <div class="holder" data-n="35">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">확인 ②</span><span class="stamp">클릭하면 답이 열립니다</span></div>
+        <h2 class="slide-title">스스로 답해보기 — close와 신호</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="quiz">
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q1</span><span>receiver 쪽에서 <code class="inl">close(ch)</code>를 부르면 왜 위험한가?</span></button>
+              <div class="q-a">sender가 아직 보내는 중이면 <code class="inl">panic: send on closed channel</code>이 난다. <b>끝을 아는 쪽은 sender뿐</b>이라 close도 sender의 책임이다. <span class="ref">→ 슬라이드 22 · 23</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q2</span><span>받은 <code class="inl">0</code>이 "닫혀서 나온 값"인지 "sender가 보낸 값"인지 어떻게 아나?</span></button>
+              <div class="q-a"><code class="inl">v, ok := &lt;-ch</code>의 <b><code class="inl">ok</code></b>로만 구분된다. 닫힌 channel은 blocking 없이 zero value와 <code class="inl">false</code>를 즉시 돌려준다. <span class="ref">→ 슬라이드 21</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q3</span><span><code class="inl">for v := range ch</code>가 끝나지 않는다. 무엇을 빠뜨렸나?</span></button>
+              <div class="q-a"><code class="inl">close(ch)</code>다. range의 종료 조건은 <b>close 하나뿐</b>이고, 값을 몇 개 보냈는지는 아무 상관이 없다. <span class="ref">→ 슬라이드 25</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q4</span><span><code class="inl">close(done)</code>과 <code class="inl">done &lt;- struct{}{}</code>의 차이는?</span></button>
+              <div class="q-a">close는 기다리는 <b>전원</b>을 깨우고 늦게 온 receiver도 통과시킨다. send는 <b>한 명</b>만 깨우므로 수신자 수를 sender가 알아야 한다. <span class="ref">→ 슬라이드 26 · 27</span></div>
+            </div>
+            <div class="q">
+              <button class="q-btn" type="button"><span class="q-n">Q5</span><span>producer가 3개일 때 close는 누가, 언제 하나?</span></button>
+              <div class="q-a">producer 중 누구도 자기가 마지막인지 모른다. <code class="inl">wg.Wait()</code>을 기다리는 <b>별도 goroutine</b>이 전원 종료 후에 닫는다. <span class="ref">→ 슬라이드 31 · 32</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="notes-src">Q1과 Q5가 실무에서 제일 자주 터지는 두 가지다. 여기서 시간이 남으면 각자 코드베이스에서 close를 누가 부르는지 떠올려 보게 한다.</div>
+      </section>
+    </div>
+
+    <!-- ═══════════ 36 다음 편 ═══════════ -->
+    <div class="holder" data-n="36">
+      <section class="slide">
+        <div class="slide-head"><span class="eyebrow">다음</span><span class="stamp">part 3</span></div>
+        <h2 class="slide-title">다음 편 — select와 channel 심화</h2>
+        <div class="rule"></div>
+        <div class="slide-body">
+          <div class="cols c-2">
+            <div class="stack">
+              <p class="dim" style="margin:0;font-size:18px;line-height:1.6;">오늘은 channel <b>하나</b>를 다뤘다. 그런데 실무에서는 값 채널과 에러 채널,
+              거기에 타임아웃과 취소까지 <b>여러 개를 동시에</b> 기다려야 한다. 다음 편의 주제가 그것이다.</p>
+              <div class="callout">
+                <span class="lbl">오늘 미뤄둔 것들</span>
+                논블로킹 send(<code class="inl">default</code>), 무한 대기를 끊는 타임아웃, nil channel로 케이스 끄기 —
+                오늘 스쳐 간 것들이 전부 <code class="inl">select</code> 한 문법으로 풀린다. fan-in / fan-out도 함께 다룬다.
+              </div>
+            </div>
+            <div class="card">
+              <p class="card-t">참고 자료</p>
+              <ul class="bul" style="font-size:16.5px;gap:9px;">
+                <li>전체 코드 — <code class="inl">github.com/kenshin579/tutorials-go</code> <span class="faint">/golang/concurrency</span></li>
+                <li>Go Tour — Channels <span class="faint">go.dev/tour/concurrency/2</span></li>
+                <li>Effective Go — Channels <span class="faint">go.dev/doc/effective_go#channels</span></li>
+                <li>Go Blog — Pipelines and cancellation <span class="faint">go.dev/blog/pipelines</span></li>
+              </ul>
+            </div>
+          </div>
+          <div class="callout teal">
+            <span class="lbl">감사합니다</span>
+            질문 환영합니다 — <code class="inl">advenoh.pe.kr</code>
+          </div>
+        </div>
+        <div class="notes-src">GitHub 저장소 주소를 띄워둔 채로 Q&amp;A를 받는다.</div>
+      </section>
+    </div>
+
+    </div><!-- /stage -->
+  </div><!-- /stage-wrap -->
+
+  <div class="notes" id="notes" aria-live="polite">
+    <div class="n-h">발표자 노트</div>
+    <div id="notesBody"></div>
+  </div>
+
+  <div class="chrome">
+    <span class="deck-id">Channel 완전 정복 · Golang Concurrency 2</span>
+    <div class="rail" id="rail"></div>
+    <span class="counter" id="counter"><span class="cur">01</span> / 36</span>
+    <div class="keys">
+      <button class="kbtn" id="btnOverview" type="button" aria-pressed="false" title="개요 (O)">개요</button>
+      <button class="kbtn" id="btnNotes" type="button" aria-pressed="false" title="발표자 노트 (N)">노트</button>
+      <button class="kbtn" id="btnTheme" type="button" title="테마 전환 (T)">테마</button>
+      <button class="kbtn" id="btnHelp" type="button" title="단축키 (?)">?</button>
+    </div>
+  </div>
+
+  <div class="help" id="help">
+    <div class="help-box">
+      <h3>단축키</h3>
+      <dl>
+        <dt>→ · Space · PgDn</dt><dd>다음 슬라이드</dd>
+        <dt>← · PgUp</dt><dd>이전 슬라이드</dd>
+        <dt>Home · End</dt><dd>처음 · 마지막</dd>
+        <dt>O</dt><dd>전체 슬라이드 개요</dd>
+        <dt>N</dt><dd>발표자 노트</dd>
+        <dt>T</dt><dd>밝은 테마 / 어두운 테마</dd>
+        <dt>F</dt><dd>전체 화면</dd>
+        <dt>Esc</dt><dd>닫기</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<script>
+(function () {
+  "use strict";
+
+  var deck     = document.getElementById("deck");
+  var stage    = document.getElementById("stage");
+  var wrap     = document.getElementById("stageWrap");
+  var rail     = document.getElementById("rail");
+  var counter  = document.getElementById("counter");
+  var notesEl  = document.getElementById("notes");
+  var notesBody= document.getElementById("notesBody");
+  var helpEl   = document.getElementById("help");
+  var holders  = Array.prototype.slice.call(stage.querySelectorAll(".holder"));
+  var total    = holders.length;
+  var idx      = 0;
+  var overview = false;
+  var reduce   = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  /* ── 눈금 레일 ─────────────────────────────────── */
+  var ticks = holders.map(function (h, i) {
+    var t = document.createElement("span");
+    t.className = "tick" + (h.hasAttribute("data-chapter") ? " chap" : "");
+    t.title = "슬라이드 " + (i + 1);
+    t.addEventListener("click", function () { go(i); });
+    rail.appendChild(t);
+    return t;
+  });
+
+  function pad(n) { return (n < 10 ? "0" : "") + n; }
+
+  /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
+  function fit() {
+    if (overview) { stage.style.transform = ""; return; }
+    var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
+  }
+
+  /* ── 이동 ──────────────────────────────────────── */
+  function go(n, silent) {
+    n = Math.max(0, Math.min(total - 1, n));
+    idx = n;
+    holders.forEach(function (h, i) { h.classList.toggle("is-active", i === n); });
+    ticks.forEach(function (t, i) {
+      t.classList.toggle("done", i < n);
+      t.classList.toggle("now", i === n);
+    });
+    counter.innerHTML = '<span class="cur">' + pad(n + 1) + "</span> / " + total;
+    var src = holders[n].querySelector(".notes-src");
+    notesBody.textContent = src ? src.textContent.trim() : "—";
+    if (!silent) { history.replaceState(null, "", "#" + (n + 1)); }
+    runOdometers(holders[n]);
+    if (overview) {
+      holders[n].scrollIntoView({ block: "nearest", behavior: reduce ? "auto" : "smooth" });
+    }
+  }
+
+  /* ── 카디널리티 카운터 ─────────────────────────── */
+  function runOdometers(holder) {
+    var list = holder.querySelectorAll("[data-odo]");
+    Array.prototype.forEach.call(list, function (el, i) {
+      var to = parseInt(el.getAttribute("data-odo"), 10);
+      if (reduce) { el.textContent = to.toLocaleString("en-US"); return; }
+      var dur = 900, delay = i * 420, t0 = null;
+      el.textContent = "0";
+      function frame(ts) {
+        if (t0 === null) { t0 = ts; }
+        var p = (ts - t0 - delay) / dur;
+        if (p < 0) { requestAnimationFrame(frame); return; }
+        if (p > 1) { p = 1; }
+        var e = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(to * e).toLocaleString("en-US");
+        if (p < 1) { requestAnimationFrame(frame); }
+      }
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ── 개요 모드 ─────────────────────────────────── */
+  function setOverview(on) {
+    overview = on;
+    deck.classList.toggle("is-overview", on);
+    document.getElementById("btnOverview").setAttribute("aria-pressed", String(on));
+    fit();
+    if (on) { holders[idx].scrollIntoView({ block: "center" }); }
+  }
+
+  holders.forEach(function (h, i) {
+    h.addEventListener("click", function () { if (overview) { setOverview(false); go(i); } });
+  });
+
+  /* ── 노트 · 테마 · 도움말 ──────────────────────── */
+  function setNotes(on) {
+    notesEl.classList.toggle("on", on);
+    document.getElementById("btnNotes").setAttribute("aria-pressed", String(on));
+  }
+  function toggleTheme() {
+    var cur = document.documentElement.getAttribute("data-theme");
+    if (!cur) {
+      cur = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+    }
+    var next = cur === "dark" ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", next);
+    try { localStorage.setItem("deck-theme", next); } catch (e) {}
+    drawHero();
+  }
+  try {
+    var saved = localStorage.getItem("deck-theme");
+    if (saved) { document.documentElement.setAttribute("data-theme", saved); }
+  } catch (e) {}
+
+  document.getElementById("btnOverview").addEventListener("click", function () { setOverview(!overview); });
+  document.getElementById("btnNotes").addEventListener("click", function () { setNotes(!notesEl.classList.contains("on")); });
+  document.getElementById("btnTheme").addEventListener("click", toggleTheme);
+  document.getElementById("btnHelp").addEventListener("click", function () { helpEl.classList.toggle("on"); });
+  helpEl.addEventListener("click", function () { helpEl.classList.remove("on"); });
+
+  /* ── 클릭 리빌 · 이미지 토글 ───────────────────── */
+  document.addEventListener("click", function (e) {
+    var qb = e.target.closest ? e.target.closest(".q-btn") : null;
+    if (qb) { qb.parentNode.classList.toggle("is-open"); return; }
+
+    var tg = e.target.closest ? e.target.closest(".tg") : null;
+    if (tg) {
+      var group = tg.getAttribute("data-swap");
+      var target = tg.getAttribute("data-target");
+      Array.prototype.forEach.call(document.querySelectorAll('.tg[data-swap="' + group + '"]'), function (b) {
+        b.setAttribute("aria-pressed", String(b === tg));
+      });
+      Array.prototype.forEach.call(document.querySelectorAll('[data-swap-group="' + group + '"] > .swap-i'), function (item) {
+        item.classList.toggle("on", item.getAttribute("data-swap-item") === target);
+      });
+    }
+  });
+
+  /* ── 키보드 ────────────────────────────────────── */
+  document.addEventListener("keydown", function (e) {
+    if (e.metaKey || e.ctrlKey || e.altKey) { return; }
+    var k = e.key;
+    if (k === "ArrowRight" || k === "PageDown" || k === " " || k === "Spacebar") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "ArrowDown") { e.preventDefault(); go(idx + 1); }
+    else if (k === "ArrowUp") { e.preventDefault(); go(idx - 1); }
+    else if (k === "Home") { e.preventDefault(); go(0); }
+    else if (k === "End") { e.preventDefault(); go(total - 1); }
+    else if (k === "o" || k === "O" || k === "ㅐ") { setOverview(!overview); }
+    else if (k === "n" || k === "N" || k === "ㅜ") { setNotes(!notesEl.classList.contains("on")); }
+    else if (k === "t" || k === "T" || k === "ㅅ") { toggleTheme(); }
+    else if (k === "f" || k === "F" || k === "ㄹ") {
+      if (document.fullscreenElement) { document.exitFullscreen(); }
+      else if (document.documentElement.requestFullscreen) { document.documentElement.requestFullscreen(); }
+    }
+    else if (k === "?" || k === "/") { helpEl.classList.toggle("on"); }
+    else if (k === "Escape") {
+      if (helpEl.classList.contains("on")) { helpEl.classList.remove("on"); }
+      else if (overview) { setOverview(false); }
+    }
+  });
+
+  /* ── 표지 스파크라인 ───────────────────────────── */
+  function css(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+  function drawHero() {
+    var cv = document.getElementById("heroCanvas");
+    if (!cv) { return; }
+    var ctx = cv.getContext("2d");
+    var W = cv.width, H = cv.height;
+    ctx.clearRect(0, 0, W, H);
+
+    var accent = css("--accent") || "#4FD3F4";
+    var line   = css("--line") || "#272F3A";
+    var faint  = css("--ink-faint") || "#6B7688";
+
+    /* 격자 */
+    ctx.strokeStyle = line;
+    ctx.lineWidth = 1;
+    var i, y, x;
+    for (i = 1; i <= 4; i++) {
+      y = Math.round((H / 5) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+    }
+    for (i = 1; i <= 5; i++) {
+      x = Math.round((W / 6) * i) + .5;
+      ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+    }
+
+    /* 결정적인 CPU 곡선 (난수 없이 재현 가능하게) */
+    var N = 180, pts = [];
+    for (i = 0; i < N; i++) {
+      var t = i / (N - 1);
+      var v = 0.42
+        + 0.16 * Math.sin(t * 8.1 + 0.6)
+        + 0.09 * Math.sin(t * 21.3 + 1.9)
+        + 0.05 * Math.sin(t * 47.7 + 4.2)
+        + 0.10 * Math.exp(-Math.pow((t - 0.68) * 9, 2));
+      v = Math.max(0.08, Math.min(0.92, v));
+      pts.push([6 + t * (W - 12), H - v * H]);
+    }
+
+    var steps = reduce ? N : 0;
+    function render(n) {
+      ctx.clearRect(0, 0, W, H);
+      ctx.strokeStyle = line;
+      for (i = 1; i <= 4; i++) {
+        y = Math.round((H / 5) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(W, y); ctx.stroke();
+      }
+      for (i = 1; i <= 5; i++) {
+        x = Math.round((W / 6) * i) + .5;
+        ctx.beginPath(); ctx.moveTo(x, 0); ctx.lineTo(x, H); ctx.stroke();
+      }
+
+      var m = Math.max(2, n);
+      var grad = ctx.createLinearGradient(0, 0, 0, H);
+      grad.addColorStop(0, accent + "55");
+      grad.addColorStop(1, accent + "00");
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], H);
+      for (i = 0; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.lineTo(pts[m - 1][0], H);
+      ctx.closePath();
+      ctx.fillStyle = grad;
+      ctx.fill();
+
+      ctx.beginPath();
+      ctx.moveTo(pts[0][0], pts[0][1]);
+      for (i = 1; i < m; i++) { ctx.lineTo(pts[i][0], pts[i][1]); }
+      ctx.strokeStyle = accent;
+      ctx.lineWidth = 2.4;
+      ctx.lineJoin = "round";
+      ctx.stroke();
+
+      /* 마지막 점 강조 */
+      ctx.beginPath();
+      ctx.arc(pts[m - 1][0], pts[m - 1][1], 4.5, 0, Math.PI * 2);
+      ctx.fillStyle = accent;
+      ctx.fill();
+
+      ctx.font = "500 20px ui-monospace, Menlo, monospace";
+      ctx.fillStyle = faint;
+      ctx.textAlign = "left";
+      ctx.fillText("100%", 8, 22);
+      ctx.fillText("0", 8, H - 8);
+    }
+
+    if (reduce) { render(N); return; }
+    var n0 = 2, t0 = null;
+    function frame(ts) {
+      if (t0 === null) { t0 = ts; }
+      var p = Math.min(1, (ts - t0) / 1100);
+      var e = 1 - Math.pow(1 - p, 3);
+      render(Math.max(n0, Math.round(N * e)));
+      if (p < 1) { requestAnimationFrame(frame); }
+    }
+    requestAnimationFrame(frame);
+  }
+
+  /* ── 초기화 ────────────────────────────────────── */
+  window.addEventListener("resize", fit);
+  window.addEventListener("hashchange", function () {
+    var n = parseInt(location.hash.replace("#", ""), 10);
+    if (!isNaN(n)) { go(n - 1, true); }
+  });
+
+  var start = parseInt(location.hash.replace("#", ""), 10);
+  fit();
+  go(isNaN(start) ? 0 : start - 1, true);
+  drawHero();
+})();
+</script>
+</body>
+</html>

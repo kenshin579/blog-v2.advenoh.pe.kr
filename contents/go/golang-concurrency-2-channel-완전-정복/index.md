@@ -31,6 +31,8 @@ ch := make(chan int)       // unbuffered channel (int 타입)
 ch := make(chan string, 5) // buffered channel (string 타입, 버퍼 크기 5)
 ```
 
+<!-- slides -->
+
 # 2. Send / Receive 동작
 
 Channel에 값을 보내려면 `<-` 연산자를 사용한다.
