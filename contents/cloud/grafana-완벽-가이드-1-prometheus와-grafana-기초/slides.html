@@ -110,14 +110,16 @@ body {
   position: fixed;
   inset: 0 0 52px 0;
   display: grid;
-  place-items: center;
+  /* 가운데 정렬은 fit() 이 translate 로 직접 한다. grid 중앙 정렬에 맡기면
+     무대가 뷰포트보다 클 때 safe alignment 로 좌상단에 고정되어 계산이 어긋난다. */
+  place-items: start;
   overflow: hidden;
 }
 .stage {
   width: 1280px;
   height: 720px;
   position: relative;
-  transform-origin: center center;
+  transform-origin: 0 0;
   flex: none;
 }
 .holder {
@@ -2108,10 +2110,17 @@ http_requests_total{<span class="t-str">method="GET"</span>, <span class="t-str"
   function pad(n) { return (n < 10 ? "0" : "") + n; }
 
   /* ── 무대 스케일 ───────────────────────────────── */
+  /* 무대는 stage-wrap 의 좌상단에 고정(place-items:start)해 두고,
+     축소한 뒤 남는 여백만큼 직접 translate 해서 가운데로 옮긴다.
+     transform-origin 을 center 로 두고 grid 중앙 정렬에 맡기면,
+     뷰포트가 1280x720 보다 작을 때 브라우저가 넘치는 항목을
+     좌상단에 고정(safe alignment)해 버려서 축소 결과가 오른쪽 아래로 쏠린다. */
   function fit() {
     if (overview) { stage.style.transform = ""; return; }
     var k = Math.min(wrap.clientWidth / 1280, wrap.clientHeight / 720);
-    stage.style.transform = "scale(" + k + ")";
+    var tx = (wrap.clientWidth - 1280 * k) / 2;
+    var ty = (wrap.clientHeight - 720 * k) / 2;
+    stage.style.transform = "translate(" + tx + "px," + ty + "px) scale(" + k + ")";
   }
 
   /* ── 이동 ──────────────────────────────────────── */
