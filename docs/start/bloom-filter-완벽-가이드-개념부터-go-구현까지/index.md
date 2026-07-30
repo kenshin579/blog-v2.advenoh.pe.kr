@@ -601,7 +601,7 @@ BenchmarkContains_라이브러리_없는키-8    23989464   51.02 ns/op   0 B/op
 | 직접 구현 | 29.3 ns | 21.8 ns | 23.3 ns |
 | 라이브러리 | 44.5 ns | 32.2 ns | 51.0 ns |
 
-조기 반환이 벌어 주는 몫은 양쪽 다 적지 않다. 예측만 된다면 직접 구현은 7.5ns, 라이브러리는 12.3ns를 아낀다. 갈리는 곳은 예측이 빗나갈 때 무는 값이다. 직접 구현은 1.5ns를 물어 순이득 6ns가 남지만, 라이브러리는 18.8ns를 물어 아낀 12.3ns를 다 까먹고 6.5ns 손해로 끝난다. 벤치마크 표의 44.42 → 51.02ns가 이 6.5ns다.
+조기 반환이 벌어 주는 몫은 양쪽 다 적지 않다. 예측만 된다면 직접 구현은 7.5ns, 라이브러리는 12.3ns를 아낀다. 갈리는 곳은 예측이 빗나갈 때 무는 값이다. 직접 구현은 1.5ns를 물어 순이득 6ns가 남지만, 라이브러리는 18.8ns를 물어 아낀 12.3ns를 다 까먹고 6.5ns 손해로 끝난다. 벤치마크 표의 44.42 → 51.02ns가 이 손해다.
 
 같은 조기 반환이 한쪽에서는 최적화이고 다른 쪽에서는 비용이다.
 
@@ -824,3 +824,32 @@ OK
 삭제가 필요하면 Cuckoo Filter를 먼저 본다. Counting Bloom Filter는 개념이 단순해 삭제 문제를 설명하기에는 좋지만, 메모리 4배와 오버플로 처리를 떠안아야 한다. Cuckoo Filter를 제안한 논문 자체가 Counting Bloom Filter를 비교 대상으로 놓고 공간과 성능 양쪽에서 낫다고 주장하고, 그래서 새로 만드는 시스템에서 Counting Bloom Filter를 고를 이유는 많지 않다.
 
 HyperLogLog는 대안이 아니라 다른 도구다. "있는가"를 물을 필요가 없고 "몇 개인가"만 알면 되는 자리를 Bloom Filter로 풀고 있다면 그쪽이 훨씬 싸다.
+
+# 8. 정리
+
+긴 글이었으니 남길 것만 남긴다. 세 가지다.
+
+**false negative가 없다는 비대칭이 쓸 자리를 정한다.** "없음"이 확실하다는 것 하나로 없다고 판정된 요청에 대해서는 뒤쪽 저장소 조회를 통째로 생략할 수 있다. 뒤집으면 뒤에서 확인해 줄 정답 소스가 있는 자리에 맞는다는 뜻이다. 6장의 사례가 전부 이 구조였다. SSTable 뒤에는 디스크 블록이, 캐시 앞단 뒤에는 DB가, Safe Browsing 앞단 뒤에는 서버가 있었다. 크롤러(6.4절)만 그 소스가 없어 실제 손실을 감수하는 경우였고, 감수하겠다는 결정을 도입 시점에 내려 둬야 하는 것도 그래서다.
+
+**m과 k는 감이 아니라 공식으로 정한다.** 예상 원소 수 n과 허용 오차 p를 정하면 `m = -n * ln(p) / (ln2)^2`와 `k = (m/n) * ln2`가 나머지를 결정한다. 이 말은 예상 원소 수를 모르면 이 자료구조를 쓰기 어렵다는 뜻이기도 하다. n을 잘못 잡은 필터는 조용히 걸러내는 힘을 잃고, 스스로 그 사실을 알려 주지 않는다.
+
+**실무에서는 라이브러리를 쓰되 파라미터의 의미는 알고 쓴다.** 직접 구현은 원리를 이해하는 데 쓰고, 운영에는 직렬화와 여유 있는 상한이 붙은 라이브러리를 쓴다. 4장의 130줄이 5장의 라이브러리보다 빨랐지만 그 속도는 기능과 규모 상한을 내주고 산 값이었다.
+
+이 글에서 실측으로 바로잡은 것이 둘 있다. `h2 |= 1` 홀수 보정이 막아 주는 것은 짝수가 아니라 `h2 == 0`이고(4.3절), 없는 키 조회에서 라이브러리가 느려지는 것은 조기 반환을 안 해서가 아니라 그 분기가 예측되지 않기 때문이다(5.2.1절). 둘 다 그럴듯하고 널리 인용되는 설명이었는데 재 보니 달랐다. 널리 쓰이는 설명이라도 직접 재 보면 다를 수 있다.
+
+본 포스팅에서 작성한 코드는 [github](https://github.com/kenshin579/tutorials-go/tree/master/golang/data-structure/bloom-filter)에서 확인할 수 있다.
+
+# 9. 참고
+
+- https://en.wikipedia.org/wiki/Bloom_filter
+- https://pkg.go.dev/github.com/bits-and-blooms/bloom/v3
+- https://pkg.go.dev/github.com/cespare/xxhash/v2
+- https://redis.io/docs/latest/develop/data-types/probabilistic/bloom-filter/
+- https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/
+- https://cassandra.apache.org/doc/latest/cassandra/managing/operating/bloom_filters.html
+- https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter
+- https://developers.google.com/safe-browsing/v4/update-api
+- https://chromiumcodereview.appspot.com/10896048/
+- https://github.com/seiflotfy/cuckoofilter
+- https://www.eecs.harvard.edu/~michaelm/postscripts/rsa2008.pdf
+- https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf
