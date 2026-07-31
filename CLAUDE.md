@@ -4,93 +4,133 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-IT 블로그 플랫폼 - 마크다운 기반 정적 사이트 생성기
-- React 18 + TypeScript + Express.js 풀스택 애플리케이션
-- 마크다운 파일에서 기술 블로그 콘텐츠를 로드하여 표시
+IT 블로그 플랫폼 - 마크다운 기반 정적 사이트
+- Next.js 16 (App Router) + React 19 + TypeScript
+- **완전 정적 내보내기** (`output: 'export'`) - 백엔드도 데이터베이스도 없다
+- 콘텐츠는 `contents/` 아래 마크다운 파일이고, 빌드 시 JSON으로 뽑아 쓴다
 - shadcn/ui 컴포넌트 라이브러리 사용
+- 한국어/영어 이중 언어 (`/` 와 `/en/`)
 
 ## Development Commands
 
 ### Essential Commands
 ```bash
-# Development server with hot-reload
+# 개발 서버 (기본 포트 3000)
 npm run dev
 
-# Type checking
+# 타입 체크
 npm run check
 
-# Build for production
+# 프로덕션 빌드 (생성 스크립트 4개 실행 후 next build → out/)
 npm run build
 
-# Run production build
+# 빌드 결과 미리보기 (out/ 을 정적 서빙, 포트 3000)
 npm start
-
-# Database migration (Drizzle ORM)
-npm run db:push
 ```
+
+빌드 전용 스크립트는 개별 실행도 가능하다. `npm run build`가 아래 순서로 전부 돌린 뒤 `next build`를 호출한다.
+
+```bash
+npm run generate:manifest   # contents/ 스캔 → public/content-manifest.json
+npm run generate:search     # 검색 인덱스 → public/search-index.json
+npm run generate:feeds      # RSS → public/rss.xml, public/en/rss.xml
+npm run copy:assets         # 글 폴더의 이미지·슬라이드를 public/ 하위로 복사
+```
+
+**lint 스크립트는 없다.** 타입 검사는 `npm run check`(tsc)로 한다.
 
 ## Project Structure
 
-### Architectural Overview
-
-**Monorepo Layout:**
 ```
-/client          # React frontend (Vite)
-  /src
-    /components  # UI components (shadcn/ui + custom)
-    /pages       # Route pages (Home, Article, Series, NotFound)
-    /lib         # Utilities (articles.ts, markdown.ts)
-    /hooks       # React hooks
-  /public
-    /articles    # Markdown article files + manifest.json
+/app             # Next.js App Router
+  layout.tsx     # 루트 레이아웃
+  page.tsx       # 홈 (글 목록)
+  [slug]/        # 개별 글
+  posts/         # 전체 글 목록
+  category/[name]/
+  series/, series/[slug]/
+  tags/, tags/[name]/
+  slides/        # 슬라이드 데크 목록
+  sitemap.ts     # sitemap.xml 생성
+  robots.ts      # robots.txt 생성
+  en/            # 영문 라우트 (위 구조를 그대로 미러링)
+  dev/tokens/    # 디자인 토큰 확인용 내부 페이지
 
-/server          # Express backend
-  index.ts       # Main server entry
-  routes.ts      # API routes (minimal)
-  storage.ts     # In-memory storage implementation
-  vite.ts        # Vite dev middleware
+/components      # UI 컴포넌트
+  /ui            # shadcn/ui (47개)
+  /article       # 목차, mermaid 렌더러, 시리즈 네비게이션, 읽기 진행바 등
+  /home, /posts, /slides, /chat
 
-/shared          # Shared types and schema
-  schema.ts      # Drizzle ORM schema (users table)
+/lib
+  articles.ts    # manifest 로드 + 글 조회 (캐싱)
+  markdown.ts    # frontmatter 파싱 + remark/rehype 파이프라인
+  i18n/          # dictionaries.ts, lang.ts
+  site-config.ts, constants.ts, url.ts
+  chat-api.ts    # ai-chatbot.advenoh.pe.kr 연동
+  inspireme.ts   # inspire-me widget API 연동
 
-/contents        # 빈 디렉토리 (현재 사용 안 함)
+/scripts         # 빌드 시 실행되는 생성기
+  generate-content-manifest.ts
+  generate-search-index.ts
+  generate-feeds.ts
+  copy-assets.ts
+  config.ts      # 블로그 메타데이터 (title, baseUrl, author)
+
+/contents        # 글 원본: {category}/{slug}/index.md
+/docs            # 초안 워크플로우 (start → merge_ready → done)
+/public          # 정적 자산 + 빌드 산출물(content-manifest.json, search-index.json, rss.xml)
+/config          # popular-searches.ts, social.ts
 ```
 
 ### Import Aliases
-- `@/*` → `client/src/*`
-- `@shared/*` → `shared/*`
-- `@assets/*` → `attached_assets/*`
+`tsconfig.json`에 정의되어 있고 모두 프로젝트 루트 기준이다.
+- `@/*` → `./*`
+- `@/components/*` → `./components/*`
+- `@/lib/*` → `./lib/*`
 
 ### Key Architectural Patterns
 
-**Article Loading System:**
-- `client/src/lib/articles.ts` - Promise-based caching prevents duplicate fetches
-- `loadArticles()` - Loads from `/articles/manifest.json`, then fetches each .md file
-- Cache persists until `clearArticlesCache()` called
-- 검색 모달은 lazy loading으로 최적화
+**빌드 타임 콘텐츠 파이프라인:**
+런타임에 마크다운을 읽지 않는다. 빌드 시 `scripts/generate-content-manifest.ts`가 `contents/`를 스캔해 `public/content-manifest.json`을 만들고, 페이지들은 이 manifest를 통해 글 메타데이터를 얻는다.
 
-**Markdown Processing:**
-- `client/src/lib/markdown.ts` - YAML frontmatter 파싱 + marked 라이브러리
-- Prism.js로 코드 하이라이팅 (TypeScript, JavaScript, JSX, TSX, CSS, Bash, JSON)
-- TOC 자동 생성 (heading 요소에서 추출)
-- 읽기 시간 계산 (200 단어/분)
+- **카테고리는 디렉토리 이름에서 자동으로 결정된다.** `contents/{category}/{slug}/` 구조를 그대로 읽는다.
+- 한 글 폴더에 `index.md`(한국어)와 `index_en.md`(영문)가 함께 있으면 같은 slug의 언어 변형으로 묶인다.
+- manifest에는 slug, category, lang, title, date, tags, series, seriesOrder, readTime, hasSlides 등이 들어간다. 읽기 시간도 이때 계산된다.
 
-**Routing (Wouter):**
-- `/` - Home page (article listing)
-- `/series` - Series page (articles grouped by series)
-- `/article/:slug` - Individual article view
-- 404 - Not found page
+**Article Loading (`lib/articles.ts`):**
+- manifest와 개별 글을 모듈 수준에서 캐싱한다 (`manifestCache`, `articleCache`)
+- `Frank's IT News` 로 시작하는 시리즈는 격주 뉴스로 따로 취급한다 (`isBiweeklySeries`)
+
+**Markdown Processing (`lib/markdown.ts`):**
+- `gray-matter`로 frontmatter 파싱
+- unified 파이프라인: `remark-parse` → `remark-gfm` → `remark-rehype` → `rehype-raw` → `rehype-slug` → `rehype-autolink-headings` → `rehype-prism-plus` → `rehype-stringify`
+- 코드 하이라이팅은 `rehype-prism-plus`(빌드 시), Mermaid는 `components/article/mermaid-renderer.tsx`(클라이언트)
+- 목차는 `components/article/table-of-contents.tsx`
+
+**Routing (Next.js App Router):**
+- 정적 내보내기라 모든 경로가 빌드 시 생성된다. `trailingSlash: true`
+- 한국어가 루트(`/`), 영문이 `/en/` 하위. 영문 라우트는 한국어 구조를 그대로 미러링한다
+- Netlify에서 `Accept-Language: en` 요청을 `/en/`으로 302 리다이렉트한다 (`netlify.toml`)
 
 **Styling:**
-- Tailwind CSS with shadcn/ui components
-- Light/Dark mode with localStorage persistence
-- Typography: Inter (headings/body), JetBrains Mono (code)
-- 반응형 디자인 (모바일 우선)
+- Tailwind CSS + shadcn/ui ("new-york" 스타일, `components.json`)
+- `next-themes`로 라이트/다크 모드
+- 반응형 디자인 (모바일 우선). 헤더 데스크톱 분기점은 `lg`(1024px)
 
 ## Content Management
 
 ### Article Structure
-**Location:** `client/public/articles/*.md`
+
+**Location:** `contents/{카테고리}/{글-제목}/index.md`
+
+한 글은 폴더 하나다. 폴더 안에 들어가는 것들:
+
+| 파일 | 용도 |
+|------|------|
+| `index.md` | 한국어 본문 (필수) |
+| `index_en.md` | 영문 본문 (선택) |
+| `cover.png` 등 이미지 | 본문에서 상대 경로로 참조. 빌드 시 `copy-assets.ts`가 `public/` 하위로 복사한다 |
+| `slides.html` / `slides_en.html` | 발표용 슬라이드 데크 (선택, 아래 참조) |
 
 **Required Format:**
 ```markdown
@@ -103,6 +143,7 @@ tags:
   - tag1
   - tag2
 series: "시리즈명"  # optional
+seriesOrder: 1      # optional
 ---
 
 Markdown content...
@@ -110,7 +151,7 @@ Markdown content...
 
 **주의:** `category`는 frontmatter에 넣지 않는다. `contents/{category}/` 디렉토리 구조로 자동 결정된다.
 
-**manifest.json:** Must list all article filenames for discovery
+**manifest는 수동으로 관리하지 않는다.** `public/content-manifest.json`은 빌드 시 `contents/`를 스캔해 자동 생성된다. 글을 추가할 때 등록할 목록 같은 것은 없다.
 
 ### 슬라이드 데크 (선택)
 
@@ -136,10 +177,9 @@ Markdown content...
 - 코드를 먼저 작성하고 테스트 통과 확인 후 블로그 글 작성
 
 ### Adding New Articles
-1. `client/public/articles/` 디렉토리에 `.md` 파일 생성
+1. `contents/{카테고리}/{글-제목}/index.md` 생성 (초안 단계라면 `docs/start/{글-제목}/index.md`)
 2. YAML frontmatter 작성 (위 형식 참조)
-3. `manifest.json`에 파일명 추가
-4. 브라우저에서 캐시 클리어 후 확인 (`clearArticlesCache()`)
+3. `npm run dev`로 확인. manifest는 자동 생성되므로 따로 등록할 곳이 없다
 
 #### 블로그 글 작성 워크플로우
 
@@ -171,8 +211,8 @@ Markdown content...
 ## Design System
 
 **Component Library:** shadcn/ui (Radix UI primitives)
-- `client/src/components/ui/` - shadcn components
-- `components.json` - shadcn configuration ("new-york" style)
+- `components/ui/` - shadcn 컴포넌트
+- `components.json` - shadcn 설정 ("new-york" 스타일)
 
 **Design Guidelines:** `design_guidelines.md` 참조
 - Medium/Dev.to 스타일 개발자 중심 디자인
@@ -200,32 +240,41 @@ Markdown content...
 
 ## Database
 
-**ORM:** Drizzle ORM with PostgreSQL (Neon serverless)
-**Schema:** `shared/schema.ts` - users table (id, username, password)
-**Configuration:** `drizzle.config.ts`
-**Environment:** `DATABASE_URL` 환경 변수 필요
+**없다.** 이 블로그에는 데이터베이스도 백엔드도 없다. 모든 콘텐츠는 `contents/` 아래 마크다운 파일이고, 빌드 시 JSON으로 뽑아 정적 사이트로 내보낸다.
 
-**현재 상태:** 데이터베이스 구성되어 있으나 블로그는 정적 파일 시스템 사용
+외부 서비스 연동이 두 개 있지만 별도 서비스의 공개 API를 호출하는 것뿐이다.
+- `lib/chat-api.ts` → `ai-chatbot.advenoh.pe.kr` (블로그 Q&A 챗봇)
+- `lib/inspireme.ts` → `inspire-me.advenoh.pe.kr` (명언 위젯)
 
 ## Search
 
 **Library:** MiniSearch (클라이언트 사이드 전문 검색)
-- title, excerpt, tags, content 검색
-- 퍼지 매칭 활성화
-- 검색 모달 열릴 때 lazy loading
-- 최대 10개 결과 제한
+- 인덱스는 빌드 시 `scripts/generate-search-index.ts`가 `public/search-index.json`으로 생성한다
+- 검색 UI는 `components/command-k.tsx` (Cmd+K)
+- 인기 검색어는 `config/popular-searches.ts`에 수동 큐레이션되어 있다 (분석 연동 없음)
 
 ## Build System
 
 **Development:**
-- Vite dev server for client (HMR)
-- tsx for server hot-reload
-- Port 5000 (Express server)
+- `next dev` (기본 포트 3000)
 
 **Production:**
-- Vite builds client → `dist/public/`
-- esbuild bundles server → `dist/index.js`
-- Express serves static files from `dist/public/`
+- `npm run build` → 생성 스크립트 4개 실행 후 `next build`
+- `output: 'export'`이므로 결과물은 `out/` 디렉토리의 정적 파일
+- `npm start`는 `npx serve out -l 3000`으로 결과물을 미리보기한다
+
+**Deployment (Netlify):**
+- `netlify.toml`: `command = "npm run build"`, `publish = "out"`
+- Node 22, `NPM_FLAGS = "--legacy-peer-deps"`
+- deploy preview 컨텍스트는 빌드를 건너뛴다
+- `Accept-Language: en` 요청을 `/en/`으로 302 리다이렉트
+- 레거시 `-en` 접미사 URL은 `/en/{ko-slug}/`로 301 리다이렉트
+
+**GitHub Actions (`.github/workflows/`):**
+- `auto-merge-pr.yml` - 매일 07:00 KST에 조건을 만족하는 PR 자동 머지
+- `auto-assign-pr.yml`, `label-merge-conflict.yml`, `fix-post-date.yml`
+- `biweekly-news.yml` - 격주 뉴스 글 생성
+- `generate-readme.yml`, `supabase-keepalive.yml`
 
 ## Korean Content Encoding
 
@@ -233,7 +282,7 @@ Markdown content...
 
 **Verify encoding:**
 ```bash
-file -I client/public/articles/your-file.md
+file -I contents/{카테고리}/{글-제목}/index.md
 # Expected: text/plain; charset=utf-8
 ```
 
