@@ -852,26 +852,15 @@ HyperLogLog는 대안이 아니라 다른 도구다. "있는가"를 물을 필�
 
 # 9. 참고
 
-* <https://en.wikipedia.org/wiki/Bloom_filter>
-
-* <https://pkg.go.dev/github.com/bits-and-blooms/bloom/v3>
-
-* <https://pkg.go.dev/github.com/cespare/xxhash/v2>
-
-* <https://redis.io/docs/latest/develop/data-types/probabilistic/bloom-filter/>
-
-* <https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/>
-
-* <https://cassandra.apache.org/doc/latest/cassandra/managing/operating/bloom_filters.html>
-
-* <https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter>
-
-* <https://developers.google.com/safe-browsing/v4/update-api>
-
-* <https://chromiumcodereview.appspot.com/10896048/>
-
-* <https://github.com/seiflotfy/cuckoofilter>
-
-* <https://www.eecs.harvard.edu/~michaelm/postscripts/rsa2008.pdf>
-
-* <https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf>
+* [Bloom filter - Wikipedia](https://en.wikipedia.org/wiki/Bloom_filter)
+* [bits-and-blooms/bloom - Go 패키지 문서](https://pkg.go.dev/github.com/bits-and-blooms/bloom/v3)
+* [cespare/xxhash - Go 패키지 문서](https://pkg.go.dev/github.com/cespare/xxhash/v2)
+* [Bloom filter - Redis 문서](https://redis.io/docs/latest/develop/data-types/probabilistic/bloom-filter/)
+* [HyperLogLog - Redis 문서](https://redis.io/docs/latest/develop/data-types/probabilistic/hyperloglogs/)
+* [Bloom Filters - Apache Cassandra 문서](https://cassandra.apache.org/doc/latest/cassandra/managing/operating/bloom_filters.html)
+* [RocksDB Bloom Filter - RocksDB Wiki](https://github.com/facebook/rocksdb/wiki/RocksDB-Bloom-Filter)
+* [Safe Browsing Update API (v4) - Google for Developers](https://developers.google.com/safe-browsing/v4/update-api)
+* [Issue 10896048: Transition safe browsing from bloom filter to prefix set - Chromium Code Review](https://chromiumcodereview.appspot.com/10896048/)
+* [seiflotfy/cuckoofilter - Cuckoo Filter Go 구현](https://github.com/seiflotfy/cuckoofilter)
+* [Kirsch & Mitzenmacher, "Less Hashing, Same Performance: Building a Better Bloom Filter" (2008)](https://www.eecs.harvard.edu/~michaelm/postscripts/rsa2008.pdf)
+* [Fan 외, "Cuckoo Filter: Practically Better Than Bloom" (CoNEXT 2014)](https://www.cs.cmu.edu/~dga/papers/cuckoo-conext2014.pdf)
