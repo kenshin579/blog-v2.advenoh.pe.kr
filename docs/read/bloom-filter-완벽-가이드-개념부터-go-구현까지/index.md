@@ -138,9 +138,9 @@ m, n, k, p 네 값은 하나의 식으로 묶여 있어서 셋을 정하면 나�
 
 ## 3.1 false positive 확률 공식
 
-$$
+```math
 p = \left(1 - e^{-kn/m}\right)^k
-$$
+```
 
 유도 과정은 네 단계다.
 
@@ -160,15 +160,15 @@ $$
 
 k를 늘리면 상반된 두 효과가 생긴다. 확인할 비트가 많아지니 우연히 전부 1일 확률은 낮아지지만, 원소당 세우는 비트도 많아지니 배열이 빨리 채워진다. 그래서 p를 최소로 만드는 k가 중간 어딘가에 존재한다. 위 식을 k에 대해 미분해 최솟값을 구하면 다음과 같다.
 
-$$
+```math
 k = \frac{m}{n} \ln 2
-$$
+```
 
 이 k에서 비트 배열은 정확히 절반이 1로 채워진다. 이 값을 원래 식에 대입하고 목표 p에 대해 m을 풀면 필요한 비트 수가 나온다.
 
-$$
+```math
 m = -\frac{n \ln p}{(\ln 2)^2}
-$$
+```
 
 두 식을 그대로 옮긴 코드가 [tutorials-go의 bloom-filter 예제](https://github.com/kenshin579/tutorials-go/tree/master/golang/data-structure/bloom-filter)에 있다.
 
