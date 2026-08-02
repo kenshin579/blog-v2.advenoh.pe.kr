@@ -44,7 +44,7 @@ To compile and run a Java program with the JDK version you want, you basically n
 - Modify the JAVA_HOME environment variable
     - JAVA_HOME=“/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home"
 - Add the JDK/bin folder to PATH as well
-    - PATH=$PATH:$JAVA_HOME/bin
+    - `PATH=$PATH:$JAVA_HOME/bin`
 
 For environment variables, you can mostly just edit the environment file of the shell you use. I use the zsh shell, so I modified .zshrc as follows.
 

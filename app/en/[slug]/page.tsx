@@ -19,6 +19,8 @@ import { RecordView } from '@/components/article/record-view';
 import { ReadingProgress } from '@/components/article/reading-progress';
 import { Breadcrumb } from '@/components/breadcrumb';
 import { seriesSlug, categorySlug } from '@/lib/url';
+// 수식 스타일. 글 페이지에서만 불러와 목록/홈에는 실리지 않게 한다.
+import 'katex/dist/katex.min.css';
 
 interface ArticlePageProps {
   params: Promise<{

@@ -44,7 +44,7 @@ $ /usr/libexec/java_home -V
 - JAVA_HOME 환경 변수를 수정한다
     - JAVA_HOME=“/Library/Java/JavaVirtualMachines/jdk1.8.0_121.jdk/Contents/Home"
 - PATH에도 JDK/bin 폴더를 추가한다
-    - PATH=$PATH:$JAVA_HOME/bin
+    - `PATH=$PATH:$JAVA_HOME/bin`
 
 환경변수는 대부분 사용하는 shell의 환경 파일을 손 보면 된다. 저는 zsh shell을 사용해서 .zshrc를 아래처럼 수정했다.
 
