@@ -2,8 +2,10 @@ import matter from 'gray-matter';
 import { unified } from 'unified';
 import remarkParse from 'remark-parse';
 import remarkGfm from 'remark-gfm';
+import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
 import rehypeRaw from 'rehype-raw';
+import rehypeKatex from 'rehype-katex';
 import rehypeSlug from 'rehype-slug';
 import rehypeAutolinkHeadings from 'rehype-autolink-headings';
 import rehypePrism from 'rehype-prism-plus';
@@ -107,8 +109,13 @@ export async function parseMarkdown(
   const result = await unified()
     .use(remarkParse) // markdown → mdast
     .use(remarkGfm) // GitHub Flavored Markdown 지원
+    .use(remarkMath) // $...$ 인라인 / $$...$$ 디스플레이 수식 파싱
     .use(remarkRehype, { allowDangerousHtml: true }) // mdast → hast
     .use(rehypeRaw) // raw HTML 파싱
+    // 수식 렌더링은 반드시 rehypePrism 앞에 둔다. remark-math 가 남긴 노드는
+    // language-math 클래스를 달고 있어서, prism 이 먼저 돌면 수식을 코드로 오인해
+    // 하이라이팅해 버린다.
+    .use(rehypeKatex) // TeX → KaTeX HTML (빌드 타임 렌더링)
     .use(rehypeSlug) // heading에 id 추가
     .use(rehypeAutolinkHeadings, {
       behavior: 'wrap',
