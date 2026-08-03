@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-07-02
+Updated 2026-08-03
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -48,6 +48,7 @@ Updated 2026-07-02
 * [Frank's IT Biweekly News (2026-05-18 ~ 2026-06-01)](https://blog.advenoh.pe.kr/news-2026-06-01/)
 * [Frank's IT Biweekly News (2026-06-01 ~ 2026-06-15)](https://blog.advenoh.pe.kr/news-2026-06-15/)
 * [Frank's IT Biweekly News (2026-06-17 ~ 2026-07-01)](https://blog.advenoh.pe.kr/news-2026-07-01/)
+* [Frank's IT Biweekly News (2026-07-01 ~ 2026-07-15)](https://blog.advenoh.pe.kr/news-2026-07-15/)
 
 ## Cloud
 * [(Docker-1) Docker Command Cheat Sheet](https://blog.advenoh.pe.kr/docker-도커-명령어-모음/)
@@ -65,18 +66,18 @@ Updated 2026-07-02
 * [Deploying a Node.js + MongoDB App to Heroku](https://blog.advenoh.pe.kr/heroku에-node-js-mongodb-app-배포하기/)
 * [Easily Build a Local Kubernetes Cluster with Minikube on macOS](https://blog.advenoh.pe.kr/맥에서-minikube로-로컬-kubernetes-클러스터-쉽게-구축하기/)
 * [Getting Started with k9s — Beyond kubectl, a Terminal UI to 'Explore' Your Cluster](https://blog.advenoh.pe.kr/k9s-쿠버네티스-터미널-ui-입문/)
+* [Grafana Complete Guide Part 1 - Prometheus and Grafana Basics](https://blog.advenoh.pe.kr/grafana-완벽-가이드-1-prometheus와-grafana-기초/)
+* [Grafana 완벽 가이드 1편 - Prometheus와 Grafana 기초](https://blog.advenoh.pe.kr/grafana-완벽-가이드-1-prometheus와-grafana-기초/)
 * [Heroku에 Node.js+MongoDB App 배포하기](https://blog.advenoh.pe.kr/heroku에-node-js-mongodb-app-배포하기/)
 * [How to Use kcat](https://blog.advenoh.pe.kr/kcat-사용방법/)
 * [Ingress NGINX 지원 종료 이후, Gateway API로의 마이그레이션 전략](https://blog.advenoh.pe.kr/ingress-nginx-지원-종료-이후-gateway-api로의-마이그레이션-전략/)
 * [Installing Docker on a Raspberry Pi](https://blog.advenoh.pe.kr/라즈베리파이에-도커-설치하기/)
 * [Installing Kafka with Helm](https://blog.advenoh.pe.kr/헬름으로-kafka-설치하기/)
 * [Installing an SSL Certificate on an Nginx Server (Issuing a Free Let's Encrypt Certificate)](https://blog.advenoh.pe.kr/ssl-인증서-ngnix-서버에-설치하기/)
-* [Introducing Jaeger](https://blog.advenoh.pe.kr/jaeger에-대한-소개-en/)
 * [Introduction to Jaeger](https://blog.advenoh.pe.kr/jaeger에-대한-소개/)
 * [Introduction to Kafka Connect](https://blog.advenoh.pe.kr/kafka-connect에-대한-소개/)
 * [Introduction to ksqlDB](https://blog.advenoh.pe.kr/ksqldb-소개/)
 * [Jaeger에 대한 소개](https://blog.advenoh.pe.kr/jaeger에-대한-소개/)
-* [Kafka CLI Collection](https://blog.advenoh.pe.kr/kafka-cli-명령어-모음-en/)
 * [Kafka CLI Commands Cheat Sheet](https://blog.advenoh.pe.kr/kafka-cli-명령어-모음/)
 * [Kafka CLI 명령어 모음](https://blog.advenoh.pe.kr/kafka-cli-명령어-모음/)
 * [Kafka Connect에 대한 소개](https://blog.advenoh.pe.kr/kafka-connect에-대한-소개/)
