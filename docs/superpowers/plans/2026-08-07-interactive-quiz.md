@@ -726,6 +726,18 @@ git commit -m "feat: 본문 컨테이너 신설하고 퀴즈 portal 연결
 
 ---
 
+## Task 3 실행 중 발견된 수정 사항 (반영 완료)
+
+계획에 없었지만 리뷰·검증에서 드러나 Task 3 범위로 반영된 것들:
+
+1. **인라인 `{ __html: html }` 객체가 퀴즈를 파괴한다 (Critical).** React는 `dangerouslySetInnerHTML`을 참조 동등성으로 비교하므로, 인라인 객체를 쓰면 `setMounts` 재렌더마다 innerHTML이 재적용되어 방금 삽입한 mount가 사라진다. 프로덕션에서도 재현된다. → `useMemo(() => ({ __html: html }), [html])`로 안정화.
+2. **`pre.replaceWith(mount)`는 StrictMode 이중 effect에서 깨진다.** 첫 실행이 소스를 없애 두 번째 스캔이 빈손이 된다. → 숨김+삽입(`pre.style.display='none'; pre.after(mount)`)과 cleanup 복원의 가역 패턴으로 교체.
+3. **`rehype-prism-plus`가 미등록 언어에서 예외를 던진다.** `quiz` 펜스가 든 글은 `getArticle`이 null을 반환해 **글 전체가 404**가 된다. → `lib/markdown.ts`의 rehypePrism 옵션에 `ignoreMissing: true` 추가. Task 4~5의 전제 조건.
+
+교훈: 후처리 결과물을 확인할 때는 mermaid처럼 이미 되는 것 말고 **새로 만든 것(quiz 블록)이 실제 화면에 뜨는지**를 봐야 한다. Task 4~5의 브라우저 확인은 반드시 `npm run build` + `npx serve out`으로 한다 (이 환경의 `npm run dev`는 동적 slug 라우트에서 500 — 기존 문제).
+
+---
+
 ## Task 4: go-fx 글 퀴즈 변환 (한/영)
 
 **Files:**
