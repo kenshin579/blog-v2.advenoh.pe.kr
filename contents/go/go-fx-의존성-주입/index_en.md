@@ -644,77 +644,71 @@ The selection guide is simple.
 
 # 5. Quiz
 
-If you've read this far, you should be able to answer the questions below. Try answering on your own before expanding, and if you get stuck, go back to the section in parentheses.
+If you've read this far, these are questions you can answer. Pick an answer and the explanation shows up right away.
 
-<details>
-<summary><b>Q1.</b> You registered a pile of constructors with <code>fx.Provide()</code>, but nothing runs when the app starts. Why?</summary>
+```quiz
+- type: code
+  q: "What happens when you run this app?"
+  lang: go
+  code: |
+    app := fx.New(
+        fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
+    )
+    app.Run()
+  choices: ["Every registered constructor is called in order", "No constructor is ever called", "Only NewUserService is called", "It fails to compile"]
+  answer: 1
+  explain: "fx.Provide only registers and defers execution — it is lazy. For the graph to be assembled, something has to demand those types, and fx.Invoke is that starting point. With no Invoke handling side effects (server boot, route registration), no constructor is ever called. (2.2)"
 
-**A.** `fx.Provide` only registers; it defers execution. For the graph to actually get assembled, something has to demand those types, and `fx.Invoke` is that starting point. If there is no `Invoke` handling side effects (server boot, route registration), no constructor is ever called. (2.2)
+- type: mcq
+  q: "What is the difference between fx.Provide and fx.Supply?"
+  choices: ["Provide registers a value, and Supply registers a constructor function", "Provide registers a constructor function that fx wires into the graph by its return type, while Supply registers an already-built value as is", "Both register constructors, but only Supply runs immediately", "Supply can register only interfaces and Provide only structs"]
+  answer: 1
+  explain: "Provide registers a constructor function, and fx wires it into the graph based on that function's return type. Supply registers an already-built value as is. For values with no construction logic — config structs, constants — Supply is the right fit. (2.2)"
 
-</details>
+- type: mcq
+  q: "How does fx decide the order in which constructors are called?"
+  choices: ["In the order they were registered with fx.Provide", "By analyzing each constructor's parameter types and return type", "Alphabetically by constructor name", "In the order they are listed in fx.Invoke"]
+  answer: 1
+  explain: "It looks only at each constructor's parameter types and return type. database.New(cfg *config.Config) requires *config.Config, so config.New(), which returns that type, is called first. Registration order does not matter, and a circular dependency is reported as an error at app startup. (2.3)"
 
-<details>
-<summary><b>Q2.</b> What is the difference between <code>fx.Provide</code> and <code>fx.Supply</code>?</summary>
+- type: mcq
+  q: "You registered registerHooks with fx.Invoke. When exactly does the server start?"
+  choices: ["Immediately when fx.New() is called", "When fx.Provide calls the server constructor", "When app.Start(ctx) is called and the OnStart hook runs", "The moment the Invoke body of registerHooks runs"]
+  answer: 2
+  explain: "It splits into two points. The Invoke function body runs immediately when fx.New() is called, but all it does there is register hooks on the Lifecycle. The OnStart body (the actual server boot) runs later, when app.Start(ctx) is called. That is precisely why fx.Lifecycle has this two-stage structure. (2.4)"
 
-**A.** `Provide` registers a **constructor function**, and fx wires it into the graph based on that function's return type. `Supply` registers an **already-built value** as is. For values with no construction logic — config structs, constants — `Supply` is the right fit. (2.2)
+- type: blank
+  q: "Even after splitting domains into fx.Module, the fx.Provide calls inside are exposed to the global graph by default. To hide one for module-internal use only, put ___ in the same fx.Provide() group."
+  answer: ["fx.Private", "Private"]
+  explain: "fx.Module only names and groups things — the fx.Provide calls inside it are still exposed to the global graph by default. To hide a dependency for module-internal use only, put fx.Private in the same fx.Provide() group. Then requesting that type from outside fails while the graph is being built. (3.1, 3.5)"
 
-</details>
+- type: blank
+  q: "To add logging without touching a single line of the existing Repository code, take the original dependency as a parameter and return a wrapped value of the same type using ___."
+  answer: ["fx.Decorate", "Decorate"]
+  explain: "That's fx.Decorate. Take the original dependency as a parameter and return a wrapped value of the same type, and fx swaps that node in the graph. Whatever injects this dependency (UserService) receives the wrapper with no code changes. (3.2)"
 
-<details>
-<summary><b>Q3.</b> How does fx decide the order in which constructors are called?</summary>
+- type: blank
+  q: "To keep a read and a write connection of the same *DBConnection type apart, give each constructor a ___ tag (e.g. readDB) via fx.Annotate and fx.ResultTags, and match it on the receiving fx.In struct field."
+  answer: ["name", "name:"]
+  explain: "Use fx.Annotate with fx.ResultTags to give each constructor a name tag (e.g. name:readDB), and on the receiving side match it with a name tag on a field of a struct that embeds fx.In. Even with identical types, the names keep them apart. (3.3)"
 
-**A.** It looks only at each constructor's **parameter types and return type**. `database.New(cfg *config.Config)` requires `*config.Config`, so `config.New()`, which returns that type, is called first. Registration order does not matter, and a circular dependency is reported as an error at app startup. (2.3)
+- type: ox
+  q: "Injecting all three Notifier implementations at once is only possible with the group: tag and is entirely impossible with the name: tag."
+  answer: false
+  explain: "The name: tag can do it too. But you would have to name each implementation and receive them field by field, so every new implementation forces a change on the receiving side — the wrong tool. Register them with group:notifiers and receive a []Notifier slice field carrying the same tag; then adding an implementation leaves the receiving code untouched. (3.4)"
 
-</details>
+- type: mcq
+  q: "You want a Mock instead of the real Repository in a test. Why isn't fx.Replace(&mockUserRepo{}) enough on its own?"
+  choices: ["Because fx.Replace cannot be used in tests", "Because the type of &mockUserRepo{} is *mockUserRepo, not the UserRepository interface, so it does not match", "Because you must first delete the existing fx.Provide before fx.Replace", "Because a Mock can only be injected with fx.Supply"]
+  answer: 1
+  explain: "fx matches by type, and the type of &mockUserRepo{} is *mockUserRepo, not the UserRepository interface. Wrap it as fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository))) so it is registered under the interface type; only then does it replace the existing Provide. (4.2)"
 
-<details>
-<summary><b>Q4.</b> You registered <code>registerHooks</code> with <code>fx.Invoke</code>. When exactly does the server start?</summary>
-
-**A.** It splits into two points. The `Invoke` function body runs immediately when `fx.New()` is called, but all it does there is *register* hooks on the `Lifecycle`. The `OnStart` body (the actual server boot) runs later, when `app.Start(ctx)` is called. That is precisely why `fx.Lifecycle` has this two-stage structure. (2.4)
-
-</details>
-
-<details>
-<summary><b>Q5.</b> You split domains into separate <code>fx.Module</code>s, but another Module ended up receiving the same DB handle. What did you miss?</summary>
-
-**A.** `fx.Module` only names and groups things — the `fx.Provide` calls inside it are still exposed to the global graph by default. To hide a dependency for module-internal use only, put `fx.Private` in the same `fx.Provide()` group. Then requesting that type from outside fails while the graph is being built. (3.1, 3.5)
-
-</details>
-
-<details>
-<summary><b>Q6.</b> You want to add logging without touching a single line of the existing Repository code.</summary>
-
-**A.** That's `fx.Decorate`. Take the original dependency as a parameter and return a wrapped value of the **same type**, and fx swaps that node in the graph. Whatever injects this dependency (`UserService`) receives the wrapper with no code changes. (3.2)
-
-</details>
-
-<details>
-<summary><b>Q7.</b> How do you inject a read connection and a write connection separately when both are the same <code>*DBConnection</code> type?</summary>
-
-**A.** Use `fx.Annotate` with `fx.ResultTags` to give each constructor a name like `name:"readDB"`, and on the receiving side match it with a `name` tag on a field of a struct that embeds `fx.In`. Even with identical types, the names keep them apart. (3.3)
-
-</details>
-
-<details>
-<summary><b>Q8.</b> You have three <code>Notifier</code> implementations and want all of them injected at once. Can the <code>name:</code> tag do this?</summary>
-
-**A.** It can, but it's the wrong tool. You'd have to name each implementation and receive them field by field, so every new implementation forces a change on the receiving side. Register them with `group:"notifiers"` in `fx.ResultTags` and receive a `[]Notifier` slice field carrying the same tag — then adding an implementation leaves the receiving code untouched. (3.4)
-
-</details>
-
-<details>
-<summary><b>Q9.</b> You want a Mock instead of the real Repository in a test. Why isn't <code>fx.Replace(&mockUserRepo{})</code> enough on its own?</summary>
-
-**A.** fx matches by type, and the type of `&mockUserRepo{}` is `*mockUserRepo`, not the `UserRepository` interface. Wrap it as `fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))` so it is registered under the interface type; only then does it replace the existing Provide. (4.2)
-
-</details>
-
-<details>
-<summary><b>Q10.</b> To pull an assembled instance out in a test, do you use <code>fx.Invoke</code> or <code>fx.Populate</code>?</summary>
-
-**A.** `fx.Populate` is a convenience function implemented on top of `fx.Invoke`, so they are the same underneath; the difference is intent. If the only goal is to store the value in a variable, the closure is dead weight, so use `Populate`. If you need to call or verify something at the same point after extracting it, `Invoke` gives you a body to do that. (4.3)
-
-</details>
+- type: mcq
+  q: "To pull an assembled instance out in a test, do you use fx.Invoke or fx.Populate?"
+  choices: ["Use fx.Populate if the only goal is to store the value in a variable; use fx.Invoke if you need to call or verify something at the same point after extracting it", "They are entirely different features, so fx.Populate cannot pull an instance out at all"]
+  answer: 0
+  explain: "fx.Populate is a convenience function implemented on top of fx.Invoke, so they are the same underneath; the difference is intent. If the only goal is to store the value in a variable, the closure is dead weight, so use Populate. If you need to call or verify something at the same point after extracting it, Invoke gives you a body to do that. (4.3)"
+```
 
 # 6. Wrapping Up
 
