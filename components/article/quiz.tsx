@@ -20,6 +20,7 @@ type Answer = { value: number | boolean | string; correct: boolean } | null;
 export function Quiz({ questions, lang }: QuizProps) {
   const t = getDictionary(lang).quiz;
   const [answers, setAnswers] = useState<Answer[]>(() => questions.map(() => null));
+  const [resetKey, setResetKey] = useState(0);
 
   const answeredCount = answers.filter((a) => a !== null).length;
   const score = answers.filter((a) => a?.correct).length;
@@ -34,13 +35,16 @@ export function Quiz({ questions, lang }: QuizProps) {
     });
   };
 
-  const reset = () => setAnswers(questions.map(() => null));
+  const reset = () => {
+    setAnswers(questions.map(() => null));
+    setResetKey((k) => k + 1); // 전 문항 리마운트 → BlankInput 로컬 상태도 초기화
+  };
 
   return (
     <div className="not-prose my-8 space-y-6">
       {questions.map((question, i) => (
         <QuestionCard
-          key={i}
+          key={`${resetKey}-${i}`}
           index={i}
           question={question}
           answer={answers[i]}
@@ -122,21 +126,23 @@ function QuestionCard({ index, question, answer, onSubmit, t }: QuestionCardProp
 
       {done && (
         <div
+          role="status"
+          aria-live="polite"
           className={cn(
             'mt-4 rounded-md border p-3 text-sm',
             answer.correct
-              ? 'border-green-600/40 bg-green-500/10'
-              : 'border-red-600/40 bg-red-500/10'
+              ? 'border-green-600/40 dark:border-green-500/40 bg-green-500/10'
+              : 'border-red-600/40 dark:border-red-500/40 bg-red-500/10'
           )}
         >
           <p className="flex items-center gap-1.5 font-semibold">
             {answer.correct ? (
               <>
-                <CheckCircle2 className="h-4 w-4 text-green-600" /> {t.correct}
+                <CheckCircle2 className="h-4 w-4 text-green-600 dark:text-green-400" /> {t.correct}
               </>
             ) : (
               <>
-                <XCircle className="h-4 w-4 text-red-600" /> {t.incorrect}
+                <XCircle className="h-4 w-4 text-red-600 dark:text-red-400" /> {t.incorrect}
               </>
             )}
           </p>
@@ -177,12 +183,13 @@ function ChoiceList({ choices, correctIndex, selected, onSelect, row }: ChoiceLi
               'rounded-md border px-4 py-2 text-left text-sm transition-colors',
               row && 'min-w-16 text-center font-semibold',
               !done && 'hover:bg-accent hover:text-accent-foreground',
-              isCorrect && 'border-green-600 bg-green-500/10',
-              isWrongPick && 'border-red-600 bg-red-500/10',
+              isCorrect && 'border-green-600 dark:border-green-500 bg-green-500/10',
+              isWrongPick && 'border-red-600 dark:border-red-500 bg-red-500/10',
               done && !isCorrect && !isWrongPick && 'opacity-60'
             )}
           >
             {choice}
+            {isCorrect && <CheckCircle2 className="ml-1 inline h-3.5 w-3.5" />}
           </button>
         );
       })}
