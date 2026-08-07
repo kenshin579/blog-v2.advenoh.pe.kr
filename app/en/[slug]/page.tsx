@@ -9,7 +9,7 @@ import {
   hasArticleVariant,
 } from '@/lib/articles';
 import { extractTOC, calculateReadingTime } from '@/lib/markdown';
-import { MermaidRenderer } from '@/components/article/mermaid-renderer';
+import { ArticleBody } from '@/components/article/article-body';
 import { TableOfContents } from '@/components/article/table-of-contents';
 import { SeriesNavigation } from '@/components/article/series-navigation';
 import { HeroCard } from '@/components/article/hero-card';
@@ -172,7 +172,7 @@ export default async function ArticlePage({ params }: ArticlePageProps) {
 
         <div className="md:grid md:grid-cols-[1fr_240px] md:gap-10">
           <article className="prose-bento max-w-prose">
-            <MermaidRenderer html={article.html} />
+            <ArticleBody html={article.html} lang="en" />
           </article>
 
           {toc.length > 0 && (

@@ -644,77 +644,71 @@ app := fxtest.New(t,
 
 # 5. 퀴즈
 
-여기까지 읽었으면 아래 질문에 답할 수 있어야 한다. 펼치기 전에 먼저 스스로 답해보고, 막히면 괄호 안의 절로 돌아가면 된다.
+여기까지 읽었으면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
 
-<details>
-<summary><b>Q1.</b> <code>fx.Provide()</code>에 생성자를 잔뜩 등록했는데 앱을 띄워도 아무것도 실행되지 않는다. 왜일까?</summary>
+```quiz
+- type: code
+  q: "이 앱을 실행하면 어떤 일이 벌어지나?"
+  lang: go
+  code: |
+    app := fx.New(
+        fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
+    )
+    app.Run()
+  choices: ["어떤 생성자도 호출되지 않는다", "등록된 생성자가 모두 순서대로 호출된다", "NewUserService만 호출된다", "곧바로 컴파일 에러가 난다"]
+  answer: 0
+  explain: "fx.Provide는 등록만 하고 실행을 미루는 lazy 등록이다. 그래프가 실제로 조립되려면 그 타입을 요구하는 쪽이 있어야 하고, 그 시작점이 fx.Invoke다. 부수 효과(서버 기동·라우터 등록)를 담당하는 Invoke가 하나도 없으면 어떤 생성자도 호출되지 않는다. (2.2)"
 
-**A.** `fx.Provide`는 등록만 하고 실행은 미루는 lazy 등록이기 때문이다. 그래프가 실제로 조립되려면 그 타입을 요구하는 쪽이 있어야 하고, 그 시작점이 `fx.Invoke`다. 부수 효과(서버 기동·라우터 등록)를 담당하는 `Invoke`가 하나도 없으면 어떤 생성자도 호출되지 않는다. (2.2)
+- type: mcq
+  q: "fx.Provide와 fx.Supply는 무엇이 다른가?"
+  choices: ["Provide는 값을, Supply는 생성자 함수를 등록한다", "Provide는 생성자를, Supply는 완성된 값을 그대로 등록한다", "둘 다 생성자를 등록하지만 Supply만 즉시 실행된다", "Supply는 인터페이스만, Provide는 구조체만 등록할 수 있다"]
+  answer: 1
+  explain: "Provide는 생성자 함수를 등록하고 fx가 그 함수의 반환 타입을 보고 그래프에 연결한다. Supply는 이미 만들어진 값을 그대로 등록한다. 설정 구조체나 상수처럼 생성 로직이 따로 없는 값에는 Supply가 맞다. (2.2)"
 
-</details>
+- type: mcq
+  q: "fx는 생성자를 어떤 순서로 호출할지 어떻게 결정하나?"
+  choices: ["fx.Provide에 등록한 순서대로", "생성자 이름의 알파벳순으로", "각 생성자의 매개변수 타입과 반환 타입을 분석해서", "fx.Invoke에 나열한 순서대로"]
+  answer: 2
+  explain: "각 생성자의 매개변수 타입과 반환 타입만 본다. database.New(cfg *config.Config)는 *config.Config를 요구하므로 그 타입을 반환하는 config.New()가 먼저 호출된다. 등록 순서는 상관없고, 순환 의존성이 있으면 앱 시작 시점에 에러로 알려준다. (2.3)"
 
-<details>
-<summary><b>Q2.</b> <code>fx.Provide</code>와 <code>fx.Supply</code>는 무엇이 다른가?</summary>
+- type: mcq
+  q: "registerHooks를 fx.Invoke로 등록했다. 서버는 정확히 언제 뜨나?"
+  choices: ["fx.New() 호출 즉시", "fx.Provide로 서버 생성자가 호출될 때", "registerHooks의 Invoke 본문이 실행되는 순간", "app.Start(ctx)가 호출되어 OnStart 훅이 실행될 때"]
+  answer: 3
+  explain: "두 시점으로 나뉜다. Invoke 함수 본문은 fx.New() 호출 시점에 즉시 실행되지만, 거기서 하는 일은 Lifecycle에 훅을 등록하는 것뿐이다. OnStart 본문(실제 서버 기동)은 이후 app.Start(ctx)가 호출될 때 실행된다. fx.Lifecycle이 2단계 구조인 이유가 이것이다. (2.4)"
 
-**A.** `Provide`는 **생성자 함수**를 등록하고, fx가 그 함수의 반환 타입을 보고 그래프에 연결한다. `Supply`는 **이미 만들어진 값**을 그대로 등록한다. 설정 구조체나 상수처럼 생성 로직이 따로 없는 값에는 `Supply`가 맞다. (2.2)
+- type: blank
+  q: "fx.Module로 도메인을 나눠도 안의 fx.Provide는 기본적으로 전역 그래프에 노출된다. Module 내부 전용으로 감추려면 같은 fx.Provide() 그룹에 ___ 을 넣어야 한다."
+  answer: ["fx.Private", "Private"]
+  explain: "fx.Module은 이름을 붙여 묶어줄 뿐, 안에 있는 fx.Provide는 기본적으로 전역 그래프에 노출된다. 모듈 내부 전용으로 감추려면 같은 fx.Provide() 그룹에 fx.Private을 넣어야 한다. 그러면 외부에서 그 타입을 요청할 때 그래프 구성 단계에서 에러가 난다. (3.1, 3.5)"
 
-</details>
+- type: blank
+  q: "기존 Repository 코드를 한 줄도 건드리지 않고 로깅을 붙이려면, 원본 의존성을 매개변수로 받아 같은 타입을 반환하는 ___ 를 사용한다."
+  answer: ["fx.Decorate", "Decorate"]
+  explain: "fx.Decorate다. 원본 의존성을 매개변수로 받아 래핑한 같은 타입을 반환하면 fx가 그래프의 해당 노드를 교체한다. 이 의존성을 주입받는 쪽(UserService)은 코드 변경 없이 래퍼를 받게 된다. (3.2)"
 
-<details>
-<summary><b>Q3.</b> fx는 생성자를 어떤 순서로 호출할지 어떻게 결정하나?</summary>
+- type: blank
+  q: "같은 *DBConnection 타입인 read용·write용 커넥션을 구분하려면, fx.Annotate와 fx.ResultTags로 생성자마다 ___ 태그(예: readDB)를 붙이고 수신 측 fx.In 구조체 필드에서 같은 태그로 매칭한다."
+  answer: ["name", "name:"]
+  explain: "fx.Annotate와 fx.ResultTags로 생성자마다 name 태그(예: name:readDB)를 붙이고, 수신 측은 fx.In을 임베드한 구조체의 필드에 name 태그를 달아 매칭한다. 타입이 같아도 이름으로 구분되므로 충돌하지 않는다. (3.3)"
 
-**A.** 각 생성자의 **매개변수 타입과 반환 타입**만 본다. `database.New(cfg *config.Config)`는 `*config.Config`를 요구하므로 그 타입을 반환하는 `config.New()`가 먼저 호출된다. 등록 순서는 상관없고, 순환 의존성이 있으면 앱 시작 시점에 에러로 알려준다. (2.3)
+- type: ox
+  q: "Notifier 구현체 셋을 한꺼번에 주입받는 것은 group: 태그로만 가능하고, name: 태그로는 아예 불가능하다."
+  answer: false
+  explain: "name: 태그로도 되긴 한다. 다만 구현체마다 다른 이름을 붙이고 수신 측에서 필드를 하나씩 받아야 해서, 구현체가 늘 때마다 수신 코드를 고쳐야 하는 나쁜 방법이다. group:notifiers로 등록하고 수신 측은 같은 태그를 붙인 []Notifier 슬라이스 필드로 받으면, 새 구현체를 추가해도 수신 코드는 그대로다. (3.4)"
 
-</details>
+- type: mcq
+  q: "테스트에서 실제 Repository 대신 Mock을 넣으려는데, fx.Replace(&mockUserRepo{})만으로는 왜 부족한가?"
+  choices: ["타입이 *mockUserRepo라 UserRepository 인터페이스로 매칭되지 않기 때문", "fx.Replace는 테스트 코드 안에서는 아예 사용할 수 없는 함수이기 때문", "fx.Replace 전에 반드시 기존 fx.Provide를 지워야 하기 때문", "Mock 객체는 오직 fx.Supply를 통해서만 주입할 수 있기 때문"]
+  answer: 0
+  explain: "fx는 타입으로 매칭하는데 &mockUserRepo{}의 타입은 *mockUserRepo이지 UserRepository 인터페이스가 아니다. fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))로 감싸 인터페이스 타입으로 등록해야 기존 Provide를 교체한다. (4.2)"
 
-<details>
-<summary><b>Q4.</b> <code>registerHooks</code>를 <code>fx.Invoke</code>로 등록했다. 서버는 정확히 언제 뜨나?</summary>
-
-**A.** 두 시점으로 나뉜다. `Invoke` 함수 본문은 `fx.New()` 호출 시점에 즉시 실행되지만, 거기서 하는 일은 `Lifecycle`에 훅을 *등록*하는 것뿐이다. `OnStart` 본문(실제 서버 기동)은 이후 `app.Start(ctx)`가 호출될 때 실행된다. `fx.Lifecycle`이 2단계 구조인 이유가 이것이다. (2.4)
-
-</details>
-
-<details>
-<summary><b>Q5.</b> 도메인별로 <code>fx.Module</code>을 나눴는데, 다른 Module이 같은 DB 핸들을 주입받아 버렸다. 무엇을 빠뜨렸나?</summary>
-
-**A.** `fx.Module`은 이름을 붙여 묶어줄 뿐, 안에 있는 `fx.Provide`는 기본적으로 전역 그래프에 노출된다. 모듈 내부 전용으로 감추려면 같은 `fx.Provide()` 그룹에 `fx.Private`을 넣어야 한다. 그러면 외부에서 그 타입을 요청할 때 그래프 구성 단계에서 에러가 난다. (3.1, 3.5)
-
-</details>
-
-<details>
-<summary><b>Q6.</b> 기존 Repository 코드를 한 줄도 건드리지 않고 로깅을 붙이고 싶다.</summary>
-
-**A.** `fx.Decorate`다. 원본 의존성을 매개변수로 받아 래핑한 **같은 타입**을 반환하면 fx가 그래프의 해당 노드를 교체한다. 이 의존성을 주입받는 쪽(`UserService`)은 코드 변경 없이 래퍼를 받게 된다. (3.2)
-
-</details>
-
-<details>
-<summary><b>Q7.</b> 같은 <code>*DBConnection</code> 타입인 read용·write용 커넥션을 각각 주입받으려면?</summary>
-
-**A.** `fx.Annotate`와 `fx.ResultTags`로 생성자마다 `name:"readDB"` 같은 이름을 붙이고, 수신 측은 `fx.In`을 임베드한 구조체의 필드에 `name` 태그를 달아 매칭한다. 타입이 같아도 이름으로 구분되므로 충돌하지 않는다. (3.3)
-
-</details>
-
-<details>
-<summary><b>Q8.</b> <code>Notifier</code> 구현체가 셋인데 전부 한꺼번에 주입받고 싶다. <code>name:</code> 태그로 되나?</summary>
-
-**A.** 되긴 하지만 나쁜 방법이다. 구현체마다 다른 이름을 붙이고 수신 측에서 필드를 하나씩 받아야 해서, 구현체가 늘 때마다 수신 코드를 고쳐야 한다. `fx.ResultTags`에 `group:"notifiers"`를 달아 등록하고 수신 측은 같은 태그를 붙인 `[]Notifier` 슬라이스 필드로 받으면, 새 구현체를 추가해도 수신 코드는 그대로다. (3.4)
-
-</details>
-
-<details>
-<summary><b>Q9.</b> 테스트에서 실제 Repository 대신 Mock을 넣으려는데, <code>fx.Replace(&mockUserRepo{})</code>만으로는 왜 부족한가?</summary>
-
-**A.** fx는 타입으로 매칭하는데 `&mockUserRepo{}`의 타입은 `*mockUserRepo`이지 `UserRepository` 인터페이스가 아니기 때문이다. `fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))`로 감싸 인터페이스 타입으로 등록해야 기존 Provide를 교체한다. (4.2)
-
-</details>
-
-<details>
-<summary><b>Q10.</b> 조립된 인스턴스를 테스트로 꺼낼 때 <code>fx.Invoke</code>와 <code>fx.Populate</code> 중 무엇을 쓰나?</summary>
-
-**A.** `fx.Populate`는 내부적으로 `fx.Invoke`로 구현된 편의 함수라 본질은 같고, 차이는 목적이다. 변수에 담는 것만이 목적이면 클로저가 군더더기이므로 `Populate`, 꺼낸 뒤 같은 시점에 호출·검증까지 해야 하면 본문을 쓸 수 있는 `Invoke`가 낫다. (4.3)
-
-</details>
+- type: mcq
+  q: "조립된 인스턴스를 테스트로 꺼낼 때 fx.Invoke와 fx.Populate 중 무엇을 쓰나?"
+  choices: ["fx.Populate는 추출이 불가능해 추출엔 항상 fx.Invoke만 쓴다", "검증까지 할 거면 fx.Populate, 단순 추출이면 fx.Invoke를 쓴다", "추출만 목적이면 fx.Populate, 이후 호출·검증도 하려면 fx.Invoke", "성능이 더 좋은 fx.Populate를 어떤 경우든 항상 쓴다"]
+  answer: 2
+  explain: "fx.Populate는 내부적으로 fx.Invoke로 구현된 편의 함수라 본질은 같고, 차이는 목적이다. 변수에 담는 것만이 목적이면 클로저가 군더더기이므로 Populate, 꺼낸 뒤 같은 시점에 호출·검증까지 해야 하면 본문을 쓸 수 있는 Invoke가 낫다. (4.3)"
+```
 
 # 6. 마무리
 

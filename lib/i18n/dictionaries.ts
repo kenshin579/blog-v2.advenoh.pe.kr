@@ -7,6 +7,17 @@ type Dict = {
   language: { ko: string; en: string };
   footer: { tagline: string; categories: string; info: string; rss: string; sitemap: string; series: string };
   slides: { frameTitle: string; open: string; hint: string };
+  quiz: {
+    check: string;
+    retry: string;
+    correct: string;
+    incorrect: string;
+    answerPrefix: string;
+    scoreTemplate: string; // {score}, {total} 치환
+    blankPlaceholder: string;
+    o: string;
+    x: string;
+  };
 };
 
 const ko: Dict = {
@@ -27,6 +38,17 @@ const ko: Dict = {
     open: '슬라이드 새 탭에서 열기 →',
     hint: '슬라이드를 클릭한 뒤 <kbd>←</kbd> <kbd>→</kbd> 이동 · <kbd>f</kbd> 전체화면 · <kbd>?</kbd> 도움말',
   },
+  quiz: {
+    check: '확인',
+    retry: '다시 풀기',
+    correct: '정답',
+    incorrect: '오답',
+    answerPrefix: '정답:',
+    scoreTemplate: '{score} / {total} 맞았습니다',
+    blankPlaceholder: '답을 입력하세요',
+    o: 'O',
+    x: 'X',
+  },
 };
 
 const en: Dict = {
@@ -46,6 +68,17 @@ const en: Dict = {
     frameTitle: 'slides',
     open: 'Open slides in a new tab →',
     hint: 'Click the slides, then <kbd>←</kbd> <kbd>→</kbd> to navigate · <kbd>f</kbd> fullscreen · <kbd>?</kbd> help',
+  },
+  quiz: {
+    check: 'Check',
+    retry: 'Try again',
+    correct: 'Correct',
+    incorrect: 'Incorrect',
+    answerPrefix: 'Answer:',
+    scoreTemplate: '{score} / {total} correct',
+    blankPlaceholder: 'Type your answer',
+    o: 'O',
+    x: 'X',
   },
 };
 

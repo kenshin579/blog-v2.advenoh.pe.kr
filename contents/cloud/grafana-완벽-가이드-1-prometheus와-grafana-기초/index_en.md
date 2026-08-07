@@ -849,77 +849,70 @@ With all four panels in place, CPU, memory, disk, and network fit on one screen.
 
 # 5. Quiz
 
-If you have read this far, you should be able to answer the questions below. Try answering on your own before expanding each one, and if you get stuck, go back to the section in parentheses.
+If you have read this far, you can answer these. Pick an answer and the explanation appears right away.
 
-<details>
-<summary><b>Q1.</b> How does Prometheus notice that a target has died?</summary>
+```quiz
+- type: mcq
+  q: "How does Prometheus notice that a target has died?"
+  choices: ["The target itself pushes an event saying it has died", "It periodically collects and analyzes the target's logs", "The /metrics call Prometheus makes itself fails", "The heartbeat signal the target used to send stops"]
+  answer: 2
+  explain: "Because it is pull-based, Prometheus calls /metrics itself. When that call fails, the failure is the signal. With push, when a target goes quiet it is hard to tell an outage from simply having no traffic. (2.1)"
 
-**A.** Because it is pull-based, Prometheus calls `/metrics` itself. When that call fails, the failure is the signal. With push, when a target goes quiet it is hard to tell an outage from simply having no traffic. (2.1)
+- type: mcq
+  q: "A cumulative Counter graph drops to the floor at some point. What happened, and why does the rate() graph look fine over the same stretch?"
+  choices: ["The app restarted and counts from 0, and rate() corrects the reset", "The network dropped and lost values, and rate() skips the empty span", "The counter hit its ceiling and reset, and rate() ignores the ceiling", "Old data expired and was deleted, and rate() sees only recent values"]
+  answer: 0
+  explain: "The application restarted and the counter started again from 0. rate() automatically adjusts for these breaks in monotonicity, so the value does not spike at the reset point. (2.2.1)"
 
-</details>
+- type: mcq
+  q: "In a Histogram, which requests land in the le=\"0.5\" bucket?"
+  choices: ["Every request that took more than 0.5 seconds", "Every request that took 0.5 seconds or less", "Only requests that took exactly 0.5 seconds", "Only requests between 0.5 and 1.0 seconds"]
+  answer: 1
+  explain: "Every request that took 0.5 seconds or less. It does not count only the slice between 0.25 and 0.5 seconds. Because buckets are cumulative, the bars keep growing toward the right. (2.2.3)"
 
-<details>
-<summary><b>Q2.</b> A cumulative Counter graph drops to the floor at some point. What happened? And why does the <code>rate()</code> graph look fine over the same stretch?</summary>
+- type: mcq
+  q: "You need the p99 response time across three servers. Which should you use?"
+  choices: ["Summary — you can just combine the quantiles each server precomputed", "Summary — averaging the p99 of three servers gives the overall p99", "Histogram — each server precomputes the quantile and hands it over as-is", "Histogram — you can aggregate the bucket counts, then compute the quantile"]
+  answer: 3
+  explain: "Histogram. Summary only hands over quantiles each server computed in advance, so they cannot be combined later. Averaging the p99 of three servers does not give you the overall p99. Histogram passes the bucket counts as-is, so the server can aggregate them first and then compute the quantile. (2.2.4)"
 
-**A.** The application restarted and the counter started again from 0. `rate()` automatically adjusts for these breaks in monotonicity, so the value does not spike at the reset point. (2.2.1)
+- type: ox
+  q: "To analyze requests per user, adding a unique value like user_id as a Label is the recommended approach."
+  answer: false
+  explain: "You should stop them, because the number of time series grows as the product of label value counts. A metric at method(5) × path(20) × status(6) = 600 series becomes 60 million once you multiply by 100,000 users. Put only values you can count in advance into Labels, and send the uncountable ones to logs. (2.3)"
 
-</details>
+- type: code
+  q: "What happens when you run this query?"
+  lang: promql
+  code: |
+    rate(http_requests_total)
+  choices: ["It computes a per-second rate from the single current value", "It errors — rate() has no range vector to work on", "A default [5m] range is applied and it runs fine", "The cumulative total is returned as-is, uncomputed"]
+  answer: 1
+  explain: "rate() has to compute \"how much it grew ÷ how long it took,\" so it needs at least two values. Without a range, each series delivers only its current value (an instant vector), which leaves nothing to compute. You have to attach a range like [5m] to make it a range vector. (2.4.2)"
 
-<details>
-<summary><b>Q3.</b> In a Histogram, which requests land in the <code>le="0.5"</code> bucket?</summary>
+- type: mcq
+  q: "What does {status=~\"5..\"} select?"
+  choices: ["Only the status value that is literally the string \"5..\"", "Any value starting with 5, regardless of digit count", "Every remaining status that does not contain a 5", "Three-digit values starting with 5, i.e. all 5xx responses"]
+  answer: 3
+  explain: "=~ is regular expression matching and . means any single character. So it matches three-digit values starting with 5, meaning all 5xx responses like 500, 502, and 503. (2.4.1)"
 
-**A.** Every request that took 0.5 seconds **or less**. It does not count only the slice between 0.25 and 0.5 seconds. Because buckets are cumulative, the bars keep growing toward the right. (2.2.3)
+- type: mcq
+  q: "How do the results of sum(rate(...)) and sum by(path)(rate(...)) differ?"
+  choices: ["The first drops all labels for 1 line; the second gives one line per path", "The first gives one line per path; the second drops all labels for 1 line", "Both give 1 line, but the second keeps the path label only in the tooltip", "The first takes the overall average; the second sums per path"]
+  answer: 0
+  explain: "The first drops every label and collapses into a single value, giving one line. The second keeps the path label, so you get one line per path. (2.4.3)"
 
-</details>
+- type: blank
+  q: "You ran Grafana and Prometheus together with docker-compose. Grafana's Data Source URL must use the service name docker-compose assigns as the host, not localhost. What name fills the blank in http://___:9090?"
+  answer: ["prometheus"]
+  explain: "Because Grafana runs inside a container as well. From the container's point of view localhost is itself, so it cannot find Prometheus. On the network that docker-compose creates, the service name becomes the hostname, so you point it at http://prometheus:9090. (3.1)"
 
-<details>
-<summary><b>Q4.</b> You need the p99 response time across three servers. Should you use Histogram or Summary?</summary>
-
-**A.** Histogram. Summary only hands over quantiles each server computed in advance, so they cannot be combined later. Averaging the p99 of three servers does not give you the overall p99. Histogram passes the bucket counts as-is, so the server can aggregate them first and then compute the quantile. (2.2.4)
-
-</details>
-
-<details>
-<summary><b>Q5.</b> Someone wants to add <code>user_id</code> as a Label to analyze requests per user. Why should you stop them?</summary>
-
-**A.** Because the number of time series grows as the product of label value counts. A metric at `method`(5) × `path`(20) × `status`(6) = 600 series becomes 60 million once you multiply by 100,000 users. Put only values you can count in advance into Labels, and send the uncountable ones to logs. (2.3)
-
-</details>
-
-<details>
-<summary><b>Q6.</b> Why does <code>rate(http_requests_total)</code> throw an error?</summary>
-
-**A.** `rate()` has to compute "how much it grew ÷ how long it took," so it needs at least two values. Without a range, each series delivers only its current value (an instant vector), which leaves nothing to compute. You have to attach a range like `[5m]` to make it a range vector. (2.4.2)
-
-</details>
-
-<details>
-<summary><b>Q7.</b> What does <code>{status=~"5.."}</code> select?</summary>
-
-**A.** `=~` is regular expression matching and `.` means any single character. So it matches three-digit values starting with 5, meaning all 5xx responses like 500, 502, and 503. (2.4.1)
-
-</details>
-
-<details>
-<summary><b>Q8.</b> How do the results of <code>sum(rate(...))</code> and <code>sum by(path) (rate(...))</code> differ?</summary>
-
-**A.** The first drops every label and collapses into a single value, giving one line. The second keeps the `path` label, so you get one line per path. (2.4.3)
-
-</details>
-
-<details>
-<summary><b>Q9.</b> Why put <code>http://prometheus:9090</code> instead of <code>http://localhost:9090</code> in Grafana's Data Source URL?</summary>
-
-**A.** Because Grafana runs inside a container as well. From the container's point of view `localhost` is itself, so it cannot find Prometheus. On the network docker-compose creates, the service name is the hostname. (3.1)
-
-</details>
-
-<details>
-<summary><b>Q10.</b> You finished building the dashboard but every panel is empty. Where do you look first?</summary>
-
-**A.** **Status → Targets** in the Prometheus web UI. If a target is `DOWN`, no data was collected in the first place, so no amount of fiddling with queries or panel settings will help. (4.1)
-
-</details>
+- type: mcq
+  q: "You finished building the dashboard but every panel is empty. Where do you look first?"
+  choices: ["The Grafana panel's color and axis range settings", "Whether the dashboard's time range is set into the future", "Prometheus's Status → Targets, to see if the target is UP", "Whether the PromQL query has a typo in a function name"]
+  answer: 2
+  explain: "Status → Targets in the Prometheus web UI. If a target is DOWN, no data was collected in the first place, so no amount of fiddling with queries or panel settings will help. (4.1)"
+```
 
 # 6. Conclusion
 
