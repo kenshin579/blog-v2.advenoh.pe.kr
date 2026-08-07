@@ -122,6 +122,9 @@ export async function parseMarkdown(
     }) // heading 자동 링크
     .use(rehypePrism, {
       showLineNumbers: true,
+      // 등록되지 않은 언어(quiz 등 커스텀 펜스)를 만나도 예외를 던지지 않게 한다.
+      // 이 옵션이 없으면 quiz 블록이 든 글 전체가 빌드에서 404가 된다.
+      ignoreMissing: true,
     }) // 코드 하이라이팅
     .use(rehypeStringify) // hast → HTML
     .process(content);
