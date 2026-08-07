@@ -661,7 +661,7 @@ app := fxtest.New(t,
 
 - type: mcq
   q: "fx.Provide와 fx.Supply는 무엇이 다른가?"
-  choices: ["Provide는 값을, Supply는 생성자 함수를 등록한다", "Provide는 생성자 함수를 등록하고 fx가 반환 타입으로 그래프에 연결하며, Supply는 이미 만들어진 값을 그대로 등록한다", "둘 다 생성자를 등록하지만 Supply만 즉시 실행된다", "Supply는 인터페이스만, Provide는 구조체만 등록할 수 있다"]
+  choices: ["Provide는 값을, Supply는 생성자 함수를 등록한다", "Provide는 생성자를, Supply는 완성된 값을 그대로 등록한다", "둘 다 생성자를 등록하지만 Supply만 즉시 실행된다", "Supply는 인터페이스만, Provide는 구조체만 등록할 수 있다"]
   answer: 1
   explain: "Provide는 생성자 함수를 등록하고 fx가 그 함수의 반환 타입을 보고 그래프에 연결한다. Supply는 이미 만들어진 값을 그대로 등록한다. 설정 구조체나 상수처럼 생성 로직이 따로 없는 값에는 Supply가 맞다. (2.2)"
 
@@ -699,13 +699,13 @@ app := fxtest.New(t,
 
 - type: mcq
   q: "테스트에서 실제 Repository 대신 Mock을 넣으려는데, fx.Replace(&mockUserRepo{})만으로는 왜 부족한가?"
-  choices: ["fx.Replace는 테스트에서 쓸 수 없기 때문", "&mockUserRepo{}의 타입이 *mockUserRepo라 UserRepository 인터페이스로 매칭되지 않기 때문", "fx.Replace 전에 반드시 기존 fx.Provide를 지워야 하기 때문", "Mock은 fx.Supply로만 주입할 수 있기 때문"]
+  choices: ["fx.Replace는 테스트 코드 안에서는 아예 사용할 수 없는 함수이기 때문", "타입이 *mockUserRepo라 UserRepository 인터페이스로 매칭되지 않기 때문", "fx.Replace 전에 반드시 기존 fx.Provide를 지워야 하기 때문", "Mock 객체는 오직 fx.Supply를 통해서만 주입할 수 있기 때문"]
   answer: 1
   explain: "fx는 타입으로 매칭하는데 &mockUserRepo{}의 타입은 *mockUserRepo이지 UserRepository 인터페이스가 아니다. fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))로 감싸 인터페이스 타입으로 등록해야 기존 Provide를 교체한다. (4.2)"
 
 - type: mcq
   q: "조립된 인스턴스를 테스트로 꺼낼 때 fx.Invoke와 fx.Populate 중 무엇을 쓰나?"
-  choices: ["변수에 담는 것만이 목적이면 fx.Populate, 꺼낸 뒤 같은 시점에 호출·검증까지 하려면 fx.Invoke", "둘은 완전히 다른 기능이라 fx.Populate로는 인스턴스를 꺼낼 수 없다"]
+  choices: ["추출만 목적이면 fx.Populate, 이후 호출·검증도 하려면 fx.Invoke", "검증까지 할 거면 fx.Populate, 단순 추출이면 fx.Invoke를 쓴다", "fx.Populate는 추출이 불가능해 추출엔 항상 fx.Invoke만 쓴다", "성능이 더 좋은 fx.Populate를 어떤 경우든 항상 쓴다"]
   answer: 0
   explain: "fx.Populate는 내부적으로 fx.Invoke로 구현된 편의 함수라 본질은 같고, 차이는 목적이다. 변수에 담는 것만이 목적이면 클로저가 군더더기이므로 Populate, 꺼낸 뒤 같은 시점에 호출·검증까지 해야 하면 본문을 쓸 수 있는 Invoke가 낫다. (4.3)"
 ```

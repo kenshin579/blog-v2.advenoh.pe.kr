@@ -661,7 +661,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: mcq
   q: "What is the difference between fx.Provide and fx.Supply?"
-  choices: ["Provide registers a value, and Supply registers a constructor function", "Provide registers a constructor function that fx wires into the graph by its return type, while Supply registers an already-built value as is", "Both register constructors, but only Supply runs immediately", "Supply can register only interfaces and Provide only structs"]
+  choices: ["Provide registers a value, and Supply registers a constructor function", "Provide registers a constructor; Supply registers an already-built value", "Both register constructors, but only Supply runs immediately", "Supply can register only interfaces and Provide only structs"]
   answer: 1
   explain: "Provide registers a constructor function, and fx wires it into the graph based on that function's return type. Supply registers an already-built value as is. For values with no construction logic — config structs, constants — Supply is the right fit. (2.2)"
 
@@ -699,13 +699,13 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: mcq
   q: "You want a Mock instead of the real Repository in a test. Why isn't fx.Replace(&mockUserRepo{}) enough on its own?"
-  choices: ["Because fx.Replace cannot be used in tests", "Because the type of &mockUserRepo{} is *mockUserRepo, not the UserRepository interface, so it does not match", "Because you must first delete the existing fx.Provide before fx.Replace", "Because a Mock can only be injected with fx.Supply"]
+  choices: ["Because fx.Replace cannot be used in tests at all", "Because its type is *mockUserRepo, not the UserRepository interface", "Because you must first delete the existing fx.Provide before fx.Replace", "Because a Mock can only ever be injected with fx.Supply"]
   answer: 1
   explain: "fx matches by type, and the type of &mockUserRepo{} is *mockUserRepo, not the UserRepository interface. Wrap it as fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository))) so it is registered under the interface type; only then does it replace the existing Provide. (4.2)"
 
 - type: mcq
   q: "To pull an assembled instance out in a test, do you use fx.Invoke or fx.Populate?"
-  choices: ["Use fx.Populate if the only goal is to store the value in a variable; use fx.Invoke if you need to call or verify something at the same point after extracting it", "They are entirely different features, so fx.Populate cannot pull an instance out at all"]
+  choices: ["fx.Populate for extraction only; fx.Invoke when you also call or verify", "fx.Populate when you also verify; fx.Invoke for plain extraction", "fx.Populate cannot extract, so always use fx.Invoke to pull instances", "fx.Populate is faster, so always use it in every case"]
   answer: 0
   explain: "fx.Populate is a convenience function implemented on top of fx.Invoke, so they are the same underneath; the difference is intent. If the only goal is to store the value in a variable, the closure is dead weight, so use Populate. If you need to call or verify something at the same point after extracting it, Invoke gives you a body to do that. (4.3)"
 ```
