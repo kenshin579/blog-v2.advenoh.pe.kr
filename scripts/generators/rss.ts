@@ -31,6 +31,15 @@ interface Manifest {
 }
 
 /**
+ * quiz 코드펜스만 제거한다. 피드 리더에서는 인터랙티브 퀴즈로 렌더되지 않고
+ * YAML 원문(정답·해설 포함)이 그대로 노출되기 때문이다. generate-search-index.ts와
+ * 달리 일반 코드 블록은 피드에 남아야 하므로 전체 코드펜스가 아니라 quiz 펜스만 지운다.
+ */
+function stripQuizFences(markdown: string): string {
+  return markdown.replace(/```quiz\n[\s\S]*?```\n?/g, '');
+}
+
+/**
  * 마크다운 → HTML 변환 (RSS용 경량 파이프라인)
  */
 async function markdownToHtml(markdown: string, slug: string): Promise<string> {
@@ -140,7 +149,7 @@ export async function generateRSS(manifestPath: string, outputPath: string, lang
     // 본문 HTML 생성
     const markdown = readArticleContent(article.slug, lang);
     if (markdown) {
-      const html = await markdownToHtml(markdown, article.slug);
+      const html = await markdownToHtml(stripQuizFences(markdown), article.slug);
 
       // description: excerpt 또는 본문 앞 300자
       const description = article.excerpt || extractTextSummary(html);

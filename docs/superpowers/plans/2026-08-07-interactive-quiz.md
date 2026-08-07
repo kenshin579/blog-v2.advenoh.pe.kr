@@ -17,7 +17,7 @@
 ## 사전 확인된 사실
 
 - **검색 인덱스는 손댈 필요 없다.** `scripts/generate-search-index.ts:30`이 이미 모든 ` ``` ` 코드 블록을 인덱싱 전에 제거한다. ` ```quiz `도 자동으로 걸러진다. Task 6에서 확인만 한다.
-- **RSS도 손댈 필요 없다.** `scripts/generate-feeds.ts`는 manifest의 excerpt만 쓰고 본문을 싣지 않는다.
+- **RSS는 필터가 필요하다.** 계획 단계에서는 excerpt만 싣는다고 잘못 파악했으나, 실제로는 `scripts/generators/rss.ts`가 `content:encoded`로 본문 전체를 실어 퀴즈 YAML(정답 포함)이 노출된다. 최종 리뷰에서 발견되어 quiz 펜스만 제거하는 필터를 추가했다 (스펙 8장의 조건부 규칙 적용).
 - 브랜치 `feat/interactive-quiz`가 이미 존재하고 스펙 커밋(`5039fee`)이 있다. 모든 작업은 이 브랜치에서 한다.
 - 기존 퀴즈 위치: `contents/go/go-fx-의존성-주입/index.md:645-718`(# 5. 퀴즈 ~ # 6. 직전), 같은 폴더 `index_en.md:645` 부근(# 5. Quiz), `contents/cloud/grafana-완벽-가이드-1-prometheus와-grafana-기초/index.md:850-923`과 그 `index_en.md`. 각 10문항 `<details>` 서술형.
 
