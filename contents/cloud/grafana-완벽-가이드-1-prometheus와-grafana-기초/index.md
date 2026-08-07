@@ -849,77 +849,70 @@ rate(node_network_transmit_bytes_total{device!="lo"}[5m])
 
 # 5. 퀴즈
 
-여기까지 읽었으면 아래 질문에 답할 수 있어야 한다. 펼치기 전에 먼저 스스로 답해보고, 막히면 괄호 안의 절로 돌아가면 된다.
+여기까지 읽었으면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
 
-<details>
-<summary><b>Q1.</b> Prometheus는 타겟이 죽은 것을 어떻게 알아차릴까?</summary>
+```quiz
+- type: mcq
+  q: "Prometheus는 타겟이 죽은 것을 어떻게 알아차리나?"
+  choices: ["Prometheus가 직접 호출한 /metrics가 실패하기 때문에", "타겟이 죽었다는 이벤트를 스스로 push로 보내오기 때문에", "타겟이 남긴 로그를 주기적으로 수집해 분석하기 때문에", "타겟이 보내오던 heartbeat 신호가 끊어지기 때문에"]
+  answer: 0
+  explain: "Pull 방식이라 Prometheus가 직접 /metrics를 호출하기 때문이다. 호출이 실패하면 그 자체가 장애 신호가 된다. Push 방식은 타겟이 조용해졌을 때 그게 장애인지 그냥 트래픽이 없는 건지 구분하기 어렵다. (2.1)"
 
-**A.** Pull 방식이라 Prometheus가 직접 `/metrics`를 호출하기 때문이다. 호출이 실패하면 그 자체가 장애 신호가 된다. Push 방식은 타겟이 조용해졌을 때 그게 장애인지 그냥 트래픽이 없는 건지 구분하기 어렵다. (2.1)
+- type: mcq
+  q: "누적 Counter 그래프가 어느 순간 바닥으로 뚝 떨어졌다. 무슨 일이 있었고, 왜 같은 구간의 rate() 그래프는 멀쩡한가?"
+  choices: ["앱이 재시작돼 0부터 다시 세고, rate()가 리셋을 보정해서다", "네트워크가 끊겨 값이 유실됐고, rate()는 빈 구간을 건너뛰어서다", "카운터가 상한을 넘겨 초기화됐고, rate()는 상한을 무시해서다", "옛 데이터가 만료돼 삭제됐고, rate()는 최근 값만 봐서다"]
+  answer: 0
+  explain: "애플리케이션이 재시작돼 카운터가 0부터 다시 시작한 것이다. rate()는 이런 단조 증가의 단절을 자동으로 보정하기 때문에 리셋 지점에서도 값이 튀지 않는다. (2.2.1)"
 
-</details>
+- type: mcq
+  q: "Histogram에서 le=\"0.5\" 버킷에는 어떤 요청이 담기나?"
+  choices: ["0.5초 이하로 걸린 요청 전부", "0.5초를 초과해 걸린 요청 전부", "정확히 0.5초가 걸린 요청만", "0.5초에서 1.0초 사이의 요청만"]
+  answer: 0
+  explain: "0.5초 이하 요청 전부다. 0.25초와 0.5초 사이 구간만 세는 게 아니다. 버킷이 누적이라 막대가 오른쪽으로 갈수록 계속 커진다. (2.2.3)"
 
-<details>
-<summary><b>Q2.</b> 누적 Counter 그래프가 어느 시점에 바닥으로 뚝 떨어졌다. 무슨 일이 있었나? 그리고 같은 구간에서 <code>rate()</code> 그래프는 왜 멀쩡한가?</summary>
+- type: mcq
+  q: "서버 세 대의 p99 응답 시간을 구해야 한다. 무엇을 써야 하나?"
+  choices: ["Histogram — 버킷 개수를 합산한 뒤 분위수를 계산할 수 있어서", "Summary — 각 서버가 미리 계산한 분위수를 그대로 합칠 수 있어서", "Summary — 세 서버의 p99를 평균 내면 전체 p99가 나와서", "Histogram — 서버마다 분위수를 미리 계산해 그대로 넘겨줘서"]
+  answer: 0
+  explain: "Histogram이다. Summary는 각 서버가 미리 계산한 분위수만 넘기므로 나중에 합칠 수 없다. 세 서버의 p99를 평균 내도 그건 전체 p99가 아니다. Histogram은 버킷 개수를 그대로 넘기니 서버에서 합산한 뒤 분위수를 계산할 수 있다. (2.2.4)"
 
-**A.** 애플리케이션이 재시작돼 카운터가 0부터 다시 시작한 것이다. `rate()`는 이런 단조 증가의 단절을 자동으로 보정하기 때문에 리셋 지점에서도 값이 튀지 않는다. (2.2.1)
+- type: ox
+  q: "요청을 사용자별로 보고 싶다면 user_id 같은 고유값을 Label로 추가하는 것이 권장되는 방법이다."
+  answer: false
+  explain: "시계열 수가 Label 값 가짓수의 곱으로 늘어나기 때문에 말려야 한다. method(5) × path(20) × status(6) = 600개짜리 메트릭에 사용자 10만 명을 곱하면 6천만 개가 된다. Label에는 값의 가짓수를 미리 셀 수 있는 것만 넣고, 셀 수 없는 값은 로그로 보낸다. (2.3)"
 
-</details>
+- type: code
+  q: "이 쿼리를 실행하면 어떻게 되나?"
+  lang: promql
+  code: |
+    rate(http_requests_total)
+  choices: ["에러가 난다 — rate()에 range vector가 없어서", "지금 값 하나만으로 초당 증가율이 계산된다", "기본 범위 [5m]가 자동 적용돼 정상 동작한다", "누적 총합이 계산 없이 그대로 반환된다"]
+  answer: 0
+  explain: "rate()는 \"얼마나 늘었나 ÷ 걸린 시간\"을 계산해야 해서 값이 최소 두 개 필요하다. 범위 표기가 없으면 시계열마다 지금 값 하나(instant vector)만 오기 때문에 계산할 수가 없다. [5m]처럼 범위를 붙여 range vector로 만들어야 한다. (2.4.2)"
 
-<details>
-<summary><b>Q3.</b> Histogram에서 <code>le="0.5"</code> 버킷에는 어떤 요청이 담기나?</summary>
+- type: mcq
+  q: "{status=~\"5..\"}는 무엇을 고르는 조건인가?"
+  choices: ["5로 시작하는 세 자리, 즉 5xx 응답 전체", "정확히 \"5..\"라는 문자열인 status 값", "5로 시작하면 자릿수는 상관없는 값 전체", "5를 포함하지 않는 나머지 status 전체"]
+  answer: 0
+  explain: "=~는 정규식 매칭이고 .은 아무 문자 하나를 뜻한다. 그래서 5로 시작하는 세 자리, 즉 500·502·503 같은 5xx 응답 전체가 걸린다. (2.4.1)"
 
-**A.** 0.5초 **이하** 요청 전부다. 0.25초와 0.5초 사이 구간만 세는 게 아니다. 버킷이 누적이라 막대가 오른쪽으로 갈수록 계속 커진다. (2.2.3)
+- type: mcq
+  q: "sum(rate(...))과 sum by(path)(rate(...))의 결과는 어떻게 다른가?"
+  choices: ["앞은 라벨을 다 버려 선 1개, 뒤는 path별로 선이 나온다", "앞은 path별로 선이 나오고, 뒤는 라벨을 다 버려 선 1개다", "둘 다 선 1개지만, 뒤는 path 라벨만 툴팁에 남는다", "앞은 전체 평균을 내고, 뒤는 path별 합계를 낸다"]
+  answer: 0
+  explain: "앞은 라벨을 모두 버리고 값 하나로 합쳐 선이 하나만 나온다. 뒤는 path 라벨을 남기므로 경로 수만큼 선이 나온다. (2.4.3)"
 
-</details>
+- type: blank
+  q: "docker-compose로 Grafana와 Prometheus를 함께 띄웠다. Grafana의 Data Source URL에는 localhost가 아니라 docker-compose가 붙여준 서비스 이름을 호스트로 써야 한다. http://___:9090 의 빈칸에 들어갈 이름은?"
+  answer: ["prometheus"]
+  explain: "Grafana도 컨테이너 안에서 돌기 때문이다. 컨테이너 입장에서 localhost는 자기 자신이라 Prometheus를 찾지 못한다. docker-compose가 만들어준 네트워크에서는 서비스 이름이 곧 호스트 이름이 되므로 http://prometheus:9090으로 지정한다. (3.1)"
 
-<details>
-<summary><b>Q4.</b> 서버 세 대의 p99 응답 시간을 구해야 한다. Histogram과 Summary 중 무엇을 써야 하나?</summary>
-
-**A.** Histogram이다. Summary는 각 서버가 미리 계산한 분위수만 넘기므로 나중에 합칠 수 없다. 세 서버의 p99를 평균 내도 그건 전체 p99가 아니다. Histogram은 버킷 개수를 그대로 넘기니 서버에서 합산한 뒤 분위수를 계산할 수 있다. (2.2.4)
-
-</details>
-
-<details>
-<summary><b>Q5.</b> 요청을 사용자별로 분석하고 싶어서 <code>user_id</code>를 Label에 추가하려 한다. 왜 말려야 하나?</summary>
-
-**A.** 시계열 수가 Label 값 가짓수의 곱으로 늘어나기 때문이다. `method`(5) × `path`(20) × `status`(6) = 600개짜리 메트릭에 사용자 10만 명을 곱하면 6천만 개가 된다. Label에는 값의 가짓수를 미리 셀 수 있는 것만 넣고, 셀 수 없는 값은 로그로 보낸다. (2.3)
-
-</details>
-
-<details>
-<summary><b>Q6.</b> <code>rate(http_requests_total)</code>은 왜 에러가 날까?</summary>
-
-**A.** `rate()`는 "얼마나 늘었나 ÷ 걸린 시간"을 계산해야 해서 값이 최소 두 개 필요하다. 범위 표기가 없으면 시계열마다 지금 값 하나(instant vector)만 오기 때문에 계산할 수가 없다. `[5m]`처럼 범위를 붙여 range vector로 만들어야 한다. (2.4.2)
-
-</details>
-
-<details>
-<summary><b>Q7.</b> <code>{status=~"5.."}</code>는 무엇을 고르는 조건인가?</summary>
-
-**A.** `=~`는 정규식 매칭이고 `.`은 아무 문자 하나를 뜻한다. 그래서 5로 시작하는 세 자리, 즉 500·502·503 같은 5xx 응답 전체가 걸린다. (2.4.1)
-
-</details>
-
-<details>
-<summary><b>Q8.</b> <code>sum(rate(...))</code>과 <code>sum by(path) (rate(...))</code>의 결과는 어떻게 다른가?</summary>
-
-**A.** 앞은 라벨을 모두 버리고 값 하나로 합쳐 선이 하나만 나온다. 뒤는 `path` 라벨을 남기므로 경로 수만큼 선이 나온다. (2.4.3)
-
-</details>
-
-<details>
-<summary><b>Q9.</b> Grafana의 Data Source URL에 <code>http://localhost:9090</code> 대신 <code>http://prometheus:9090</code>을 넣는 이유는?</summary>
-
-**A.** Grafana도 컨테이너 안에서 돌기 때문이다. 컨테이너 입장에서 `localhost`는 자기 자신이라 Prometheus를 찾지 못한다. docker-compose가 만들어준 네트워크에서는 서비스 이름이 곧 호스트 이름이 된다. (3.1)
-
-</details>
-
-<details>
-<summary><b>Q10.</b> 대시보드를 다 만들었는데 패널이 전부 비어 있다. 어디부터 확인해야 하나?</summary>
-
-**A.** Prometheus 웹 UI의 **Status → Targets**다. 타겟이 `DOWN`이면 애초에 데이터가 수집되지 않은 것이라 쿼리나 패널 설정을 아무리 만져도 소용이 없다. (4.1)
-
-</details>
+- type: mcq
+  q: "대시보드를 다 만들었는데 패널이 전부 비어 있다. 어디부터 확인해야 하나?"
+  choices: ["Prometheus의 Status → Targets에서 타겟이 UP인지", "Grafana 패널의 색상과 축 범위 등 표시 설정이 맞는지", "대시보드에 걸린 조회 시간 범위가 미래로 잡혔는지", "PromQL 쿼리에 쓴 함수 이름에 오타가 없는지"]
+  answer: 0
+  explain: "Prometheus 웹 UI의 Status → Targets다. 타겟이 DOWN이면 애초에 데이터가 수집되지 않은 것이라 쿼리나 패널 설정을 아무리 만져도 소용이 없다. (4.1)"
+```
 
 # 6. 마무리
 
