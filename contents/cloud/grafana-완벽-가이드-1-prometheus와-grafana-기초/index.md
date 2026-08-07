@@ -854,8 +854,8 @@ rate(node_network_transmit_bytes_total{device!="lo"}[5m])
 ```quiz
 - type: mcq
   q: "Prometheus는 타겟이 죽은 것을 어떻게 알아차리나?"
-  choices: ["Prometheus가 직접 호출한 /metrics가 실패하기 때문에", "타겟이 죽었다는 이벤트를 스스로 push로 보내오기 때문에", "타겟이 남긴 로그를 주기적으로 수집해 분석하기 때문에", "타겟이 보내오던 heartbeat 신호가 끊어지기 때문에"]
-  answer: 0
+  choices: ["타겟이 죽었다는 이벤트를 스스로 push로 보내오기 때문에", "타겟이 남긴 로그를 주기적으로 수집해 분석하기 때문에", "Prometheus가 직접 호출한 /metrics가 실패하기 때문에", "타겟이 보내오던 heartbeat 신호가 끊어지기 때문에"]
+  answer: 2
   explain: "Pull 방식이라 Prometheus가 직접 /metrics를 호출하기 때문이다. 호출이 실패하면 그 자체가 장애 신호가 된다. Push 방식은 타겟이 조용해졌을 때 그게 장애인지 그냥 트래픽이 없는 건지 구분하기 어렵다. (2.1)"
 
 - type: mcq
@@ -866,14 +866,14 @@ rate(node_network_transmit_bytes_total{device!="lo"}[5m])
 
 - type: mcq
   q: "Histogram에서 le=\"0.5\" 버킷에는 어떤 요청이 담기나?"
-  choices: ["0.5초 이하로 걸린 요청 전부", "0.5초를 초과해 걸린 요청 전부", "정확히 0.5초가 걸린 요청만", "0.5초에서 1.0초 사이의 요청만"]
-  answer: 0
+  choices: ["0.5초를 초과해 걸린 요청 전부", "0.5초 이하로 걸린 요청 전부", "정확히 0.5초가 걸린 요청만", "0.5초에서 1.0초 사이의 요청만"]
+  answer: 1
   explain: "0.5초 이하 요청 전부다. 0.25초와 0.5초 사이 구간만 세는 게 아니다. 버킷이 누적이라 막대가 오른쪽으로 갈수록 계속 커진다. (2.2.3)"
 
 - type: mcq
   q: "서버 세 대의 p99 응답 시간을 구해야 한다. 무엇을 써야 하나?"
-  choices: ["Histogram — 버킷 개수를 합산한 뒤 분위수를 계산할 수 있어서", "Summary — 각 서버가 미리 계산한 분위수를 그대로 합칠 수 있어서", "Summary — 세 서버의 p99를 평균 내면 전체 p99가 나와서", "Histogram — 서버마다 분위수를 미리 계산해 그대로 넘겨줘서"]
-  answer: 0
+  choices: ["Summary — 각 서버가 미리 계산한 분위수를 그대로 합칠 수 있어서", "Summary — 세 서버의 p99를 평균 내면 전체 p99가 나와서", "Histogram — 서버마다 분위수를 미리 계산해 그대로 넘겨줘서", "Histogram — 버킷 개수를 합산한 뒤 분위수를 계산할 수 있어서"]
+  answer: 3
   explain: "Histogram이다. Summary는 각 서버가 미리 계산한 분위수만 넘기므로 나중에 합칠 수 없다. 세 서버의 p99를 평균 내도 그건 전체 p99가 아니다. Histogram은 버킷 개수를 그대로 넘기니 서버에서 합산한 뒤 분위수를 계산할 수 있다. (2.2.4)"
 
 - type: ox
@@ -886,14 +886,14 @@ rate(node_network_transmit_bytes_total{device!="lo"}[5m])
   lang: promql
   code: |
     rate(http_requests_total)
-  choices: ["에러가 난다 — rate()에 range vector가 없어서", "지금 값 하나만으로 초당 증가율이 계산된다", "기본 범위 [5m]가 자동 적용돼 정상 동작한다", "누적 총합이 계산 없이 그대로 반환된다"]
-  answer: 0
+  choices: ["지금 값 하나만으로 초당 증가율이 계산된다", "에러가 난다 — rate()에 range vector가 없어서", "기본 범위 [5m]가 자동 적용돼 정상 동작한다", "누적 총합이 계산 없이 그대로 반환된다"]
+  answer: 1
   explain: "rate()는 \"얼마나 늘었나 ÷ 걸린 시간\"을 계산해야 해서 값이 최소 두 개 필요하다. 범위 표기가 없으면 시계열마다 지금 값 하나(instant vector)만 오기 때문에 계산할 수가 없다. [5m]처럼 범위를 붙여 range vector로 만들어야 한다. (2.4.2)"
 
 - type: mcq
   q: "{status=~\"5..\"}는 무엇을 고르는 조건인가?"
-  choices: ["5로 시작하는 세 자리, 즉 5xx 응답 전체", "정확히 \"5..\"라는 문자열인 status 값", "5로 시작하면 자릿수는 상관없는 값 전체", "5를 포함하지 않는 나머지 status 전체"]
-  answer: 0
+  choices: ["정확히 \"5..\"라는 문자열인 status 값", "5로 시작하면 자릿수는 상관없는 값 전체", "5를 포함하지 않는 나머지 status 전체", "5로 시작하는 세 자리, 즉 5xx 응답 전체"]
+  answer: 3
   explain: "=~는 정규식 매칭이고 .은 아무 문자 하나를 뜻한다. 그래서 5로 시작하는 세 자리, 즉 500·502·503 같은 5xx 응답 전체가 걸린다. (2.4.1)"
 
 - type: mcq
@@ -909,8 +909,8 @@ rate(node_network_transmit_bytes_total{device!="lo"}[5m])
 
 - type: mcq
   q: "대시보드를 다 만들었는데 패널이 전부 비어 있다. 어디부터 확인해야 하나?"
-  choices: ["Prometheus의 Status → Targets에서 타겟이 UP인지", "Grafana 패널의 색상과 축 범위 등 표시 설정이 맞는지", "대시보드에 걸린 조회 시간 범위가 미래로 잡혔는지", "PromQL 쿼리에 쓴 함수 이름에 오타가 없는지"]
-  answer: 0
+  choices: ["Grafana 패널의 색상과 축 범위 등 표시 설정이 맞는지", "대시보드에 걸린 조회 시간 범위가 미래로 잡혔는지", "Prometheus의 Status → Targets에서 타겟이 UP인지", "PromQL 쿼리에 쓴 함수 이름에 오타가 없는지"]
+  answer: 2
   explain: "Prometheus 웹 UI의 Status → Targets다. 타겟이 DOWN이면 애초에 데이터가 수집되지 않은 것이라 쿼리나 패널 설정을 아무리 만져도 소용이 없다. (4.1)"
 ```
 

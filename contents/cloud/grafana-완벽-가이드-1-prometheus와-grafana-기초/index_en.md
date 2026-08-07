@@ -854,8 +854,8 @@ If you have read this far, you can answer these. Pick an answer and the explanat
 ```quiz
 - type: mcq
   q: "How does Prometheus notice that a target has died?"
-  choices: ["The /metrics call Prometheus makes itself fails", "The target itself pushes an event saying it has died", "It periodically collects and analyzes the target's logs", "The heartbeat signal the target used to send stops"]
-  answer: 0
+  choices: ["The target itself pushes an event saying it has died", "It periodically collects and analyzes the target's logs", "The /metrics call Prometheus makes itself fails", "The heartbeat signal the target used to send stops"]
+  answer: 2
   explain: "Because it is pull-based, Prometheus calls /metrics itself. When that call fails, the failure is the signal. With push, when a target goes quiet it is hard to tell an outage from simply having no traffic. (2.1)"
 
 - type: mcq
@@ -866,14 +866,14 @@ If you have read this far, you can answer these. Pick an answer and the explanat
 
 - type: mcq
   q: "In a Histogram, which requests land in the le=\"0.5\" bucket?"
-  choices: ["Every request that took 0.5 seconds or less", "Every request that took more than 0.5 seconds", "Only requests that took exactly 0.5 seconds", "Only requests between 0.5 and 1.0 seconds"]
-  answer: 0
+  choices: ["Every request that took more than 0.5 seconds", "Every request that took 0.5 seconds or less", "Only requests that took exactly 0.5 seconds", "Only requests between 0.5 and 1.0 seconds"]
+  answer: 1
   explain: "Every request that took 0.5 seconds or less. It does not count only the slice between 0.25 and 0.5 seconds. Because buckets are cumulative, the bars keep growing toward the right. (2.2.3)"
 
 - type: mcq
   q: "You need the p99 response time across three servers. Which should you use?"
-  choices: ["Histogram — you can aggregate the bucket counts, then compute the quantile", "Summary — you can just combine the quantiles each server precomputed", "Summary — averaging the p99 of three servers gives the overall p99", "Histogram — each server precomputes the quantile and hands it over as-is"]
-  answer: 0
+  choices: ["Summary — you can just combine the quantiles each server precomputed", "Summary — averaging the p99 of three servers gives the overall p99", "Histogram — each server precomputes the quantile and hands it over as-is", "Histogram — you can aggregate the bucket counts, then compute the quantile"]
+  answer: 3
   explain: "Histogram. Summary only hands over quantiles each server computed in advance, so they cannot be combined later. Averaging the p99 of three servers does not give you the overall p99. Histogram passes the bucket counts as-is, so the server can aggregate them first and then compute the quantile. (2.2.4)"
 
 - type: ox
@@ -886,14 +886,14 @@ If you have read this far, you can answer these. Pick an answer and the explanat
   lang: promql
   code: |
     rate(http_requests_total)
-  choices: ["It errors — rate() has no range vector to work on", "It computes a per-second rate from the single current value", "A default [5m] range is applied and it runs fine", "The cumulative total is returned as-is, uncomputed"]
-  answer: 0
+  choices: ["It computes a per-second rate from the single current value", "It errors — rate() has no range vector to work on", "A default [5m] range is applied and it runs fine", "The cumulative total is returned as-is, uncomputed"]
+  answer: 1
   explain: "rate() has to compute \"how much it grew ÷ how long it took,\" so it needs at least two values. Without a range, each series delivers only its current value (an instant vector), which leaves nothing to compute. You have to attach a range like [5m] to make it a range vector. (2.4.2)"
 
 - type: mcq
   q: "What does {status=~\"5..\"} select?"
-  choices: ["Three-digit values starting with 5, i.e. all 5xx responses", "Only the status value that is literally the string \"5..\"", "Any value starting with 5, regardless of digit count", "Every remaining status that does not contain a 5"]
-  answer: 0
+  choices: ["Only the status value that is literally the string \"5..\"", "Any value starting with 5, regardless of digit count", "Every remaining status that does not contain a 5", "Three-digit values starting with 5, i.e. all 5xx responses"]
+  answer: 3
   explain: "=~ is regular expression matching and . means any single character. So it matches three-digit values starting with 5, meaning all 5xx responses like 500, 502, and 503. (2.4.1)"
 
 - type: mcq
@@ -905,12 +905,12 @@ If you have read this far, you can answer these. Pick an answer and the explanat
 - type: blank
   q: "You ran Grafana and Prometheus together with docker-compose. Grafana's Data Source URL must use the service name docker-compose assigns as the host, not localhost. What name fills the blank in http://___:9090?"
   answer: ["prometheus"]
-  explain: "Because Grafana runs inside a container as well. From the container's point of view localhost is itself, so it cannot find Prometheus. On the network docker-compose creates the service name is the hostname, so you point it at http://prometheus:9090. (3.1)"
+  explain: "Because Grafana runs inside a container as well. From the container's point of view localhost is itself, so it cannot find Prometheus. On the network that docker-compose creates, the service name becomes the hostname, so you point it at http://prometheus:9090. (3.1)"
 
 - type: mcq
   q: "You finished building the dashboard but every panel is empty. Where do you look first?"
-  choices: ["Prometheus's Status → Targets, to see if the target is UP", "The Grafana panel's color and axis range settings", "Whether the dashboard's time range is set into the future", "Whether the PromQL query has a typo in a function name"]
-  answer: 0
+  choices: ["The Grafana panel's color and axis range settings", "Whether the dashboard's time range is set into the future", "Prometheus's Status → Targets, to see if the target is UP", "Whether the PromQL query has a typo in a function name"]
+  answer: 2
   explain: "Status → Targets in the Prometheus web UI. If a target is DOWN, no data was collected in the first place, so no amount of fiddling with queries or panel settings will help. (4.1)"
 ```
 
