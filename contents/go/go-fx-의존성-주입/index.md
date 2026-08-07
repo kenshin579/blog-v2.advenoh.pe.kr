@@ -655,8 +655,8 @@ app := fxtest.New(t,
         fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
     )
     app.Run()
-  choices: ["등록된 생성자가 모두 순서대로 호출된다", "어떤 생성자도 호출되지 않는다", "NewUserService만 호출된다", "곧바로 컴파일 에러가 난다"]
-  answer: 1
+  choices: ["어떤 생성자도 호출되지 않는다", "등록된 생성자가 모두 순서대로 호출된다", "NewUserService만 호출된다", "곧바로 컴파일 에러가 난다"]
+  answer: 0
   explain: "fx.Provide는 등록만 하고 실행을 미루는 lazy 등록이다. 그래프가 실제로 조립되려면 그 타입을 요구하는 쪽이 있어야 하고, 그 시작점이 fx.Invoke다. 부수 효과(서버 기동·라우터 등록)를 담당하는 Invoke가 하나도 없으면 어떤 생성자도 호출되지 않는다. (2.2)"
 
 - type: mcq
@@ -667,14 +667,14 @@ app := fxtest.New(t,
 
 - type: mcq
   q: "fx는 생성자를 어떤 순서로 호출할지 어떻게 결정하나?"
-  choices: ["fx.Provide에 등록한 순서대로", "각 생성자의 매개변수 타입과 반환 타입을 분석해서", "생성자 이름의 알파벳순으로", "fx.Invoke에 나열한 순서대로"]
-  answer: 1
+  choices: ["fx.Provide에 등록한 순서대로", "생성자 이름의 알파벳순으로", "각 생성자의 매개변수 타입과 반환 타입을 분석해서", "fx.Invoke에 나열한 순서대로"]
+  answer: 2
   explain: "각 생성자의 매개변수 타입과 반환 타입만 본다. database.New(cfg *config.Config)는 *config.Config를 요구하므로 그 타입을 반환하는 config.New()가 먼저 호출된다. 등록 순서는 상관없고, 순환 의존성이 있으면 앱 시작 시점에 에러로 알려준다. (2.3)"
 
 - type: mcq
   q: "registerHooks를 fx.Invoke로 등록했다. 서버는 정확히 언제 뜨나?"
-  choices: ["fx.New() 호출 즉시", "fx.Provide로 서버 생성자가 호출될 때", "app.Start(ctx)가 호출되어 OnStart 훅이 실행될 때", "registerHooks의 Invoke 본문이 실행되는 순간"]
-  answer: 2
+  choices: ["fx.New() 호출 즉시", "fx.Provide로 서버 생성자가 호출될 때", "registerHooks의 Invoke 본문이 실행되는 순간", "app.Start(ctx)가 호출되어 OnStart 훅이 실행될 때"]
+  answer: 3
   explain: "두 시점으로 나뉜다. Invoke 함수 본문은 fx.New() 호출 시점에 즉시 실행되지만, 거기서 하는 일은 Lifecycle에 훅을 등록하는 것뿐이다. OnStart 본문(실제 서버 기동)은 이후 app.Start(ctx)가 호출될 때 실행된다. fx.Lifecycle이 2단계 구조인 이유가 이것이다. (2.4)"
 
 - type: blank
@@ -699,14 +699,14 @@ app := fxtest.New(t,
 
 - type: mcq
   q: "테스트에서 실제 Repository 대신 Mock을 넣으려는데, fx.Replace(&mockUserRepo{})만으로는 왜 부족한가?"
-  choices: ["fx.Replace는 테스트 코드 안에서는 아예 사용할 수 없는 함수이기 때문", "타입이 *mockUserRepo라 UserRepository 인터페이스로 매칭되지 않기 때문", "fx.Replace 전에 반드시 기존 fx.Provide를 지워야 하기 때문", "Mock 객체는 오직 fx.Supply를 통해서만 주입할 수 있기 때문"]
-  answer: 1
+  choices: ["타입이 *mockUserRepo라 UserRepository 인터페이스로 매칭되지 않기 때문", "fx.Replace는 테스트 코드 안에서는 아예 사용할 수 없는 함수이기 때문", "fx.Replace 전에 반드시 기존 fx.Provide를 지워야 하기 때문", "Mock 객체는 오직 fx.Supply를 통해서만 주입할 수 있기 때문"]
+  answer: 0
   explain: "fx는 타입으로 매칭하는데 &mockUserRepo{}의 타입은 *mockUserRepo이지 UserRepository 인터페이스가 아니다. fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))로 감싸 인터페이스 타입으로 등록해야 기존 Provide를 교체한다. (4.2)"
 
 - type: mcq
   q: "조립된 인스턴스를 테스트로 꺼낼 때 fx.Invoke와 fx.Populate 중 무엇을 쓰나?"
-  choices: ["추출만 목적이면 fx.Populate, 이후 호출·검증도 하려면 fx.Invoke", "검증까지 할 거면 fx.Populate, 단순 추출이면 fx.Invoke를 쓴다", "fx.Populate는 추출이 불가능해 추출엔 항상 fx.Invoke만 쓴다", "성능이 더 좋은 fx.Populate를 어떤 경우든 항상 쓴다"]
-  answer: 0
+  choices: ["fx.Populate는 추출이 불가능해 추출엔 항상 fx.Invoke만 쓴다", "검증까지 할 거면 fx.Populate, 단순 추출이면 fx.Invoke를 쓴다", "추출만 목적이면 fx.Populate, 이후 호출·검증도 하려면 fx.Invoke", "성능이 더 좋은 fx.Populate를 어떤 경우든 항상 쓴다"]
+  answer: 2
   explain: "fx.Populate는 내부적으로 fx.Invoke로 구현된 편의 함수라 본질은 같고, 차이는 목적이다. 변수에 담는 것만이 목적이면 클로저가 군더더기이므로 Populate, 꺼낸 뒤 같은 시점에 호출·검증까지 해야 하면 본문을 쓸 수 있는 Invoke가 낫다. (4.3)"
 ```
 

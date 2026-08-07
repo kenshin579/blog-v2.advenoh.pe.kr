@@ -655,8 +655,8 @@ If you've read this far, these are questions you can answer. Pick an answer and 
         fx.Provide(NewLogger, NewMysqlUserRepo, NewUserService),
     )
     app.Run()
-  choices: ["Every registered constructor is called in order", "No constructor is ever called", "Only NewUserService is called", "It fails to compile"]
-  answer: 1
+  choices: ["No constructor is ever called", "Every registered constructor is called in order", "Only NewUserService is called", "It fails to compile"]
+  answer: 0
   explain: "fx.Provide only registers and defers execution — it is lazy. For the graph to be assembled, something has to demand those types, and fx.Invoke is that starting point. With no Invoke handling side effects (server boot, route registration), no constructor is ever called. (2.2)"
 
 - type: mcq
@@ -667,14 +667,14 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: mcq
   q: "How does fx decide the order in which constructors are called?"
-  choices: ["In the order they were registered with fx.Provide", "By analyzing each constructor's parameter types and return type", "Alphabetically by constructor name", "In the order they are listed in fx.Invoke"]
-  answer: 1
+  choices: ["In the order they were registered with fx.Provide", "Alphabetically by constructor name", "By analyzing each constructor's parameter types and return type", "In the order they are listed in fx.Invoke"]
+  answer: 2
   explain: "It looks only at each constructor's parameter types and return type. database.New(cfg *config.Config) requires *config.Config, so config.New(), which returns that type, is called first. Registration order does not matter, and a circular dependency is reported as an error at app startup. (2.3)"
 
 - type: mcq
   q: "You registered registerHooks with fx.Invoke. When exactly does the server start?"
-  choices: ["Immediately when fx.New() is called", "When fx.Provide calls the server constructor", "When app.Start(ctx) is called and the OnStart hook runs", "The moment the Invoke body of registerHooks runs"]
-  answer: 2
+  choices: ["Immediately when fx.New() is called", "When fx.Provide calls the server constructor", "The moment the Invoke body of registerHooks runs", "When app.Start(ctx) is called and the OnStart hook runs"]
+  answer: 3
   explain: "It splits into two points. The Invoke function body runs immediately when fx.New() is called, but all it does there is register hooks on the Lifecycle. The OnStart body (the actual server boot) runs later, when app.Start(ctx) is called. That is precisely why fx.Lifecycle has this two-stage structure. (2.4)"
 
 - type: blank
@@ -699,14 +699,14 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: mcq
   q: "You want a Mock instead of the real Repository in a test. Why isn't fx.Replace(&mockUserRepo{}) enough on its own?"
-  choices: ["Because fx.Replace cannot be used in tests at all", "Because its type is *mockUserRepo, not the UserRepository interface", "Because you must first delete the existing fx.Provide before fx.Replace", "Because a Mock can only ever be injected with fx.Supply"]
-  answer: 1
+  choices: ["Because its type is *mockUserRepo, not the UserRepository interface", "Because fx.Replace cannot be used in tests at all", "Because you must first delete the existing fx.Provide before fx.Replace", "Because a Mock can only ever be injected with fx.Supply"]
+  answer: 0
   explain: "fx matches by type, and the type of &mockUserRepo{} is *mockUserRepo, not the UserRepository interface. Wrap it as fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository))) so it is registered under the interface type; only then does it replace the existing Provide. (4.2)"
 
 - type: mcq
   q: "To pull an assembled instance out in a test, do you use fx.Invoke or fx.Populate?"
-  choices: ["fx.Populate for extraction only; fx.Invoke when you also call or verify", "fx.Populate when you also verify; fx.Invoke for plain extraction", "fx.Populate cannot extract, so always use fx.Invoke to pull instances", "fx.Populate is faster, so always use it in every case"]
-  answer: 0
+  choices: ["fx.Populate cannot extract, so always use fx.Invoke to pull instances", "fx.Populate when you also verify; fx.Invoke for plain extraction", "fx.Populate for extraction only; fx.Invoke when you also call or verify", "fx.Populate is faster, so always use it in every case"]
+  answer: 2
   explain: "fx.Populate is a convenience function implemented on top of fx.Invoke, so they are the same underneath; the difference is intent. If the only goal is to store the value in a variable, the closure is dead weight, so use Populate. If you need to call or verify something at the same point after extracting it, Invoke gives you a body to do that. (4.3)"
 ```
 
