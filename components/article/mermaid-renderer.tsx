@@ -1,15 +1,14 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useEffect, type RefObject } from 'react';
 import { useTheme } from 'next-themes';
 import mermaid from 'mermaid';
 
-interface MermaidRendererProps {
-  html: string;
-}
-
-export function MermaidRenderer({ html }: MermaidRendererProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+/**
+ * 컨테이너 안의 code.language-mermaid 블록을 SVG로 교체한다.
+ * ArticleBody가 본문 HTML을 소유하고 이 훅을 호출한다.
+ */
+export function useMermaid(containerRef: RefObject<HTMLDivElement | null>, html: string) {
   const { resolvedTheme } = useTheme();
 
   useEffect(() => {
@@ -70,13 +69,5 @@ export function MermaidRenderer({ html }: MermaidRendererProps) {
     return () => {
       cancelled = true;
     };
-  }, [html, resolvedTheme]);
-
-  return (
-    <div
-      ref={containerRef}
-      className="prose prose-lg dark:prose-invert max-w-none"
-      dangerouslySetInnerHTML={{ __html: html }}
-    />
-  );
+  }, [containerRef, html, resolvedTheme]);
 }
