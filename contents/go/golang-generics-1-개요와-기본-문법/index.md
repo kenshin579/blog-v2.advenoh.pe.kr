@@ -319,7 +319,7 @@ emptyStrings := toSlice[string]()  // 명시적 지정 필요
 - type: ox
   q: "Go 설계자들은 언어의 복잡도를 낮추려고 Generics를 오랫동안 언어에서 제외해 왔다."
   answer: true
-  explain: "맞다. Go는 단순함을 핵심 철학으로 설계된 언어여서 Rob Pike를 비롯한 설계자들이 많은 기능을 의도적으로 제외했고 Generics도 오랫동안 그 대상이었다. 결국 Ian Lance Taylor의 Type Parameters Proposal이 채택되어 Go 1.18에 도입되었다. (2장)"
+  explain: "맞다. Go는 단순함을 핵심 철학으로 설계된 언어여서 Rob Pike를 비롯한 설계자들이 많은 기능을 의도적으로 제외했고 Generics도 오랫동안 그 대상이었다. 결국 Ian Lance Taylor의 Type Parameters Proposal이 채택되면서 정식 기능으로 들어왔다. (2장)"
 
 - type: code
   q: "이 코드에서 두 번의 printAny 호출은 T를 각각 무엇으로 결정하나?"
@@ -344,9 +344,9 @@ emptyStrings := toSlice[string]()  // 명시적 지정 필요
   explain: "`any` constraint는 `<` 연산을 지원하지 않는다. 그래서 비교 연산이 필요한 min 같은 함수는 `int | float64` 같은 union type constraint로 허용 타입의 범위를 좁혀 주어야 한다. (4.2절)"
 
 - type: blank
-  q: "본문에서 모든 타입을 허용하는 가장 기본적인 constraint의 이름은 ___이다."
-  answer: ["any"]
-  explain: "`any`다. 예전 `interface{}`를 대신하는 이름으로, 타입 파라미터에 어떤 타입이든 올 수 있게 허용한다. 다만 허용 범위가 넓은 만큼 비교 연산 같은 것은 쓸 수 없다. (4.2절)"
+  q: "Go에서 Generics가 정식으로 지원되기 시작한 버전은 Go ___이다."
+  answer: ["1.18"]
+  explain: "Go 1.18이다. 2022년 3월에 나온 이 버전부터 Generics가 정식 기능이 되었다. 그전까지는 커뮤니티에서 가장 많이 요청된 기능이면서도 언어에 들어오지 못한 상태였다. (1장, 2장)"
 
 - type: code
   q: "이 코드가 컴파일되지 않는 이유는?"
@@ -391,6 +391,28 @@ emptyStrings := toSlice[string]()  // 명시적 지정 필요
   q: "interface로 선언한 constraint끼리 합성해 새로운 constraint를 만들 수는 없다."
   answer: false
   explain: "아니다. constraint 합성은 가능하다. 본문의 `ComparableNumbers`는 `IntegerType | Float`처럼 앞서 선언한 두 constraint를 합성해 만든 것이다. (4.3절)"
+
+- type: code
+  q: "이 코드를 실행하면 무엇이 출력되나?"
+  lang: go
+  code: |
+    func Map[F, T any](s []F, f func(F) T) []T {
+        rst := make([]T, len(s))
+        for i, v := range s {
+            rst[i] = f(v)
+        }
+        return rst
+    }
+
+    func main() {
+        doubled := Map([]int{1, 2, 3}, func(i int) int {
+            return i * 2
+        })
+        fmt.Println(doubled)
+    }
+  choices: ["[1 2 3] — 원본 슬라이스가 그대로 나온다", "6 — 변환한 값을 모두 더한 결과가 나온다", "[2 4 6] — 각 요소에 변환이 적용되어 나온다", "[] — 길이 0인 빈 슬라이스가 만들어져 나온다"]
+  answer: 2
+  explain: "`Map`은 원본과 같은 크기의 결과 슬라이스를 만든 뒤 각 요소에 변환 함수를 적용한다. 여기서는 F와 T가 모두 int로 정해지고 각 요소가 2배가 되므로 [2 4 6]이 출력된다. (4.5절)"
 ```
 
 # 7. 마무리

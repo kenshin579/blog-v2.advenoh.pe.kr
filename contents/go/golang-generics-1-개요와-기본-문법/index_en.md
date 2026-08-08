@@ -319,7 +319,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 - type: ox
   q: "The Go designers deliberately left generics out of the language for a long time to keep complexity low."
   answer: true
-  explain: "True. Go was designed with simplicity as its core philosophy, so the designers including Rob Pike deliberately left out many features, and generics was long among them. Eventually Ian Lance Taylor's Type Parameters Proposal was adopted and introduced in Go 1.18. (Section 2)"
+  explain: "True. Go was designed with simplicity as its core philosophy, so the designers including Rob Pike deliberately left out many features, and generics was long among them. Eventually Ian Lance Taylor's Type Parameters Proposal was adopted and generics became an official feature. (Section 2)"
 
 - type: code
   q: "In this code, what does each of the two printAny calls resolve T to?"
@@ -339,14 +339,14 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: mcq
   q: "Why does the article declare the min function with a union type constraint like `int | int16 | float64`?"
-  choices: ["Because with any, type inference stops working entirely", "Because the any constraint does not support the `<` operation", "Because any is a keyword that cannot be a constraint at all", "Because declaring it as any makes the function panic at runtime"]
+  choices: ["Because with any, type inference stops working entirely", "Because the any constraint does not support the `<` operation", "Because any is a keyword not allowed on a type parameter", "Because declaring it as any makes the function panic at runtime"]
   answer: 1
   explain: "The `any` constraint does not support the `<` operation. So a function like min that needs a comparison must narrow the allowed types with a union type constraint such as `int | float64`. (Section 4.2)"
 
 - type: blank
-  q: "The name of the most basic constraint in the article, the one that allows all types, is ___."
-  answer: ["any"]
-  explain: "It is `any`. It is the name that replaces the older `interface{}`, and it lets any type at all be used for the type parameter. But because it allows so much, operations like comparison are not available. (Section 4.2)"
+  q: "Generics has been officially supported in Go starting from version Go ___."
+  answer: ["1.18"]
+  explain: "It is Go 1.18. From that release, which came out in March 2022, generics became an official feature. Until then it was the most requested feature in the community yet still absent from the language. (Section 1, Section 2)"
 
 - type: code
   q: "Why does this code fail to compile?"
@@ -391,6 +391,28 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   q: "Constraints declared with an interface cannot be composed into a new constraint."
   answer: false
   explain: "False. Composing constraints is possible. The article's `ComparableNumbers` is built by composing two previously declared constraints, as in `IntegerType | Float`. (Section 4.3)"
+
+- type: code
+  q: "What does this code print when you run it?"
+  lang: go
+  code: |
+    func Map[F, T any](s []F, f func(F) T) []T {
+        rst := make([]T, len(s))
+        for i, v := range s {
+            rst[i] = f(v)
+        }
+        return rst
+    }
+
+    func main() {
+        doubled := Map([]int{1, 2, 3}, func(i int) int {
+            return i * 2
+        })
+        fmt.Println(doubled)
+    }
+  choices: ["[1 2 3] — the original slice comes back unchanged", "6 — the sum of all transformed values in one number", "[2 4 6] — the transform applied to every element", "[] — an empty slice of length 0 comes back"]
+  answer: 2
+  explain: "`Map` creates a result slice of the same size as the original and then applies the transform function to each element. Here both F and T settle on int and each element is doubled, so [2 4 6] is printed. (Section 4.5)"
 ```
 
 # 7. Wrapping Up
