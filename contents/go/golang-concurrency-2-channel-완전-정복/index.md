@@ -395,9 +395,9 @@ func TestMultipleProducers(t *testing.T) {
     ch <- 42      // (1)
     value := <-ch // (2)
     _ = value
-  choices: ["값이 내부 버퍼에 저장되고 다음 줄로 넘어간다", "unbuffered라 send 자체가 컴파일 에러가 된다", "직전 줄의 make가 버퍼를 1로 잡아 통과한다", "receiver가 없어 그 줄에서 영원히 blocking된다"]
+  choices: ["값이 내부 버퍼에 저장되고 다음 줄로 넘어간다", "unbuffered라 send 자체가 컴파일 에러가 된다", "위의 make가 버퍼를 1로 잡아 주어 통과한다", "receiver가 없어 blocking되어 더 진행되지 않는다"]
   answer: 3
-  explain: "make(chan int)는 버퍼 크기가 0인 unbuffered channel이다. unbuffered channel은 send와 receive가 동시에 준비되어야 진행되는데, 여기서는 receive하는 (2)가 같은 goroutine의 다음 줄에 있어 영영 실행되지 않는다. 그래서 (1)에서 멈춘다. (3절, 4.1절)"
+  explain: "make(chan int)는 버퍼 크기가 0인 unbuffered channel이다. unbuffered channel은 send와 receive가 동시에 준비되어야 진행되는데, 여기서는 receive하는 (2)가 같은 goroutine의 다음 줄에 있어 실행될 기회가 없다. 그래서 (1)에서 멈춘다. (3장, 4.1절)"
 
 - type: ox
   q: "close(done)은 대기 중인 모든 receiver에게 동시에 완료 신호를 전달한다."
@@ -406,8 +406,8 @@ func TestMultipleProducers(t *testing.T) {
 
 - type: blank
   q: "함수 파라미터를 받기만 가능하도록 제한하는 방향 표기는 ___ int이고, 반대 방향으로 변환하면 컴파일 에러가 난다."
-  answer: ["<-chan"]
-  explain: "receive-only는 <-chan int로 쓴다. 양방향 channel은 send-only(chan<-)나 receive-only(<-chan)로 암묵적 변환되지만 그 반대는 컴파일 에러다. 방향을 제한하면 잘못된 사용을 컴파일 타임에 막을 수 있다. (5절)"
+  answer: ["<-chan", "<- chan"]
+  explain: "receive-only는 <-chan int로 쓴다. 양방향 channel은 send-only(chan<-)나 receive-only(<-chan)로 암묵적 변환되지만 그 반대는 컴파일 에러다. 방향을 제한하면 잘못된 사용을 컴파일 타임에 막을 수 있다. (5장)"
 
 - type: mcq
   q: "Channel의 close 규칙으로 옳은 것은?"
@@ -425,7 +425,7 @@ func TestMultipleProducers(t *testing.T) {
 
     v1, ok1 := <-ch
     v2, ok2 := <-ch
-    _, _ = v1, ok1
+    _, _, _, _ = v1, ok1, v2, ok2
   choices: ["v2는 42이고 ok2는 true로 그대로 나온다", "v2는 0이고 ok2는 false로 나온다", "두 번째 receive에서 panic이 발생한다", "두 번째 receive가 그 자리에서 blocking된다"]
   answer: 1
   explain: "첫 번째 receive는 버퍼에 남아 있던 42와 true를 가져간다. 그 다음에는 버퍼가 비고 channel도 닫힌 상태이므로 두 번째 receive는 blocking되지 않고 곧바로 int의 zero value인 0과 닫힘을 뜻하는 false를 반환한다. (6.2절)"
@@ -433,11 +433,11 @@ func TestMultipleProducers(t *testing.T) {
 - type: ox
   q: "sender가 보낼 값을 모두 보내고 나면 range ch는 close 없이도 자동으로 종료된다."
   answer: false
-  explain: "아니다. range ch가 종료되려면 반드시 close(ch)가 호출되어야 한다. 보낼 값을 다 보냈더라도 close하지 않으면 range는 다음 값을 기다리며 영원히 blocking된다. (7절)"
+  explain: "아니다. range ch가 종료되려면 반드시 close(ch)가 호출되어야 한다. 보낼 값을 다 보냈더라도 close하지 않으면 range는 다음 값을 기다리며 영원히 blocking된다. (7장)"
 
 - type: blank
   q: "데이터 없이 완료 신호만 주고받을 때는 메모리를 0바이트 차지하는 chan ___{} 타입을 쓴다."
-  answer: ["struct"]
+  answer: ["struct", "struct{}"]
   explain: "chan struct{}이다. struct{}는 필드가 없는 빈 구조체 타입이라 메모리를 0바이트 차지하므로, 데이터 없이 신호만 전달할 때 가장 효율적인 선택이다. 값을 보낼 때는 인스턴스인 struct{}{}를 쓴다. (7.1절)"
 
 - type: mcq
@@ -458,7 +458,7 @@ func TestMultipleProducers(t *testing.T) {
     _, _, _ = sendOnly, recvOnly, both
   choices: ["(1) — 양방향 channel은 send-only가 될 수 없다", "(2) — 양방향 channel은 receive-only가 못 된다", "(3)까지 포함해 세 줄 모두 정상 컴파일된다", "(3) — 방향이 제한된 channel은 양방향이 못 된다"]
   answer: 3
-  explain: "양방향 channel은 send-only나 receive-only로 암묵적 변환되므로 (1)과 (2)는 정상이다. 하지만 반대 방향, 즉 방향이 제한된 channel을 다시 양방향으로 돌리는 (3)은 컴파일 에러다. (5절)"
+  explain: "양방향 channel은 send-only나 receive-only로 암묵적 변환되므로 (1)과 (2)는 정상이다. 하지만 반대 방향, 즉 방향이 제한된 channel을 다시 양방향으로 돌리는 (3)은 컴파일 에러다. (5장)"
 ```
 
 # 10. 정리

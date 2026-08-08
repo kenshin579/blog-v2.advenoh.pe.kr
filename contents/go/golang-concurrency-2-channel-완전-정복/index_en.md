@@ -395,9 +395,9 @@ If you've read this far, these are questions you can answer. Pick an answer and 
     ch <- 42      // (1)
     value := <-ch // (2)
     _ = value
-  choices: ["The value lands in the buffer and the next line runs", "Being unbuffered, the send itself is a compile error", "The make on the line above gives it a buffer of 1", "With no receiver, it blocks forever on that very line"]
+  choices: ["The value lands in the buffer and the next line runs", "Being unbuffered, the send itself is a compile error", "The make above it hands the channel a buffer of 1", "With no receiver, it blocks there and makes no progress"]
   answer: 3
-  explain: "make(chan int) creates an unbuffered channel with buffer size 0. An unbuffered channel proceeds only when send and receive are ready at the same time, but the receive at (2) sits on the next line of the same goroutine and is never reached. So it stops at (1). (Sections 3, 4.1)"
+  explain: "make(chan int) creates an unbuffered channel with buffer size 0. An unbuffered channel proceeds only when send and receive are ready at the same time, but the receive at (2) sits on the next line of the same goroutine and never gets a chance to run. So it stops at (1). (Sections 3, 4.1)"
 
 - type: ox
   q: "close(done) delivers the completion signal to all waiting receivers simultaneously."
@@ -406,7 +406,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: blank
   q: "The direction notation that restricts a function parameter to receiving only is ___ int, and converting in the opposite direction is a compile error."
-  answer: ["<-chan"]
+  answer: ["<-chan", "<- chan"]
   explain: "Receive-only is written <-chan int. A bidirectional channel is implicitly converted to send-only (chan<-) or receive-only (<-chan), but not the other way around. Restricting the direction blocks incorrect use at compile time. (Section 5)"
 
 - type: mcq
@@ -425,7 +425,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
     v1, ok1 := <-ch
     v2, ok2 := <-ch
-    _, _ = v1, ok1
+    _, _, _, _ = v1, ok1, v2, ok2
   choices: ["v2 comes out as 42 and ok2 comes out as true", "v2 comes out as 0 and ok2 comes out as false", "The second receive panics on the closed channel", "The second receive blocks right there on that line"]
   answer: 1
   explain: "The first receive takes the 42 left in the buffer along with true. After that the buffer is empty and the channel is closed, so the second receive does not block: it returns int's zero value 0 and false, the closed indicator, right away. (Section 6.2)"
@@ -437,7 +437,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: blank
   q: "To exchange only a completion signal without data, use the chan ___{} type, which takes up 0 bytes of memory."
-  answer: ["struct"]
+  answer: ["struct", "struct{}"]
   explain: "It is chan struct{}. struct{} is an empty struct type with no fields and takes up 0 bytes, making it the most efficient choice for delivering a signal without data. To send a value you use the instance struct{}{}. (Section 7.1)"
 
 - type: mcq
