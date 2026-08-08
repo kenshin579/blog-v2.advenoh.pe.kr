@@ -375,7 +375,93 @@ func TestMultipleProducers(t *testing.T) {
 }
 ```
 
-# 9. 정리
+# 9. 퀴즈
+
+여기까지 읽었으면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
+
+```quiz
+- type: mcq
+  q: "Unbuffered channel과 Buffered channel의 차이를 바르게 설명한 것은?"
+  choices: ["Buffered는 receiver 없이도 버퍼 크기만큼 send가 된다", "Unbuffered는 버퍼가 하나라도 있어야 send가 가능하다", "Buffered는 버퍼가 가득 차도 send가 blocking되지 않는다", "Unbuffered는 send한 뒤 receiver를 기다리지 않는다"]
+  answer: 0
+  explain: "Buffered channel은 버퍼에 빈 공간이 있으면 send가 즉시 완료되므로 receiver가 없어도 버퍼 크기만큼 보낼 수 있다. 버퍼가 가득 차면 그때부터 send가 blocking된다. 반면 unbuffered channel은 버퍼 크기가 0이라 receiver가 receive할 때까지 send가 blocking되는 동기적 통신이다. (4.1절, 4.2절)"
+
+- type: code
+  q: "이 코드를 그대로 실행하면 (1)에서 어떤 일이 벌어지나?"
+  lang: go
+  code: |
+    ch := make(chan int)
+
+    ch <- 42      // (1)
+    value := <-ch // (2)
+    _ = value
+  choices: ["값이 내부 버퍼에 저장되고 다음 줄로 넘어간다", "unbuffered라 send 자체가 컴파일 에러가 된다", "직전 줄의 make가 버퍼를 1로 잡아 통과한다", "receiver가 없어 그 줄에서 영원히 blocking된다"]
+  answer: 3
+  explain: "make(chan int)는 버퍼 크기가 0인 unbuffered channel이다. unbuffered channel은 send와 receive가 동시에 준비되어야 진행되는데, 여기서는 receive하는 (2)가 같은 goroutine의 다음 줄에 있어 영영 실행되지 않는다. 그래서 (1)에서 멈춘다. (3절, 4.1절)"
+
+- type: ox
+  q: "close(done)은 대기 중인 모든 receiver에게 동시에 완료 신호를 전달한다."
+  answer: true
+  explain: "맞다. close(done)은 모든 receiver에게 동시에 신호를 보내며, 이것이 값을 하나만 넘기는 done <- struct{}{}와의 차이점이다. 그래서 완료 신호를 여러 곳에 뿌릴 때 close를 쓴다. (7.1절)"
+
+- type: blank
+  q: "함수 파라미터를 받기만 가능하도록 제한하는 방향 표기는 ___ int이고, 반대 방향으로 변환하면 컴파일 에러가 난다."
+  answer: ["<-chan"]
+  explain: "receive-only는 <-chan int로 쓴다. 양방향 channel은 send-only(chan<-)나 receive-only(<-chan)로 암묵적 변환되지만 그 반대는 컴파일 에러다. 방향을 제한하면 잘못된 사용을 컴파일 타임에 막을 수 있다. (5절)"
+
+- type: mcq
+  q: "Channel의 close 규칙으로 옳은 것은?"
+  choices: ["close 책임은 sender가 아니라 receiver에게 있다", "이미 닫힌 channel은 다시 닫아도 아무 일이 없다", "닫힌 channel에 값을 보내면 panic이 발생한다", "닫힌 channel에서 값을 받으면 panic이 발생한다"]
+  answer: 2
+  explain: "닫힌 channel에 send하면 panic이 발생한다. close 책임은 값을 보내는 sender에게 있고, 이미 닫힌 channel을 다시 닫아도 panic이다. 반대로 닫힌 channel에서 receive하는 것은 허용되며 zero value와 false를 돌려준다. (6.3절)"
+
+- type: code
+  q: "이 코드에서 v2와 ok2에 담기는 값은?"
+  lang: go
+  code: |
+    ch := make(chan int, 1)
+    ch <- 42
+    close(ch)
+
+    v1, ok1 := <-ch
+    v2, ok2 := <-ch
+    _, _ = v1, ok1
+  choices: ["v2는 42이고 ok2는 true로 그대로 나온다", "v2는 0이고 ok2는 false로 나온다", "두 번째 receive에서 panic이 발생한다", "두 번째 receive가 그 자리에서 blocking된다"]
+  answer: 1
+  explain: "첫 번째 receive는 버퍼에 남아 있던 42와 true를 가져간다. 그 다음에는 버퍼가 비고 channel도 닫힌 상태이므로 두 번째 receive는 blocking되지 않고 곧바로 int의 zero value인 0과 닫힘을 뜻하는 false를 반환한다. (6.2절)"
+
+- type: ox
+  q: "sender가 보낼 값을 모두 보내고 나면 range ch는 close 없이도 자동으로 종료된다."
+  answer: false
+  explain: "아니다. range ch가 종료되려면 반드시 close(ch)가 호출되어야 한다. 보낼 값을 다 보냈더라도 close하지 않으면 range는 다음 값을 기다리며 영원히 blocking된다. (7절)"
+
+- type: blank
+  q: "데이터 없이 완료 신호만 주고받을 때는 메모리를 0바이트 차지하는 chan ___{} 타입을 쓴다."
+  answer: ["struct"]
+  explain: "chan struct{}이다. struct{}는 필드가 없는 빈 구조체 타입이라 메모리를 0바이트 차지하므로, 데이터 없이 신호만 전달할 때 가장 효율적인 선택이다. 값을 보낼 때는 인스턴스인 struct{}{}를 쓴다. (7.1절)"
+
+- type: mcq
+  q: "본문의 선택 기준에서 Unbuffered channel이 권장되는 상황은?"
+  choices: ["goroutine 사이의 핸드셰이크 동기화가 필요할 때", "생산 속도와 소비 속도의 차이를 완충하고 싶을 때", "Producer/Consumer 패턴으로 처리량을 낼 때", "성능이 중요한 대량 데이터를 전달해야 할 때"]
+  answer: 0
+  explain: "goroutine 간 동기화(핸드셰이크)와 done, quit 같은 신호 전달에는 unbuffered를 쓴다. 생산·소비 속도 차이 완충, Producer/Consumer 패턴, 성능이 중요한 대량 데이터 전달은 모두 buffered 쪽이다. (4.4절)"
+
+- type: code
+  q: "이 코드에서 컴파일 에러가 나는 줄은?"
+  lang: go
+  code: |
+    ch := make(chan int, 5)
+
+    var sendOnly chan<- int = ch // (1)
+    var recvOnly <-chan int = ch // (2)
+    var both chan int = recvOnly // (3)
+    _, _, _ = sendOnly, recvOnly, both
+  choices: ["(1) — 양방향 channel은 send-only가 될 수 없다", "(2) — 양방향 channel은 receive-only가 못 된다", "(3)까지 포함해 세 줄 모두 정상 컴파일된다", "(3) — 방향이 제한된 channel은 양방향이 못 된다"]
+  answer: 3
+  explain: "양방향 channel은 send-only나 receive-only로 암묵적 변환되므로 (1)과 (2)는 정상이다. 하지만 반대 방향, 즉 방향이 제한된 channel을 다시 양방향으로 돌리는 (3)은 컴파일 에러다. (5절)"
+```
+
+# 10. 정리
 
 | 개념 | 핵심 |
 |------|------|
@@ -389,9 +475,9 @@ func TestMultipleProducers(t *testing.T) {
 
 다음 편에서는 여러 channel을 동시에 처리하는 **select**문과 **fan-in/fan-out** 등 channel 심화 패턴을 다룬다.
 
-# 10. FAQ
+# 11. FAQ
 
-## 10.1 Q. `struct{}`와 `struct{}{}`의 차이는?
+## 11.1 Q. `struct{}`와 `struct{}{}`의 차이는?
 
 `struct{}`는 **타입**이고, `struct{}{}`는 **값(인스턴스)**이다.
 
@@ -438,7 +524,7 @@ close(done)
 
 `struct{}`는 메모리를 0바이트 차지하므로, 데이터 없이 **신호만 전달**할 때 가장 효율적인 선택이다.
 
-# 11. 참고
+# 12. 참고
 
 - [Go Tour - Channels](https://go.dev/tour/concurrency/2)
 - [Effective Go - Channels](https://go.dev/doc/effective_go#channels)
