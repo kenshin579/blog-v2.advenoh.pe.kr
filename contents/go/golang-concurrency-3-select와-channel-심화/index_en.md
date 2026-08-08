@@ -368,9 +368,9 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   explain: "Fan-out is the pattern that distributes a single input across multiple workers, and fan-in is the pattern that merges the results of several channels into one channel. The other options either swap the two descriptions or turn the merging side into a splitting side. (Sections 4.1, 4.2)"
 
 - type: blank
-  q: "The function that returns a channel which sends a value once a given duration elapses is ___, and combining it with select gives you a simple timeout."
+  q: "The function that returns a channel that fires once a given duration elapses is ___, and combining it with select gives you a simple timeout."
   answer: ["time.After", "After"]
-  explain: "It is time.After. It returns a channel that sends a value once the given duration passes, so putting it in one case of a select takes the timeout branch whenever the other case is not ready in time. When you also need cancellation propagation, use context.WithTimeout. (Section 3.1)"
+  explain: "It is time.After. It returns a channel that fires once the given duration passes, so putting it in one case of a select takes the timeout branch whenever the other case is not ready in time. When you need more than a plain timeout, look at the context package as well. (Section 3.1)"
 
 - type: code
   q: "Which case does this select run?"
