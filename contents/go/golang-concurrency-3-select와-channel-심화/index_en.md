@@ -352,9 +352,9 @@ If you've read this far, these are questions you can answer. Pick an answer and 
     default:
         fmt.Println("no data")
     }
-  choices: ["It blocks at the first case until a value arrives", "default runs and no data is printed right away", "The buffer hands back the zero value 0 and prints it", "With no case ready it panics with a deadlock error"]
+  choices: ["It blocks at the first case until a value arrives", "default runs and prints \"no data\" right away", "The buffer hands back the zero value 0 and prints it", "With no case ready it stops in a deadlock right there"]
   answer: 1
-  explain: "A select with a default is non-blocking. ch holds no value yet, so the first case is not ready; instead of blocking, default runs immediately and prints no data. Having free buffer space is not the same as having a value to receive. (Section 2.1)"
+  explain: "A select with a default is non-blocking. ch holds no value yet, so the first case is not ready; instead of blocking, default runs immediately and prints \"no data\". Having free buffer space is not the same as having a value to receive. (Section 2.1)"
 
 - type: ox
   q: "Receiving from a nil channel blocks briefly and then returns the zero value."
@@ -368,7 +368,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   explain: "Fan-out is the pattern that distributes a single input across multiple workers, and fan-in is the pattern that merges the results of several channels into one channel. The other options either swap the two descriptions or turn the merging side into a splitting side. (Sections 4.1, 4.2)"
 
 - type: blank
-  q: "The function that returns a channel which sends a value after a given duration is ___, and combining it with select gives you a simple timeout."
+  q: "The function that returns a channel which sends a value once a given duration elapses is ___, and combining it with select gives you a simple timeout."
   answer: ["time.After", "After"]
   explain: "It is time.After. It returns a channel that sends a value once the given duration passes, so putting it in one case of a select takes the timeout branch whenever the other case is not ready in time. When you also need cancellation propagation, use context.WithTimeout. (Section 3.1)"
 
@@ -393,7 +393,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: mcq
   q: "Why does the article say context.WithTimeout is used more in practice?"
-  choices: ["It can specify a shorter duration than time.After can", "It propagates cancellation and spans several goroutines", "It finishes timeout handling without any select at all", "It sets a timeout without creating any new channel"]
+  choices: ["It can specify a far shorter duration than other ways", "It propagates cancellation and spans several goroutines", "It finishes timeout handling without any select at all", "It sets a timeout without creating any new channel"]
   answer: 1
   explain: "context is used more in practice because it propagates cancellation and lets you manage a timeout across multiple goroutines. It is not about specifying shorter durations, and even with context the timeout branch is still handled by a select case on ctx.Done(), with a result channel still needed. (Section 3.2)"
 
@@ -418,6 +418,11 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   choices: ["sent — the buffer grows by one and the value goes in", "sent — the 2 overwrites the 1 that was sent before", "buffer full — the buffer is full so default runs", "Nothing is printed and the send blocks right there"]
   answer: 2
   explain: "The channel has buffer size 1 and already holds 1, so the second send is not ready. Because a default is present it does not block: it goes straight to default and prints buffer full. The buffer never grows on its own and never overwrites the existing value. (Section 2.2)"
+
+- type: ox
+  q: "A context made with context.WithTimeout releases its resources on its own once the timeout passes, even if the cleanup function is never called."
+  answer: false
+  explain: "No. The article's example puts defer cancel() on the line right after the call to context.WithTimeout. The cleanup function must always be called to release resources; the timeout passing does not make it optional. (Section 3.2)"
 ```
 
 # 7. Wrapping Up

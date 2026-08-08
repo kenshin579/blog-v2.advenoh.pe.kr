@@ -352,7 +352,7 @@ func TestNilChannelDisable(t *testing.T) {
     default:
         fmt.Println("no data")
     }
-  choices: ["값이 올 때까지 첫 번째 case에서 blocking된다", "default가 실행되어 no data가 출력된다", "버퍼가 있어 zero value인 0을 받아 출력한다", "준비된 case가 없어 deadlock panic이 발생한다"]
+  choices: ["값이 올 때까지 첫 번째 case에서 blocking된다", "default가 실행되어 no data가 출력된다", "버퍼가 있어 zero value인 0을 받아 출력한다", "준비된 case가 없어 deadlock으로 멈춘다"]
   answer: 1
   explain: "default가 붙은 select는 non-blocking이다. ch에는 아직 값이 없어 첫 번째 case가 준비되지 않았으므로 blocking하지 않고 곧바로 default가 실행되어 no data가 출력된다. 버퍼 공간이 있는 것과 받을 값이 있는 것은 다른 이야기다. (2.1절)"
 
@@ -393,7 +393,7 @@ func TestNilChannelDisable(t *testing.T) {
 
 - type: mcq
   q: "본문에서 실무에 context.WithTimeout을 더 많이 쓴다고 한 이유는?"
-  choices: ["time.After보다 더 짧은 시간을 지정할 수 있어서", "취소 전파가 가능하고 여러 goroutine에 걸쳐 관리돼서", "select 없이도 timeout 처리를 끝낼 수 있기 때문에", "channel을 새로 만들지 않고 timeout을 걸 수 있어서"]
+  choices: ["다른 방법보다 훨씬 짧은 시간을 지정할 수 있어서", "취소 전파가 가능하고 여러 goroutine에 걸쳐 관리돼서", "select 없이도 timeout 처리를 끝낼 수 있기 때문에", "channel을 새로 만들지 않고 timeout을 걸 수 있어서"]
   answer: 1
   explain: "context는 취소 전파가 가능하고 여러 goroutine에 걸쳐 timeout을 관리할 수 있어서 실무에서 더 많이 쓴다. 시간을 더 짧게 줄 수 있어서가 아니고, context를 써도 timeout 분기는 여전히 select의 ctx.Done() case로 처리하며 결과를 받을 channel도 그대로 필요하다. (3.2절)"
 
@@ -418,6 +418,11 @@ func TestNilChannelDisable(t *testing.T) {
   choices: ["sent — 버퍼가 하나 더 늘어나 값이 들어간다", "sent — 앞서 넣은 1을 덮어쓰고 2가 들어간다", "buffer full — 버퍼가 차 있어 default가 실행된다", "아무것도 출력되지 않고 send에서 blocking된다"]
   answer: 2
   explain: "버퍼 크기가 1인 channel에 이미 1이 들어 있어 두 번째 send는 준비되지 않는다. default가 있으므로 blocking하지 않고 즉시 default로 넘어가 buffer full이 출력된다. 버퍼가 저절로 늘거나 기존 값을 덮어쓰는 일은 없다. (2.2절)"
+
+- type: ox
+  q: "context.WithTimeout으로 만든 context는 timeout 시간이 지나면 정리 함수를 호출하지 않아도 리소스가 알아서 정리된다."
+  answer: false
+  explain: "아니다. 본문 예제도 context.WithTimeout을 부른 바로 다음 줄에 defer cancel()을 둔다. 리소스 해제를 위해 정리 함수는 반드시 호출해야 하며, timeout이 지났다고 해서 생략해도 되는 것이 아니다. (3.2절)"
 ```
 
 # 7. 마무리
