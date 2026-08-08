@@ -510,7 +510,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: mcq
   q: "In the GMP model, what happens when a P's local run queue becomes empty?"
-  choices: ["The P is released at once and its bound M shuts down", "The OS kernel picks the next goroutine and hands it over", "It takes a goroutine from another P's queue (work stealing)", "GOMAXPROCS is automatically decremented to compensate"]
+  choices: ["The P is released at once and its bound M shuts down", "The OS kernel picks the next goroutine and hands it over", "It takes a goroutine from another P's queue (work stealing)", "The number of usable Ps is automatically reduced by one"]
   answer: 2
   explain: "When the local run queue is empty, it fetches a goroutine from another P's queue via work stealing. Scheduling is performed by the Go runtime in user space rather than by the OS kernel, so context switching costs much less than with OS threads. (Section 6.1)"
 

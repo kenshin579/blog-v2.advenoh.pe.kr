@@ -534,7 +534,7 @@ func TestGoroutineLeakPrevention_WithContext(t *testing.T) {
 
 - type: mcq
   q: "GMP 모델에서 P의 로컬 run queue가 비면 무슨 일이 일어나나?"
-  choices: ["P가 즉시 해제되고 바인딩된 M도 함께 종료된다", "OS 커널이 대신 다음 goroutine을 골라 넘겨준다", "work stealing으로 다른 P의 queue에서 가져온다", "GOMAXPROCS가 자동으로 하나 줄어들며 조정된다"]
+  choices: ["P가 즉시 해제되고 바인딩된 M도 함께 종료된다", "OS 커널이 대신 다음 goroutine을 골라 넘겨준다", "work stealing으로 다른 P의 queue에서 가져온다", "실행 가능한 P의 수가 자동으로 하나 줄어든다"]
   answer: 2
   explain: "로컬 run queue가 비면 work stealing으로 다른 P의 queue에서 goroutine을 가져온다. 스케줄링은 OS 커널이 아니라 Go runtime이 사용자 공간에서 직접 수행하므로, OS thread보다 훨씬 적은 비용으로 컨텍스트 스위칭이 가능하다. (7.1절)"
 
