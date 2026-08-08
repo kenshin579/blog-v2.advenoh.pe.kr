@@ -375,7 +375,93 @@ func TestMultipleProducers(t *testing.T) {
 }
 ```
 
-# 9. Summary
+# 9. Quiz
+
+If you've read this far, these are questions you can answer. Pick an answer and the explanation shows up right away.
+
+```quiz
+- type: mcq
+  q: "Which correctly describes the difference between an unbuffered and a buffered channel?"
+  choices: ["Buffered lets you send up to its size with no receiver", "Unbuffered needs at least one buffer slot before a send", "Buffered never blocks on a send even when the buffer is full", "Unbuffered does not wait for a receiver after it has sent"]
+  answer: 0
+  explain: "A buffered channel completes a send immediately while there is free space in the buffer, so you can send up to the buffer size even with no receiver; once the buffer is full the send blocks. An unbuffered channel has buffer size 0, so a send blocks until the receiver receives — synchronous communication. (Sections 4.1, 4.2)"
+
+- type: code
+  q: "If you run this code as is, what happens at (1)?"
+  lang: go
+  code: |
+    ch := make(chan int)
+
+    ch <- 42      // (1)
+    value := <-ch // (2)
+    _ = value
+  choices: ["The value lands in the buffer and the next line runs", "Being unbuffered, the send itself is a compile error", "The make above it hands the channel a buffer of 1", "With no receiver, it blocks there and makes no progress"]
+  answer: 3
+  explain: "make(chan int) creates an unbuffered channel with buffer size 0. An unbuffered channel proceeds only when send and receive are ready at the same time, but the receive at (2) sits on the next line of the same goroutine and never gets a chance to run. So it stops at (1). (Sections 3, 4.1)"
+
+- type: ox
+  q: "close(done) delivers the completion signal to all waiting receivers simultaneously."
+  answer: true
+  explain: "Correct. close(done) signals all receivers at once, which is the difference from an ordinary send, which hands a single value to one receiver. That is why close is used to broadcast a completion signal. (Section 7.1)"
+
+- type: blank
+  q: "For a channel created with buffer size 5, the built-in that still returns 5 after you put 2 values in is ___(ch)."
+  answer: ["cap"]
+  explain: "It is cap(ch). cap is the buffer size handed to make, so it does not change as values come and go. The number of values currently waiting in the buffer is read separately with len(ch): put 2 values into a channel of buffer size 5 and cap is 5 while len is 2. (Section 4.3)"
+
+- type: mcq
+  q: "Which of the following is a correct rule about closing a channel?"
+  choices: ["The receiver, not the sender, is responsible for closing", "Closing an already-closed channel is harmless and a no-op", "Sending a value to a closed channel causes a panic", "Receiving a value from a closed channel causes a panic"]
+  answer: 2
+  explain: "Sending on a closed channel panics. Responsibility for closing belongs to the sender, and closing an already-closed channel panics too. Receiving from a closed channel, by contrast, is allowed and returns the zero value plus false. (Section 6.3)"
+
+- type: code
+  q: "What values end up in v2 and ok2 in this code?"
+  lang: go
+  code: |
+    ch := make(chan int, 1)
+    ch <- 42
+    close(ch)
+
+    v1, ok1 := <-ch
+    v2, ok2 := <-ch
+    _, _, _, _ = v1, ok1, v2, ok2
+  choices: ["v2 comes out as 42 and ok2 comes out as true", "v2 comes out as 0 and ok2 comes out as false", "The second receive panics on the closed channel", "The second receive blocks right there on that line"]
+  answer: 1
+  explain: "The first receive takes the 42 left in the buffer along with true. After that the buffer is empty and the channel is closed, so the second receive does not block: it returns int's zero value 0 and false, the closed indicator, right away. (Section 6.2)"
+
+- type: ox
+  q: "Once the sender has sent every value it has, range ch terminates on its own without a close."
+  answer: false
+  explain: "No. For range ch to terminate, close(ch) must be called. Even if every value has been sent, without a close the range keeps waiting for the next value and blocks forever. (Section 7)"
+
+- type: blank
+  q: "To exchange only a completion signal without data, use the chan ___{} type, which takes up 0 bytes of memory."
+  answer: ["struct", "struct{}"]
+  explain: "It is chan struct{}. struct{} is an empty struct type with no fields and takes up 0 bytes, making it the most efficient choice for delivering a signal without data. To send a value you use the instance struct{}{}. (Section 7.1)"
+
+- type: mcq
+  q: "By the article's selection criteria, when is an unbuffered channel recommended?"
+  choices: ["When goroutines need handshake-style synchronization", "When you want to buffer a production/consumption gap", "When the Producer/Consumer pattern drives throughput", "When performance-critical bulk data has to be passed"]
+  answer: 0
+  explain: "Unbuffered is for synchronization (handshakes) between goroutines and for signals such as done and quit. Buffering a production/consumption speed gap, the Producer/Consumer pattern, and performance-critical bulk transfer all belong to buffered. (Section 4.4)"
+
+- type: code
+  q: "Which line in this code fails to compile?"
+  lang: go
+  code: |
+    ch := make(chan int, 5)
+
+    var sendOnly chan<- int = ch // (1)
+    var recvOnly <-chan int = ch // (2)
+    var both chan int = recvOnly // (3)
+    _, _, _ = sendOnly, recvOnly, both
+  choices: ["(1) — a bidirectional channel cannot become send-only", "(2) — a bidirectional channel cannot go receive-only", "None of them: all three lines compile just fine", "(3) — a direction-restricted one cannot go bidirectional"]
+  answer: 3
+  explain: "A bidirectional channel is implicitly converted to send-only or receive-only, so (1) and (2) are fine. The opposite direction is not allowed: turning a direction-restricted channel back into a bidirectional one at (3) is a compile error. (Section 5)"
+```
+
+# 10. Summary
 
 | Concept | Core |
 |------|------|
@@ -389,9 +475,9 @@ func TestMultipleProducers(t *testing.T) {
 
 In the next part, we'll cover advanced channel patterns such as the **select** statement, which handles multiple channels simultaneously, and **fan-in/fan-out**.
 
-# 10. FAQ
+# 11. FAQ
 
-## 10.1 Q. What's the difference between `struct{}` and `struct{}{}`?
+## 11.1 Q. What's the difference between `struct{}` and `struct{}{}`?
 
 `struct{}` is a **type**, and `struct{}{}` is a **value (instance)**.
 
@@ -438,7 +524,7 @@ close(done)
 
 Since `struct{}` takes up 0 bytes of memory, it's the most efficient choice when you want to **only deliver a signal** without data.
 
-# 11. References
+# 12. References
 
 - [Go Tour - Channels](https://go.dev/tour/concurrency/2)
 - [Effective Go - Channels](https://go.dev/doc/effective_go#channels)

@@ -463,7 +463,93 @@ func TestGoroutineLeakPrevention_WithContext(t *testing.T) {
 
 **핵심 원칙**: goroutine을 생성할 때는 항상 **종료 경로**를 확보해야 한다. `context`, `done channel`, `close` 등을 활용하자.
 
-# 9. 정리
+# 9. 퀴즈
+
+여기까지 읽었으면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
+
+```quiz
+- type: mcq
+  q: "Concurrency와 Parallelism의 차이를 바르게 설명한 것은?"
+  choices: ["Concurrency는 여러 CPU가 반드시 필요한 실행 방식이다", "Parallelism은 작업을 잘게 나누는 구성에 관한 개념이다", "Concurrency는 구성에, Parallelism은 실행에 관한 것이다", "둘은 표현만 다를 뿐 사실상 같은 것을 가리키는 말이다"]
+  answer: 2
+  explain: "Concurrency는 여러 작업을 동시에 다루는 구조, 즉 작업의 구성(composition)에 관한 것이고 Parallelism은 여러 작업을 실제로 동시에 실행하는 것이다. Concurrency는 CPU가 1개여도 가능하지만 Parallelism은 여러 CPU가 필요하다. Go 프로그램을 concurrent하게 설계하면 runtime이 알아서 parallelism을 활용한다. (2장)"
+
+- type: ox
+  q: "Go의 동시성 철학은 \"메모리를 공유해서 통신하라\"이며, 그래서 channel보다 mutex 사용을 권장한다."
+  answer: false
+  explain: "Go Proverb는 정반대다. \"메모리를 공유해서 통신하지 말고, 통신해서 메모리를 공유하라\"이며 Go는 channel을 통한 데이터 전달을 권장한다. 데이터의 소유권이 channel을 통해 이전되므로 한 시점에 하나의 goroutine만 데이터에 접근하게 된다. (3.2절)"
+
+- type: mcq
+  q: "공유 상태가 많아 lock이 복잡해질 때 본문이 권하는 대응은?"
+  choices: ["goroutine 수를 늘려 대기 시간을 분산시킨다", "그 설계 자체를 다시 고려하는 편이 낫다", "lock을 잘게 쪼개 경합 구간을 줄여 나간다", "채널 버퍼 크기를 키워 병목을 완화한다"]
+  answer: 1
+  explain: "본문은 공유 상태가 많아 lock이 복잡해지는 경우를 오버엔지니어링 사례로 들며 이 경우 설계를 다시 고려하라고 한다. 동시성은 그 자체로 복잡성을 추가하므로, 디버깅이 어려워질 정도라면 단순 순차 처리가 낫다. (4.2절)"
+
+- type: code
+  q: "이 테스트의 assert가 통과하는 이유는?"
+  lang: go
+  code: |
+    var completed atomic.Bool
+
+    go func() {
+        time.Sleep(100 * time.Millisecond)
+        completed.Store(true)
+    }()
+
+    assert.False(t, completed.Load())
+  choices: ["atomic.Bool의 값은 항상 false로 고정되어 있어서", "go 키워드가 붙은 함수는 호출되지 않고 무시되어서", "time.Sleep이 프로그램 전체를 영구히 멈추기 때문에", "기다리지 않으면 goroutine 완료 전에 값을 읽게 되어"]
+  answer: 3
+  explain: "goroutine을 띄운 직후 곧바로 Load()를 읽으므로, 100ms 뒤에야 true가 되는 값은 아직 false다. main goroutine이 종료되면 다른 goroutine의 완료 여부와 관계없이 프로그램 전체가 종료되므로, 결과가 필요하면 명시적으로 기다려야 한다. (5.4절)"
+
+- type: blank
+  q: "goroutine의 초기 스택 크기는 약 ___ 이며, ~1MB로 고정인 OS thread와 달리 동적으로 증가한다."
+  answer: ["2KB", "~2KB", "2 KB"]
+  explain: "goroutine의 초기 스택은 ~2KB이고 필요에 따라 동적으로 증가한다. ~1MB 고정인 OS thread에 비해 생성 비용이 매우 저렴해서 수십만 개까지 만들 수 있고, 컨텍스트 스위칭도 레지스터 3개만 다루므로 빠르다. (5.2절)"
+
+- type: code
+  q: "이 코드에서 wg.Wait() 한 줄을 지우면 어떻게 되나?"
+  lang: go
+  code: |
+    var completed atomic.Bool
+    var wg sync.WaitGroup
+
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        time.Sleep(50 * time.Millisecond)
+        completed.Store(true)
+    }()
+
+    wg.Wait()
+    assert.True(t, completed.Load())
+  choices: ["goroutine 완료를 기다리지 않아 assert가 실패한다", "wg.Done이 대신 50ms 동안 실행을 붙잡아 준다", "wg.Add(1)이 있으므로 결과는 그대로 유지된다", "컴파일 단계에서 WaitGroup 사용 오류가 잡힌다"]
+  answer: 0
+  explain: "wg.Wait()가 goroutine이 완료될 때까지 대기해 주기 때문에 assert가 true를 본다. 이 줄을 지우면 50ms 뒤에 세팅되는 값을 기다리지 않고 읽게 되어 false가 된다. goroutine의 완료를 기다리려면 sync.WaitGroup이나 channel이 필요하다. (5.4절)"
+
+- type: mcq
+  q: "Go goroutine과 Kotlin coroutine의 가장 큰 차이는 무엇인가?"
+  choices: ["goroutine만 힙에 올라가는 stackless 구조라는 점", "goroutine은 선점형, coroutine은 협력적이라는 점", "coroutine만 채널로 메시지를 주고받을 수 있다는 점", "goroutine에는 함수 색칠 문제가 남아 있다는 점"]
+  answer: 1
+  explain: "본문이 가장 큰 차이로 짚는 것은 스케줄링 방식이다. goroutine은 preemptive(선점형)라 CPU를 오래 점유하면 Go runtime이 강제로 전환하지만(Go 1.14+), Kotlin coroutine은 cooperative(협력적)라 suspend 지점에서만 전환이 일어난다. (6.2절)"
+
+- type: mcq
+  q: "GMP 모델에서 P의 로컬 run queue가 비면 무슨 일이 일어나나?"
+  choices: ["P가 즉시 해제되고 바인딩된 M도 함께 종료된다", "OS 커널이 대신 다음 goroutine을 골라 넘겨준다", "work stealing으로 다른 P의 queue에서 가져온다", "실행 가능한 P의 수가 자동으로 하나 줄어든다"]
+  answer: 2
+  explain: "로컬 run queue가 비면 work stealing으로 다른 P의 queue에서 goroutine을 가져온다. 스케줄링은 OS 커널이 아니라 Go runtime이 사용자 공간에서 직접 수행하므로, OS thread보다 훨씬 적은 비용으로 컨텍스트 스위칭이 가능하다. (7.1절)"
+
+- type: blank
+  q: "동시에 goroutine을 실행할 수 있는 P의 최대 개수를 설정하는 함수는 runtime.___(n)이고, 기본값은 CPU 코어 수다."
+  answer: ["GOMAXPROCS"]
+  explain: "runtime.GOMAXPROCS(n)이다. 인자로 0을 전달하면 현재 값을 변경하지 않고 그대로 반환한다. 1로 설정하면 P가 하나뿐이라 goroutine이 concurrent하게 구성되더라도 한 번에 하나만 실행된다. (7.2절)"
+
+- type: ox
+  q: "아무도 receive하지 않는 unbuffered channel에 send하다 멈춘 goroutine은 GC로도 회수되지 않는다."
+  answer: true
+  explain: "맞다. leak된 goroutine은 ch <- 42에서 영원히 blocking된 채 메모리를 점유하며 GC 대상이 되지 않는다. buffered channel로 바꾸고 select에 ctx.Done()을 함께 두어 종료 경로를 확보해야 한다. (8.3절, 8.4절)"
+```
+
+# 10. 정리
 
 
 | 개념                       | 핵심                                                   |
@@ -478,7 +564,7 @@ func TestGoroutineLeakPrevention_WithContext(t *testing.T) {
 
 다음 편에서는 goroutine 간 **데이터를 주고받는 핵심 메커니즘**인 Channel에 대해 알아본다.
 
-# 10. 참고
+# 11. 참고
 
 - [Effective Go - Concurrency](https://go.dev/doc/effective_go#concurrency)
 - [Go Blog - Concurrency is not parallelism](https://go.dev/blog/waza-talk)

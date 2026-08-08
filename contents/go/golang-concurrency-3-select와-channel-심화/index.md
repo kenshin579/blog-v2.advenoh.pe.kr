@@ -329,7 +329,103 @@ func TestNilChannelDisable(t *testing.T) {
 - 여러 데이터 소스를 merge할 때, 각 소스가 완료되면 비활성화
 - 조건에 따라 특정 channel 처리를 on/off
 
-# 6. 마무리
+# 6. 퀴즈
+
+여기까지 읽었으면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
+
+```quiz
+- type: mcq
+  q: "여러 case가 동시에 준비되면 select는 어떻게 동작하나?"
+  choices: ["case에 적힌 순서대로 위에서부터 하나를 고른다", "가장 먼저 준비된 case를 기억해 두었다가 고른다", "runtime이 그중 하나를 무작위로 고른다", "준비된 case를 모두 실행한 뒤 select를 빠져나온다"]
+  answer: 2
+  explain: "여러 case가 동시에 준비되면 Go runtime이 무작위로 하나를 고른다. 적힌 순서대로 고르거나 먼저 준비된 것을 기억해 두는 방식이 아니고, 준비된 case를 모두 실행하지도 않는다. 무작위 선택 덕분에 특정 channel만 계속 선택되는 starvation을 막을 수 있다. (1.1절)"
+
+- type: code
+  q: "이 코드를 실행하면 어떻게 되나?"
+  lang: go
+  code: |
+    ch := make(chan int, 1)
+
+    select {
+    case val := <-ch:
+        fmt.Println("received:", val)
+    default:
+        fmt.Println("no data")
+    }
+  choices: ["값이 올 때까지 첫 번째 case에서 blocking된다", "default가 실행되어 no data가 출력된다", "버퍼가 있어 zero value인 0을 받아 출력한다", "준비된 case가 없어 deadlock으로 멈춘다"]
+  answer: 1
+  explain: "default가 붙은 select는 non-blocking이다. ch에는 아직 값이 없어 첫 번째 case가 준비되지 않았으므로 blocking하지 않고 곧바로 default가 실행되어 no data가 출력된다. 버퍼 공간이 있는 것과 받을 값이 있는 것은 다른 이야기다. (2.1절)"
+
+- type: ox
+  q: "nil channel에서 receive하면 잠깐 blocking됐다가 zero value를 돌려준다."
+  answer: false
+  explain: "아니다. nil channel에서 receive하면 영원히 blocking되고, send 역시 영원히 blocking된다. 다만 select 안의 case일 때는 그 case가 무시되어 다른 case가 선택될 뿐이다. (5장)"
+
+- type: mcq
+  q: "Fan-out과 Fan-in 패턴을 바르게 설명한 것은?"
+  choices: ["Fan-out은 하나의 입력을 여러 worker에게 분배한다", "Fan-out은 여러 channel의 결과를 하나로 합친다", "Fan-in은 하나의 작업을 여러 goroutine에 나눠 준다", "Fan-in은 source마다 별도의 결과 channel을 남긴다"]
+  answer: 0
+  explain: "Fan-out은 하나의 입력을 여러 worker에게 분배하는 패턴이고, Fan-in은 여러 channel의 결과를 하나의 channel로 합치는 패턴이다. 두 설명을 뒤집거나 합치는 쪽을 나누는 쪽으로 바꿔 놓은 나머지 보기는 모두 틀렸다. (4.1절, 4.2절)"
+
+- type: blank
+  q: "지정한 시간이 지나면 값을 보내는 channel을 돌려주는 함수는 ___이고, select와 조합하면 timeout을 간단히 구현할 수 있다."
+  answer: ["time.After"]
+  explain: "time.After다. 지정한 시간이 지나면 값을 보내는 channel을 반환하므로, select의 한 case로 두면 다른 case가 그 안에 준비되지 않았을 때 timeout 분기를 타게 된다. 타임아웃 외에 더 필요한 것이 있으면 context 패키지를 함께 본다. (3.1절)"
+
+- type: code
+  q: "이 select가 실행하는 case는?"
+  lang: go
+  code: |
+    ch := make(chan int, 1)
+    ch <- 7
+
+    var active <-chan int = nil
+
+    select {
+    case v := <-active:
+        fmt.Println("active:", v)
+    case v := <-ch:
+        fmt.Println("ch:", v)
+    }
+  choices: ["active의 case — nil channel은 즉시 준비 상태다", "두 case가 모두 준비되어 무작위로 하나를 고른다", "어느 case도 못 골라 deadlock으로 멈춘다", "ch의 case — nil인 active는 무시되기 때문이다"]
+  answer: 3
+  explain: "active가 nil이므로 그 case는 select에서 무시된다. 남은 것은 버퍼에 7이 들어 있는 ch의 case뿐이라 그쪽이 선택된다. nil channel은 준비 상태가 되는 일이 없고, 그래서 case를 동적으로 꺼 두는 트릭으로 쓸 수 있다. (5장)"
+
+- type: mcq
+  q: "본문에서 실무에 context.WithTimeout을 더 많이 쓴다고 한 이유는?"
+  choices: ["다른 방법보다 훨씬 짧은 시간을 지정할 수 있어서", "취소 전파가 가능하고 여러 goroutine에 걸쳐 관리돼서", "select 없이도 timeout 처리를 끝낼 수 있기 때문에", "channel을 새로 만들지 않고 timeout을 걸 수 있어서"]
+  answer: 1
+  explain: "context는 취소 전파가 가능하고 여러 goroutine에 걸쳐 timeout을 관리할 수 있어서 실무에서 더 많이 쓴다. 시간을 더 짧게 줄 수 있어서가 아니고, context를 써도 timeout 분기는 여전히 select의 ctx.Done() case로 처리하며 결과를 받을 channel도 그대로 필요하다. (3.2절)"
+
+- type: ox
+  q: "default가 있는 select를 루프에서 남용하면 CPU를 과도하게 사용할 수 있다."
+  answer: true
+  explain: "맞다. default는 polling이나 busy-wait에 유용하지만, 루프 안에서 남용하면 준비되지 않은 channel을 쉬지 않고 확인하게 되어 CPU를 과도하게 사용할 수 있다. (2장)"
+
+- type: code
+  q: "이 코드가 출력하는 것은?"
+  lang: go
+  code: |
+    ch := make(chan int, 1)
+    ch <- 1
+
+    select {
+    case ch <- 2:
+        fmt.Println("sent")
+    default:
+        fmt.Println("buffer full")
+    }
+  choices: ["sent — 버퍼가 하나 더 늘어나 값이 들어간다", "sent — 앞서 넣은 1을 덮어쓰고 2가 들어간다", "buffer full — 버퍼가 차 있어 default가 실행된다", "아무것도 출력되지 않고 send에서 blocking된다"]
+  answer: 2
+  explain: "버퍼 크기가 1인 channel에 이미 1이 들어 있어 두 번째 send는 준비되지 않는다. default가 있으므로 blocking하지 않고 즉시 default로 넘어가 buffer full이 출력된다. 버퍼가 저절로 늘거나 기존 값을 덮어쓰는 일은 없다. (2.2절)"
+
+- type: ox
+  q: "context.WithTimeout으로 만든 context는 timeout 시간이 지나면 정리 함수를 호출하지 않아도 리소스가 알아서 정리된다."
+  answer: false
+  explain: "아니다. 본문 예제도 context.WithTimeout을 부른 바로 다음 줄에 defer cancel()을 둔다. 리소스 해제를 위해 정리 함수는 반드시 호출해야 하며, timeout이 지났다고 해서 생략해도 되는 것이 아니다. (3.2절)"
+```
+
+# 7. 마무리
 
 | 개념 | 핵심 |
 |------|------|
@@ -344,7 +440,7 @@ func TestNilChannelDisable(t *testing.T) {
 
 다음 편에서는 goroutine 간 **공유 자원을 안전하게 관리**하는 `sync` 패키지를 다룬다.
 
-# 7. 참고
+# 8. 참고
 
 - [Go Tour - Select](https://go.dev/tour/concurrency/5)
 - [Go Blog - Pipelines and cancellation](https://go.dev/blog/pipelines)

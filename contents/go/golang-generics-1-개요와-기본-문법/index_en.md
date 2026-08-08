@@ -305,7 +305,117 @@ emptyStrings := toSlice[string]()  // explicit specification needed
 - when the type can't be determined from the return type alone
 - when the argument types are ambiguous
 
-# 6. Wrapping Up
+# 6. Quiz
+
+If you've read this far, these are questions you can answer. Pick an answer and the explanation shows up right away.
+
+```quiz
+- type: mcq
+  q: "Which problem with the `interface{}` approach before generics does the article point out?"
+  choices: ["An incorrect type assertion is caught at compile time", "The return type is interface{}, so autocompletion works well", "An incorrect type assertion causes a panic at runtime", "You can use the extracted value without a type assertion"]
+  answer: 2
+  explain: "The `interface{}` approach needs a type assertion in the `.(Type)` form every time you extract a value, and if the type does not match, a panic occurs at runtime rather than at compile time. Since the return type is `interface{}`, IDE support such as autocompletion and type checking is limited too. (Section 3.1)"
+
+- type: ox
+  q: "The Go designers deliberately left generics out of the language for a long time to keep complexity low."
+  answer: true
+  explain: "True. Go was designed with simplicity as its core philosophy, so the designers including Rob Pike deliberately left out many features, and generics was long among them. Eventually Ian Lance Taylor's Type Parameters Proposal was adopted and generics became an official feature. (Section 2)"
+
+- type: code
+  q: "In this code, what does each of the two printAny calls resolve T to?"
+  lang: go
+  code: |
+    func printAny[T any](a T) {
+        fmt.Println(a)
+    }
+
+    func main() {
+        printAny(10)
+        printAny("hello")
+    }
+  choices: ["The first call gets T = int, the second gets string", "Both calls pin T down to the single type any", "The first call gets T = int, the second is an error", "Without explicit types, both calls fail to compile"]
+  answer: 0
+  explain: "`any` is a constraint that allows all types, and T is inferred separately for each call from the argument passed in. So the first call gets T = int and the second call gets T = string. (Section 4.2)"
+
+- type: mcq
+  q: "Why does the article declare the min function with a union type constraint like `int | int16 | float64`?"
+  choices: ["Because with any, type inference stops working entirely", "Because the any constraint does not support the `<` operation", "Because any is a keyword not allowed on a type parameter", "Because declaring it as any makes the function panic at runtime"]
+  answer: 1
+  explain: "The `any` constraint does not support the `<` operation. So a function like min that needs a comparison must narrow the allowed types with a union type constraint such as `int | float64`. (Section 4.2)"
+
+- type: blank
+  q: "Generics has been officially supported in Go starting from Go ___."
+  answer: ["1.18", "go1.18", "go 1.18"]
+  explain: "It is Go 1.18. From that release, which came out in March 2022, generics became an official feature. Until then it was the most requested feature in the community yet still absent from the language. (Section 1, Section 2)"
+
+- type: code
+  q: "Why does this code fail to compile?"
+  lang: go
+  code: |
+    type Node[T any] struct {
+        val  T
+        next *Node[T]
+    }
+
+    func (n *Node[T]) Push[F any](f F) {
+        _ = f
+    }
+  choices: ["Because any cannot be used on a struct type parameter", "Because a pointer receiver cannot take a type parameter", "Because the next field cannot point at its own type", "Because the method declares a new type parameter of its own"]
+  answer: 3
+  explain: "In Go a method cannot declare additional type parameters; it can only use the ones declared on the struct. So `Push[F any]` produces the error method must have no type parameters. Both the struct's `[T any]` and the self-referencing `*Node[T]` field are perfectly fine. (Section 4.4)"
+
+- type: mcq
+  q: "Which of these matches a main case where type inference fails, as summarized in the article?"
+  choices: ["When two or more type parameters have been declared", "When the return type has been declared as a slice type", "When the arguments passed have differing types", "When no arguments at all are passed to the function"]
+  answer: 3
+  explain: "Type inference determines the type from the arguments, so with no arguments at all there is nothing to infer from and it fails. Having several type parameters is not a problem, since each one is inferred individually from its own argument. (Section 5.2, Section 5.3)"
+
+- type: code
+  q: "In this code, what are the types of a and b?"
+  lang: go
+  code: |
+    func toSlice[T any](args ...T) []T {
+        return args
+    }
+
+    func main() {
+        a := toSlice(1, 2, 3)
+        b := toSlice[string]()
+        _, _ = a, b
+    }
+  choices: ["a resolves to []any and b resolves to []string", "a resolves to []int and b resolves to []string", "a resolves to []int and b is an error, having no args", "a resolves to []int and b is inferred as []any"]
+  answer: 1
+  explain: "For a, T = int is inferred from the arguments 1, 2, 3, so it becomes []int. For b, inference is impossible with no arguments, but the type is specified explicitly as `toSlice[string]()`, so it compiles fine as []string. Writing `toSlice()` without the explicit type gives a cannot infer T error. (Section 5.3)"
+
+- type: ox
+  q: "Constraints declared with an interface cannot be composed into a new constraint."
+  answer: false
+  explain: "False. Composing constraints is possible. The article's `ComparableNumbers` is built by composing two previously declared constraints, as in `IntegerType | Float`. (Section 4.3)"
+
+- type: code
+  q: "What does this code print when you run it?"
+  lang: go
+  code: |
+    func Map[F, T any](s []F, f func(F) T) []T {
+        rst := make([]T, len(s))
+        for i, v := range s {
+            rst[i] = f(v)
+        }
+        return rst
+    }
+
+    func main() {
+        doubled := Map([]int{1, 2, 3}, func(i int) int {
+            return i * 2
+        })
+        fmt.Println(doubled)
+    }
+  choices: ["[1 2 3] — the original slice comes back unchanged", "6 — the sum of all transformed values in one number", "[2 4 6] — the transform applied to every element", "[] — an empty slice of length 0 comes back"]
+  answer: 2
+  explain: "`Map` creates a result slice of the same size as the original and then applies the transform function to each element. Here both F and T settle on int and each element is doubled, so [2 4 6] is printed. (Section 4.5)"
+```
+
+# 7. Wrapping Up
 
 | Item | Before Generics | After Generics |
 |------|-----------------|-----------------|
@@ -317,9 +427,9 @@ emptyStrings := toSlice[string]()  // explicit specification needed
 
 In the next part, we'll cover **Type Constraint**, the core of generics. We'll take an in-depth look at type constraints including `any`, `comparable`, union types (`|`), tilde (`~`), and designing custom constraints.
 
-# 7. FAQ
+# 8. FAQ
 
-## 7.1 Q. What Is a Type Assertion?
+## 8.1 Q. What Is a Type Assertion?
 
 It's an operation that extracts a value of a concrete type from a value of `interface{}` type. It's used in the `value.(Type)` form.
 
@@ -339,7 +449,7 @@ i, ok := val.(int)     // ok = false, i = 0 (no panic)
 
 With generics, the type assertion itself becomes unnecessary. Since the type is determined at compile time, there's no risk of a runtime panic.
 
-# 8. References
+# 9. References
 
 - https://go.dev/doc/tutorial/generics
 - https://go.dev/blog/intro-generics

@@ -635,16 +635,89 @@ References
 
 - http://wiki.ros.org/rviz
 
-# 7. FAQ
+# 7. Quiz
 
-## 7.1 What is the difference between `xyz` and `rpy`?
+If you've read this far, these are questions you can answer. Pick an answer and the explanation shows up right away.
+
+```quiz
+- type: mcq
+  q: "Which correctly pairs URDF, SDF, and SRDF with the uses described here?"
+  choices: ["URDF is Gazebo-only and cannot be used in RViz", "SDF defines collision checking data for MoveIt", "SRDF is used together with URDF inside MoveIt", "SRDF is a format only for Gazebo simulation"]
+  answer: 2
+  explain: "SRDF is used together with URDF and is an XML file that defines information such as the robot's groups, path planning, and collision checking; it is used by MoveIt. URDF is mainly used for modeling and simulation and is used by RViz, while SDF is the format used by simulation tools such as Gazebo. (Section 1)"
+
+- type: ox
+  q: "The `<robot>` tag is the root element of the robot description file and must be declared first."
+  answer: true
+  explain: "True. `<robot>` is the root element of a URDF and is declared first; inside it go the link elements and the set of joint elements that connect the links to each other. (Section 4.1)"
+
+- type: code
+  q: "What does this snippet define?"
+  lang: xml
+  code: |
+    <joint name="base_joint" type="fixed">
+      <parent link="base"/>
+      <child link="link1"/>
+    </joint>
+  choices: ["It connects base and link1 rigidly with no motion", "It makes base rotate about link1 as its reference", "It allows linear sliding between base and link1", "It registers base as the child link of link1"]
+  answer: 0
+  explain: "The `fixed` type is a joint where no movement is allowed, so base and link1 are connected rigidly. The manipulator's base is tied to the first link with a fixed joint like this and stays at the origin. Here `<parent>` is base and `<child>` is link1. (Sections 4.2, 4.3.1)"
+
+- type: blank
+  q: "The ROS command that prints the URDF's syntactic errors and each link's connection relationships is `___ testbot.urdf`."
+  answer: ["check_urdf"]
+  explain: "Running `check_urdf testbot.urdf` prints the robot name along with the chain of child links from the root Link base down to link4. (Section 6.3.1)"
+
+- type: mcq
+  q: "Which statement about the joint types listed here is correct?"
+  choices: ["`fixed` allows rotation about exactly one axis", "`revolute` rotates endlessly with no angle limit", "`planar` allows 6-DOF translation and rotation", "`prismatic` has maximum and minimum position limits"]
+  answer: 3
+  explain: "`prismatic` is a joint that slides linearly along a single axis and has maximum and minimum position limits. `fixed` allows no movement at all, the one that rotates continuously is `continuous`, and the one that allows 6-DOF translation and rotation is `floating`. (Section 4.3.1)"
+
+- type: code
+  q: "In this snippet, what does the last `rgba` value `1` mean?"
+  lang: xml
+  code: |
+    <material name="green">
+      <color rgba="0 0.6 0 1" />
+    </material>
+  choices: ["It pushes the green component to its maximum", "It shows the original color with no transparency", "It points to the texture file number of the link", "It is an identifier that numbers the material"]
+  answer: 1
+  explain: "The first three `rgba` values are red, green, and blue, and the last one is the transparency (alpha). Alpha takes a value between 0.0 and 1.0, and 1.0 means displaying the original color as-is without using the transparency option. (Section 4.2.1)"
+
+- type: mcq
+  q: "Which is a constraint of the URDF specification as described here?"
+  choices: ["It can only express a tree, so parallel robots are hard", "It treats links as flexible and assumes no rigid bodies", "It can only express robots that have a single joint", "It is restricted so that sensor data cannot be defined"]
+  answer: 0
+  explain: "URDF can only represent a tree structure, so robots that operate in parallel are hard to model. It also assumes the robot's joints are made of rigid links, so flexible elements are not supported. (Section 4)"
+
+- type: blank
+  q: "Inside `<visual>`, the tag where you write a model's shape and size, such as box, cylinder, or sphere, is `<___>`."
+  answer: ["geometry"]
+  explain: "In the `<geometry>` tag you write the display range, shape, and size centered on the origin coordinates. It provides box, cylinder, and sphere by default, and models that are hard to represent are supplied as CAD files such as STL and DAE. (Section 4.2)"
+
+- type: ox
+  q: "Running the `urdf_to_graphiz` command creates only a .gv file and no .pdf file."
+  answer: false
+  explain: "False. Running `urdf_to_graphiz testbot.urdf` creates both a .gv file and a .pdf file. From that diagram you can see at a glance the relationships between links and joints and the relative coordinate transforms between joints. (Section 6.3.2)"
+
+- type: mcq
+  q: "What is the rule for choosing `<parent>` and `<child>` on a joint?"
+  choices: ["The link closer to the end effector is the parent", "The link closer to the base is the parent link", "The heavier of the two links becomes the parent", "The link declared first is always the parent link"]
+  answer: 1
+  explain: "Of the two links being connected, the one closer to the base is generally taken as the parent link and the other side is designated as the child link. In the example, base_joint also has the base as parent and link1 as child. (Section 4.3)"
+```
+
+# 8. FAQ
+
+## 8.1 What is the difference between `xyz` and `rpy`?
 
 ![ChatGPT](chat1.png)
 
 <br>
 <br>
 
-### 7.1.1 RPY angles
+### 8.1.1 RPY angles
 
 ![RPY](rpy.png)
 
@@ -654,14 +727,14 @@ References
 - https://www.youtube.com/watch?v=sFi6i8YzQVA
 - https://www.youtube.com/watch?v=Hg3EGzB3oqQ
 
-## 7.2 What is `xacro`?
+## 8.2 What is `xacro`?
 
 - A `xacro` file is short for `XML Macro`, a macro language that lets you load repeated code
 - You can create a URDF by loading XML, but using `xacro` you can define reusable parts to keep the code concise and improve reusability
 
-### 7.2.1 Xacro Features
+### 8.2.1 Xacro Features
 
-#### 7.2.1.1 Properties and property blocks
+#### 8.2.1.1 Properties and property blocks
 
 ```xml
 <xacro:property name="the_radius" value="2.1" />
@@ -670,7 +743,7 @@ References
 <geometry type="cylinder" radius="${the_radius}" length="${the_length}" />
 ```
 
-#### 7.2.1.2 Provides mathematical constants and functions
+#### 8.2.1.2 Provides mathematical constants and functions
 - e.g. `pi`, `sqrt(x)`, `radians(x)`
 
 ```xml
@@ -680,7 +753,7 @@ References
 <origin xyz="0.0 0.0 ${height/2+joint_height}" rpy="0.0 0.0 0.0"/>
 ```
 
-#### 7.2.1.3 Conditional blocks
+#### 8.2.1.3 Conditional blocks
 
 - Conditional blocks let you define things differently depending on whether a variable is true (true, 1) or false (false, 0)
 
@@ -695,7 +768,7 @@ References
 </xacro:if>
 ```
 
-#### 7.2.1.4 Macros
+#### 8.2.1.4 Macros
 
 - A macro can take parameters
 
@@ -717,11 +790,11 @@ References
 - http://wiki.ros.org/xacro
 - https://kumoh-irl.tistory.com/77
 
-## 7.3 What is the difference between `base_link` and `base_footprint`?
+## 8.3 What is the difference between `base_link` and `base_footprint`?
 
 ![ChatGPT](chat2.png)
 
-## 7.4 Manipulator
+## 8.4 Manipulator
 
 - It is a robotic mechanism that performs motions similar to a human arm
 - It usually has multiple degrees of freedom and is a mechanism composed of connected joints that perform relative rotational or sliding motions, for the purpose of gripping or moving an object (a part or tool)
@@ -731,17 +804,17 @@ References
 - https://terms.tta.or.kr/mobile/dictionaryView.do?subject=머니퓰레이터
 - https://roomedia.tistory.com/entry/41일차-매니퓰레이션-소개-및-URDF-작성법
 
-## 7.5 What do `ixx` and `ixy` mean when defining inertia?
+## 8.5 What do `ixx` and `ixy` mean when defining inertia?
 
 ![ChatGPT](chat3.png)
 
-# 8. Next Study Topics
+# 9. Next Study Topics
 
 - Controlling the modeled robot
 - Robot modeling with Gazebo
 - Navigation-related study
 
-# 9. References
+# 10. References
 
 - [ROS 2 Course by Yoonseok Pyo](https://cafe.naver.com/openrt/24070)
 - [Building a Visual Robot Model with URDF from Scratch](http://wiki.ros.org/urdf/Tutorials/Building a Visual Robot Model with URDF from Scratch)

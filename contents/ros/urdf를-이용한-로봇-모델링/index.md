@@ -635,16 +635,89 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 
 - http://wiki.ros.org/rviz
 
-# 7. FAQ
+# 7. 퀴즈
 
-## 7.1 `xyz`, `rpy`의 차이점?
+여기까지 읽었으면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
+
+```quiz
+- type: mcq
+  q: "본문에서 설명한 URDF, SDF, SRDF의 쓰임을 바르게 짝지은 것은?"
+  choices: ["URDF는 Gazebo 전용이라 RViz에서는 못 쓴다", "SDF는 MoveIt에서 충돌 검사 정보를 정의한다", "SRDF는 URDF와 함께 MoveIt에서 사용된다", "SRDF는 Gazebo 시뮬레이션 전용 포맷이다"]
+  answer: 2
+  explain: "SRDF는 URDF와 함께 사용되며 로봇의 그룹, 경로 계획, 충돌 검사 등의 정보를 정의하는 XML 파일로 MoveIt에서 쓰인다. URDF는 주로 모델링과 시뮬레이션에 쓰이며 RViz에서 사용되고, SDF는 Gazebo 같은 시뮬레이션 도구에서 쓰는 포맷이다. (1장)"
+
+- type: ox
+  q: "`<robot>` 태그는 로봇 설명 파일의 root 요소로 제일 먼저 선언되어야 한다."
+  answer: true
+  explain: "맞다. `<robot>`은 URDF의 root 요소로 가장 먼저 선언되며, 그 안에 링크 요소와 링크를 서로 연결하는 조인트 요소 집합이 들어간다. (4.1절)"
+
+- type: code
+  q: "이 조각이 정의하는 것으로 옳은 것은?"
+  lang: xml
+  code: |
+    <joint name="base_joint" type="fixed">
+      <parent link="base"/>
+      <child link="link1"/>
+    </joint>
+  choices: ["base와 link1을 움직이지 않게 고정 연결한다", "base가 link1을 기준으로 회전하도록 만든다", "base와 link1 사이의 선형 이동을 허용한다", "base를 link1의 자식 링크로 등록해 연결한다"]
+  answer: 0
+  explain: "`fixed` 타입은 움직임이 허용되지 않는 조인트라서 base와 link1은 고정되어 연결된다. 매니퓰레이터의 기저는 이렇게 첫 번째 링크와 fixed 조인트로 묶여 원점에 고정된다. 여기서는 `<parent>`가 base, `<child>`가 link1이다. (4.2절, 4.3.1절)"
+
+- type: blank
+  q: "작성한 URDF의 문법적 오류와 각 링크의 연결 관계를 출력해 주는 ROS 명령어는 `___ testbot.urdf` 이다."
+  answer: ["check_urdf"]
+  explain: "`check_urdf testbot.urdf`를 실행하면 robot name과 함께 root Link인 base부터 link4까지 이어지는 자식 링크 관계가 출력된다. (6.3.1절)"
+
+- type: mcq
+  q: "본문이 정리한 조인트 종류 설명으로 옳은 것은?"
+  choices: ["`fixed`는 축 하나에 대해서만 회전을 허용한다", "`revolute`는 각도 제한 없이 연속으로 회전한다", "`planar`는 6차원 이동과 회전을 모두 허용한다", "`prismatic`은 최대·최소 위치 제한을 가진다"]
+  answer: 3
+  explain: "`prismatic`은 단일 축에 대해 선형으로 미끄러지는 관절로 최대, 최소 위치 제한을 가진다. `fixed`는 움직임이 아예 허용되지 않고, 연속 회전을 하는 것은 `continuous`이며, 6차원 이동과 회전을 허용하는 것은 `floating`이다. (4.3.1절)"
+
+- type: code
+  q: "이 조각에서 `rgba`의 마지막 값 `1`이 뜻하는 것은?"
+  lang: xml
+  code: |
+    <material name="green">
+      <color rgba="0 0.6 0 1" />
+    </material>
+  choices: ["초록 성분을 최대치까지 올린다는 뜻이다", "투명 옵션 없이 고유 색상을 그대로 표시한다", "링크의 텍스처 파일 번호를 가리키는 값이다", "재질 이름을 숫자로 구분하는 식별자 값이다"]
+  answer: 1
+  explain: "`rgba`의 앞 세 값이 빨강, 초록, 파랑이고 마지막 값이 투명도(알파)다. 알파는 0.0 ~ 1.0 값을 가지며 1.0이면 투명 옵션을 쓰지 않은 고유 색상을 그대로 표시하는 상태를 뜻한다. (4.2.1절)"
+
+- type: mcq
+  q: "본문이 말한 URDF 명세의 제약 사항으로 옳은 것은?"
+  choices: ["트리 구조만 표현할 수 있어 병렬 로봇은 모델이 어렵다", "링크를 유연한 요소로 다뤄 강체 가정을 두지 않는다", "조인트를 하나만 가진 로봇까지만 표현할 수 있다", "센서 정보는 아예 정의할 수 없도록 제한되어 있다"]
+  answer: 0
+  explain: "URDF는 트리 구조만 표시할 수 있어서 병렬적으로 동작하는 로봇은 모델링이 어렵다. 또 로봇의 조인트가 단단한 링크로 구성되어 있다고 가정하기 때문에 유연한 요소는 지원하지 않는다. (4장)"
+
+- type: blank
+  q: "`<visual>` 안에서 box, cylinder, sphere 같은 모델의 모양과 크기를 적는 태그는 `<___>` 이다."
+  answer: ["geometry"]
+  explain: "`<geometry>` 태그에 origin 좌표를 중심으로 표시 범위와 모양, 크기를 적는다. box, cylinder, sphere 형태를 기본으로 제공하고 표현하기 어려운 모델은 STL, DAE 같은 CAD 파일로 입력한다. (4.2절)"
+
+- type: ox
+  q: "`urdf_to_graphiz` 명령어를 실행하면 .gv 파일만 만들어지고 .pdf 파일은 생성되지 않는다."
+  answer: false
+  explain: "아니다. `urdf_to_graphiz testbot.urdf`를 실행하면 .gv 파일과 .pdf 파일이 함께 생성된다. 이 다이어그램에서 링크와 조인트의 관계, 조인트 사이의 상대 좌표 변환을 한눈에 확인할 수 있다. (6.3.2절)"
+
+- type: mcq
+  q: "조인트에서 `<parent>`와 `<child>`를 지정하는 기준으로 옳은 것은?"
+  choices: ["말단 장치에 가까운 링크를 부모 링크로 본다", "기저에 가까운 쪽 링크를 부모 링크로 본다", "질량이 더 큰 쪽 링크를 부모 링크로 본다", "먼저 선언된 링크를 항상 부모 링크로 본다"]
+  answer: 1
+  explain: "연결하는 두 링크 중 일반적으로 기저에 가까운 링크를 부모 링크로 보고 반대쪽을 자식 링크로 지정한다. 예제의 base_joint도 기저인 base가 부모, link1이 자식이다. (4.3절)"
+```
+
+# 8. FAQ
+
+## 8.1 `xyz`, `rpy`의 차이점?
 
 ![ChatGPT](chat1.png)
 
 <br>
 <br>
 
-### 7.1.1 RPY angles
+### 8.1.1 RPY angles
 
 ![RPY](rpy.png)
 
@@ -654,14 +727,14 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 - https://www.youtube.com/watch?v=sFi6i8YzQVA
 - https://www.youtube.com/watch?v=Hg3EGzB3oqQ
 
-## 7.2 `xacro`이란?
+## 8.2 `xacro`이란?
 
 - `xacro` (자크로) 파일은 `XML Macro` 의 줄임말로 반복되는 코드를 불러올 수 있는 매크로 언어이다
 - URDF를 만드는데 XML로드 가능하지만, `xacro`를 사용하여 재사용 가능한 부분을 정의해서 코드를 간결하게 유지하고 재사용성을 높일 수 있다
 
-### 7.2.1 Xacro 기능
+### 8.2.1 Xacro 기능
 
-#### 7.2.1.1 속성, 속성 블럭
+#### 8.2.1.1 속성, 속성 블럭
 
 ```xml
 <xacro:property name="the_radius" value="2.1" />
@@ -670,7 +743,7 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 <geometry type="cylinder" radius="${the_radius}" length="${the_length}" />
 ```
 
-#### 7.2.1.2 수학 상수 및 함수 제공
+#### 8.2.1.2 수학 상수 및 함수 제공
 - ex. `pi`, `sqrt(x)`, `radians(x)`
 
 ```xml
@@ -680,7 +753,7 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 <origin xyz="0.0 0.0 ${height/2+joint_height}" rpy="0.0 0.0 0.0"/>
 ```
 
-#### 7.2.1.3 조건부 블럭
+#### 8.2.1.3 조건부 블럭
 
 - 조건부 블럭은 변수의 참(true, 1), 거짓(false, 0)에 따라서 다르게 정의를 할 수 있다
 
@@ -695,7 +768,7 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 </xacro:if>
 ```
 
-#### 7.2.1.4 매크로
+#### 8.2.1.4 매크로
 
 - 매크로는 인자(parameter)를 받을 수 있다
 
@@ -717,11 +790,11 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 - http://wiki.ros.org/xacro
 - https://kumoh-irl.tistory.com/77
 
-## 7.3 `base_link`, `base_footprint`의 차이점?
+## 8.3 `base_link`, `base_footprint`의 차이점?
 
 ![ChatGPT](chat2.png)
 
-## 7.4 매니플레이터, manipulator
+## 8.4 매니플레이터, manipulator
 
 - 인간의 팔과 유사한 동작을 하는 로봇의 기구이다
 - 보통 여러 개의 자유도를 가지며 대상물(부품 또는 공구)을 붙잡거나 옮길 목적으로, 서로 상대적인 회전 운동이나 미끄럼 운동을 하는 관절의 연결로 구성된 기구이다
@@ -731,17 +804,17 @@ RViz (ROS Visualization)는 ROS의 시각화 도구 중 하나로 로봇의 위�
 - https://terms.tta.or.kr/mobile/dictionaryView.do?subject=머니퓰레이터
 - https://roomedia.tistory.com/entry/41일차-매니퓰레이션-소개-및-URDF-작성법
 
-## 7.5 inertia를 정의할 때 `ixx`, `ixy`의 의미는 뭔가?
+## 8.5 inertia를 정의할 때 `ixx`, `ixy`의 의미는 뭔가?
 
 ![ChatGPT](chat3.png)
 
-# 8. 다음 스터디 주제
+# 9. 다음 스터디 주제
 
 - 로델링한 로봇 제어해보기
 - gazebo 로 로봇 모델링
 - navigation 관련 스터디
 
-# 9. 참고
+# 10. 참고
 
 - [ROS 2 강좌 by 표윤석](https://cafe.naver.com/openrt/24070)
 - [Building a Visual Robot Model with URDF from Scratch](http://wiki.ros.org/urdf/Tutorials/Building a Visual Robot Model with URDF from Scratch)
