@@ -105,11 +105,17 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
             ? countSlides(path.join(dirPath, slidesFile))
             : 0;
 
-          // 퀴즈: 본문의 첫 ```quiz 블록을 파서로 세어 실제 렌더 수와 맞춘다.
-          const quizMatch = content.match(/```quiz\n([\s\S]*?)```/);
-          const quizCount = quizMatch ? parseQuiz(quizMatch[1]).length : 0;
+          // 퀴즈: 본문의 모든 ```quiz 블록을 파서로 세어 실제 렌더 수와 맞춘다.
+          // 렌더러는 블록마다 세트를 하나씩 그리므로 전체를 합산한다.
+          const quizBlocks = content.matchAll(/```quiz\r?\n([\s\S]*?)```/g);
+          let quizCount = 0;
+          let quizBlockFound = false;
+          for (const block of quizBlocks) {
+            quizBlockFound = true;
+            quizCount += parseQuiz(block[1]).length;
+          }
 
-          if (quizMatch && quizCount === 0) {
+          if (quizBlockFound && quizCount === 0) {
             console.warn(
               `⚠️  ${category}/${articleDir} (${lang}): quiz 블록이 있는데 유효 문항이 0개입니다 (YAML 확인 필요)`
             );
