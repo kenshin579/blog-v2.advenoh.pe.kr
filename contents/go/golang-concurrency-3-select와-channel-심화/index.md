@@ -369,7 +369,7 @@ func TestNilChannelDisable(t *testing.T) {
 
 - type: blank
   q: "지정한 시간이 지나면 값을 보내는 channel을 돌려주는 함수는 ___이고, select와 조합하면 timeout을 간단히 구현할 수 있다."
-  answer: ["time.After", "After"]
+  answer: ["time.After"]
   explain: "time.After다. 지정한 시간이 지나면 값을 보내는 channel을 반환하므로, select의 한 case로 두면 다른 case가 그 안에 준비되지 않았을 때 timeout 분기를 타게 된다. 타임아웃 외에 더 필요한 것이 있으면 context 패키지를 함께 본다. (3.1절)"
 
 - type: code

@@ -369,7 +369,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: blank
   q: "The function that returns a channel that fires once a given duration elapses is ___, and combining it with select gives you a simple timeout."
-  answer: ["time.After", "After"]
+  answer: ["time.After"]
   explain: "It is time.After. It returns a channel that fires once the given duration passes, so putting it in one case of a select takes the timeout branch whenever the other case is not ready in time. When you need more than a plain timeout, look at the context package as well. (Section 3.1)"
 
 - type: code
