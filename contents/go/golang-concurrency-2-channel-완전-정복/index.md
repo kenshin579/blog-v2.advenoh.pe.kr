@@ -402,12 +402,12 @@ func TestMultipleProducers(t *testing.T) {
 - type: ox
   q: "close(done)은 대기 중인 모든 receiver에게 동시에 완료 신호를 전달한다."
   answer: true
-  explain: "맞다. close(done)은 모든 receiver에게 동시에 신호를 보내며, 이것이 값을 하나만 넘기는 done <- struct{}{}와의 차이점이다. 그래서 완료 신호를 여러 곳에 뿌릴 때 close를 쓴다. (7.1절)"
+  explain: "맞다. close(done)은 모든 receiver에게 동시에 신호를 보내며, 이것이 receiver 하나에게 값을 하나만 넘기는 일반 send와의 차이점이다. 그래서 완료 신호를 여러 곳에 뿌릴 때 close를 쓴다. (7.1절)"
 
 - type: blank
-  q: "함수 파라미터를 받기만 가능하도록 제한하는 방향 표기는 ___ int이고, 반대 방향으로 변환하면 컴파일 에러가 난다."
-  answer: ["<-chan", "<- chan"]
-  explain: "receive-only는 <-chan int로 쓴다. 양방향 channel은 send-only(chan<-)나 receive-only(<-chan)로 암묵적 변환되지만 그 반대는 컴파일 에러다. 방향을 제한하면 잘못된 사용을 컴파일 타임에 막을 수 있다. (5장)"
+  q: "버퍼 크기 5로 만든 channel에 값을 2개 넣어도 그대로 5를 돌려주는 내장 함수는 ___(ch)이다."
+  answer: ["cap"]
+  explain: "cap(ch)다. cap은 make에 지정한 버퍼 용량이라 값이 들어오고 나가도 변하지 않는다. 지금 버퍼에 대기 중인 값의 개수는 len(ch)로 따로 확인하며, 버퍼 크기 5인 channel에 값 2개를 넣으면 cap은 5, len은 2다. (4.3절)"
 
 - type: mcq
   q: "Channel의 close 규칙으로 옳은 것은?"

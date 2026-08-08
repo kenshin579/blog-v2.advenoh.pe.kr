@@ -402,12 +402,12 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 - type: ox
   q: "close(done) delivers the completion signal to all waiting receivers simultaneously."
   answer: true
-  explain: "Correct. close(done) signals all receivers at once, which is the difference from done <- struct{}{}, which hands a single value to one receiver. That is why close is used to broadcast a completion signal. (Section 7.1)"
+  explain: "Correct. close(done) signals all receivers at once, which is the difference from an ordinary send, which hands a single value to one receiver. That is why close is used to broadcast a completion signal. (Section 7.1)"
 
 - type: blank
-  q: "The direction notation that restricts a function parameter to receiving only is ___ int, and converting in the opposite direction is a compile error."
-  answer: ["<-chan", "<- chan"]
-  explain: "Receive-only is written <-chan int. A bidirectional channel is implicitly converted to send-only (chan<-) or receive-only (<-chan), but not the other way around. Restricting the direction blocks incorrect use at compile time. (Section 5)"
+  q: "For a channel created with buffer size 5, the built-in that still returns 5 after you put 2 values in is ___(ch)."
+  answer: ["cap"]
+  explain: "It is cap(ch). cap is the buffer size handed to make, so it does not change as values come and go. The number of values currently waiting in the buffer is read separately with len(ch): put 2 values into a channel of buffer size 5 and cap is 5 while len is 2. (Section 4.3)"
 
 - type: mcq
   q: "Which of the following is a correct rule about closing a channel?"
