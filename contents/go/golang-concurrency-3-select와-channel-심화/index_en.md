@@ -329,7 +329,98 @@ func TestNilChannelDisable(t *testing.T) {
 - when merging multiple data sources, disable each source as it completes
 - turn processing of a particular channel on/off depending on a condition
 
-# 6. Wrapping Up
+# 6. Quiz
+
+If you've read this far, these are questions you can answer. Pick an answer and the explanation shows up right away.
+
+```quiz
+- type: mcq
+  q: "When several cases are ready at the same time, what does select do?"
+  choices: ["It picks one from the top in the order the cases are written", "It remembers which case became ready first and picks that", "The Go runtime picks one of them completely at random", "It runs every ready case and then leaves the select"]
+  answer: 2
+  explain: "When several cases are ready at once, the Go runtime picks one at random. It does not go in written order, it does not remember which one became ready first, and it does not run every ready case. That random pick is what prevents starvation, where one channel would always win. (Section 1.1)"
+
+- type: code
+  q: "What does this code do when you run it?"
+  lang: go
+  code: |
+    ch := make(chan int, 1)
+
+    select {
+    case val := <-ch:
+        fmt.Println("received:", val)
+    default:
+        fmt.Println("no data")
+    }
+  choices: ["It blocks at the first case until a value arrives", "default runs and no data is printed right away", "The buffer hands back the zero value 0 and prints it", "With no case ready it panics with a deadlock error"]
+  answer: 1
+  explain: "A select with a default is non-blocking. ch holds no value yet, so the first case is not ready; instead of blocking, default runs immediately and prints no data. Having free buffer space is not the same as having a value to receive. (Section 2.1)"
+
+- type: ox
+  q: "Receiving from a nil channel blocks briefly and then returns the zero value."
+  answer: false
+  explain: "No. Receiving from a nil channel blocks forever, and so does sending to one. Only inside a select is a nil channel case ignored, so that another case gets picked instead. (Section 5)"
+
+- type: mcq
+  q: "Which statement about the fan-out and fan-in patterns is correct?"
+  choices: ["Fan-out distributes one input across multiple workers", "Fan-out merges the results of several channels into one", "Fan-in hands one job out to several goroutines to run", "Fan-in leaves a separate result channel per source"]
+  answer: 0
+  explain: "Fan-out is the pattern that distributes a single input across multiple workers, and fan-in is the pattern that merges the results of several channels into one channel. The other options either swap the two descriptions or turn the merging side into a splitting side. (Sections 4.1, 4.2)"
+
+- type: blank
+  q: "The function that returns a channel which sends a value after a given duration is ___, and combining it with select gives you a simple timeout."
+  answer: ["time.After", "After"]
+  explain: "It is time.After. It returns a channel that sends a value once the given duration passes, so putting it in one case of a select takes the timeout branch whenever the other case is not ready in time. When you also need cancellation propagation, use context.WithTimeout. (Section 3.1)"
+
+- type: code
+  q: "Which case does this select run?"
+  lang: go
+  code: |
+    ch := make(chan int, 1)
+    ch <- 7
+
+    var active <-chan int = nil
+
+    select {
+    case v := <-active:
+        fmt.Println("active:", v)
+    case v := <-ch:
+        fmt.Println("ch:", v)
+    }
+  choices: ["The active case — a nil channel is ready immediately", "Both cases are ready, so one is picked at random", "No case can be chosen, so it stops in a deadlock", "The ch case — the nil active case is simply ignored"]
+  answer: 3
+  explain: "active is nil, so that case is ignored by the select. The only one left is the ch case, which has 7 sitting in its buffer, so that one is picked. A nil channel never becomes ready, which is exactly what makes it useful for switching a case off dynamically. (Section 5)"
+
+- type: mcq
+  q: "Why does the article say context.WithTimeout is used more in practice?"
+  choices: ["It can specify a shorter duration than time.After can", "It propagates cancellation and spans several goroutines", "It finishes timeout handling without any select at all", "It sets a timeout without creating any new channel"]
+  answer: 1
+  explain: "context is used more in practice because it propagates cancellation and lets you manage a timeout across multiple goroutines. It is not about specifying shorter durations, and even with context the timeout branch is still handled by a select case on ctx.Done(), with a result channel still needed. (Section 3.2)"
+
+- type: ox
+  q: "Overusing a select with default inside a loop can use excessive CPU."
+  answer: true
+  explain: "Correct. default is useful for polling or busy-wait, but overusing it inside a loop means checking channels that are not ready without a pause, which can use excessive CPU. (Section 2)"
+
+- type: code
+  q: "What does this code print?"
+  lang: go
+  code: |
+    ch := make(chan int, 1)
+    ch <- 1
+
+    select {
+    case ch <- 2:
+        fmt.Println("sent")
+    default:
+        fmt.Println("buffer full")
+    }
+  choices: ["sent — the buffer grows by one and the value goes in", "sent — the 2 overwrites the 1 that was sent before", "buffer full — the buffer is full so default runs", "Nothing is printed and the send blocks right there"]
+  answer: 2
+  explain: "The channel has buffer size 1 and already holds 1, so the second send is not ready. Because a default is present it does not block: it goes straight to default and prints buffer full. The buffer never grows on its own and never overwrites the existing value. (Section 2.2)"
+```
+
+# 7. Wrapping Up
 
 | Concept | Core |
 |------|------|
@@ -344,7 +435,7 @@ func TestNilChannelDisable(t *testing.T) {
 
 In the next part, we'll cover the `sync` package, which **safely manages shared resources** between goroutines.
 
-# 7. References
+# 8. References
 
 - [Go Tour - Select](https://go.dev/tour/concurrency/5)
 - [Go Blog - Pipelines and cancellation](https://go.dev/blog/pipelines)
