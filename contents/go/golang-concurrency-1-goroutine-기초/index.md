@@ -510,6 +510,7 @@ func TestGoroutineLeakPrevention_WithContext(t *testing.T) {
   q: "이 코드에서 wg.Wait() 한 줄을 지우면 어떻게 되나?"
   lang: go
   code: |
+    var completed atomic.Bool
     var wg sync.WaitGroup
 
     wg.Add(1)
@@ -539,7 +540,7 @@ func TestGoroutineLeakPrevention_WithContext(t *testing.T) {
 
 - type: blank
   q: "동시에 goroutine을 실행할 수 있는 P의 최대 개수를 설정하는 함수는 runtime.___(n)이고, 기본값은 CPU 코어 수다."
-  answer: ["GOMAXPROCS", "GOMAXPROCS()"]
+  answer: ["GOMAXPROCS"]
   explain: "runtime.GOMAXPROCS(n)이다. 인자로 0을 전달하면 현재 값을 변경하지 않고 그대로 반환한다. 1로 설정하면 P가 하나뿐이라 goroutine이 concurrent하게 구성되더라도 한 번에 하나만 실행된다. (7.2절)"
 
 - type: ox

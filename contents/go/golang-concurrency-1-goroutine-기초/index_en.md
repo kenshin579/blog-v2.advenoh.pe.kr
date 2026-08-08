@@ -486,6 +486,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   q: "What happens if you delete the wg.Wait() line from this code?"
   lang: go
   code: |
+    var completed atomic.Bool
     var wg sync.WaitGroup
 
     wg.Add(1)
@@ -515,7 +516,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: blank
   q: "The function that sets the maximum number of Ps able to run goroutines simultaneously is runtime.___(n), and its default is the CPU core count."
-  answer: ["GOMAXPROCS", "GOMAXPROCS()"]
+  answer: ["GOMAXPROCS"]
   explain: "It is runtime.GOMAXPROCS(n). Passing 0 returns the current value without changing it. Setting it to 1 means there is only one P, so even though goroutines are configured concurrently, only one runs at a time. (Section 6.2)"
 
 - type: ox
