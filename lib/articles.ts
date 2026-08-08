@@ -16,6 +16,8 @@ interface ManifestArticle {
   readTime?: number;
   hasSlides?: boolean;
   slideCount?: number;
+  hasQuiz?: boolean;
+  quizCount?: number;
 }
 
 interface Manifest {
@@ -93,6 +95,19 @@ export async function getArticlesWithSlides(lang: 'ko' | 'en' = 'ko'): Promise<M
   const manifest = await loadManifest();
   return manifest.articles
     .filter(a => a.hasSlides === true && a.lang === lang)
+    .sort((x, y) => new Date(y.date).getTime() - new Date(x.date).getTime());
+}
+
+/**
+ * 퀴즈가 있는 아티클 가져오기 (최신순)
+ *
+ * hasQuiz 는 본문의 ```quiz 블록에 유효 문항이 1개 이상 있을 때만 true다.
+ * YAML이 깨져 렌더되지 않는 글은 목록에 넣지 않는다.
+ */
+export async function getArticlesWithQuiz(lang: 'ko' | 'en' = 'ko'): Promise<ManifestArticle[]> {
+  const manifest = await loadManifest();
+  return manifest.articles
+    .filter(a => a.hasQuiz === true && a.lang === lang)
     .sort((x, y) => new Date(y.date).getTime() - new Date(x.date).getTime());
 }
 
