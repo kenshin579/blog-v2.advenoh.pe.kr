@@ -344,8 +344,8 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   explain: "The `any` constraint does not support the `<` operation. So a function like min that needs a comparison must narrow the allowed types with a union type constraint such as `int | float64`. (Section 4.2)"
 
 - type: blank
-  q: "Generics has been officially supported in Go starting from version Go ___."
-  answer: ["1.18"]
+  q: "Generics has been officially supported in Go starting from Go ___."
+  answer: ["1.18", "go1.18", "go 1.18"]
   explain: "It is Go 1.18. From that release, which came out in March 2022, generics became an official feature. Until then it was the most requested feature in the community yet still absent from the language. (Section 1, Section 2)"
 
 - type: code

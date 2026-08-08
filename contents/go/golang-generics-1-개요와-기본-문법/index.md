@@ -345,7 +345,7 @@ emptyStrings := toSlice[string]()  // 명시적 지정 필요
 
 - type: blank
   q: "Go에서 Generics가 정식으로 지원되기 시작한 버전은 Go ___이다."
-  answer: ["1.18"]
+  answer: ["1.18", "go1.18", "go 1.18"]
   explain: "Go 1.18이다. 2022년 3월에 나온 이 버전부터 Generics가 정식 기능이 되었다. 그전까지는 커뮤니티에서 가장 많이 요청된 기능이면서도 언어에 들어오지 못한 상태였다. (1장, 2장)"
 
 - type: code
