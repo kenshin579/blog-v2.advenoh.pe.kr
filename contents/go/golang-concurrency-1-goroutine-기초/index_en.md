@@ -439,7 +439,92 @@ The improvements can be summarized as follows:
 
 **Key principle**: when creating a goroutine, always secure a **termination path**. Use `context`, a `done channel`, `close`, and the like.
 
-# 8. Summary
+# 8. Quiz
+
+If you've read this far, these are questions you can answer. Pick an answer and the explanation shows up right away.
+
+```quiz
+- type: mcq
+  q: "Which correctly describes the difference between concurrency and parallelism?"
+  choices: ["Concurrency is an execution mode that requires several CPUs", "Parallelism is the concept of composing tasks into small units", "Concurrency is about composition, parallelism about execution", "They are just different words that in practice mean the same"]
+  answer: 2
+  explain: "Concurrency is a structure for dealing with multiple tasks at once — it is about task composition — while parallelism is actually executing multiple tasks at the same time. Concurrency is possible even on a single CPU, but parallelism requires multiple CPUs. Design a Go program to be concurrent and the runtime takes care of leveraging parallelism. (Section 1)"
+
+- type: ox
+  q: "Go's concurrency philosophy is \"communicate by sharing memory,\" which is why it recommends mutexes over channels."
+  answer: false
+  explain: "The Go Proverb says the opposite: \"Do not communicate by sharing memory; instead, share memory by communicating.\" Go recommends passing data through channels. Because ownership of the data is transferred through the channel, only one goroutine accesses the data at a given moment. (Section 2.2)"
+
+- type: mcq
+  q: "When shared state makes locks complex, what does the article recommend?"
+  choices: ["Add more goroutines so the waiting gets spread out", "Reconsider the design itself rather than pushing on", "Split the locks finer to shrink the contended region", "Grow the channel buffer size to ease the bottleneck"]
+  answer: 1
+  explain: "The article lists \"so much shared state that locks become complex\" as a case of over-engineering, and says to reconsider the design. Concurrency adds complexity by itself, so if it becomes hard to debug, simple sequential processing is better. (Section 3.2)"
+
+- type: code
+  q: "Why does the assert in this test pass?"
+  lang: go
+  code: |
+    var completed atomic.Bool
+
+    go func() {
+        time.Sleep(100 * time.Millisecond)
+        completed.Store(true)
+    }()
+
+    assert.False(t, completed.Load())
+  choices: ["An atomic.Bool value is permanently fixed to false", "A function with the go keyword is ignored, never run", "time.Sleep permanently halts the whole program here", "Without waiting, the read happens before it completes"]
+  answer: 3
+  explain: "Load() is read immediately after launching the goroutine, so a value that only becomes true 100ms later is still false. When the main goroutine terminates, the entire program terminates regardless of the other goroutines, so if you need the result you must wait explicitly. (Section 4.4)"
+
+- type: blank
+  q: "A goroutine's initial stack size is about ___, and unlike an OS thread's fixed ~1MB it grows dynamically."
+  answer: ["2KB", "~2KB", "2 KB"]
+  explain: "A goroutine's initial stack is ~2KB and grows dynamically as needed. Compared with an OS thread's fixed ~1MB, creation is very cheap, so hundreds of thousands are possible, and context switching is fast because only 3 registers are involved. (Section 4.2)"
+
+- type: code
+  q: "What happens if you delete the wg.Wait() line from this code?"
+  lang: go
+  code: |
+    var wg sync.WaitGroup
+
+    wg.Add(1)
+    go func() {
+        defer wg.Done()
+        time.Sleep(50 * time.Millisecond)
+        completed.Store(true)
+    }()
+
+    wg.Wait()
+    assert.True(t, completed.Load())
+  choices: ["The assert fails since nothing waits for the goroutine", "wg.Done holds execution for the 50ms in its place", "wg.Add(1) is there, so the result stays exactly the same", "The compiler rejects this misuse of the WaitGroup"]
+  answer: 0
+  explain: "wg.Wait() waits until the goroutine completes, which is why the assert sees true. Delete that line and the value that gets set 50ms later is read without waiting, so it is false. To wait for a goroutine to finish you need sync.WaitGroup or a channel. (Section 4.4)"
+
+- type: mcq
+  q: "What is the biggest difference between a Go goroutine and a Kotlin coroutine?"
+  choices: ["Only goroutines are stackless objects living on the heap", "Goroutines are preemptive, coroutines are cooperative", "Only coroutines can pass messages through a channel", "Goroutines still have the function coloring problem"]
+  answer: 1
+  explain: "The article points to the scheduling method as the biggest difference. Goroutines are preemptive, so the Go runtime forcibly switches one that holds the CPU for a long time (Go 1.14+), while Kotlin coroutines are cooperative and switch only at suspend points. (Section 5.2)"
+
+- type: mcq
+  q: "In the GMP model, what happens when a P's local run queue becomes empty?"
+  choices: ["The P is released at once and its bound M shuts down", "The OS kernel picks the next goroutine and hands it over", "It takes a goroutine from another P's queue (work stealing)", "GOMAXPROCS is automatically decremented to compensate"]
+  answer: 2
+  explain: "When the local run queue is empty, it fetches a goroutine from another P's queue via work stealing. Scheduling is performed by the Go runtime in user space rather than by the OS kernel, so context switching costs much less than with OS threads. (Section 6.1)"
+
+- type: blank
+  q: "The function that sets the maximum number of Ps able to run goroutines simultaneously is runtime.___(n), and its default is the CPU core count."
+  answer: ["GOMAXPROCS", "GOMAXPROCS()"]
+  explain: "It is runtime.GOMAXPROCS(n). Passing 0 returns the current value without changing it. Setting it to 1 means there is only one P, so even though goroutines are configured concurrently, only one runs at a time. (Section 6.2)"
+
+- type: ox
+  q: "A goroutine stuck sending on an unbuffered channel that nobody receives from is not reclaimed even by GC."
+  answer: true
+  explain: "Correct. The leaked goroutine blocks forever at ch <- 42, occupying memory and never becoming subject to GC. Switch to a buffered channel and put ctx.Done() alongside the send in a select to secure a termination path. (Sections 7.3, 7.4)"
+```
+
+# 9. Summary
 
 
 | Concept                       | Core                                                   |
@@ -454,7 +539,7 @@ The improvements can be summarized as follows:
 
 In the next part, we'll look at the **core mechanism for exchanging data** between goroutines: the Channel.
 
-# 9. References
+# 10. References
 
 - [Effective Go - Concurrency](https://go.dev/doc/effective_go#concurrency)
 - [Go Blog - Concurrency is not parallelism](https://go.dev/blog/waza-talk)
