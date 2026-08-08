@@ -44,6 +44,9 @@ export function useQuizPortals(
 
       const mount = document.createElement('div');
       mount.className = 'quiz-mount';
+      // 목록 페이지(/quiz)의 카드가 /{글}/#quiz 로 링크한다.
+      // 헤딩 번호가 글마다 달라 rehype-slug 의 id 를 쓸 수 없으므로 고정 id 를 심는다.
+      if (index === 0) mount.id = 'quiz';
       // 교체(replaceWith)가 아니라 숨김+삽입. cleanup에서 복원할 수 있어야
       // StrictMode의 effect 이중 실행에서 두 번째 스캔이 소스를 다시 찾는다.
       pre.style.display = 'none';
@@ -51,6 +54,13 @@ export function useQuizPortals(
       created.push({ mount, pre });
       next.push({ key: `quiz-${index}`, container: mount, questions });
     });
+
+    // 클라이언트 마운트라 페이지 로드 시점엔 #quiz 가 없어 브라우저 자동 스크롤이
+    // 걸리지 않는다. 마운트 직후 직접 이동시킨다.
+    if (next.length > 0 && window.location.hash === '#quiz') {
+      const target = next[0].container;
+      requestAnimationFrame(() => target.scrollIntoView({ behavior: 'auto', block: 'start' }));
+    }
 
     setMounts(next);
     return () => {
