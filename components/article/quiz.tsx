@@ -100,6 +100,7 @@ function QuestionCard({ index, question, answer, onSubmit, t }: QuestionCardProp
             correctIndex={question.answer}
             selected={done ? (answer.value as number) : null}
             onSelect={(choice) => onSubmit(index, choice, choice === question.answer)}
+            numbered
           />
         )}
 
@@ -164,15 +165,23 @@ interface ChoiceListProps {
   selected: number | null; // null이면 미응답
   onSelect: (index: number) => void;
   row?: boolean;
+  /** 보기 앞에 번호를 붙인다. O/X처럼 보기가 자명한 유형에는 쓰지 않는다 */
+  numbered?: boolean;
 }
 
-function ChoiceList({ choices, correctIndex, selected, onSelect, row }: ChoiceListProps) {
+function ChoiceList({ choices, correctIndex, selected, onSelect, row, numbered }: ChoiceListProps) {
   const done = selected !== null;
   return (
     <div className={cn('gap-2', row ? 'flex' : 'flex flex-col')}>
       {choices.map((choice, i) => {
         const isCorrect = done && i === correctIndex;
         const isWrongPick = done && i === selected && i !== correctIndex;
+        const label = (
+          <>
+            {choice}
+            {isCorrect && <CheckCircle2 className="ml-1 inline h-3.5 w-3.5" />}
+          </>
+        );
         return (
           <button
             key={i}
@@ -188,8 +197,15 @@ function ChoiceList({ choices, correctIndex, selected, onSelect, row }: ChoiceLi
               done && !isCorrect && !isWrongPick && 'opacity-60'
             )}
           >
-            {choice}
-            {isCorrect && <CheckCircle2 className="ml-1 inline h-3.5 w-3.5" />}
+            {numbered ? (
+              // 보기가 두 줄로 접힐 때 둘째 줄이 번호 아래로 흐르지 않도록 flex로 건다
+              <span className="flex items-start gap-2">
+                <span className="shrink-0 tabular-nums text-muted-foreground">{i + 1}.</span>
+                <span>{label}</span>
+              </span>
+            ) : (
+              label
+            )}
           </button>
         );
       })}
