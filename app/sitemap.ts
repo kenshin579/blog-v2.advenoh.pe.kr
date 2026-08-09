@@ -73,6 +73,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       priority: 0.8,
     },
     {
+      url: `${SITE_URL}/quiz`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
       url: `${SITE_URL}/tags`,
       lastModified: now,
       changeFrequency: 'weekly',
@@ -139,6 +145,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     },
     {
       url: `${SITE_URL}/en/slides`,
+      lastModified: now,
+      changeFrequency: 'weekly',
+      priority: 0.8,
+    },
+    {
+      url: `${SITE_URL}/en/quiz`,
       lastModified: now,
       changeFrequency: 'weekly',
       priority: 0.8,

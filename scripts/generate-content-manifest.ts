@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import { parseQuiz } from '../lib/quiz';
 
 interface ArticleMetadata {
   slug: string;
@@ -18,6 +19,10 @@ interface ArticleMetadata {
   hasSlides?: boolean;
   /** 데크의 슬라이드 장 수. 0이면 필드를 생략한다 */
   slideCount?: number;
+  /** 본문에 ```quiz 블록이 있고 유효 문항이 1개 이상인가 */
+  hasQuiz?: boolean;
+  /** 첫 quiz 블록의 유효 문항 수. 0이면 필드를 생략한다 */
+  quizCount?: number;
 }
 
 /**
@@ -100,6 +105,22 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
             ? countSlides(path.join(dirPath, slidesFile))
             : 0;
 
+          // 퀴즈: 본문의 모든 ```quiz 블록을 파서로 세어 실제 렌더 수와 맞춘다.
+          // 렌더러는 블록마다 세트를 하나씩 그리므로 전체를 합산한다.
+          const quizBlocks = content.matchAll(/```quiz\r?\n([\s\S]*?)```/g);
+          let quizCount = 0;
+          let quizBlockFound = false;
+          for (const block of quizBlocks) {
+            quizBlockFound = true;
+            quizCount += parseQuiz(block[1]).length;
+          }
+
+          if (quizBlockFound && quizCount === 0) {
+            console.warn(
+              `⚠️  ${category}/${articleDir} (${lang}): quiz 블록이 있는데 유효 문항이 0개입니다 (YAML 확인 필요)`
+            );
+          }
+
           if (hasSlidesFile && !hasSlidesMarker) {
             console.warn(
               `⚠️  ${category}/${articleDir} (${lang}): ${slidesFile} 는 있는데 본문에 <!-- slides --> 마커가 없습니다`
@@ -129,6 +150,8 @@ function scanContents(contentsDir: string): ArticleMetadata[] {
             readTime: calculateReadingTime(content),
             hasSlides: hasSlidesFile || undefined,
             slideCount: slideCount || undefined,
+            hasQuiz: quizCount > 0 || undefined,
+            quizCount: quizCount || undefined,
           });
         } catch (error) {
           console.error(`❌ Error processing ${category}/${articleDir} (${file}):`, error);

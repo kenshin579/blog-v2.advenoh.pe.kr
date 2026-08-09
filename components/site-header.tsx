@@ -22,6 +22,7 @@ const NAV = [
   { key: 'posts', href: '/posts' },
   { key: 'series', href: '/series' },
   { key: 'slides', href: '/slides' },
+  { key: 'quiz', href: '/quiz' },
   { key: 'tags', href: '/tags' },
 ] as const;
 

@@ -1,7 +1,7 @@
 import type { Lang } from './lang';
 
 type Dict = {
-  nav: { home: string; posts: string; series: string; slides: string; tags: string };
+  nav: { home: string; posts: string; series: string; slides: string; quiz: string; tags: string };
   article: { related: string; prev: string; next: string; toc: string };
   posts: { all: string; categories: string };
   language: { ko: string; en: string };
@@ -21,7 +21,7 @@ type Dict = {
 };
 
 const ko: Dict = {
-  nav: { home: '홈', posts: '글', series: '시리즈', slides: '슬라이드', tags: '태그' },
+  nav: { home: '홈', posts: '글', series: '시리즈', slides: '슬라이드', quiz: '퀴즈', tags: '태그' },
   article: { related: '관련 글', prev: '이전 글', next: '다음 글', toc: '목차' },
   posts: { all: '전체 글', categories: '카테고리' },
   language: { ko: '한국어', en: 'English' },
@@ -52,7 +52,7 @@ const ko: Dict = {
 };
 
 const en: Dict = {
-  nav: { home: 'Home', posts: 'Posts', series: 'Series', slides: 'Slides', tags: 'Tags' },
+  nav: { home: 'Home', posts: 'Posts', series: 'Series', slides: 'Slides', quiz: 'Quiz', tags: 'Tags' },
   article: { related: 'Related posts', prev: 'Previous', next: 'Next', toc: 'Contents' },
   posts: { all: 'All posts', categories: 'Categories' },
   language: { ko: '한국어', en: 'English' },

@@ -481,6 +481,11 @@ pre[class*="language-"] {
   scroll-margin-top: 5rem; /* 80px = 헤더(56px) + 여유(24px) */
 }
 
+/* 목록 페이지에서 #quiz 로 들어올 때 sticky 헤더에 가리지 않게 */
+.quiz-mount {
+  scroll-margin-top: 5rem;
+}
+
 /* TOC 사이드바 스크롤바 스타일 (optional) */
 .prose aside::-webkit-scrollbar {
   width: 4px;
