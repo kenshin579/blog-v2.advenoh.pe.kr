@@ -13,6 +13,7 @@ tags:
   - fxtest
   - fx.Group
   - fx.As
+  - fx.ParamTags
   - fx.Private
   - fx.Populate
 ---
@@ -79,7 +80,7 @@ go get go.uber.org/fx
 | `fx.Decorate` | 확장 | 기존 의존성 래핑 (로깅·캐싱·메트릭) | 원본 코드를 안 건드리고 기존 의존성에 로깅/캐싱/메트릭 등 횡단 관심사를 덧씌울 때 | v1.18+ |
 | `fx.Annotate` | 확장 | 생성자에 메타데이터 부여 (name/group/As) | 일반 생성자를 그대로 두고 name/group/As 같은 부가 정보만 얹고 싶을 때 | — |
 | `fx.In` / `fx.Out` | 확장 | 파라미터·반환값을 구조체로 묶어 주입 (name/group 태그 매칭) | 주입받을 의존성이 많거나, name/group 태그로 특정 인스턴스를 지목해야 할 때 | — |
-| `fx.ResultTags` + `name:` | 확장 | 동일 타입을 개별 식별 | 같은 타입 인스턴스가 여러 개일 때(예: read/write DB) 이름으로 구분해 주입 | — |
+| `fx.ResultTags` / `fx.ParamTags` | 확장 | 동일 타입을 개별 식별 (내보내는 쪽 / 받는 쪽) | 같은 타입 인스턴스가 여러 개일 때(예: read/write DB) 이름으로 구분해 주입. 둘의 차이는 6.1 참조 | — |
 | `group:` 태그 | 확장 | 동일 인터페이스 구현체를 슬라이스로 모음 | 플러그인·핸들러처럼 같은 인터페이스 구현체를 한꺼번에 슬라이스로 받고 싶을 때 | — |
 | `fx.As` | 확장 | 구체 타입을 인터페이스 타입으로 등록 | 생성자가 구체 타입을 반환하는데 주입받는 쪽은 인터페이스를 요구할 때 | `fx.Self`는 v1.22+ |
 | `fx.Private` | 확장 | Module 내부 의존성 캡슐화 | Module 내부에서만 쓰는 의존성을 바깥 그래프에 노출하지 않고 감추고 싶을 때 | v1.20+ |
@@ -813,7 +814,83 @@ app := fxtest.New(t,
   explain: "fx.Populate는 내부적으로 fx.Invoke로 구현된 편의 함수라 본질은 같고, 차이는 목적이다. 변수에 담는 것만이 목적이면 클로저가 군더더기이므로 Populate, 꺼낸 뒤 같은 시점에 호출·검증까지 해야 하면 본문을 쓸 수 있는 Invoke가 낫다. (4.3)"
 ```
 
-# 6. 마무리
+# 6. FAQ
+
+## 6.1 Q. `fx.ResultTags`와 `fx.ParamTags`의 차이는?
+
+한 문장으로 줄이면 **`ResultTags`는 내보내는 쪽, `ParamTags`는 받는 쪽**에 태그를 붙인다. 태그 문법(`name:` / `group:`)은 완전히 같고, 붙는 대상이 생성자의 반환값이냐 매개변수냐만 다르다.
+
+| 구분 | `fx.ResultTags` | `fx.ParamTags` |
+|------|-----------------|----------------|
+| 붙는 대상 | 생성자의 **반환값** | 생성자의 **매개변수** |
+| 하는 일 | 그래프에 등록할 때 이름·그룹을 **부여** | 그래프에서 꺼낼 때 이름·그룹을 **지목** |
+| 매칭 기준 | 반환값 순서 | 매개변수 순서 |
+| 구조체 대안 | `fx.Out` | `fx.In` |
+
+3.3절에서는 `ResultTags`로 이름을 붙인 뒤 수신 측을 `fx.In` 구조체(`DBParams`)로 받았다. `ParamTags`는 그 수신 측을 구조체 없이 처리하는 방법이다. 같은 read/write DB 예제를 두 방식으로 나란히 놓으면 차이가 분명해진다.
+
+```go
+// fx_test.go
+// 방법 1: fx.In 구조체로 받기 (3.3절)
+type DBParams struct {
+    fx.In
+    ReadDB  *DBConnection `name:"readDB"`
+    WriteDB *DBConnection `name:"writeDB"`
+}
+
+func NewDBService(params DBParams) *DBService { ... }
+
+fx.Provide(NewDBService)
+```
+
+```go
+// fx_test.go
+// 방법 2: fx.ParamTags로 받기 — 생성자에 fx 관련 타입이 없다
+func NewDBServiceV2(readDB, writeDB *DBConnection) *DBServiceV2 {
+    return &DBServiceV2{readDB: readDB, writeDB: writeDB}
+}
+
+fx.Provide(
+    fx.Annotate(NewReadDB, fx.ResultTags(`name:"readDB"`)),   // 내보내는 쪽
+    fx.Annotate(NewWriteDB, fx.ResultTags(`name:"writeDB"`)),
+    fx.Annotate(NewDBServiceV2,                                // 받는 쪽
+        fx.ParamTags(`name:"readDB"`, `name:"writeDB"`)),
+)
+```
+
+`group:`도 똑같이 동작한다. 3.4절의 `NotifierParams` 구조체 대신 슬라이스를 직접 받으면 된다.
+
+```go
+// fx_test.go
+func NewNotifierServiceV2(notifiers []Notifier) *NotifierServiceV2 { ... }
+
+fx.Annotate(NewNotifierServiceV2, fx.ParamTags(`group:"notifiers"`))
+```
+
+두 가지를 주의해야 한다.
+
+첫째, **두 태그는 짝으로 동작한다.** 내보내는 쪽에 `ResultTags`가 없으면 `ParamTags`로 지목해도 찾지 못한다. 이름 없이 등록된 값과 이름으로 요청한 값은 fx에게 서로 다른 대상이다.
+
+```go
+// fx_test.go
+fx.Provide(
+    NewReadDB, // 이름 없이 등록
+    fx.Annotate(NewDBServiceV2, fx.ParamTags(`name:"readDB"`, `name:"writeDB"`)),
+)
+// missing type: *main.DBConnection[name="readDB"]
+```
+
+둘째, **`ParamTags`는 매개변수 순서로 매칭한다.** 태그 순서를 뒤집어도 타입이 같으면 컴파일도 되고 앱도 정상적으로 뜨는데, 내용만 반대로 들어간다. 아래 코드는 아무 에러 없이 `readDB` 필드에 write 커넥션을 채운다.
+
+```go
+// fx_test.go
+fx.Annotate(NewDBServiceV2, fx.ParamTags(`name:"writeDB"`, `name:"readDB"`))
+// svc.readDB.DSN == "primary:3306"  ← write 커넥션이 들어왔다
+```
+
+정리하면, 매개변수가 두세 개고 타입이 서로 다르면 `ParamTags`가 간결하다. 생성자에 fx 타입이 드러나지 않아 fx 없이도 그대로 호출할 수 있다는 것도 장점이다. 반대로 주입받을 의존성이 많아지거나 위처럼 같은 타입이 여러 개면 `fx.In` 구조체가 안전하다. 필드 이름이 붙어 있어 순서를 잘못 맞출 일이 없고, `optional:"true"` 같은 태그도 필드 단위로 쓸 수 있다.
+
+# 7. 마무리
 
 fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 되는지 정리하면 다음과 같다.
 
@@ -828,6 +905,7 @@ fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 
 | 동일 타입을 **개별** 식별 (read/write DB) | `fx.Annotate` + `name:` | 수신 측은 단일 필드 |
 | 동일 인터페이스 구현체를 **모아서** 주입 | `group:` 태그 | 수신 측은 슬라이스 필드 |
 | 구체 타입 생성자를 인터페이스로 노출 | `fx.Annotate` + `fx.As` | 원래 타입도 남기려면 `fx.Self` |
+| 이름·그룹 의존성을 `fx.In` 없이 주입 | `fx.ParamTags` | 매개변수 순서로 매칭 — 순서 실수 주의 |
 | Module 내부 의존성을 외부에 숨기기 | `fx.Private` | 인프라 핸들 격리 |
 | 테스트에서 실제 구현 대신 Mock | `fx.Replace` | `fx.As`로 인터페이스 매칭 |
 | 테스트에서 컨테이너 내부 인스턴스 꺼내기 | `fx.Populate` | 검증까지 같이 하면 `fx.Invoke` |
@@ -839,7 +917,7 @@ fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 
 - 메서드별 학습 예제 (본문 `// fx_test.go` 코드): [golang/third-party/fx](https://github.com/kenshin579/tutorials-go/tree/master/golang/third-party/fx)
 - 실전 적용 예시 (Clean Architecture + fx, `// cmd/main.go` 코드): [project-layout/go-clean-arch-v2](https://github.com/kenshin579/tutorials-go/tree/master/project-layout/go-clean-arch-v2)
 
-# 7. 참고
+# 8. 참고
 
 - [uber/fx 공식 문서](https://uber-go.github.io/fx/)
 - [uber/fx GitHub](https://github.com/uber-go/fx)
