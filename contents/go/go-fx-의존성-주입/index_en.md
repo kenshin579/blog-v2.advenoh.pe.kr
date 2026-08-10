@@ -2,7 +2,7 @@
 title: "Getting Started with Go Dependency Injection using uber/fx"
 description: "How to use uber/fx to automatically wire dependencies in a Go application and manage their lifecycle. Covers advanced patterns like fx.Module, fx.Decorate, and fx.Annotate, along with testing strategies, all through hands-on examples."
 date: 2026-05-24
-update: 2026-05-24
+update: 2026-08-10
 tags:
   - Golang
   - uber/fx
@@ -12,6 +12,7 @@ tags:
   - fx.Decorate
   - fxtest
   - fx.Group
+  - fx.As
   - fx.Private
   - fx.Populate
 ---
@@ -26,6 +27,7 @@ The scope of this article is as follows.
 - Lifecycle management: `fx.Lifecycle` (OnStart/OnStop)
 - Grouping and extension patterns: `fx.Module`, `fx.Decorate`
 - Multiple instances of the same type: `fx.Annotate` + `name:` / `group:` tags (`fx.Group`)
+- Providing a concrete type as an interface: `fx.As`, `fx.Self`
 - Module encapsulation: `fx.Private`
 - Testing strategies: `fxtest.New`, `fx.Replace`, `fx.Populate`
 
@@ -79,6 +81,7 @@ Before diving in, here is an at-a-glance summary of the fx methods covered in th
 | `fx.In` / `fx.Out` | Extension | group parameters/return values into a struct for injection (name/group tag matching) | When there are many dependencies to inject, or you need to target a specific instance by name/group tag | — |
 | `fx.ResultTags` + `name:` | Extension | identify the same type individually | When there are multiple instances of the same type (e.g. read/write DB) and you inject them distinguished by name | — |
 | `group:` tag | Extension | collect implementations of the same interface into a slice | When you want to receive all implementations of the same interface at once as a slice, like plugins or handlers | — |
+| `fx.As` | Extension | register a concrete type under an interface type | When a constructor returns a concrete type but the injecting side requires an interface | `fx.Self` is v1.22+ |
 | `fx.Private` | Extension | encapsulate a dependency within a Module | When you want to hide a dependency used only inside a Module and not expose it to the outer graph | v1.20+ |
 | `fxtest.New` | Testing | create a test-only app | For spinning up an fx app in tests. Reports failures via `t` and helps with cleanup | — |
 | `fx.Replace` | Testing | replace an existing Provide with a Mock | For injecting a Mock/Stub in place of the real dependency to isolate a test | — |
@@ -96,13 +99,14 @@ It also helps to know what each method takes as arguments and what it returns. T
 | `fx.Decorate` | `decorators ...interface{}` (decorator functions) | `fx.Option` |
 | `fx.Annotate` | `f interface{}, anns ...fx.Annotation` | `interface{}` (annotated constructor) |
 | `fx.ResultTags` / `fx.ParamTags` | `tags ...string` | `fx.Annotation` |
+| `fx.As` | `interfaces ...interface{}` (pointers in the form `new(Iface)`) | `fx.Annotation` |
 | `fx.Replace` | `values ...interface{}` | `fx.Option` |
 | `fx.Populate` | `targets ...interface{}` (pointers) | `fx.Option` |
 | `fxtest.New` | `tb fxtest.TB, opts ...fx.Option` | `*fxtest.App` |
 
 The table above covers only the function-style API. `fx.Lifecycle` (an interface), `fx.In` / `fx.Out` (structs to embed), and `name:` / `group:` (struct tags) are not functions and are explained separately in later sections.
 
-In short, just remember two things: ① `Provide`, `Invoke`, `Supply`, `Module`, `Decorate`, `Replace`, and `Populate` all return an `fx.Option` that goes into `fx.New`'s arguments. ② `Annotate` and `ResultTags` return an `Annotation` (or an annotated constructor) used inside `Provide` and `Supply`.
+In short, just remember two things: ① `Provide`, `Invoke`, `Supply`, `Module`, `Decorate`, `Replace`, and `Populate` all return an `fx.Option` that goes into `fx.New`'s arguments. ② `Annotate`, `ResultTags`, and `As` return an `Annotation` (or an annotated constructor) used inside `Provide` and `Supply`.
 
 The following sections cover each method one by one with hands-on examples. First, let's look at the most basic building blocks: `fx.Provide`, `fx.Invoke`, `fx.Supply`, and `fx.New`.
 
@@ -495,7 +499,106 @@ To summarize the difference between `name:` and `group:`:
 | `name:"X"` | identify the same type **individually** | single field |
 | `group:"Y"` | **collect** the same type (or interface) | slice field |
 
-## 3.5 Encapsulating a Module with fx.Private
+## 3.5 Providing a Concrete Type as an Interface with fx.As
+
+If 3.3 and 3.4 were about *how to tell instances of the same type apart*, `fx.As` is about *which type gets registered in the first place*.
+
+fx matches **by type**. When a constructor returns `*RedisCache`, what lands in the graph is `*RedisCache` — not the interfaces it happens to implement. The examples so far sidestepped this by declaring the return type as an interface, the way `NewMysqlUserRepo` does. But plenty of constructors have to return a concrete type: you may need the concrete type's extra methods within the same package, or you may want to register an existing constructor such as `bytes.NewBuffer` as is.
+
+```go
+// fx_test.go
+type Cache interface {
+    Get(key string) string
+}
+
+type RedisCache struct {
+    closed bool
+}
+
+func (c *RedisCache) Get(key string) string { return "redis:" + key }
+
+// Returns a concrete type (*RedisCache), not an interface
+func NewRedisCache() *RedisCache { return &RedisCache{} }
+
+type CacheService struct {
+    cache Cache
+}
+
+// This side, on the other hand, requires the Cache interface
+func NewCacheService(cache Cache) *CacheService {
+    return &CacheService{cache: cache}
+}
+```
+
+Register these as `fx.Provide(NewRedisCache, NewCacheService)` and the app never starts: no constructor in the graph provides `main.Cache`. The fact that `*RedisCache` implements `Cache` does not make fx wire them up on its own.
+
+```
+missing type: main.Cache
+```
+
+Attach `fx.As()` to `fx.Annotate()` and the return value is registered under the interface type you name.
+
+```go
+// fx_test.go
+fx.Provide(
+    fx.Annotate(NewRedisCache, fx.As(new(Cache))), // *RedisCache → Cache
+    NewCacheService,
+)
+```
+
+The reason you pass `new(Cache)` (a `*Cache`) instead of a value is that in Go you can only get at an interface's type information through a nil pointer. fx dereferences that pointer and uses nothing but the type.
+
+There is one thing that is easy to miss here. **`fx.As` does not add an interface — it replaces the original return type.** Registered as above, `Cache` is injectable but `*RedisCache` disappears from the graph.
+
+```go
+// fx_test.go
+// After registering with fx.As(new(Cache)), asking for *RedisCache directly is an error
+var concrete *RedisCache
+app := fx.New(
+    fx.Provide(fx.Annotate(NewRedisCache, fx.As(new(Cache)))),
+    fx.Populate(&concrete),
+    fx.NopLogger,
+)
+// app.Err() != nil  → missing type: *main.RedisCache
+```
+
+To keep the original type around as well, add `fx.As(fx.Self())`. Both types then point at the same instance.
+
+```go
+// fx_test.go
+fx.Provide(fx.Annotate(NewRedisCache,
+    fx.As(new(Cache)),
+    fx.As(fx.Self()),   // keeps *RedisCache too
+))
+// cache and concrete are the same instance
+```
+
+By the same mechanism, attaching `fx.As` more than once registers a single constructor under several interfaces — exposing a cache implementation as `Cache` for lookups and `Closer` for shutdown, for instance.
+
+```go
+// fx_test.go
+type Closer interface {
+    Close() error
+}
+
+fx.Provide(fx.Annotate(NewRedisCache,
+    fx.As(new(Cache)),
+    fx.As(new(Closer)),
+))
+// Cache and Closer are both the same *RedisCache instance
+```
+
+> **`fx.Self` is available from v1.22.0+.** On earlier versions, exposing both the concrete type and an interface requires registering a separate conversion constructor, such as `fx.Provide(NewRedisCache, func(c *RedisCache) Cache { return c })`.
+
+Compared with the two tags above, each one has its own place:
+
+| Pattern | What it changes | Typical situation |
+|------|-----------|-----------|
+| `name:"X"` | tells the same type apart by name | read/write DB |
+| `group:"Y"` | collects the same type into a slice | several Notifier implementations |
+| `fx.As` | converts the **registered type itself** into an interface | exposing a concrete-type constructor as an interface |
+
+## 3.6 Encapsulating a Module with fx.Private
 
 Even if you split domains with `fx.Module()`, every `fx.Provide()` is exposed globally by default. For a dependency you want to use only inside a Module, you can block exposure with `fx.Private`. It's useful for preventing another Module from accidentally sharing the same instance of an infrastructure dependency such as a database handle or external API client.
 
@@ -585,7 +688,7 @@ app := fxtest.New(t,
 )
 ```
 
-`fx.As(new(UserRepository))` registers `*mockUserRepo` after type-converting it to the `UserRepository` interface.
+`fx.As(new(UserRepository))` registers `*mockUserRepo` after type-converting it to the `UserRepository` interface (see 3.5). A mock struct is a concrete type, so without that conversion it cannot replace the existing `UserRepository` registration.
 
 ## 4.3 Extracting an Instance with fx.Populate
 
@@ -680,7 +783,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 - type: blank
   q: "Even after splitting domains into fx.Module, the fx.Provide calls inside are exposed to the global graph by default. To hide one for module-internal use only, put ___ in the same fx.Provide() group."
   answer: ["fx.Private", "Private"]
-  explain: "fx.Module only names and groups things — the fx.Provide calls inside it are still exposed to the global graph by default. To hide a dependency for module-internal use only, put fx.Private in the same fx.Provide() group. Then requesting that type from outside fails while the graph is being built. (3.1, 3.5)"
+  explain: "fx.Module only names and groups things — the fx.Provide calls inside it are still exposed to the global graph by default. To hide a dependency for module-internal use only, put fx.Private in the same fx.Provide() group. Then requesting that type from outside fails while the graph is being built. (3.1, 3.6)"
 
 - type: blank
   q: "To add logging without touching a single line of the existing Repository code, take the original dependency as a parameter and return a wrapped value of the same type using ___."
@@ -701,7 +804,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   q: "You want a Mock instead of the real Repository in a test. Why isn't fx.Replace(&mockUserRepo{}) enough on its own?"
   choices: ["Because its type is *mockUserRepo, not the UserRepository interface", "Because fx.Replace cannot be used in tests at all", "Because you must first delete the existing fx.Provide before fx.Replace", "Because a Mock can only ever be injected with fx.Supply"]
   answer: 0
-  explain: "fx matches by type, and the type of &mockUserRepo{} is *mockUserRepo, not the UserRepository interface. Wrap it as fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository))) so it is registered under the interface type; only then does it replace the existing Provide. (4.2)"
+  explain: "fx matches by type, and the type of &mockUserRepo{} is *mockUserRepo, not the UserRepository interface. Wrap it as fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository))) so it is registered under the interface type; only then does it replace the existing Provide. (3.5, 4.2)"
 
 - type: mcq
   q: "To pull an assembled instance out in a test, do you use fx.Invoke or fx.Populate?"
@@ -745,4 +848,6 @@ The full source is available in the following two places.
 - [Go Dependency Injection - uber/fx](https://pkg.go.dev/go.uber.org/fx)
 - [Value Groups (fx Docs)](https://uber-go.github.io/fx/value-groups/)
 - [fx.Private introduced (v1.20)](https://github.com/uber-go/fx/releases/tag/v1.20.0)
+- [fx.Self introduced (v1.22)](https://github.com/uber-go/fx/releases/tag/v1.22.0)
+- [fx.As API](https://pkg.go.dev/go.uber.org/fx#As)
 - [fx.Populate API](https://pkg.go.dev/go.uber.org/fx#Populate)

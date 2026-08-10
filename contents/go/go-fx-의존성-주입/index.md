@@ -2,7 +2,7 @@
 title: "uber/fx로 시작하는 Go 의존성 주입"
 description: "uber/fx를 사용하여 Go 애플리케이션의 의존성을 자동으로 연결하고 수명주기를 관리하는 방법을 다룬다. fx.Module, fx.Decorate, fx.Annotate 등 고급 패턴과 테스트 전략까지 실전 예제로 설명한다."
 date: 2026-05-24
-update: 2026-05-24
+update: 2026-08-10
 tags:
   - Golang
   - uber/fx
@@ -12,6 +12,7 @@ tags:
   - fx.Decorate
   - fxtest
   - fx.Group
+  - fx.As
   - fx.Private
   - fx.Populate
 ---
@@ -26,6 +27,7 @@ Go 애플리케이션이 커지면 의존성 조립이 복잡해진다. `main()`
 - 수명주기 관리: `fx.Lifecycle` (OnStart/OnStop)
 - 그룹화·확장 패턴: `fx.Module`, `fx.Decorate`
 - 동일 타입 다중 인스턴스: `fx.Annotate` + `name:` / `group:` 태그 (`fx.Group`)
+- 구체 타입을 인터페이스로 등록: `fx.As`, `fx.Self`
 - Module 캡슐화: `fx.Private`
 - 테스트 전략: `fxtest.New`, `fx.Replace`, `fx.Populate`
 
@@ -79,6 +81,7 @@ go get go.uber.org/fx
 | `fx.In` / `fx.Out` | 확장 | 파라미터·반환값을 구조체로 묶어 주입 (name/group 태그 매칭) | 주입받을 의존성이 많거나, name/group 태그로 특정 인스턴스를 지목해야 할 때 | — |
 | `fx.ResultTags` + `name:` | 확장 | 동일 타입을 개별 식별 | 같은 타입 인스턴스가 여러 개일 때(예: read/write DB) 이름으로 구분해 주입 | — |
 | `group:` 태그 | 확장 | 동일 인터페이스 구현체를 슬라이스로 모음 | 플러그인·핸들러처럼 같은 인터페이스 구현체를 한꺼번에 슬라이스로 받고 싶을 때 | — |
+| `fx.As` | 확장 | 구체 타입을 인터페이스 타입으로 등록 | 생성자가 구체 타입을 반환하는데 주입받는 쪽은 인터페이스를 요구할 때 | `fx.Self`는 v1.22+ |
 | `fx.Private` | 확장 | Module 내부 의존성 캡슐화 | Module 내부에서만 쓰는 의존성을 바깥 그래프에 노출하지 않고 감추고 싶을 때 | v1.20+ |
 | `fxtest.New` | 테스트 | 테스트 전용 앱 생성 | 테스트에서 fx 앱을 띄울 때. 실패를 `t`로 리포트하고 정리를 도와준다 | — |
 | `fx.Replace` | 테스트 | 기존 Provide를 Mock으로 교체 | 실제 의존성 대신 Mock/Stub을 주입해 테스트를 격리할 때 | — |
@@ -96,13 +99,14 @@ go get go.uber.org/fx
 | `fx.Decorate` | `decorators ...interface{}` (데코레이터 함수들) | `fx.Option` |
 | `fx.Annotate` | `f interface{}, anns ...fx.Annotation` | `interface{}` (주석 달린 생성자) |
 | `fx.ResultTags` / `fx.ParamTags` | `tags ...string` | `fx.Annotation` |
+| `fx.As` | `interfaces ...interface{}` (`new(Iface)` 형태의 포인터들) | `fx.Annotation` |
 | `fx.Replace` | `values ...interface{}` | `fx.Option` |
 | `fx.Populate` | `targets ...interface{}` (포인터들) | `fx.Option` |
 | `fxtest.New` | `tb fxtest.TB, opts ...fx.Option` | `*fxtest.App` |
 
 위 표는 함수형 API만 다뤘다. `fx.Lifecycle`(인터페이스), `fx.In` / `fx.Out`(임베드용 구조체), `name:` / `group:`(struct 태그)은 함수가 아니라 각각 뒤 섹션에서 따로 설명한다.
 
-정리하면 두 가지만 기억하면 된다. ①`Provide`·`Invoke`·`Supply`·`Module`·`Decorate`·`Replace`·`Populate`는 전부 `fx.Option`을 반환해 `fx.New`의 인자로 들어간다. ②`Annotate`·`ResultTags`는 `Annotation`(또는 주석 달린 생성자)을 반환해 `Provide`·`Supply` 안에서 쓰인다.
+정리하면 두 가지만 기억하면 된다. ①`Provide`·`Invoke`·`Supply`·`Module`·`Decorate`·`Replace`·`Populate`는 전부 `fx.Option`을 반환해 `fx.New`의 인자로 들어간다. ②`Annotate`·`ResultTags`·`As`는 `Annotation`(또는 주석 달린 생성자)을 반환해 `Provide`·`Supply` 안에서 쓰인다.
 
 이후 섹션에서 각 메서드를 실전 예제로 하나씩 다룬다. 우선 가장 기초가 되는 `fx.Provide`, `fx.Invoke`, `fx.Supply`, `fx.New`부터 살펴보자.
 
@@ -495,7 +499,106 @@ func NewNotifierService(p NotifierParams) *NotifierService {
 | `name:"X"` | 동일 타입을 **개별** 식별 | 단일 필드 |
 | `group:"Y"` | 동일 타입(또는 인터페이스)을 **모음** | 슬라이스 필드 |
 
-## 3.5 fx.Private로 Module 캡슐화
+## 3.5 fx.As로 구체 타입을 인터페이스로 등록
+
+3.3~3.4가 "같은 타입을 어떻게 구분하느냐"의 문제였다면, `fx.As`는 "어떤 타입으로 등록하느냐"의 문제를 다룬다.
+
+fx는 **타입으로 매칭**한다. 생성자가 `*RedisCache`를 반환하면 그래프에 등록되는 것도 `*RedisCache`이지 그것이 구현한 인터페이스가 아니다. 지금까지의 예제는 `NewMysqlUserRepo`처럼 반환 타입 자체를 인터페이스로 선언해 이 문제를 피해갔지만, 생성자가 구체 타입을 반환해야 하는 경우도 많다. 같은 패키지에서 구체 타입의 추가 메서드를 써야 하거나, `bytes.NewBuffer`처럼 이미 있는 생성자를 그대로 등록할 때다.
+
+```go
+// fx_test.go
+type Cache interface {
+    Get(key string) string
+}
+
+type RedisCache struct {
+    closed bool
+}
+
+func (c *RedisCache) Get(key string) string { return "redis:" + key }
+
+// 인터페이스가 아니라 구체 타입(*RedisCache)을 반환한다
+func NewRedisCache() *RedisCache { return &RedisCache{} }
+
+type CacheService struct {
+    cache Cache
+}
+
+// 반면 이쪽은 Cache 인터페이스를 요구한다
+func NewCacheService(cache Cache) *CacheService {
+    return &CacheService{cache: cache}
+}
+```
+
+이대로 `fx.Provide(NewRedisCache, NewCacheService)`로 등록하면 앱은 뜨지 않는다. 그래프에 `main.Cache`를 제공하는 생성자가 없기 때문이다. `*RedisCache`가 `Cache`를 구현하고 있어도 fx는 알아서 연결해주지 않는다.
+
+```
+missing type: main.Cache
+```
+
+`fx.Annotate()`에 `fx.As()`를 붙이면 반환값이 지정한 인터페이스 타입으로 등록된다.
+
+```go
+// fx_test.go
+fx.Provide(
+    fx.Annotate(NewRedisCache, fx.As(new(Cache))), // *RedisCache → Cache
+    NewCacheService,
+)
+```
+
+`fx.As(new(Cache))`에 값이 아니라 `new(Cache)`(즉 `*Cache`)를 넘기는 이유는, Go에서 인터페이스 타입 정보를 얻으려면 nil 포인터를 거쳐야 하기 때문이다. `fx`는 이 포인터를 역참조해 타입만 가져다 쓴다.
+
+여기서 놓치기 쉬운 점이 하나 있다. **`fx.As`는 인터페이스를 추가하는 게 아니라 원래 반환 타입을 대체한다.** 위처럼 등록하면 `Cache`는 주입받을 수 있지만 `*RedisCache`는 그래프에서 사라진다.
+
+```go
+// fx_test.go
+// fx.As(new(Cache))로 등록한 뒤 *RedisCache를 직접 요청하면 에러
+var concrete *RedisCache
+app := fx.New(
+    fx.Provide(fx.Annotate(NewRedisCache, fx.As(new(Cache)))),
+    fx.Populate(&concrete),
+    fx.NopLogger,
+)
+// app.Err() != nil  → missing type: *main.RedisCache
+```
+
+원래 타입도 함께 남기고 싶다면 `fx.As(fx.Self())`를 같이 붙인다. 두 타입이 같은 인스턴스를 가리킨다.
+
+```go
+// fx_test.go
+fx.Provide(fx.Annotate(NewRedisCache,
+    fx.As(new(Cache)),
+    fx.As(fx.Self()),   // *RedisCache도 그대로 유지
+))
+// cache와 concrete는 동일 인스턴스
+```
+
+같은 방식으로 `fx.As`를 여러 번 붙이면 하나의 생성자를 여러 인터페이스로 등록할 수 있다. 캐시 구현체를 조회용 `Cache`와 종료 처리용 `Closer`로 나눠 노출하는 식이다.
+
+```go
+// fx_test.go
+type Closer interface {
+    Close() error
+}
+
+fx.Provide(fx.Annotate(NewRedisCache,
+    fx.As(new(Cache)),
+    fx.As(new(Closer)),
+))
+// Cache와 Closer 모두 같은 *RedisCache 인스턴스
+```
+
+> **`fx.Self`는 v1.22.0+부터 사용 가능**하다. 이전 버전에서는 구체 타입과 인터페이스를 모두 노출하려면 `fx.Provide(NewRedisCache, func(c *RedisCache) Cache { return c })`처럼 변환 생성자를 따로 등록해야 한다.
+
+앞선 두 태그와 비교하면 각자의 자리는 이렇게 나뉜다.
+
+| 패턴 | 바꾸는 것 | 대표 상황 |
+|------|-----------|-----------|
+| `name:"X"` | 같은 타입을 이름으로 구분 | read/write DB |
+| `group:"Y"` | 같은 타입을 슬라이스로 모음 | Notifier 여러 구현체 |
+| `fx.As` | 등록되는 **타입 자체**를 인터페이스로 변환 | 구체 타입 생성자를 인터페이스로 노출 |
+
+## 3.6 fx.Private로 Module 캡슐화
 
 `fx.Module()`로 도메인을 분리해도 모든 `fx.Provide()`는 기본적으로 전역에 노출된다. Module 내부 전용으로만 쓰고 싶은 의존성은 `fx.Private`으로 막을 수 있다. 데이터베이스 핸들이나 외부 API 클라이언트 같은 인프라 의존성을 다른 Module이 우연히 같은 인스턴스를 공유하는 걸 막을 때 유용하다.
 
@@ -585,7 +688,7 @@ app := fxtest.New(t,
 )
 ```
 
-`fx.As(new(UserRepository))`는 `*mockUserRepo`를 `UserRepository` 인터페이스로 타입 변환하여 등록한다.
+`fx.As(new(UserRepository))`는 `*mockUserRepo`를 `UserRepository` 인터페이스로 타입 변환하여 등록한다(3.5 참조). Mock 구조체는 구체 타입이라 이 변환 없이는 기존 `UserRepository` 등록을 교체하지 못한다.
 
 ## 4.3 fx.Populate로 인스턴스 추출
 
@@ -680,7 +783,7 @@ app := fxtest.New(t,
 - type: blank
   q: "fx.Module로 도메인을 나눠도 안의 fx.Provide는 기본적으로 전역 그래프에 노출된다. Module 내부 전용으로 감추려면 같은 fx.Provide() 그룹에 ___ 을 넣어야 한다."
   answer: ["fx.Private", "Private"]
-  explain: "fx.Module은 이름을 붙여 묶어줄 뿐, 안에 있는 fx.Provide는 기본적으로 전역 그래프에 노출된다. 모듈 내부 전용으로 감추려면 같은 fx.Provide() 그룹에 fx.Private을 넣어야 한다. 그러면 외부에서 그 타입을 요청할 때 그래프 구성 단계에서 에러가 난다. (3.1, 3.5)"
+  explain: "fx.Module은 이름을 붙여 묶어줄 뿐, 안에 있는 fx.Provide는 기본적으로 전역 그래프에 노출된다. 모듈 내부 전용으로 감추려면 같은 fx.Provide() 그룹에 fx.Private을 넣어야 한다. 그러면 외부에서 그 타입을 요청할 때 그래프 구성 단계에서 에러가 난다. (3.1, 3.6)"
 
 - type: blank
   q: "기존 Repository 코드를 한 줄도 건드리지 않고 로깅을 붙이려면, 원본 의존성을 매개변수로 받아 같은 타입을 반환하는 ___ 를 사용한다."
@@ -701,7 +804,7 @@ app := fxtest.New(t,
   q: "테스트에서 실제 Repository 대신 Mock을 넣으려는데, fx.Replace(&mockUserRepo{})만으로는 왜 부족한가?"
   choices: ["타입이 *mockUserRepo라 UserRepository 인터페이스로 매칭되지 않기 때문", "fx.Replace는 테스트 코드 안에서는 아예 사용할 수 없는 함수이기 때문", "fx.Replace 전에 반드시 기존 fx.Provide를 지워야 하기 때문", "Mock 객체는 오직 fx.Supply를 통해서만 주입할 수 있기 때문"]
   answer: 0
-  explain: "fx는 타입으로 매칭하는데 &mockUserRepo{}의 타입은 *mockUserRepo이지 UserRepository 인터페이스가 아니다. fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))로 감싸 인터페이스 타입으로 등록해야 기존 Provide를 교체한다. (4.2)"
+  explain: "fx는 타입으로 매칭하는데 &mockUserRepo{}의 타입은 *mockUserRepo이지 UserRepository 인터페이스가 아니다. fx.Annotate(&mockUserRepo{}, fx.As(new(UserRepository)))로 감싸 인터페이스 타입으로 등록해야 기존 Provide를 교체한다. (3.5, 4.2)"
 
 - type: mcq
   q: "조립된 인스턴스를 테스트로 꺼낼 때 fx.Invoke와 fx.Populate 중 무엇을 쓰나?"
@@ -724,6 +827,7 @@ fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 
 | 기존 의존성에 로깅·캐싱 덧입히기 | `fx.Decorate` | 원본 코드 수정 없이 래핑 |
 | 동일 타입을 **개별** 식별 (read/write DB) | `fx.Annotate` + `name:` | 수신 측은 단일 필드 |
 | 동일 인터페이스 구현체를 **모아서** 주입 | `group:` 태그 | 수신 측은 슬라이스 필드 |
+| 구체 타입 생성자를 인터페이스로 노출 | `fx.Annotate` + `fx.As` | 원래 타입도 남기려면 `fx.Self` |
 | Module 내부 의존성을 외부에 숨기기 | `fx.Private` | 인프라 핸들 격리 |
 | 테스트에서 실제 구현 대신 Mock | `fx.Replace` | `fx.As`로 인터페이스 매칭 |
 | 테스트에서 컨테이너 내부 인스턴스 꺼내기 | `fx.Populate` | 검증까지 같이 하면 `fx.Invoke` |
@@ -745,4 +849,6 @@ fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 
 - [Go Dependency Injection - uber/fx](https://pkg.go.dev/go.uber.org/fx)
 - [Value Groups (fx Docs)](https://uber-go.github.io/fx/value-groups/)
 - [fx.Private 도입 (v1.20)](https://github.com/uber-go/fx/releases/tag/v1.20.0)
+- [fx.Self 도입 (v1.22)](https://github.com/uber-go/fx/releases/tag/v1.22.0)
+- [fx.As API](https://pkg.go.dev/go.uber.org/fx#As)
 - [fx.Populate API](https://pkg.go.dev/go.uber.org/fx#Populate)
