@@ -13,6 +13,7 @@ tags:
   - fxtest
   - fx.Group
   - fx.As
+  - fx.ParamTags
   - fx.Private
   - fx.Populate
 ---
@@ -79,7 +80,7 @@ Before diving in, here is an at-a-glance summary of the fx methods covered in th
 | `fx.Decorate` | Extension | wrap an existing dependency (logging/caching/metrics) | When you want to layer cross-cutting concerns (logging/caching/metrics) onto an existing dependency without touching the original code | v1.18+ |
 | `fx.Annotate` | Extension | attach metadata to a constructor (name/group/As) | When you want to keep a plain constructor as-is but add only metadata like name/group/As | — |
 | `fx.In` / `fx.Out` | Extension | group parameters/return values into a struct for injection (name/group tag matching) | When there are many dependencies to inject, or you need to target a specific instance by name/group tag | — |
-| `fx.ResultTags` + `name:` | Extension | identify the same type individually | When there are multiple instances of the same type (e.g. read/write DB) and you inject them distinguished by name | — |
+| `fx.ResultTags` / `fx.ParamTags` | Extension | identify the same type individually (producing side / consuming side) | When there are multiple instances of the same type (e.g. read/write DB) and you inject them distinguished by name. See 6.1 for the difference | — |
 | `group:` tag | Extension | collect implementations of the same interface into a slice | When you want to receive all implementations of the same interface at once as a slice, like plugins or handlers | — |
 | `fx.As` | Extension | register a concrete type under an interface type | When a constructor returns a concrete type but the injecting side requires an interface | `fx.Self` is v1.22+ |
 | `fx.Private` | Extension | encapsulate a dependency within a Module | When you want to hide a dependency used only inside a Module and not expose it to the outer graph | v1.20+ |
@@ -813,7 +814,83 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   explain: "fx.Populate is a convenience function implemented on top of fx.Invoke, so they are the same underneath; the difference is intent. If the only goal is to store the value in a variable, the closure is dead weight, so use Populate. If you need to call or verify something at the same point after extracting it, Invoke gives you a body to do that. (4.3)"
 ```
 
-# 6. Wrapping Up
+# 6. FAQ
+
+## 6.1 Q. What Is the Difference Between `fx.ResultTags` and `fx.ParamTags`?
+
+In one sentence: **`ResultTags` tags the producing side, `ParamTags` tags the consuming side.** The tag syntax (`name:` / `group:`) is identical; all that differs is whether the tag lands on a constructor's return values or its parameters.
+
+| Aspect | `fx.ResultTags` | `fx.ParamTags` |
+|------|-----------------|----------------|
+| Applies to | a constructor's **return values** | a constructor's **parameters** |
+| What it does | **assigns** a name/group when registering into the graph | **targets** a name/group when pulling out of the graph |
+| Matched by | return-value order | parameter order |
+| Struct alternative | `fx.Out` | `fx.In` |
+
+In 3.3 we named things with `ResultTags` and received them through an `fx.In` struct (`DBParams`). `ParamTags` is how you handle that receiving side without a struct. Putting the same read/write DB example side by side makes the difference clear.
+
+```go
+// fx_test.go
+// Option 1: receive through an fx.In struct (section 3.3)
+type DBParams struct {
+    fx.In
+    ReadDB  *DBConnection `name:"readDB"`
+    WriteDB *DBConnection `name:"writeDB"`
+}
+
+func NewDBService(params DBParams) *DBService { ... }
+
+fx.Provide(NewDBService)
+```
+
+```go
+// fx_test.go
+// Option 2: receive with fx.ParamTags — no fx type in the constructor at all
+func NewDBServiceV2(readDB, writeDB *DBConnection) *DBServiceV2 {
+    return &DBServiceV2{readDB: readDB, writeDB: writeDB}
+}
+
+fx.Provide(
+    fx.Annotate(NewReadDB, fx.ResultTags(`name:"readDB"`)),   // producing side
+    fx.Annotate(NewWriteDB, fx.ResultTags(`name:"writeDB"`)),
+    fx.Annotate(NewDBServiceV2,                                // consuming side
+        fx.ParamTags(`name:"readDB"`, `name:"writeDB"`)),
+)
+```
+
+`group:` works exactly the same way. Instead of section 3.4's `NotifierParams` struct, take the slice directly.
+
+```go
+// fx_test.go
+func NewNotifierServiceV2(notifiers []Notifier) *NotifierServiceV2 { ... }
+
+fx.Annotate(NewNotifierServiceV2, fx.ParamTags(`group:"notifiers"`))
+```
+
+Two things deserve care.
+
+First, **the two tags work as a pair.** Without `ResultTags` on the producing side, targeting a name with `ParamTags` finds nothing. To fx, a value registered without a name and a value requested by name are two different things.
+
+```go
+// fx_test.go
+fx.Provide(
+    NewReadDB, // registered without a name
+    fx.Annotate(NewDBServiceV2, fx.ParamTags(`name:"readDB"`, `name:"writeDB"`)),
+)
+// missing type: *main.DBConnection[name="readDB"]
+```
+
+Second, **`ParamTags` matches by parameter order.** Swap the tag order and, as long as the types line up, it still compiles and the app still starts — only the contents come out reversed. The code below fills the `readDB` field with the write connection without raising a single error.
+
+```go
+// fx_test.go
+fx.Annotate(NewDBServiceV2, fx.ParamTags(`name:"writeDB"`, `name:"readDB"`))
+// svc.readDB.DSN == "primary:3306"  ← the write connection landed here
+```
+
+To sum up: when there are two or three parameters of distinct types, `ParamTags` is the tidier option, and keeping fx types out of the constructor signature means you can still call it directly without fx. Once the dependency list grows, or several parameters share a type as above, the `fx.In` struct is the safer choice — named fields make order mistakes impossible, and per-field tags like `optional:"true"` become available.
+
+# 7. Wrapping Up
 
 fx has many methods and is easy to confuse. Here's a summary of what to choose in each situation.
 
@@ -827,6 +904,8 @@ fx has many methods and is easy to confuse. Here's a summary of what to choose i
 | Add logging/caching to an existing dependency | `fx.Decorate` | wrap without modifying the original code |
 | Identify the same type **individually** (read/write DB) | `fx.Annotate` + `name:` | receiving side is a single field |
 | Inject implementations of the same interface **collected together** | `group:` tag | receiving side is a slice field |
+| Expose a concrete-type constructor as an interface | `fx.Annotate` + `fx.As` | use `fx.Self` to keep the original type too |
+| Inject name/group dependencies without `fx.In` | `fx.ParamTags` | matched by parameter order — mind the order |
 | Hide a Module's internal dependency from the outside | `fx.Private` | isolate infrastructure handles |
 | Use a Mock instead of the real implementation in tests | `fx.Replace` | match the interface with `fx.As` |
 | Pull a container's internal instance out in tests | `fx.Populate` | if verifying at the same time, use `fx.Invoke` |
@@ -838,7 +917,7 @@ The full source is available in the following two places.
 - Per-method learning examples (the `// fx_test.go` code in this article): [golang/third-party/fx](https://github.com/kenshin579/tutorials-go/tree/master/golang/third-party/fx)
 - Real-world application example (Clean Architecture + fx, the `// cmd/main.go` code): [project-layout/go-clean-arch-v2](https://github.com/kenshin579/tutorials-go/tree/master/project-layout/go-clean-arch-v2)
 
-# 7. References
+# 8. References
 
 - [uber/fx Official Docs](https://uber-go.github.io/fx/)
 - [uber/fx GitHub](https://github.com/uber-go/fx)
