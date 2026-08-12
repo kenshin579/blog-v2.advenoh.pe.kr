@@ -215,6 +215,7 @@ func Test_OrderService_주입_없이_WithinDuration_검증(t *testing.T) {
 ```
 
 "생성 시각이 지금으로부터 1초 이내"라는 느슨한 검증이다.
+`WithinDuration`이 시간을 주입하거나 값을 채워주는 것은 아니다. `CreatedAt`은 여전히 서비스 내부의 `time.Now`가 기록하고, 이 단언은 두 시각의 차이를 사후에 비교만 한다.
 값 자체를 못 박지는 못하지만, `CreatedAt`이 채워지긴 하는지 정도는 확인할 수 있다.
 어디까지나 주입이 불가능할 때의 차선책이다.
 
