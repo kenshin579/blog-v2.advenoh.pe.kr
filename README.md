@@ -3,7 +3,7 @@
 
 # Frank's IT Blog - Table of Contents
 
-Updated 2026-08-03
+Updated 2026-08-12
 
 현재 [블로그](https://blog.advenoh.pe.kr)에 작성된 내용입니다.
 
@@ -209,6 +209,7 @@ Updated 2026-08-03
 * [Golang 기반의 분산 스케줄러 - Asynq에 대해서 알아보자](https://blog.advenoh.pe.kr/golang-기반의-분산-스케줄러-asynq에-대해서-알아보자/)
 * [Go에서 Strategy 패턴 제대로 활용하기](https://blog.advenoh.pe.kr/go에서-strategy-패턴-제대로-활용하기/)
 * [Go에서 삼 도트 (dot) 사용방법 (Three Dots Usage)](https://blog.advenoh.pe.kr/go에서-삼-도트-dot-사용방법-three-dots-usage/)
+* [Go에서 시간 의존 코드 테스트하기 (Testing Time-Dependent Code in Go)](https://blog.advenoh.pe.kr/go-시간-의존-코드-테스트하기/)
 * [Go에서 컬렉션 정렬하는 방법 (Go Sort)](https://blog.advenoh.pe.kr/go에서-컬렉션-정렬하는-방법-go-sort/)
 * [Go에서의 게터, 세터 메서드 (Getter, Setter in Go)](https://blog.advenoh.pe.kr/go에서의-게터-세터-메서드-getter-setter-in-go/)
 * [Go에서의 다형성 (Polymorphism)](https://blog.advenoh.pe.kr/go에서의-다형성-polymorphism/)
