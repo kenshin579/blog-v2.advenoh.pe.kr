@@ -365,11 +365,69 @@ Go 1.25에서 정식 채택된 `testing/synctest` 패키지는 접근을 뒤집�
 버블 안에서는 `time.Now()`와 `time.Sleep()`이 가상 시간으로 동작한다.
 버블 내 모든 goroutine이 잠들어 durably blocked 상태가 되면 런타임이 가상 시계를 다음 이벤트 시각으로 즉시 점프시키므로, `time.Sleep(10 * time.Minute)`이 실제로는 기다리지 않고 끝난다.
 
-프로덕션 코드는 한 줄도 바꾸지 않는다. 시계 주입 설계가 없는 기존 코드도 그대로 테스트할 수 있다는 뜻이다.
+프로덕션 코드는 한 줄도 바꾸지 않고, clockwork 같은 라이브러리도 필요 없다. 시계 주입 설계가 없는 기존 코드도 그대로 테스트할 수 있다는 뜻이다.
 
-## 5.2 같은 TTL 캐시를 synctest로 테스트 - 패턴 3과 비교
+## 5.2 시계 주입이 없는 NaiveCache를 synctest로 테스트
 
-패턴 3에서 만든 `TTLCache`를 이번에는 `FakeClock`이 아니라 **실제 시계**(`clockwork.NewRealClock()`)로 생성하고, synctest 버블 안에서 테스트한다.
+이번에는 아무 주입 설계 없이 `time.Now()`를 직접 호출하는 캐시를 만든다.
+1.1절의 나쁜 예와 같은, 지금까지의 패턴으로는 테스트할 수 없던 형태의 코드다.
+
+```go
+package clock
+
+import (
+	"sync"
+	"time"
+)
+
+// NaiveCache는 time.Now()를 직접 호출하는 평범한 TTL 캐시다.
+// 시계 주입 설계가 전혀 없어 패턴 1~3으로는 테스트할 수 없지만,
+// testing/synctest 버블 안에서는 time.Now()가 가상 시간을 읽으므로
+// 코드 수정 없이 그대로 테스트할 수 있다(패턴 4).
+type NaiveCache struct {
+	ttl time.Duration
+
+	mu    sync.Mutex
+	items map[string]cacheItem
+}
+
+// NewNaiveCache는 주어진 TTL로 캐시를 생성한다.
+func NewNaiveCache(ttl time.Duration) *NaiveCache {
+	return &NaiveCache{
+		ttl:   ttl,
+		items: make(map[string]cacheItem),
+	}
+}
+
+// Set은 key에 value를 저장하고 TTL 이후 만료되도록 기록한다.
+func (c *NaiveCache) Set(key, value string) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.items[key] = cacheItem{
+		value:     value,
+		expiresAt: time.Now().Add(c.ttl),
+	}
+}
+
+// Get은 key의 값을 반환한다. 항목이 없거나 만료됐으면 false를 반환한다.
+func (c *NaiveCache) Get(key string) (string, bool) {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	it, ok := c.items[key]
+	if !ok {
+		return "", false
+	}
+	// now >= expiresAt이면 만료
+	if !time.Now().Before(it.expiresAt) {
+		delete(c.items, key)
+		return "", false
+	}
+	return it.value, true
+}
+```
+
+패턴 3의 `TTLCache`와 로직은 같지만 `clock` 필드가 없다.
+이 코드를 synctest 버블 안에서 테스트한다.
 
 ```go
 package clock
@@ -379,16 +437,15 @@ import (
 	"testing/synctest"
 	"time"
 
-	"github.com/jonboulle/clockwork"
 	"github.com/stretchr/testify/assert"
 )
 
-// 패턴 3(가짜 시계 주입)과 달리, synctest는 코드 수정 없이
-// 실제 시계(RealClock)를 쓰는 캐시를 가상 시간 버블 안에서 테스트한다.
-// 버블 안에서는 time.Now()/time.Sleep()이 가상 시간으로 동작한다 (Go 1.25+).
-func Test_TTLCache_Synctest_실제_시계로_만료_검증(t *testing.T) {
+// NaiveCache는 time.Now()를 직접 호출하고 시계 주입 설계가 없다.
+// 그런데도 synctest 버블 안에서는 time.Now()/time.Sleep()이
+// 가상 시간으로 동작하므로 코드 수정 없이 테스트할 수 있다 (Go 1.25+).
+func Test_NaiveCache_Synctest_만료_검증(t *testing.T) {
 	synctest.Test(t, func(t *testing.T) {
-		cache := NewTTLCache(clockwork.NewRealClock(), 10*time.Minute)
+		cache := NewNaiveCache(10 * time.Minute)
 
 		cache.Set("session", "user-42")
 
@@ -398,6 +455,7 @@ func Test_TTLCache_Synctest_실제_시계로_만료_검증(t *testing.T) {
 		assert.True(t, ok)
 		assert.Equal(t, "user-42", v)
 
+		// TTL 경과: 만료된다
 		time.Sleep(time.Second)
 		_, ok = cache.Get("session")
 		assert.False(t, ok)
@@ -406,8 +464,8 @@ func Test_TTLCache_Synctest_실제_시계로_만료_검증(t *testing.T) {
 ```
 
 시나리오는 패턴 3의 테스트와 완전히 같다.
-다른 점은 `fakeClock.Advance()` 자리에 표준 라이브러리의 `time.Sleep()`이 그대로 들어갔다는 것뿐이다.
-RealClock의 `Now()`는 내부적으로 `time.Now()`를 호출하는데, 버블 안이므로 이것이 가상 시간을 읽는다.
+다른 점은 `fakeClock.Advance()` 자리에 표준 라이브러리의 `time.Sleep()`이 들어갔고, clockwork가 아예 등장하지 않는다는 것이다.
+버블 안이므로 `NaiveCache`가 호출하는 `time.Now()`가 가상 시간을 읽는다.
 
 주목할 것은 두 번째 `Sleep` 후의 검증이다.
 버블의 가상 시간은 결정론적이라 `Sleep(1초)` 후의 `time.Now()`는 정확히 1초 뒤, 즉 `now == expiresAt`인 바로 그 순간이다.
