@@ -201,8 +201,12 @@ function checkBlanks(set: QuizSet): Finding[] {
   return findings;
 }
 
-/** explain의 절 참조. 한국어판은 (2.2)와 (2.2절)이 섞여 있고 영문판은 (2.2)만 쓴다 */
-const SECTION_REF = /\(\d+\.\d+[^)]*\)/;
+/**
+ * explain의 절 참조. 저장소에 쓰이는 관례를 모두 인정한다.
+ * 한국어: (2.2) (2.2절) (7장) (3장, 4.1절)
+ * 영문:   (2.2) (Section 7.1) (Sections 3, 4.1)
+ */
+const SECTION_REF = /\([^)]*(?:\d+\.\d+|\d+\s*[장절]|sections?\s*\d)[^)]*\)/i;
 
 /** W1~W5: 사람이 판단할 품질 경고 */
 function checkQuality(set: QuizSet): Finding[] {
