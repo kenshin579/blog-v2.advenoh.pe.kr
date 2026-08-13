@@ -208,6 +208,34 @@ function checkBlanks(set: QuizSet): Finding[] {
  */
 const SECTION_REF = /\([^)]*(?:\d+\.\d+|\d+\s*[장절]|sections?\s*\d)[^)]*\)/i;
 
+/**
+ * W1: 정답 인덱스 쏠림. mcq와 code는 둘 다 인덱스로 답하므로 한 묶음으로 본다.
+ * 유형별로 쪼개면 유형당 문항이 2~4개뿐이라 고르게 배치해도 절반 초과가 자주 나온다.
+ */
+function checkAnswerSkew(questions: QuizQuestion[]): Finding[] {
+  const answers: number[] = [];
+  for (const question of questions) {
+    if (question.type === 'mcq' || question.type === 'code') answers.push(question.answer);
+  }
+  if (answers.length < 2) return [];
+
+  const counts = new Map<number, number>();
+  for (const answer of answers) counts.set(answer, (counts.get(answer) ?? 0) + 1);
+
+  const findings: Finding[] = [];
+  for (const [index, count] of counts) {
+    if (count * 2 > answers.length) {
+      findings.push({
+        code: 'W1',
+        level: 'warn',
+        where: '',
+        message: `인덱스로 답하는 ${answers.length}문항 중 ${count}문항의 정답이 ${index + 1}번이다`,
+      });
+    }
+  }
+  return findings;
+}
+
 /** W1~W5: 사람이 판단할 품질 경고 */
 function checkQuality(set: QuizSet): Finding[] {
   const findings: Finding[] = [];
@@ -222,29 +250,7 @@ function checkQuality(set: QuizSet): Finding[] {
     });
   }
 
-  // W1: 유형별 정답 인덱스 쏠림. 문항이 1개뿐인 유형은 판단할 수 없어 건너뛴다
-  const answersByType = new Map<string, number[]>();
-  for (const question of questions) {
-    if (question.type !== 'mcq' && question.type !== 'code') continue;
-    const list = answersByType.get(question.type) ?? [];
-    list.push(question.answer);
-    answersByType.set(question.type, list);
-  }
-  for (const [type, answers] of answersByType) {
-    if (answers.length < 2) continue;
-    const counts = new Map<number, number>();
-    for (const answer of answers) counts.set(answer, (counts.get(answer) ?? 0) + 1);
-    for (const [index, count] of counts) {
-      if (count * 2 > answers.length) {
-        findings.push({
-          code: 'W1',
-          level: 'warn',
-          where: '',
-          message: `${type} ${answers.length}문항 중 ${count}문항의 정답이 ${index + 1}번에 쏠려 있다`,
-        });
-      }
-    }
-  }
+  findings.push(...checkAnswerSkew(questions));
 
   questions.forEach((question, i) => {
     const num = i + 1;
@@ -253,12 +259,17 @@ function checkQuality(set: QuizSet): Finding[] {
       const lengths = question.choices.map((choice) => choice.length);
       const min = Math.min(...lengths);
       const max = Math.max(...lengths);
-      if (max - min > 12) {
+      const answerIsUniqueLongest =
+        question.choices[question.answer]?.length === max &&
+        lengths.filter((length) => length === max).length === 1;
+      // 정답만 유독 길면 내용을 몰라도 길이로 고를 수 있다.
+      // 절대 글자 수는 한국어와 영문에서 2배쯤 벌어지므로 비율로 본다
+      if (answerIsUniqueLongest && min > 0 && max / min > 1.6) {
         findings.push({
           code: 'W2',
           level: 'warn',
           where: '',
-          message: `${num}번 보기 길이 편차가 ${max - min}자다 (${min}~${max})`,
+          message: `${num}번 정답 보기만 유독 길다 (최단 ${min}자, 정답 ${max}자)`,
         });
       }
     }
