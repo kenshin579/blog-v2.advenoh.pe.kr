@@ -234,6 +234,70 @@ function checkArticleFile(article: ArticleFile): Finding[] {
   return findings;
 }
 
+/** E6: 한/영 세트 구조 불일치. blank 정답은 언어마다 달라야 정상이므로 비교하지 않는다 */
+function checkPair(articles: ArticleFile[]): Finding[] {
+  const ko = articles.find((a) => a.lang === 'ko');
+  const en = articles.find((a) => a.lang === 'en');
+  // 한쪽만 있으면 대조할 것이 없다
+  if (!ko || !en) return [];
+
+  if (ko.sets.length !== en.sets.length) {
+    return [
+      {
+        code: 'E6',
+        level: 'error',
+        where: '[ko↔en]',
+        message: `퀴즈 블록 수가 한국어 ${ko.sets.length}개, 영문 ${en.sets.length}개로 다르다`,
+      },
+    ];
+  }
+
+  const findings: Finding[] = [];
+
+  ko.sets.forEach((koSet, s) => {
+    const enSet = en.sets[s];
+    const where = ko.sets.length > 1 ? `[ko↔en 세트 ${s + 1}]` : '[ko↔en]';
+
+    if (koSet.questions.length !== enSet.questions.length) {
+      findings.push({
+        code: 'E6',
+        level: 'error',
+        where,
+        message: `문항 수가 한국어 ${koSet.questions.length}개, 영문 ${enSet.questions.length}개로 다르다`,
+      });
+      return;
+    }
+
+    koSet.questions.forEach((koQ, i) => {
+      const enQ = enSet.questions[i];
+      const num = i + 1;
+
+      if (koQ.type !== enQ.type) {
+        findings.push({
+          code: 'E6',
+          level: 'error',
+          where,
+          message: `${num}번 문항 유형이 한국어 ${koQ.type}, 영문 ${enQ.type}으로 다르다`,
+        });
+        return;
+      }
+
+      if (koQ.type === 'blank') return;
+
+      if (JSON.stringify(koQ.answer) !== JSON.stringify(enQ.answer)) {
+        findings.push({
+          code: 'E6',
+          level: 'error',
+          where,
+          message: `${num}번 문항 정답이 한국어 ${JSON.stringify(koQ.answer)}, 영문 ${JSON.stringify(enQ.answer)}으로 다르다`,
+        });
+      }
+    });
+  });
+
+  return findings;
+}
+
 function findArticleFiles(dir: string): string[] {
   const out: string[] = [];
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -275,6 +339,7 @@ function main() {
     checked += 1;
 
     const findings = articles.flatMap(checkArticleFile);
+    findings.push(...checkPair(articles));
     errorCount += findings.filter((f) => f.level === 'error').length;
     warnCount += findings.filter((f) => f.level === 'warn').length;
 
