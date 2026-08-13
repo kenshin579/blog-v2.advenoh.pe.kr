@@ -28,7 +28,7 @@ tags:
 > - [testing/synctest 패키지 문서](https://pkg.go.dev/testing/synctest)
 > - [Testing Time (Go Blog: synctest)](https://go.dev/blog/synctest)
 
-# 1.시간 의존 코드가 테스트하기 어려운 이유
+# 1. 시간 의존 코드가 테스트하기 어려운 이유
 
 ## 1.1 흔한 안티패턴
 
@@ -64,7 +64,7 @@ CI 머신의 부하에 따라 `Sleep`이 깨어나는 시점과 만료 판정 �
 
 패턴마다 코드에 손대는 정도가 다를 뿐이므로, 가장 가벼운 것부터 순서대로 보자.
 
-# 2.패턴 1: 시간을 파라미터로 받기
+# 2. 패턴 1: 시간을 파라미터로 받기
 
 ## 2.1 쿠폰 만료 검사 예제
 
@@ -140,7 +140,7 @@ func Test_Coupon_IsExpiredAt_경계값(t *testing.T) {
 
 시간이 필요한 곳이 구조체 안이라면, 파라미터 대신 구조체에 시간의 출처를 심어두는 편이 낫다.
 
-# 3.패턴 2: nowFunc 필드 주입
+# 3. 패턴 2: nowFunc 필드 주입
 
 ## 3.1 OrderService에 nowFunc 필드
 
@@ -228,7 +228,7 @@ TTL 캐시처럼 시간이 **흘러야** 검증되는 로직("10분 뒤에 만�
 
 시간의 "흐름" 자체를 시뮬레이션하려면 시계를 통째로 추상화해야 한다.
 
-# 4.패턴 3: Clock 인터페이스 주입 (clockwork)
+# 4. 패턴 3: Clock 인터페이스 주입 (clockwork)
 
 ## 4.1 TTL 캐시 예제 - 시간이 흘러야 검증되는 로직
 
@@ -356,7 +356,7 @@ clockwork는 etcd 같은 프로젝트가 이미 쓰고 있어서, 직접 인터�
 
 그런데 이 패턴에는 전제가 하나 있다. 처음부터 Clock을 주입받도록 **설계되어 있어야** 한다는 것이다. 그런 설계 없이 작성된 코드는 어떻게 할까.
 
-# 5.패턴 4: testing/synctest (Go 1.25+)
+# 5. 패턴 4: testing/synctest (Go 1.25+)
 
 ## 5.1 코드 수정 없이 가상 시간 버블에서 테스트
 
@@ -482,7 +482,89 @@ synctest는 만능 대체재가 아니라 **동시성 + 시간** 조합에 특�
 
 각 패턴의 자리는 그대로다. 어떤 상황에 어떤 패턴인지는 다음 장에서 정리한다.
 
-# 6.마무리
+# 6. 퀴즈
+
+여기까지 읽었으면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
+
+```quiz
+- type: mcq
+  q: "TTL 캐시 테스트에서 time.Sleep으로 실제 시간이 흐르기를 기다릴 때 생기는 문제로 이 글이 지적한 것은?"
+  choices: ["테스트가 병렬로 실행되면 캐시 항목이 서로 섞인다", "TTL을 프로덕션보다 크게 잡아야만 테스트가 통과한다", "CI 머신의 부하에 따라 결과가 달라져 간헐적으로 깨진다", "만료된 항목이 맵에서 지워지지 않고 계속 남는다"]
+  answer: 2
+  explain: "Sleep이 깨어나는 시점과 만료 판정 시점의 간격이 CI 부하에 따라 어긋나서, 어제 통과하던 테스트가 오늘 깨진다. 느린 것과 만료 정각을 재현할 수 없는 것까지 세 가지가 함께 지적됐다. (1.1절)"
+
+- type: ox
+  q: "IsExpiredAt이 now.After(ExpiresAt)로 구현돼 있으면, 만료 시각 정각의 쿠폰은 이미 만료된 것으로 판정된다."
+  answer: false
+  explain: "After는 두 시각이 정확히 같으면 false를 반환하므로 만료 시각 정각의 쿠폰은 아직 유효하다. 구현자가 After를 쓰느냐 !Before를 쓰느냐에 따라 소리 없이 뒤집히는 부분이라 테스트 케이스로 명시해 고정해 둔다. (2.2절)"
+
+- type: code
+  q: "nowFunc 필드에 time.Now를 괄호 없이 그대로 대입할 수 있는 이유는?"
+  lang: go
+  code: |
+    type OrderService struct {
+        nowFunc func() time.Time
+    }
+
+    func NewOrderService() *OrderService {
+        return &OrderService{nowFunc: time.Now}
+    }
+  choices: ["Go가 함수 이름을 자동으로 클로저로 감싸주기 때문", "time.Now 자체가 func() time.Time 시그니처이기 때문", "구조체 리터럴에서는 필드 타입 검사가 생략되기 때문", "time 패키지가 표준 라이브러리에 속해 있기 때문"]
+  answer: 1
+  explain: "time.Now의 타입이 이미 func() time.Time이라 필드에 그대로 대입된다. 인터페이스도 외부 의존성도 없이 함수 필드 하나로 끝나는 것이 이 패턴을 가볍게 만드는 지점이다. (3.1절)"
+
+- type: mcq
+  q: "assert.WithinDuration으로 검증하는 테스트에서 order.CreatedAt 값은 어떻게 채워지나?"
+  choices: ["서비스 내부의 time.Now가 기록하고 단언은 사후 비교만 한다", "단언이 호출되는 시점의 시각으로 덮어써서 채워진다", "허용 오차 범위의 중앙값이 자동으로 계산되어 대입된다", "테스트가 첫 인자로 넘긴 기준 시각이 그대로 주입된다"]
+  answer: 0
+  explain: "WithinDuration은 시간을 주입하거나 값을 채워주지 않는다. CreatedAt은 여전히 서비스 내부의 time.Now가 기록하고, 이 단언은 두 시각의 차이를 사후에 비교만 한다. 주입이 불가능할 때의 차선책이다. (3.3절)"
+
+- type: blank
+  q: "clockwork의 FakeClock은 ___() 메서드로 가상 시간을 원하는 만큼 앞으로 진행시킨다. 덕분에 프로덕션 TTL인 10분을 그대로 쓰고도 테스트는 즉시 끝난다."
+  answer: ["Advance", "fakeClock.Advance"]
+  explain: "Advance()다. 한 테스트 안에서 두 번 호출해 'TTL 직전에는 살아있다'와 'TTL 정각부터는 만료된다'를 순서대로 검증할 수 있다. 고정 시각 하나를 반환하는 nowFunc로는 표현할 수 없는 시나리오다. (4.2절)"
+
+- type: mcq
+  q: "nowFunc 주입 대신 Clock 인터페이스까지 도입할 기준으로 이 글이 제시한 것은?"
+  choices: ["구조체가 현재 시각을 한 번 읽어 필드에 기록할 때", "테스트를 별도 패키지에서 black-box로 작성해야 할 때", "특정 시각을 기준으로 만료 여부만 판단하면 될 때", "재시도 백오프처럼 시간의 경과에 반응하는 로직일 때"]
+  answer: 3
+  explain: "기준은 코드가 시간을 어떻게 소비하느냐다. Now()를 한 번 읽고 끝나면 패턴 2로 충분하고, TTL·재시도 백오프·스케줄러처럼 경과에 반응하거나 Sleep/Ticker/After까지 제어해야 할 때 인터페이스를 도입한다. (4.3절)"
+
+- type: code
+  q: "TTLCache.Get의 만료 판정이다. 가상 시간이 expiresAt과 정확히 같아진 순간 Get은 어떻게 동작하나?"
+  lang: go
+  code: |
+    it, ok := c.items[key]
+    if !ok {
+        return "", false
+    }
+    if !c.clock.Now().Before(it.expiresAt) {
+        delete(c.items, key)
+        return "", false
+    }
+    return it.value, true
+  choices: ["저장된 값을 반환하고 항목도 맵에 그대로 남는다", "저장된 값을 반환하지만 항목은 맵에서 지워진다", "항목을 맵에서 지우고 false를 반환한다", "키가 아직 살아있어 panic 없이 빈 값만 반환한다"]
+  answer: 2
+  explain: "Before는 두 시각이 같으면 false이므로 !Before는 true가 되어 정각부터 만료로 처리된다. 2.2절 쿠폰의 After와 정확히 반대 경계라, 어느 쪽을 골랐든 정각 케이스를 테스트로 명시해 둬야 한다. (4.1절)"
+
+- type: blank
+  q: "synctest 버블의 가상 시간은 고정된 기준 시각인 ___년 1월 1일 0시(UTC)에서 시작하므로, 임의의 달력 날짜를 시뮬레이션하는 용도로는 맞지 않다."
+  answer: ["2000"]
+  explain: "2000년 1월 1일 00:00:00 UTC에서 시작한다. 그래서 '이번 달 말일까지 유효한 쿠폰'처럼 특정 시각 기준으로 판단하는 로직에는 패턴 1·2가 더 맞고, synctest는 동시성과 시간이 얽힌 쪽에 특화된 도구다. (5.3절)"
+
+- type: ox
+  q: "synctest 버블 안의 goroutine이 버블 밖 goroutine과 채널로 통신하면 패닉이 발생한다."
+  answer: true
+  explain: "버블 안팎을 오가는 채널 통신은 패닉을 일으킨다. 버블 밖 자원(실제 네트워크 I/O 등)에 블록되면 가상 시간도 진행되지 않으므로, 외부 시스템과 통신하는 통합 테스트에는 맞지 않다. (5.3절)"
+
+- type: mcq
+  q: "시계 주입 설계가 전혀 없는 NaiveCache를 synctest로 테스트할 때 프로덕션 코드에는 어떤 변경이 필요한가?"
+  choices: ["clockwork.Clock을 필드로 받도록 생성자를 고쳐야 한다", "코드는 그대로 두고 테스트만 버블 안에서 실행하면 된다", "time.Now() 호출을 synctest 전용 API로 바꿔야 한다", "nowFunc 필드를 추가하고 기본값으로 time.Now를 넣어야 한다"]
+  answer: 1
+  explain: "synctest는 코드에 시계를 주입하는 대신 테스트 실행 환경 쪽에서 시간을 가상화한다. 버블 안에서는 NaiveCache가 호출하는 time.Now()가 그대로 가상 시간을 읽으므로 프로덕션 코드는 한 줄도 바뀌지 않는다. 대신 Go 1.25 이상이 필요하다. (5.1절)"
+```
+
+# 7. 마무리
 
 `time.Now()` 직접 호출은 시간을 테스트할 수 없는 전역 입력으로 만든다.
 해법은 시간을 주입받는 것이고, 네 패턴은 코드에 손대는 범위가 다를 뿐이다.
