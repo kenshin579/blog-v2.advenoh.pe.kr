@@ -22,13 +22,16 @@
 | E6 | 한/영 구조 불일치 | 6 |
 | E7 | 닫는 quiz 펜스가 빠짐 | 리뷰에서 추가 |
 | E8 | 인자로 지목한 대상에 quiz 블록 없음 | 리뷰에서 추가 |
+| E9 | blank 정답이 비어 있음 | 리뷰에서 추가 |
 | W1 | 유형 안에서 정답 인덱스 쏠림 | 7 |
 | W2 | 같은 문항 보기 길이 편차 12자 초과 | 8 |
 | W3 | mcq가 4지선다 아님 | 9 |
 | W4 | `explain`에 절 참조 없음 | 10 |
 | W5 | 세트 문항 수가 10이 아님 | 11 |
 
-E7·E8은 Task 2 코드 품질 리뷰에서 나온 것이다. 둘 다 **검출 실패를 통과로 보고**하는 유형이라 스펙에 없었지만 추가했다. 경고를 `W7`~`W11`에서 `W1`~`W5`로 재번호한 것은 에러가 E8까지 늘어 숫자가 겹치기 때문이다.
+E7·E8·E9는 코드 품질 리뷰에서 나온 것이다. E7·E8은 **검출 실패를 통과로 보고**하는 유형이고, E9(빈 정답)는 `isValidQuestion`이 `length >= 1`만 보기 때문에 E2로도 안 걸리는데 `components/article/quiz.tsx`의 `BlankInput.submit`이 `input.trim()`으로 막아서 **어떤 입력으로도 맞힐 수 없는 문항**이 된다.
+
+경고를 `W7`~`W11`에서 `W1`~`W5`로 재번호한 것은 에러가 E9까지 늘어 숫자가 겹치기 때문이다.
 
 ---
 
@@ -590,6 +593,8 @@ git commit -m "feat: 퀴즈 검증 스크립트 골격 추가"
 - Create: `scripts/fixtures/quiz/blank-no-underscore/index.md`
 - Create: `scripts/fixtures/quiz/blank-leak/index.md`
 - Create: `scripts/fixtures/quiz/blank-self-leak/index.md`
+- Create: `scripts/fixtures/quiz/blank-empty-answer/index.md`
+- Create: `scripts/fixtures/quiz/dropped-with-blank/index.md`
 - Modify: `scripts/check-quiz.ts`
 
 - [ ] **Step 1: 위반 픽스처 3개 작성**
@@ -639,10 +644,53 @@ git commit -m "feat: 퀴즈 검증 스크립트 골격 추가"
 ```
 ````
 
+`scripts/fixtures/quiz/blank-empty-answer/index.md` — E9용. 정답이 빈 문자열인 것과 공백뿐인 것 둘:
+
+````markdown
+# 1. 퀴즈
+
+```quiz
+- type: blank
+  q: "정답이 빈 문자열인 문항이다. 답은 ___ 이다."
+  answer: [""]
+  explain: "설명이다. (1.1)"
+
+- type: blank
+  q: "정답이 공백뿐인 문항이다. 답은 ___ 이다."
+  answer: ["   "]
+  explain: "설명이다. (1.2)"
+```
+````
+
+`scripts/fixtures/quiz/dropped-with-blank/index.md` — 문항 번호 어긋남을 잡는다. 1번이 드롭되고 2번 blank·3번 mcq가 남는다. **E2만 나오고 E4는 나오면 안 된다:**
+
+````markdown
+# 1. 퀴즈
+
+```quiz
+- type: mcq
+  q: "보기가 하나뿐이라 버려지는 문항이다"
+  choices: ["가"]
+  answer: 0
+  explain: "설명이다. (1.1)"
+
+- type: blank
+  q: "가상 시간을 진행시키는 메서드는 ___ 이다."
+  answer: ["Advance"]
+  explain: "설명이다. (1.2)"
+
+- type: mcq
+  q: "다음 중 FakeClock의 메서드는?"
+  choices: ["Advance", "Rewind", "Freeze", "Pause"]
+  answer: 0
+  explain: "설명이다. (1.3)"
+```
+````
+
 - [ ] **Step 2: 아직 검출되지 않음을 확인 (red)**
 
 ```bash
-for f in blank-no-underscore blank-leak blank-self-leak; do
+for f in blank-no-underscore blank-leak blank-self-leak blank-empty-answer; do
   echo "--- $f"
   npx tsx scripts/check-quiz.ts scripts/fixtures/quiz/$f 2>/dev/null | grep -E '✗|경고'
 done
@@ -671,9 +719,11 @@ function questionHaystack(question: QuizQuestion): string {
   return normalizeBlankAnswer(parts.join('\n'));
 }
 
-/** E3: 빈칸 없음 / E4: 다른 문항에 정답 노출 / E5: 자기 지문에 정답 노출 */
+/** E3: 빈칸 없음 / E4: 다른 문항에 정답 노출 / E5: 자기 지문에 정답 노출 / E9: 빈 정답 */
 function checkBlanks(set: QuizSet): Finding[] {
   const findings: Finding[] = [];
+  // 문항마다 haystack을 한 번만 만든다. 자기 것과 비교하면 E5, 남의 것과 비교하면 E4다
+  const haystacks = set.questions.map(questionHaystack);
 
   set.questions.forEach((question, i) => {
     if (question.type !== 'blank') return;
@@ -690,9 +740,17 @@ function checkBlanks(set: QuizSet): Finding[] {
 
     question.answer.forEach((answer) => {
       const needle = normalizeBlankAnswer(answer);
-      if (!needle) return;
+      if (!needle) {
+        findings.push({
+          code: 'E9',
+          level: 'error',
+          where: '',
+          message: `${num}번 blank 정답이 비어 있다 — 어떤 입력으로도 맞힐 수 없는 문항이다`,
+        });
+        return;
+      }
 
-      if (normalizeBlankAnswer(question.q).includes(needle)) {
+      if (haystacks[i].includes(needle)) {
         findings.push({
           code: 'E5',
           level: 'error',
@@ -701,9 +759,9 @@ function checkBlanks(set: QuizSet): Finding[] {
         });
       }
 
-      set.questions.forEach((other, j) => {
+      haystacks.forEach((haystack, j) => {
         if (i === j) return;
-        if (questionHaystack(other).includes(needle)) {
+        if (haystack.includes(needle)) {
           findings.push({
             code: 'E4',
             level: 'error',
@@ -721,7 +779,7 @@ function checkBlanks(set: QuizSet): Finding[] {
 
 `where`는 빈 문자열로 둔다. `checkArticleFile`이 파일과 세트를 알고 있으므로 라벨은 거기서 한 번에 채운다.
 
-`explain`은 haystack에 넣지 않는다. 그 문항을 푼 뒤에만 보이기 때문이다.
+`explain`은 haystack에 넣지 않는다. 그 문항을 푼 뒤에만 보이기 때문이다. `components/article/quiz.tsx`의 `QuestionCard`가 `done`일 때만 `explain`을 그리고 전 문항을 `questions.map`으로 한 화면에 깔므로, haystack의 범위가 **미해결 상태에서 화면에 보이는 텍스트**와 정확히 일치한다.
 
 - [ ] **Step 5: checkSet에서 호출**
 
@@ -731,11 +789,14 @@ function checkBlanks(set: QuizSet): Finding[] {
 /** 세트 하나에 대한 검사를 모은다. 후속 태스크에서 여기에 검사가 더 붙는다 */
 function checkSet(set: QuizSet): Finding[] {
   const parseFindings = checkParse(set);
-  // YAML 자체가 깨졌으면 문항 단위 검사는 의미가 없다
-  if (set.rawItems === null || set.notArray) return parseFindings;
-  return [...parseFindings, ...checkBlanks(set)];
+  // 파싱 단계에서 걸린 게 있으면 set.questions의 인덱스가 원본 문항 번호와 어긋난다.
+  // 그 상태에서 문항 번호를 찍으면 저자가 없는 위치를 찾게 되므로 여기서 멈춘다
+  if (parseFindings.length > 0) return parseFindings;
+  return checkBlanks(set);
 }
 ```
+
+**가드를 `parseFindings.length > 0`로 잡은 이유.** `set.questions`는 `parseQuiz`가 통과시킨 유효 문항만 담는다. E2(일부 문항이 버려짐)가 뜬 상태에서 `i + 1`을 문항 번호로 쓰면 원본 YAML의 번호와 어긋나는데, 같은 리포트의 E2 메시지는 원본 번호를 쓴다. 한 리포트 안에 번호 체계가 둘이 되어 저자가 존재하지 않는 위치를 찾게 된다. Task 5의 `checkQuality`도 드롭된 문항이 섞이면 정답 분포·유형 비율 집계가 오염되므로 같은 가드로 보호된다.
 
 - [ ] **Step 6: 검출 확인 (green)**
 
