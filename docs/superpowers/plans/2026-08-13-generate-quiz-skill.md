@@ -1058,6 +1058,34 @@ Expected: `⚠` 줄 없이 `에러 0 · 경고 0`.
  */
 const SECTION_REF = /\([^)]*(?:\d+\.\d+|\d+\s*[장절]|sections?\s*\d)[^)]*\)/i;
 
+/**
+ * W1: 정답 인덱스 쏠림. mcq와 code는 둘 다 인덱스로 답하므로 한 묶음으로 본다.
+ * 유형별로 쪼개면 유형당 문항이 2~4개뿐이라 고르게 배치해도 절반 초과가 자주 나온다.
+ */
+function checkAnswerSkew(questions: QuizQuestion[]): Finding[] {
+  const answers: number[] = [];
+  for (const question of questions) {
+    if (question.type === 'mcq' || question.type === 'code') answers.push(question.answer);
+  }
+  if (answers.length < 2) return [];
+
+  const counts = new Map<number, number>();
+  for (const answer of answers) counts.set(answer, (counts.get(answer) ?? 0) + 1);
+
+  const findings: Finding[] = [];
+  for (const [index, count] of counts) {
+    if (count * 2 > answers.length) {
+      findings.push({
+        code: 'W1',
+        level: 'warn',
+        where: '',
+        message: `인덱스로 답하는 ${answers.length}문항 중 ${count}문항의 정답이 ${index + 1}번이다`,
+      });
+    }
+  }
+  return findings;
+}
+
 /** W1~W5: 사람이 판단할 품질 경고 */
 function checkQuality(set: QuizSet): Finding[] {
   const findings: Finding[] = [];
@@ -1072,29 +1100,7 @@ function checkQuality(set: QuizSet): Finding[] {
     });
   }
 
-  // W1: 유형별 정답 인덱스 쏠림. 문항이 1개뿐인 유형은 판단할 수 없어 건너뛴다
-  const answersByType = new Map<string, number[]>();
-  for (const question of questions) {
-    if (question.type !== 'mcq' && question.type !== 'code') continue;
-    const list = answersByType.get(question.type) ?? [];
-    list.push(question.answer);
-    answersByType.set(question.type, list);
-  }
-  for (const [type, answers] of answersByType) {
-    if (answers.length < 2) continue;
-    const counts = new Map<number, number>();
-    for (const answer of answers) counts.set(answer, (counts.get(answer) ?? 0) + 1);
-    for (const [index, count] of counts) {
-      if (count * 2 > answers.length) {
-        findings.push({
-          code: 'W1',
-          level: 'warn',
-          where: '',
-          message: `${type} ${answers.length}문항 중 ${count}문항의 정답이 ${index + 1}번에 쏠려 있다`,
-        });
-      }
-    }
-  }
+  findings.push(...checkAnswerSkew(questions));
 
   questions.forEach((question, i) => {
     const num = i + 1;
@@ -1103,12 +1109,17 @@ function checkQuality(set: QuizSet): Finding[] {
       const lengths = question.choices.map((choice) => choice.length);
       const min = Math.min(...lengths);
       const max = Math.max(...lengths);
-      if (max - min > 12) {
+      const answerIsUniqueLongest =
+        question.choices[question.answer]?.length === max &&
+        lengths.filter((length) => length === max).length === 1;
+      // 정답만 유독 길면 내용을 몰라도 길이로 고를 수 있다.
+      // 절대 글자 수는 한국어와 영문에서 2배쯤 벌어지므로 비율로 본다
+      if (answerIsUniqueLongest && min > 0 && max / min > 1.6) {
         findings.push({
           code: 'W2',
           level: 'warn',
           where: '',
-          message: `${num}번 보기 길이 편차가 ${max - min}자다 (${min}~${max})`,
+          message: `${num}번 정답 보기만 유독 길다 (최단 ${min}자, 정답 ${max}자)`,
         });
       }
     }
@@ -1193,47 +1204,40 @@ git commit -m "feat: 퀴즈 품질 경고 검사 추가
 
 ## Task 6: 기존 퀴즈 8편 회귀 확인
 
-이미 리뷰를 거친 글들이므로 **에러가 나오면 스크립트 기준이 과한 것**이다. 경고는 나와도 된다.
+**Files:** 없음 (검증·보고만)
 
-**Files:** 상황에 따라 `scripts/check-quiz.ts` 수정
+**완료 기준이 바뀌었다.** 원래는 "에러 0"이었다. 스펙 3절이 기존 퀴즈 검수를 범위 밖으로 뒀으니 에러가 0일 것이라고 전제했는데, 실제로는 **에러 11건이 나왔고 전부 진짜 결함**이었다. 별도 검토 두 번에서 오탐이 아님을 확인했다. 따라서 완료 기준을 "검출된 것이 실제 결함임을 확인하고 목록화"로 바꾼다. **콘텐츠는 고치지 않는다** — 별도 PR의 일이다.
 
 - [ ] **Step 1: 전체 검사 실행**
 
 ```bash
-npm run check:quiz 2>/dev/null | tail -40
+npm run check:quiz 2>/dev/null | grep -E '📄|✗|⚠'
+npm run check:quiz 2>/dev/null | tail -1
 ```
 
-Expected: 마지막 줄이 `검사한 글 8편 · 에러 0 · 경고 N`.
+Expected: `검사한 글 8편 · 에러 11 · 경고 4`.
 
-- [ ] **Step 2: 종료 코드 확인**
+- [ ] **Step 2: 검출 내역 확인**
 
-```bash
-npm run check:quiz > /dev/null 2>&1; echo "exit=$?"
-```
+에러 11건은 두 글에 몰려 있다.
 
-Expected: `exit=0`.
+**`contents/cloud/grafana-완벽-가이드-1-prometheus와-grafana-기초/`** (한/영 각 3건)
+9번 빈칸 정답이 `"prometheus"`인데, 이 글의 주제어라 자기 지문("Grafana와 Prometheus를...")과 1번·10번 문항에 자연스럽게 등장한다. CLAUDE.md의 "흔한 토큰은 blank 정답으로 부적합" 규칙에 정확히 걸린다.
 
-- [ ] **Step 3: 에러가 있으면 판정**
+**`contents/go/go-fx-의존성-주입/`** (한 2건, 영 3건)
+7번 빈칸 정답이 `["name", "name:"]`인데 8번 OX 지문이 "`group:` 태그로만 가능하고, `name:` 태그로는 아예 불가능하다"이다. 답이 그대로 적혀 있다. 영문판은 3번 보기 "Alphabetically by constructor name"과도 겹친다.
 
-에러가 하나라도 나오면 둘 중 하나다.
+경고 4건은 전부 W2(정답 보기만 유독 김)이고, 네 건 모두 정답이 기술적 근거를 담아 길고 오답은 짧은 문구다.
 
-- **실제 결함**: 그 글을 고친다. 단, 이 계획의 범위는 skill 구축이므로 **고치지 말고 사용자에게 보고**한다. 스펙 3절에서 기존 퀴즈 검수는 범위 밖으로 뒀다.
-- **오탐**: 스크립트 기준을 완화한다. 어느 쪽인지 판단이 안 서면 사용자에게 묻는다.
+- [ ] **Step 3: 판정**
 
-- [ ] **Step 4: 경고 분포 확인**
+에러가 **오탐이면** 스크립트 기준을 완화하고, **실제 결함이면** 고치지 말고 목록만 남긴다. 이 계획 실행 시점의 판정은 "전부 실제 결함"이었다.
 
-```bash
-npm run check:quiz 2>/dev/null | grep -oE 'W[0-9]+' | sort | uniq -c | sort -rn
-```
+`W1`이 8편 전부에서 뜨거나 특정 경고가 대부분을 차지하면 그 기준이 관례와 안 맞는다는 뜻이다. 실행 중 실제로 그런 일이 있었다 — `W4`가 73건 중 61건이었고, 원인은 절 참조 정규식이 `(2.2)` 한 형태만 인식한 것이었다. Task 5에서 고쳤다.
 
-기록만 남긴다. 특정 경고가 8편 전부에서 뜬다면 그 기준이 관례와 안 맞는다는 뜻이므로 사용자에게 보고한다.
+- [ ] **Step 4: 후속 작업으로 넘길 것 기록**
 
-- [ ] **Step 5: 커밋 (스크립트를 고쳤을 때만)**
-
-```bash
-git add scripts/check-quiz.ts
-git commit -m "fix: 기존 퀴즈 8편에서 나온 오탐 제거"
-```
+Task 10의 PR 본문에 검출 내역을 적고, 콘텐츠 수정은 별도 PR로 남긴다.
 
 ---
 
