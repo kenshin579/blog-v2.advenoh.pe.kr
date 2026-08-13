@@ -1402,9 +1402,9 @@ Expected: `charset=utf-8`
 npm run check:quiz -- {category}/{slug}
 ```
 
-**에러(E1~E6)가 0이 될 때까지 고친다.** 경고(W1~W5)는 하나씩 판단해서 고칠지 남길지 정하고, 남긴다면 이유를 사용자에게 보고한다.
+**에러(E1~E9)가 0이 될 때까지 고친다.** 경고(W1~W5)는 하나씩 판단해서 고칠지 남길지 정하고, 남긴다면 이유를 사용자에게 보고한다.
 
-스크립트가 못 잡는 것 두 가지는 직접 확인한다.
+스크립트가 못 잡는 것은 직접 확인한다. `references/quiz-rules.md`의 6절에 네 가지가 정리돼 있다.
 
 - `code` 스니펫이 실제로 컴파일되는가. Go는 미사용 변수가 컴파일 에러다. 의도적으로 에러를 묻는 문항이면 **그 에러만** 나야 한다
 - 5번 단계의 섹션 번호 참조
@@ -1571,7 +1571,7 @@ gh pr create --assignee kenshin579 --base main --title "feat: generate-quiz skil
 - `scripts/check-quiz.ts` + `npm run check:quiz` — `lib/quiz.ts`의 `parseQuiz`·`normalizeBlankAnswer`를 재사용해 렌더러와 검증기가 갈라지지 않게 함
 - `CLAUDE.md` 퀴즈 절 30줄 축소 (매 세션 로드되는 파일)
 
-에러(E1~E6)는 종료 코드 1, 경고(W1~W5)는 0이다. 배치 규칙(글당 1개, 본문 마지막 장 다음)은 기존 8편의 관례를 그대로 고정했다.
+에러(E1~E9)는 종료 코드 1, 경고(W1~W5)는 0이다. 배치 규칙(글당 1개, 본문 마지막 장 다음)은 기존 8편의 관례를 그대로 고정했다.
 
 설계 문서: `docs/superpowers/specs/2026-08-13-generate-quiz-skill-design.md`
 
@@ -1579,7 +1579,7 @@ gh pr create --assignee kenshin579 --base main --title "feat: generate-quiz skil
 
 - [ ] `npm run check` 통과
 - [ ] `npm run check:quiz` — 기존 퀴즈 8편에서 에러 0
-- [ ] 위반 픽스처에서 E1~E6이 각각 검출되고 종료 코드 1
+- [ ] 위반 픽스처에서 E1~E9가 각각 검출되고 종료 코드 1
 - [ ] 정상 픽스처에서 에러 0, 종료 코드 0
 - [ ] `content-manifest.json`에 픽스처가 들어가지 않음
 - [ ] `npm run build` 성공
