@@ -201,13 +201,93 @@ function checkBlanks(set: QuizSet): Finding[] {
   return findings;
 }
 
-/** 세트 하나에 대한 검사를 모은다. 후속 태스크에서 여기에 검사가 더 붙는다 */
+/** explain의 절 참조. 한국어판은 (2.2)와 (2.2절)이 섞여 있고 영문판은 (2.2)만 쓴다 */
+const SECTION_REF = /\(\d+\.\d+[^)]*\)/;
+
+/** W1~W5: 사람이 판단할 품질 경고 */
+function checkQuality(set: QuizSet): Finding[] {
+  const findings: Finding[] = [];
+  const questions = set.questions;
+
+  if (questions.length !== 10) {
+    findings.push({
+      code: 'W5',
+      level: 'warn',
+      where: '',
+      message: `문항이 ${questions.length}개다 (권장 10개)`,
+    });
+  }
+
+  // W1: 유형별 정답 인덱스 쏠림. 문항이 1개뿐인 유형은 판단할 수 없어 건너뛴다
+  const answersByType = new Map<string, number[]>();
+  for (const question of questions) {
+    if (question.type !== 'mcq' && question.type !== 'code') continue;
+    const list = answersByType.get(question.type) ?? [];
+    list.push(question.answer);
+    answersByType.set(question.type, list);
+  }
+  for (const [type, answers] of answersByType) {
+    if (answers.length < 2) continue;
+    const counts = new Map<number, number>();
+    for (const answer of answers) counts.set(answer, (counts.get(answer) ?? 0) + 1);
+    for (const [index, count] of counts) {
+      if (count * 2 > answers.length) {
+        findings.push({
+          code: 'W1',
+          level: 'warn',
+          where: '',
+          message: `${type} ${answers.length}문항 중 ${count}문항의 정답이 ${index + 1}번에 쏠려 있다`,
+        });
+      }
+    }
+  }
+
+  questions.forEach((question, i) => {
+    const num = i + 1;
+
+    if ('choices' in question) {
+      const lengths = question.choices.map((choice) => choice.length);
+      const min = Math.min(...lengths);
+      const max = Math.max(...lengths);
+      if (max - min > 12) {
+        findings.push({
+          code: 'W2',
+          level: 'warn',
+          where: '',
+          message: `${num}번 보기 길이 편차가 ${max - min}자다 (${min}~${max})`,
+        });
+      }
+    }
+
+    if (question.type === 'mcq' && question.choices.length !== 4) {
+      findings.push({
+        code: 'W3',
+        level: 'warn',
+        where: '',
+        message: `${num}번 mcq가 ${question.choices.length}지선다다 (4지선다 권장)`,
+      });
+    }
+
+    if (!SECTION_REF.test(question.explain)) {
+      findings.push({
+        code: 'W4',
+        level: 'warn',
+        where: '',
+        message: `${num}번 explain에 절 참조가 없다`,
+      });
+    }
+  });
+
+  return findings;
+}
+
+/** 세트 하나에 대한 검사를 모은다 */
 function checkSet(set: QuizSet): Finding[] {
   const parseFindings = checkParse(set);
   // 파싱 단계에서 걸린 게 있으면 set.questions의 인덱스가 원본 문항 번호와 어긋난다.
-  // 그 상태에서 문항 번호를 찍으면 저자가 없는 위치를 찾게 되므로 여기서 멈춘다
+  // 정답 분포·유형 비율 집계도 드롭된 문항이 섞이면 오염되므로 여기서 멈춘다
   if (parseFindings.length > 0) return parseFindings;
-  return checkBlanks(set);
+  return [...checkBlanks(set), ...checkQuality(set)];
 }
 
 function whereLabel(lang: 'ko' | 'en', setIndex: number, totalSets: number): string {
@@ -247,7 +327,7 @@ function checkPair(articles: ArticleFile[]): Finding[] {
         code: 'E6',
         level: 'error',
         where: '[ko↔en]',
-        message: `퀴즈 블록 수가 한국어 ${ko.sets.length}개, 영문 ${en.sets.length}개로 다르다`,
+        message: `퀴즈 블록 수가 다르다 — 한국어 ${ko.sets.length}개, 영문 ${en.sets.length}개`,
       },
     ];
   }
@@ -263,7 +343,7 @@ function checkPair(articles: ArticleFile[]): Finding[] {
         code: 'E6',
         level: 'error',
         where,
-        message: `문항 수가 한국어 ${koSet.questions.length}개, 영문 ${enSet.questions.length}개로 다르다`,
+        message: `문항 수가 다르다 — 한국어 ${koSet.questions.length}개, 영문 ${enSet.questions.length}개`,
       });
       return;
     }
@@ -277,7 +357,7 @@ function checkPair(articles: ArticleFile[]): Finding[] {
           code: 'E6',
           level: 'error',
           where,
-          message: `${num}번 문항 유형이 한국어 ${koQ.type}, 영문 ${enQ.type}으로 다르다`,
+          message: `${num}번 문항 유형이 다르다 — 한국어 ${koQ.type}, 영문 ${enQ.type}`,
         });
         return;
       }
@@ -289,7 +369,7 @@ function checkPair(articles: ArticleFile[]): Finding[] {
           code: 'E6',
           level: 'error',
           where,
-          message: `${num}번 문항 정답이 한국어 ${JSON.stringify(koQ.answer)}, 영문 ${JSON.stringify(enQ.answer)}으로 다르다`,
+          message: `${num}번 문항 정답이 다르다 — 한국어 ${JSON.stringify(koQ.answer)}, 영문 ${JSON.stringify(enQ.answer)}`,
         });
       }
     });
