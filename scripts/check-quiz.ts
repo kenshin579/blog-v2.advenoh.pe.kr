@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import { parse, stringify } from 'yaml';
-import { parseQuiz, type QuizQuestion } from '../lib/quiz';
+import { parseQuiz, normalizeBlankAnswer, type QuizQuestion } from '../lib/quiz';
 
 const CONTENTS_DIR = path.join(process.cwd(), 'contents');
 
@@ -136,9 +136,67 @@ function checkParse(set: QuizSet): Finding[] {
   return [];
 }
 
+/** 한 문항에서 독자가 문제를 풀기 전에 보게 되는 텍스트를 모은다 */
+function questionHaystack(question: QuizQuestion): string {
+  const parts: string[] = [question.q];
+  if ('choices' in question) parts.push(...question.choices);
+  if ('code' in question) parts.push(question.code);
+  return normalizeBlankAnswer(parts.join('\n'));
+}
+
+/** E3: 빈칸 없음 / E4: 다른 문항에 정답 노출 / E5: 자기 지문에 정답 노출 */
+function checkBlanks(set: QuizSet): Finding[] {
+  const findings: Finding[] = [];
+
+  set.questions.forEach((question, i) => {
+    if (question.type !== 'blank') return;
+    const num = i + 1;
+
+    if (!question.q.includes('___')) {
+      findings.push({
+        code: 'E3',
+        level: 'error',
+        where: '',
+        message: `${num}번 blank 문항의 q에 빈칸(___)이 없다`,
+      });
+    }
+
+    question.answer.forEach((answer) => {
+      const needle = normalizeBlankAnswer(answer);
+      if (!needle) return;
+
+      if (normalizeBlankAnswer(question.q).includes(needle)) {
+        findings.push({
+          code: 'E5',
+          level: 'error',
+          where: '',
+          message: `${num}번 blank 정답 "${answer}"이 자기 문항 지문에 그대로 있다`,
+        });
+      }
+
+      set.questions.forEach((other, j) => {
+        if (i === j) return;
+        if (questionHaystack(other).includes(needle)) {
+          findings.push({
+            code: 'E4',
+            level: 'error',
+            where: '',
+            message: `${num}번 blank 정답 "${answer}"이 ${j + 1}번 문항 지문에 노출된다`,
+          });
+        }
+      });
+    });
+  });
+
+  return findings;
+}
+
 /** 세트 하나에 대한 검사를 모은다. 후속 태스크에서 여기에 검사가 더 붙는다 */
 function checkSet(set: QuizSet): Finding[] {
-  return checkParse(set);
+  const parseFindings = checkParse(set);
+  // YAML 자체가 깨졌으면 문항 단위 검사는 의미가 없다
+  if (set.rawItems === null || set.notArray) return parseFindings;
+  return [...parseFindings, ...checkBlanks(set)];
 }
 
 function whereLabel(lang: 'ko' | 'en', setIndex: number, totalSets: number): string {
