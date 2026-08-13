@@ -144,9 +144,11 @@ function questionHaystack(question: QuizQuestion): string {
   return normalizeBlankAnswer(parts.join('\n'));
 }
 
-/** E3: 빈칸 없음 / E4: 다른 문항에 정답 노출 / E5: 자기 지문에 정답 노출 */
+/** E3: 빈칸 없음 / E4: 다른 문항에 정답 노출 / E5: 자기 지문에 정답 노출 / E9: 빈 정답 */
 function checkBlanks(set: QuizSet): Finding[] {
   const findings: Finding[] = [];
+  // 문항마다 haystack을 한 번만 만든다. 자기 것과 비교하면 E5, 남의 것과 비교하면 E4다
+  const haystacks = set.questions.map(questionHaystack);
 
   set.questions.forEach((question, i) => {
     if (question.type !== 'blank') return;
@@ -163,9 +165,17 @@ function checkBlanks(set: QuizSet): Finding[] {
 
     question.answer.forEach((answer) => {
       const needle = normalizeBlankAnswer(answer);
-      if (!needle) return;
+      if (!needle) {
+        findings.push({
+          code: 'E9',
+          level: 'error',
+          where: '',
+          message: `${num}번 blank 정답이 비어 있다 — 어떤 입력으로도 맞힐 수 없는 문항이다`,
+        });
+        return;
+      }
 
-      if (normalizeBlankAnswer(question.q).includes(needle)) {
+      if (haystacks[i].includes(needle)) {
         findings.push({
           code: 'E5',
           level: 'error',
@@ -174,9 +184,9 @@ function checkBlanks(set: QuizSet): Finding[] {
         });
       }
 
-      set.questions.forEach((other, j) => {
+      haystacks.forEach((haystack, j) => {
         if (i === j) return;
-        if (questionHaystack(other).includes(needle)) {
+        if (haystack.includes(needle)) {
           findings.push({
             code: 'E4',
             level: 'error',
@@ -194,9 +204,10 @@ function checkBlanks(set: QuizSet): Finding[] {
 /** 세트 하나에 대한 검사를 모은다. 후속 태스크에서 여기에 검사가 더 붙는다 */
 function checkSet(set: QuizSet): Finding[] {
   const parseFindings = checkParse(set);
-  // YAML 자체가 깨졌으면 문항 단위 검사는 의미가 없다
-  if (set.rawItems === null || set.notArray) return parseFindings;
-  return [...parseFindings, ...checkBlanks(set)];
+  // 파싱 단계에서 걸린 게 있으면 set.questions의 인덱스가 원본 문항 번호와 어긋난다.
+  // 그 상태에서 문항 번호를 찍으면 저자가 없는 위치를 찾게 되므로 여기서 멈춘다
+  if (parseFindings.length > 0) return parseFindings;
+  return checkBlanks(set);
 }
 
 function whereLabel(lang: 'ko' | 'en', setIndex: number, totalSets: number): string {
