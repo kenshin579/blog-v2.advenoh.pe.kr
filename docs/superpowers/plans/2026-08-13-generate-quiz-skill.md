@@ -1051,8 +1051,12 @@ Expected: `⚠` 줄 없이 `에러 0 · 경고 0`.
 `checkBlanks` 함수 다음에 추가한다.
 
 ```ts
-/** explain의 절 참조. 한국어판은 (2.2)와 (2.2절)이 섞여 있고 영문판은 (2.2)만 쓴다 */
-const SECTION_REF = /\(\d+\.\d+[^)]*\)/;
+/**
+ * explain의 절 참조. 저장소에 쓰이는 관례를 모두 인정한다.
+ * 한국어: (2.2) (2.2절) (7장) (3장, 4.1절)
+ * 영문:   (2.2) (Section 7.1) (Sections 3, 4.1)
+ */
+const SECTION_REF = /\([^)]*(?:\d+\.\d+|\d+\s*[장절]|sections?\s*\d)[^)]*\)/i;
 
 /** W1~W5: 사람이 판단할 품질 경고 */
 function checkQuality(set: QuizSet): Finding[] {
@@ -1063,6 +1067,7 @@ function checkQuality(set: QuizSet): Finding[] {
     findings.push({
       code: 'W5',
       level: 'warn',
+      where: '',
       message: `문항이 ${questions.length}개다 (권장 10개)`,
     });
   }
@@ -1084,6 +1089,7 @@ function checkQuality(set: QuizSet): Finding[] {
         findings.push({
           code: 'W1',
           level: 'warn',
+          where: '',
           message: `${type} ${answers.length}문항 중 ${count}문항의 정답이 ${index + 1}번에 쏠려 있다`,
         });
       }
@@ -1101,6 +1107,7 @@ function checkQuality(set: QuizSet): Finding[] {
         findings.push({
           code: 'W2',
           level: 'warn',
+          where: '',
           message: `${num}번 보기 길이 편차가 ${max - min}자다 (${min}~${max})`,
         });
       }
@@ -1110,6 +1117,7 @@ function checkQuality(set: QuizSet): Finding[] {
       findings.push({
         code: 'W3',
         level: 'warn',
+        where: '',
         message: `${num}번 mcq가 ${question.choices.length}지선다다 (4지선다 권장)`,
       });
     }
@@ -1118,6 +1126,7 @@ function checkQuality(set: QuizSet): Finding[] {
       findings.push({
         code: 'W4',
         level: 'warn',
+        where: '',
         message: `${num}번 explain에 절 참조가 없다`,
       });
     }
@@ -1132,14 +1141,13 @@ function checkQuality(set: QuizSet): Finding[] {
 `checkSet`을 다음으로 바꾼다.
 
 ```ts
-function checkSet(set: QuizSet, label: string): Finding[] {
+/** 세트 하나에 대한 검사를 모은다 */
+function checkSet(set: QuizSet): Finding[] {
   const parseFindings = checkParse(set);
-  // YAML 자체가 깨졌으면 나머지 검사는 의미가 없다
-  const findings =
-    set.rawCount === null
-      ? parseFindings
-      : [...parseFindings, ...checkBlanks(set), ...checkQuality(set)];
-  return findings.map((f) => ({ ...f, message: `${label} ${f.message}` }));
+  // 파싱 단계에서 걸린 게 있으면 set.questions의 인덱스가 원본 문항 번호와 어긋난다.
+  // 정답 분포·유형 비율 집계도 드롭된 문항이 섞이면 오염되므로 여기서 멈춘다
+  if (parseFindings.length > 0) return parseFindings;
+  return [...checkBlanks(set), ...checkQuality(set)];
 }
 ```
 
