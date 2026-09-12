@@ -39,3 +39,8 @@
   for = "/rss.xml"
   [headers.values]
     Access-Control-Allow-Origin = "*"
+
+[[headers]]
+  for = "/en/rss.xml"
+  [headers.values]
+    Access-Control-Allow-Origin = "*"
