@@ -1,5 +1,5 @@
 ---
-title: "백엔드 개발자를 위한 ROS2 1편 - 설치하고 turtlesim으로 개념 잡기"
+title: "ROS2 입문 1편 - 설치하고 turtlesim으로 핵심 개념 잡기"
 description: "Ubuntu 24.04에 ROS2 Jazzy를 설치하고 turtlesim으로 Node, Topic, Service, Action, Parameter를 실습하면서 백엔드 개념에 대응시켜 이해한다."
 date: 2026-09-14
 update: 2026-09-14
@@ -13,7 +13,7 @@ tags:
   - 로봇
   - robot
   - pubsub
-series: "백엔드 개발자를 위한 ROS2"
+series: "ROS2 입문"
 seriesOrder: 1
 ---
 
