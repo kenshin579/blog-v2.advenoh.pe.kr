@@ -846,8 +846,190 @@ keadm join ... --set modules.edgeStream.enable=true,modules.edgeStream.server=<�
 
 # 7. 장단점과 정리
 
+> Kubernetes 클러스터는 클라우드에 그대로, 엣지에는 kubelet 대신 가벼운 edgecore, 엣지가 먼저 연결한 터널 하나로 관리
+
+이 구조가 로봇에서 어떤 점이 좋고 무엇을 따로 챙겨야 하는지 정리한다.
+
+## 7.1 로봇에 잘 맞는 점
+
+- **NAT·LTE 뒤의 로봇도 등록할 수 있다.** 로봇이 클라우드로 먼저 접속하므로 로봇 쪽에 공인 IP나 포트 개방이 필요 없다
+- **끊겨도, 재부팅해도 앱이 다시 뜬다.** 엘리베이터 안이나 지하 주차장처럼 회선이 자주 끊기는 환경에 유리하다(5.4절)
+- **수십 대에 같은 버전을 배포할 수 있다.** kubectl·Helm·GitOps로 배포하고, 노드 라벨(`robot-type=delivery`, `site=...` 같은)로 로봇 그룹을 나눠 배포할 수 있다
+- **가볍다.** 로봇의 컴퓨팅 자원을 kubelet·kube-proxy·CNI 에이전트에 덜 쓴다(6.4절의 edgecore 메모리 참고)
+
+## 7.2 주의할 점
+
+### 7.2.1 다른 네트워크 간 DDS discovery
+
+ROS 2의 기본 미들웨어인 DDS는 멀티캐스트로 서로를 찾는다(discovery). 그래서 같은 L2 네트워크에 있어야 설정 없이 그대로 동작한다. 6.5절의 예제가 통신된 것도 두 장비가 같은 LAN이었기 때문이다.
+
+KubeEdge 터널은 제어 정보만 나르므로(6.5.1절) 이 문제를 풀어 주지 않는다. 로봇과 클라우드가 다른 네트워크(NAT 뒤, LTE)에 있다면 Fast DDS Discovery Server, `ROS_STATIC_PEERS`, rmw_zenoh 같은 유니캐스트 방식과, 그 경로의 네트워크 연결(VPN 등)을 KubeEdge와 별도로 구성해야 한다.
+
+### 7.2.2 엣지 CNI 없음과 EdgeMesh
+
+엣지에는 기본으로 CNI, kube-proxy, CoreDNS 연결이 없다. 그래서 엣지 파드는 기본으로 **클러스터 Service 이름(`xxx.default.svc`)으로 다른 파드를 찾을 수 없다.** 선택지는 다음과 같다.
+
+| 방법 | 내용 | 맞는 경우 |
+|---|---|---|
+| `hostNetwork: true` | 파드가 장비의 네트워크를 그대로 쓴다. 파드 IP = 장비 IP | 가장 단순하다. 장비당 앱 수가 적고 포트 충돌을 관리할 수 있을 때. ros_k8s가 쓰는 방법 |
+| 엣지에 CNI 직접 설치 | bridge 같은 노드 로컬 CNI를 직접 설치한다 | 장비 안에서만 파드 격리가 필요할 때 |
+| **EdgeMesh** | KubeEdge 서브 프로젝트. 엣지용 Service 디스커버리와 트래픽 프록시 | 엣지 앱끼리, 엣지 ↔ 클라우드 앱이 Service 이름으로 통신해야 할 때 |
+| Cilium 연동 | 엣지 노드에 Cilium을 별도로 구성한다([KubeEdge 문서](https://kubeedge.io/docs/advanced/cilium/)) | 클라우드와 같은 파드 네트워크를 원할 때. 고급 구성 |
+
+[EdgeMesh](https://github.com/kubeedge/edgemesh)는 KubeEdge의 데이터 플레인 컴포넌트다. 노드마다 agent가 하나씩 떠서 노드 로컬 DNS로 Service 이름을 해석하고, 트래픽을 백엔드 파드로 프록시한다. 같은 LAN의 노드끼리는 직접 통신하고, 다른 LAN이면 LibP2P로 홀펀칭을 시도한 뒤 실패하면 relay 노드를 거친다. README가 지원한다고 밝힌 트래픽은 HTTP·HTTPS·TCP·UDP·WebSocket이고, 멀티캐스트에 대한 언급은 없다.
+
+hostNetwork로 운영한다면 같은 로봇 안에서 포트 충돌과 `ROS_DOMAIN_ID` 충돌을 직접 관리해야 한다.
+
+### 7.2.3 하드웨어 접근
+
+로봇의 장치는 두 종류로 나눠 생각하면 쉽다.
+
+| 장치 | 연결 | 다루는 방법 |
+|---|---|---|
+| USB·CSI 카메라 | 본체 직결(`/dev/video0`) | ROS 2 드라이버 파드에 `/dev` 연결 |
+| LiDAR | 이더넷 또는 USB | `hostNetwork` 또는 `/dev` 연결 |
+| 모터 드라이버 | CAN(`can0`) | `hostNetwork` (`can0`은 네트워크 인터페이스) |
+| GPU | PCIe | device plugin |
+| 건물 IP 카메라, 설비 제어기 | 네트워크(ONVIF, Modbus 등) | KubeEdge Device + Mapper |
+
+**로봇 본체에 직결된 장치**는 ROS 2 드라이버가 실시간으로 데이터를 읽는다. 여기는 KubeEdge의 장치 관리 기능이 아니라 Kubernetes의 일반적인 방법으로 다룬다. 컨테이너는 기본으로 노드의 장치 파일(`/dev/...`)에 접근할 수 없으므로 접근하게 만들어야 한다.
+
+가장 간단한 방법은 hostPath + privileged다.
+
+```yaml
+containers:
+- name: camera
+  image: ros:jazzy
+  command: ["ros2", "run", "v4l2_camera", "v4l2_camera_node"]
+  securityContext:
+    privileged: true
+  volumeMounts:
+  - { name: video0, mountPath: /dev/video0 }
+volumes:
+- name: video0
+  hostPath: { path: /dev/video0 }
+nodeSelector:
+  kubernetes.io/hostname: robot-01
+```
+
+- 설정이 간단해서 실습이나 시작 단계에 맞다
+- `privileged`는 컨테이너에 노드의 모든 장치 접근 권한을 준다. 필요한 것보다 권한이 크다
+- USB를 다시 꽂거나 재부팅하면 `/dev/video0`이 `/dev/video1`로 바뀔 수 있다. `/dev/v4l/by-id/...` 같은 장치 고유 경로를 쓰거나 udev 규칙으로 이름을 고정하면 덜 깨진다
+- 스케줄러는 어느 노드에 카메라가 있는지 모르므로 `nodeSelector`로 직접 지정해야 한다
+
+다른 방법은 device plugin이다. device plugin은 노드에서 도는 작은 프로그램(보통 DaemonSet)으로, 노드의 장치를 CPU·메모리처럼 자원으로 등록한다. 파드는 `nvidia.com/gpu: 1`처럼 장치를 자원으로 요청하고, 스케줄러는 그 자원이 남은 노드에만 파드를 보낸다. 엣지 노드의 GPU는 KubeEdge 문서 [Edge Pods use GPU](https://github.com/kubeedge/website/blob/6b8fd13bbd177fdade81ab4a54d3e6f5f3c70edc/docs/advanced/gpu.md)(v1.17 기준)가 절차를 안내한다. 엣지 노드에 NVIDIA 드라이버와 NVIDIA Container Toolkit을 설치하고, `nvidia-ctk runtime configure --runtime=containerd`로 containerd가 GPU를 쓰게 설정한 뒤, k8s-device-plugin을 배포해 엣지 파드에 GPU를 할당한다.
+
+정리하면 실습이나 로봇 한두 대에는 hostPath + privileged, GPU처럼 device plugin이 있는 장치는 device plugin, 이더넷 LiDAR나 CAN처럼 장치가 네트워크 인터페이스로 보이는 경우는 `hostNetwork: true`로 다룬다.
+
+**로봇 밖, 네트워크 너머의 장치**(건물 IP 카메라, 설비 제어기)는 KubeEdge의 장치 관리 기능이 맞는 곳이다. 장치의 설계도를 `DeviceModel`, 실제 장치 하나를 `Device` CRD로 표현하고, 엣지에서 도는 Mapper가 ONVIF·Modbus 같은 프로토콜로 실제 장치와 대화한다. 속성마다 클라우드가 원하는 값(desired)과 장치가 보고한 값(reported)을 두어, Kubernetes의 `spec`/`status`처럼 다룬다. 장치 API는 v1.15에서 `v1alpha2`에서 `v1beta1`로 바뀌었고 이전 버전과 호환되지 않으므로, 예전 글의 YAML은 그대로 동작하지 않을 수 있다([v1.15 CHANGELOG](https://github.com/kubeedge/kubeedge/blob/master/CHANGELOG/CHANGELOG-1.15.md)).
+
+### 7.2.4 축출 정책
+
+로봇 앱은 그 로봇에 묶여 있어야 한다. 다른 노드로 옮겨 봐야 그 로봇의 센서를 쓸 수 없으니 축출은 의미가 없다. 그런데 3.3절의 기본 동작은 로봇에서도 그대로 일어난다.
+
+로봇 앱을 Deployment로 배포했는데 Wi-Fi가 5분 넘게 끊긴 경우를 보자.
+
+- `nodeSelector`로 그 로봇에 고정하지 않았다면 대체 파드가 **다른 로봇에 뜰 수 있다**
+- 고정했다면 대체 파드는 갈 곳이 없어 `Pending`에 머문다. 연결이 돌아오면 기존 파드는 삭제 결정을 받아 꺼지고(5.4.2절), `Pending`이던 대체 파드가 같은 로봇에 새로 뜬다. 로봇 입장에서는 **재접속하자마자 앱이 한 번 꺼졌다 켜진다**
+
+축출 뒤 동작은 파드를 관리하는 주체에 따라 다르다.
+
+| 관리 주체 | 축출 뒤 동작 |
+|---|---|
+| Deployment(ReplicaSet) | `Terminating` 파드는 개수에서 빠지므로 대체 파드를 만든다 |
+| StatefulSet | 같은 이름의 파드가 완전히 사라질 때까지 대체 파드를 만들지 않는다 |
+| 관리 주체 없는 단독 Pod | 삭제되고 끝난다. 다시 만들어지지 않는다 |
+| DaemonSet | 기한 없는 toleration이 있어 축출되지 않는다 |
+
+축출을 피하는 방법은 세 가지다.
+
+| 방법 | 내용 |
+|---|---|
+| DaemonSet으로 배포 | DaemonSet 파드는 unreachable taint를 기한 없이 견딘다. 노드마다 하나씩 뜨는 에이전트형 앱에 맞다 |
+| toleration 직접 지정 | 파드에 `node.kubernetes.io/unreachable` toleration을 `tolerationSeconds` 없이 넣는다 |
+| KubeEdge 라벨 | 파드에 `app-offline.kubeedge.io=autonomy` 라벨을 달면 KubeEdge의 admission webhook이 unreachable toleration을 기한 없는 것으로 바꿔 준다(v1.6에서 추가). 다만 admission 컴포넌트는 Helm chart 기본값이 꺼짐이라 켜야 동작한다 |
+
+```yaml
+# toleration 직접 지정 예시
+tolerations:
+- key: node.kubernetes.io/unreachable
+  operator: Exists
+  effect: NoExecute
+```
+
+`tolerationSeconds`를 아예 빼지 않고 길게 주는 방법도 있다. Kubernetes 문서는 로컬 상태가 많은 앱을 네트워크 분리 동안 노드에 오래 붙여 두는 예로 `tolerationSeconds: 6000`을 든다.
+
+### 7.2.5 이미지 크기와 회선
+
+ROS 이미지는 생각보다 크다. Docker Hub에 표시된 압축 크기로 `ros:jazzy-ros-base`는 약 300MB, `osrf/ros:jazzy-desktop-full`은 약 1.4GB다(2026년 10월, amd64 기준). 여기에 앱 패키지가 더해진다. LTE처럼 느린 회선에서는 레지스트리 미러, 사전 pull, `imagePullPolicy: IfNotPresent`(6.5절 예제도 이 설정을 쓴다)를 고려한다.
+
+### 7.2.6 실시간성
+
+KubeEdge는 배포·관리 계층이다. 실시간 스케줄링을 보장하지 않으므로, 모터 제어처럼 짧은 주기의 제어 루프는 로봇 쪽 제어 계층이 맡고 CPU 고정(pinning) 같은 설정은 따로 해야 한다.
+
+### 7.2.7 버전 고정
+
+클러스터의 Kubernetes 버전이 KubeEdge의 호환 범위에 묶인다(6절 호환표). KubeEdge를 올리지 않으면 Kubernetes도 올리기 어렵다.
+
+## 7.3 도입 전에 던질 질문
+
+1. 로봇이 클라우드와 같은 LAN에 있는가, NAT·LTE 뒤에 있는가
+2. 연결이 얼마나 자주, 얼마나 오래 끊기는가(7.2.4절)
+3. 로봇 앱끼리, 로봇 ↔ 클라우드 앱끼리 어떤 방식(DDS, HTTP, MQTT)으로 통신하는가. 그 경로는 KubeEdge와 별도로 준비되어 있는가(7.2.1절, 7.2.2절)
+4. 로봇 한 대가 "노드 하나"인가, 아니면 그 안에서 여러 서비스가 독립적으로 돌아야 하는 "작은 클러스터"인가
+5. 로봇 OS 이미지에 edgecore와 containerd를 넣고 업그레이드할 방법이 있는가
+
 # 8. FAQ
+
+## 8.1 실제 production에서 Kubernetes·KubeEdge로 로봇을 운용했나요?
+
+ROSCon 모임에서 Tomoya Fujita에게 직접 물어본 질문이다. Sony에서 ROS와 KubeEdge 작업을 해 왔다고 해서 실제 production 환경에서도 로봇을 이렇게 운용했는지 물었는데, confidential이라 답은 듣지 못했다.
+
+## 8.2 CloudCore가 죽으면 엣지 앱도 멈추나요?
+
+멈추지 않는다. CloudCore가 없으면 엣지 입장에서는 클라우드와 끊긴 상태와 같아서, 5.4절처럼 앱은 계속 돌고 새 배포와 상태 보고만 멈춘다. 운영 환경에서는 keepalived 같은 도구로 VIP를 두고 CloudCore를 여러 개 띄우는 HA 구성을 할 수 있다([Deploying HA CloudCore](https://kubeedge.io/docs/setup/deploy-ha/)).
+
+## 8.3 엣지 파드에서 Service 이름으로 접속이 안 됩니다
+
+엣지에는 기본으로 CNI, kube-proxy, CoreDNS 연결이 없기 때문이다(6.5.1절, 7.2.2절). EdgeMesh를 설치하거나, `hostNetwork: true`로 띄우고 실제 IP로 접속한다.
+
+## 8.4 엣지 장비는 어느 정도 사양이 필요한가요?
+
+KubeEdge v1.23.1 릴리스는 linux용 amd64, arm, arm64 바이너리를 제공하고, ros_k8s는 Raspberry Pi 4/5를 검증 환경으로 쓴다. edgecore 자체는 가볍지만(6.4절), 실제로 필요한 사양은 그 위에 올릴 ROS 2 노드와 이미지 크기에 좌우된다.
+
+## 8.5 Mac 한 대로 체험해 볼 수 있나요?
+
+[keink](https://github.com/kubeedge/keink)(KubeEdge IN kind)를 쓰면 Docker 컨테이너를 노드로 삼아 로컬에 KubeEdge 클러스터를 띄울 수 있다. kind의 노드 이미지(`kindest/node`)를 바탕으로 cloudcore·edgecore·keadm을 넣은 노드 이미지를 KubeEdge 소스로 빌드하는 방식이라 Docker, Go, kind, kubectl이 필요하다. 아직 alpha 단계라 기능이 바뀔 수 있다([Install KubeEdge with keink](https://kubeedge.io/docs/setup/install-with-keink/)).
+
+kind 자체의 사용법은 [맥에서 Kubernetes kind로 쉽고 빠르게 클러스터 구성하기](/맥에서-kubernetes-kind로-쉽고-빠르게-클러스터-구성하기) 글에 정리해 두었다.
 
 # 9. 마치며
 
+KubeEdge를 한 줄로 다시 정리하면, Kubernetes 클러스터는 클라우드에 그대로 두고 로봇에는 kubelet 대신 가벼운 edgecore를 두어, 로봇이 먼저 연결한 터널 하나로 관리하는 방식이다. 회선이 끊기거나 재부팅돼도 로봇이 스스로 앱을 다시 띄운다는 점이 로봇과 가장 잘 맞는 부분이라고 느꼈다.
+
+공부하면서 든 생각은 세 가지다.
+
+- 로봇 앱도 결국 Kubernetes 리소스라서, 클라우드 서비스처럼 Helm 차트로 버전을 관리하고 배포할 수 있다는 점이 좋았다
+- 대신 Kubernetes를 잘 알아야 한다. 축출, taint, DaemonSet 같은 기본 동작이 로봇에서는 전혀 다른 의미가 되기 때문이다
+- 로봇 노드를 잘 구분해서 배포해야 한다. 라벨과 `nodeSelector`로 어느 로봇에 무엇을 띄울지 정하고, 클라우드용 DaemonSet이 로봇으로 가지 않게 막고, 축출 정책까지 챙겨야 한다
+
 # 10. 참고
+
+- https://kubeedge.io/docs/
+- https://github.com/kubeedge/kubeedge
+- https://kubeedge.io/docs/setup/install-with-keadm/
+- https://kubeedge.io/docs/advanced/debug/
+- https://kubeedge.io/docs/setup/deploy-ha/
+- https://kubeedge.io/docs/setup/install-with-keink/
+- https://kubeedge.io/docs/advanced/cilium/
+- https://github.com/kubeedge/kubeedge/blob/master/docs/proposals/sig-node/reliable-message-delivery.md
+- https://github.com/kubeedge/kubeedge/blob/master/CHANGELOG/CHANGELOG-1.15.md
+- https://github.com/kubeedge/website/blob/6b8fd13bbd177fdade81ab4a54d3e6f5f3c70edc/docs/advanced/gpu.md
+- https://github.com/kubeedge/edgemesh
+- https://github.com/kubeedge/keink
+- https://www.cncf.io/announcements/2024/10/15/cloud-native-computing-foundation-announces-kubeedge-graduation/
+- https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/
+- https://kubernetes.io/docs/tasks/run-application/force-delete-stateful-set-pod/
+- https://github.com/fujitatomoya/ros_k8s
+- https://roscon.ros.org/2023/talks/ROS_with_KubernetesKubeEdge.pdf
+- https://www.slideshare.net/slideshow/rostscrosk8s20230309pdf/256331489
