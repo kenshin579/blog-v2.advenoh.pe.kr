@@ -420,6 +420,430 @@ sequenceDiagram
 
 # 6. KubeEdge 설치
 
+설치 절차는 ros_k8s 문서와 KubeEdge 공식 문서([Installing KubeEdge with Keadm](https://kubeedge.io/docs/setup/install-with-keadm/))를 기준으로 정리했다. 각 단계의 **확인** 블록은 직접 실행한 결과가 아니라 ros_k8s 문서에서 발췌한 출력이다. 원문의 노드 이름 `tomoyafujita`(클라우드)와 `ubuntu`(Raspberry Pi)는 읽기 쉽게 `cloud`와 `robot-01`로 바꿨다.
+
+설치는 KubeEdge 설치·관리 CLI인 keadm으로 한다. CloudCore는 클라우드에, edgecore는 로봇에 설치하고, keadm은 양쪽 모두에 필요하다. 로봇 한 대가 엣지 노드 하나가 된다.
+
+| 단계 | 실행 위치 | 하는 일 | 확인 |
+|---|---|---|---|
+| 1. 클러스터 준비 | 클라우드·로봇 | 패키지 설치, `kubeadm init` + CNI, control-plane taint 제거 | `kubectl get nodes` → Ready |
+| 2. CloudCore 설치 | 클라우드 | `keadm init`(Helm으로 CloudCore 배포), `keadm gettoken` | `kubectl get all -n kubeedge` |
+| 3. 로봇 참여 | 로봇 | `keadm join` → edgecore 설치, 인증서 발급(10002), 터널 연결(10000) | `kubectl get nodes` → `agent,edge` |
+| 4. ROS 2 파드 배포 | 클라우드 → 로봇 | `kubectl apply`, CloudCore가 터널로 전달 | `kubectl get pods` → Running |
+
+설치 전에 확인할 것은 다음과 같다.
+
+| 항목 | 이유 |
+|---|---|
+| 클라우드 클러스터에 CNI가 깔려 노드가 `Ready` | `NotReady`면 CloudCore 파드가 뜨지 않는다 |
+| `--advertise-address`가 로봇에서 실제로 닿는 IP | CloudCore 인증서(SAN)에 들어가는 주소라 로봇이 접속하는 주소와 같아야 한다 |
+| 로봇 → 클라우드 10000, 10002 포트 개방 | 터널과 인증서 발급에 필요하다 |
+| 로봇에서 **kubelet이 꺼져 있음** | edgecore가 kubelet을 대체하므로 둘이 같이 돌면 안 된다 |
+| 로봇에 containerd 동작, cgroup driver 일치 | Edged가 CRI로 containerd를 호출한다. `--cgroupdriver`와 containerd의 `SystemdCgroup` 설정이 맞아야 한다 |
+| 클라우드와 로봇의 KubeEdge 버전 일치 | `--kubeedge-version`을 양쪽에서 같게 준다 |
+
+KubeEdge는 내부에 특정 버전의 Kubernetes 라이브러리를 쓰기 때문에 **클러스터의 Kubernetes 버전을 KubeEdge에 맞춰야** 한다. 공식 저장소의 [호환표](https://github.com/kubeedge/kubeedge#kubernetes-compatibility)는 다음과 같다(✓ 정확히 호환, + KubeEdge의 기능이나 API가 해당 Kubernetes에 없을 수 있음, - 해당 Kubernetes의 기능을 KubeEdge가 쓰지 못함).
+
+| KubeEdge | K8s 1.27 | 1.28 | 1.29 | 1.30 | 1.31 | 1.32 |
+|---|---|---|---|---|---|---|
+| 1.19 | ✓ | ✓ | ✓ | - | - | - |
+| 1.20 | + | ✓ | ✓ | ✓ | - | - |
+| 1.21 | + | ✓ | ✓ | ✓ | - | - |
+| 1.22 | + | + | ✓ | ✓ | ✓ | - |
+| **1.23** | + | + | + | **✓** | **✓** | **✓** |
+
+이 글은 ros_k8s를 따라 KubeEdge v1.23.1과 Kubernetes v1.32를 쓴다. ros_k8s의 설치 스크립트는 기본으로 Kubernetes v1.37을 설치하므로, KubeEdge를 쓸 때는 `KUBERNETES_VERSION=v1.32`를 지정하라고 안내한다. 표에 없는 최신 Kubernetes는 비호환으로 확인된 것이 아니라 **검증되지 않은** 것이다.
+
+## 6.1 1단계: 패키지 설치
+
+클라우드 노드와 로봇 모두 같은 준비를 한다.
+
+```bash
+# 1) swap 끄기 (재부팅 후에도 꺼지게 fstab 도 수정), IPv4 forwarding 켜기
+swapoff -a
+sed -i '/\sswap\s/s/^\(.*\)$/#\1/g' /etc/fstab
+echo 'net.ipv4.ip_forward = 1' > /etc/sysctl.d/k8s.conf && sysctl --system
+
+# 2) containerd 설치 후 CRI 켜기 + systemd cgroup
+apt install -y containerd.io  # Docker apt 저장소에서
+mkdir -p /etc/containerd
+containerd config default > /etc/containerd/config.toml
+sed -i 's/SystemdCgroup = false/SystemdCgroup = true/' /etc/containerd/config.toml
+systemctl restart containerd
+
+# 3) Kubernetes v1.32 패키지
+K8S=https://pkgs.k8s.io/core:/stable:/v1.32/deb
+KEY=/etc/apt/keyrings/kubernetes-apt-keyring.gpg
+curl -fsSL $K8S/Release.key | gpg --dearmor -o $KEY
+echo "deb [signed-by=$KEY] $K8S/ /" > /etc/apt/sources.list.d/kubernetes.list
+apt update && apt install -y kubelet kubeadm kubectl
+apt-mark hold kubelet kubeadm kubectl
+
+# 4) keadm v1.23.1
+KE=keadm-v1.23.1-linux-$(dpkg --print-architecture)
+wget https://github.com/kubeedge/kubeedge/releases/download/v1.23.1/$KE.tar.gz
+tar -zxvf $KE.tar.gz && cp $KE/keadm/keadm /usr/local/bin/
+```
+
+- kubelet은 swap이 켜져 있으면 시작하지 않는다
+- `containerd.io`는 Docker apt 저장소의 패키지다(저장소 추가 방법은 ros_k8s의 [Install_Kubernetes_Packages.md](https://github.com/fujitatomoya/ros_k8s/blob/main/docs/Install_Kubernetes_Packages.md)). 이 패키지는 CRI 플러그인이 꺼진 채 설치되므로 기본 설정을 새로 만들어 CRI를 켠다
+- cgroup 드라이버를 kubelet과 같은 systemd로 맞춘다
+- Kubernetes apt 저장소는 마이너 버전별로 나뉘어 있어서 URL의 `v1.32`가 설치 버전을 정한다. `apt-mark hold`로 apt upgrade 때 세 패키지가 따로 올라가는 것을 막는다
+- keadm은 클라우드와 로봇 모두 필요하다. 로봇의 kubelet은 3단계에서 끈다
+
+**확인 (ros_k8s 문서 발췌)**
+
+```bash
+> sysctl net.ipv4.ip_forward
+net.ipv4.ip_forward = 1
+
+> grep SystemdCgroup /etc/containerd/config.toml
+      SystemdCgroup = true
+
+> keadm version
+version: version.Info{Major:"1", Minor:"23", GitVersion:"v1.23.1", GitCommit:"...", GitTreeState:"clean", BuildDate:"2026-07-15T...", GoVersion:"go1.2x.x", Compiler:"gc", Platform:"linux/amd64"}
+```
+
+Kubernetes 패키지는 `kubeadm version`으로 v1.32인지 확인한다.
+
+## 6.2 1단계: control-plane 생성
+
+클라우드 노드에서 클러스터를 만든다.
+
+```bash
+# 1) control-plane 만들기
+kubeadm init --pod-network-cidr=10.244.0.0/16 \
+  --cri-socket unix:///run/containerd/containerd.sock
+mkdir -p $HOME/.kube
+cp -i /etc/kubernetes/admin.conf $HOME/.kube/config
+
+# 2) cilium CLI 설치 후 CNI 배포 → 노드가 Ready 로 바뀜
+CLI=https://github.com/cilium/cilium-cli/releases/latest/download
+curl -fL $CLI/cilium-linux-$(dpkg --print-architecture).tar.gz \
+  | tar xz -C /usr/local/bin
+cilium install --version 1.20.2
+kubectl get nodes
+
+# 3) control-plane taint 제거
+kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+```
+
+**확인 (ros_k8s 문서 발췌, CNI 배포 전)**
+
+원문 출력은 Kubernetes v1.37 기준이라 버전이 찍힌 열은 뺐다.
+
+```bash
+> kubectl get nodes
+NAME    STATUS     ROLES           AGE
+cloud   NotReady   control-plane   1m
+
+> kubectl get pods -A
+NAMESPACE     NAME                                   READY   STATUS    RESTARTS   AGE
+kube-system   coredns-xxxxxxxxxx-xxxxx               0/1     Pending   0          4m3s
+kube-system   coredns-xxxxxxxxxx-xxxxx               0/1     Pending   0          4m3s
+kube-system   etcd-cloud                             1/1     Running   0          4m16s
+kube-system   kube-apiserver-cloud                   1/1     Running   0          4m16s
+kube-system   kube-controller-manager-cloud          1/1     Running   0          4m17s
+kube-system   kube-proxy-xxxxx                       1/1     Running   0          4m3s
+kube-system   kube-scheduler-cloud                   1/1     Running   0          4m16s
+```
+
+CNI가 없어서 노드는 `NotReady`, coredns는 `Pending`이다. 이 상태에서는 CloudCore 파드도 뜰 수 없으므로 Cilium부터 배포한다.
+
+**확인 (ros_k8s 문서 발췌, Cilium 배포)**
+
+```bash
+> cilium install --version 1.20.2
+🔮 Auto-detected Kubernetes kind: kubernetes
+ℹ️  Using Cilium version 1.20.2
+🔮 Auto-detected cluster name: kubernetes
+🔮 Auto-detected kube-proxy has been installed
+
+> cilium status --wait
+    /¯¯\
+ /¯¯\__/¯¯\    Cilium:             OK
+ \__/¯¯\__/    Operator:           OK
+ /¯¯\__/¯¯\    Envoy DaemonSet:    OK
+ \__/¯¯\__/    Hubble Relay:       disabled
+    \__/       ClusterMesh:        disabled
+...<snip>
+```
+
+Cilium이 준비되면 노드가 `Ready`로 바뀐다. 마지막으로 control-plane taint를 지운다.
+
+**확인 (ros_k8s 문서 발췌, taint 제거)**
+
+```bash
+> kubectl get nodes -o json | jq '.items[].spec.taints'
+[
+  {
+    "effect": "NoSchedule",
+    "key": "node-role.kubernetes.io/control-plane"
+  }
+]
+
+> kubectl taint nodes --all node-role.kubernetes.io/control-plane-
+node/cloud untainted
+
+> kubectl get nodes -o json | jq '.items[].spec.taints'
+null
+```
+
+### 6.2.1 taint를 지우는 이유
+
+- kubeadm으로 만든 클러스터는 control-plane 노드에 `node-role.kubernetes.io/control-plane:NoSchedule`이 자동으로 붙는다. kube-apiserver·etcd 같은 클러스터 핵심을 일반 앱으로부터 보호하려는 장치다
+- ros_k8s 튜토리얼은 클라우드 쪽이 control-plane 노드 한 대뿐이다. taint를 그대로 두면 `keadm init`이 만든 CloudCore 파드가 올라갈 노드가 없어 `Pending`에 멈추고, `keadm init`이 `Error: timed out waiting for the condition`으로 실패한다. 그래서 `keadm init` 전에 taint를 지운다. 명령 끝의 `-`가 제거라는 뜻이다
+- 프로덕션에서는 taint를 유지하는 것이 원칙이다. CloudCore를 worker 노드에 두거나, control-plane에 꼭 둬야 하면 CloudCore에만 toleration을 준다
+- 나중에 taint를 다시 붙여도(`NoSchedule`) 이미 떠 있는 CloudCore는 그대로 돈다. 하지만 재시작되면 `Pending`에 걸리므로, 다시 붙일 계획이면 toleration 추가나 worker 이동을 같이 해야 한다
+
+taint 제거는 문을 여는 것이고, toleration은 그 파드에만 통과증을 주는 것이라고 기억하면 된다.
+
+### 6.2.2 엣지 노드에 DaemonSet이 뜨지 않게 하기
+
+DaemonSet은 기본으로 모든 노드에 파드를 띄우려 한다. 3단계에서 로봇이 엣지 노드로 참여하면 kube-proxy와 Cilium DaemonSet도 로봇에 파드를 띄우려 한다. 엣지 노드에서는 이들이 전제하는 환경(노드 간 직접 통신, API 서버 직접 접속)이 없다.
+
+KubeEdge 공식 문서([Enable Kubectl logs/exec](https://kubeedge.io/docs/advanced/debug/))도 kube-proxy가 엣지 노드에 배포되지 않게 하라고 안내하고, 다음 patch를 제시한다.
+
+```bash
+kubectl patch daemonset kube-proxy -n kube-system -p '{"spec": {"template": {"spec": {"affinity": {"nodeAffinity": {"requiredDuringSchedulingIgnoredDuringExecution": {"nodeSelectorTerms": [{"matchExpressions": [{"key": "node-role.kubernetes.io/edge", "operator": "DoesNotExist"}]}]}}}}}}}'
+```
+
+엣지 노드에는 `node-role.kubernetes.io/edge` 라벨이 붙으므로, 이 라벨이 없는 노드에만 뜨게 하는 것이다. Cilium 같은 CNI DaemonSet도 같은 nodeAffinity로 제외한다. Helm으로 설치했다면 patch 대신 values의 affinity 설정으로 넣어야 업그레이드 때 덮어써지지 않는다.
+
+## 6.3 2단계: CloudCore 설치
+
+클라우드 노드에서 CloudCore를 설치하고, 로봇이 참여할 때 쓸 토큰을 받는다.
+
+```bash
+# CloudCore 배포 (Helm chart → kubeedge 네임스페이스)
+keadm init --advertise-address=<클라우드 노드 IP> \
+  --kube-config=/root/.kube/config \
+  --kubeedge-version=v1.23.1
+
+# 배포 확인
+kubectl get all -n kubeedge
+
+# 로봇이 참여할 때 쓸 토큰 출력
+keadm gettoken
+```
+
+`keadm init`은 Helm chart로 `kubeedge` 네임스페이스에 CloudCore를 배포한다. `--advertise-address`는 로봇이 실제로 접속할 수 있는 클라우드 IP여야 한다. 이 주소가 CloudCore 인증서에 들어가기 때문이다.
+
+**확인 (ros_k8s 문서 발췌)**
+
+```bash
+> keadm init --advertise-address=<YOUR_IP_ADDRESS> --kube-config=/root/.kube/config --kubeedge-version=v1.23.1
+Kubernetes version verification passed, KubeEdge v1.23.1 installation will start...
+CLOUDCORE started
+=========CHART DETAILS=======
+Name: cloudcore
+LAST DEPLOYED: Wed Oct 14 15:36:04 2026
+NAMESPACE: kubeedge
+STATUS: deployed
+REVISION: 1
+
+> kubectl get all -n kubeedge
+NAME                             READY   STATUS    RESTARTS   AGE
+pod/cloudcore-xxxxxxxxxx-xxxxx   1/1     Running   0          42s
+
+NAME                TYPE        CLUSTER-IP      EXTERNAL-IP   PORT(S)                                             AGE
+service/cloudcore   ClusterIP   10.111.74.141   <none>        10000/TCP,10001/UDP,10002/TCP,10003/TCP,10004/TCP   42s
+
+NAME                                    DESIRED   CURRENT   READY   UP-TO-DATE   AVAILABLE   NODE SELECTOR   AGE
+daemonset.apps/edge-eclipse-mosquitto   0         0         0       0            0           <none>          42s
+
+NAME                        READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/cloudcore   1/1     1            1           42s
+
+NAME                                   DESIRED   CURRENT   READY   AGE
+replicaset.apps/cloudcore-xxxxxxxxxx   1         1         1       42s
+
+> keadm gettoken
+<토큰>
+```
+
+`cloudcore` Service가 여는 포트는 cloudcore Helm chart에 다음과 같이 정의되어 있다.
+
+| 포트 | 이름 | 용도 |
+|---|---|---|
+| 10000/TCP | cloudhub | 터널(WebSocket). edgecore가 접속하는 기본 포트 |
+| 10001/UDP | cloudhub-quic | 터널(QUIC). WebSocket 대신 쓸 수 있고 기본은 꺼져 있다 |
+| 10002/TCP | cloudhub-https | 엣지가 처음 참여할 때 토큰을 내고 인증서를 발급받는 곳 |
+| 10003/TCP | cloudstream | `kubectl logs`/`exec` 요청을 API 서버에서 받는 곳 |
+| 10004/TCP | tunnelport | `kubectl logs`/`exec`용 스트림 터널. edgecore의 EdgeStream이 접속한다 |
+
+공식 문서 기준으로 로봇에서 접근할 수 있어야 하는 포트는 기본으로 10000과 10002다. `edge-eclipse-mosquitto` DaemonSet은 엣지에서 쓰는 MQTT 브로커다.
+
+## 6.4 3단계: 로봇 참여
+
+이제 로봇에서 진행한다.
+
+```bash
+# 사전 조건: kubelet 끄기, containerd 동작
+systemctl disable --now kubelet
+systemctl is-active containerd
+
+# CloudCore 에 참여 → 로봇에 edgecore 설치·시작
+keadm join --cloudcore-ipport=<클라우드 노드 IP>:10000 \
+  --token=<2단계에서 받은 토큰> \
+  --kubeedge-version=v1.23.1 \
+  --remote-runtime-endpoint=unix:///run/containerd/containerd.sock \
+  --cgroupdriver=systemd
+systemctl status edgecore
+
+# 클라우드 노드에서 확인
+kubectl get nodes -o wide
+```
+
+- edgecore가 kubelet을 대체하므로 kubelet을 먼저 끈다. 1단계에서 kubelet 패키지를 설치했더라도, `kubeadm join`으로 클러스터에 붙이지 않는다면 패키지가 있어도 된다
+- `--kubeedge-version`은 CloudCore와 같은 버전으로 준다
+- `--cgroupdriver`는 containerd의 `SystemdCgroup` 설정과 맞춘다
+- 노드 이름은 기본으로 hostname이고, `--edgenode-name`으로 지정할 수 있다
+- edgecore 설정은 `/etc/kubeedge/config/edgecore.yaml`에 생성되고, 로그는 `journalctl -u edgecore`로 본다
+
+`keadm join`이 하는 일을 순서대로 보면 다음과 같다.
+
+```mermaid
+sequenceDiagram
+    participant E as 로봇 (keadm join)
+    participant C as CloudCore
+    participant API as kube-apiserver
+    E->>C: 10002: 토큰 제출
+    C-->>E: 엣지용 인증서 발급
+    E->>E: edgecore.yaml 생성, systemd 등록, edgecore 시작
+    E->>C: 10000: 인증서로 터널 접속
+    C->>API: Node 등록 (agent, edge)
+```
+
+**확인 (ros_k8s 문서 발췌, 로봇)**
+
+```bash
+> systemctl disable --now kubelet
+> systemctl is-active containerd
+active
+
+> keadm join --cloudcore-ipport=<YOUR_IP_ADDRESS>:10000 --token=<YOUR_TOKEN> --kubeedge-version=v1.23.1 --remote-runtime-endpoint=unix:///run/containerd/containerd.sock --cgroupdriver=systemd
+...<snip>
+I1014 15:39:14.636693  990048 join_others.go:273] KubeEdge edgecore is running, For logs visit: journalctl -u edgecore.service -xe
+I1014 15:39:24.645991  990048 join.go:94] 9. Install Complete!
+
+> systemctl status edgecore
+● edgecore.service
+     Loaded: loaded (/etc/systemd/system/edgecore.service; enabled; preset: enabled)
+     Active: active (running) since Wed 2026-10-14 15:39:14 PST; 1min 21s ago
+   Main PID: 990292 (edgecore)
+      Tasks: 24 (limit: 18670)
+     Memory: 33.3M (peak: 35.1M)
+        CPU: 6.113s
+     CGroup: /system.slice/edgecore.service
+             └─990292 /usr/local/bin/edgecore
+...<snip>
+```
+
+**확인 (ros_k8s 문서 발췌, 클라우드)**
+
+```bash
+> kubectl get nodes -o wide
+NAME       STATUS   ROLES           AGE   VERSION                    INTERNAL-IP     EXTERNAL-IP   OS-IMAGE           KERNEL-VERSION     CONTAINER-RUNTIME
+cloud      Ready    control-plane   30m   v1.32.x                    192.168.1.248   <none>        Ubuntu 24.04 LTS   6.8.0-xx-generic   containerd://2.x.x
+robot-01   Ready    agent,edge      2m    v1.32.x-kubeedge-v1.23.1   192.168.1.79    <none>        Ubuntu 24.04 LTS   6.8.0-xx-raspi     containerd://2.x.x
+```
+
+- 로봇이 ROLES `agent,edge`인 노드로 보인다. VERSION에 `-kubeedge-v1.23.1`이 붙어 일반 노드와 구분된다
+- edgecore 프로세스의 메모리가 `33.3M`으로 찍혀 있다. ros_k8s 문서 환경(Raspberry Pi)에서 설치 직후 찍힌 값 하나지만, edgecore가 가볍다는 설명을 숫자로 볼 수 있다
+
+## 6.5 4단계: ROS 2 파드 배포
+
+이제 평소처럼 `kubectl`로 배포한다. ros_k8s의 [ros2-sample-hostnic.yaml](https://github.com/fujitatomoya/ros_k8s/blob/main/yaml/ros2-sample-hostnic.yaml)은 ROS 2 talker를 로봇에, listener를 클라우드 노드에 띄운다.
+
+```bash
+# talker 는 로봇, listener 는 클라우드에 배포
+kubectl apply -f ./yaml/ros2-sample-hostnic.yaml
+kubectl get pods -o wide
+kubectl delete -f ./yaml/ros2-sample-hostnic.yaml
+```
+
+yaml의 핵심 부분이다(노드 이름만 바꿨다).
+
+```yaml
+# ros2-talker-1 → 로봇 (엣지 노드)
+      containers:
+      - image: tomoyafujita/ros:rolling
+        args: ["source /opt/ros/$ROS_DISTRO/setup.bash && ros2 topic pub /chatter1 std_msgs/String \"data: Hello, I am talker-1\""]
+      nodeSelector:
+        kubernetes.io/hostname: robot-01
+      hostNetwork: true
+
+# ros2-listener-1 → 클라우드 노드
+      containers:
+      - image: tomoyafujita/ros:rolling
+        args: ["source /opt/ros/$ROS_DISTRO/setup.bash && ros2 topic echo /chatter1 std_msgs/String"]
+      nodeSelector:
+        kubernetes.io/hostname: cloud
+      hostNetwork: true
+      tolerations:
+      - key: node-role.kubernetes.io/control-plane
+        operator: Exists
+        effect: NoSchedule
+```
+
+- `nodeSelector`의 hostname으로 talker는 로봇에, listener는 클라우드 노드에 고정한다(5.1절)
+- listener는 control-plane 노드에 올라가야 해서 control-plane taint를 견디는 toleration을 갖고 있다
+
+**확인 (ros_k8s 문서 발췌)**
+
+```bash
+> kubectl apply -f ./yaml/ros2-sample-hostnic.yaml
+deployment.apps/ros2-talker-1 created
+deployment.apps/ros2-listener-1 created
+
+> kubectl get pods -o wide
+NAME                               READY   STATUS    RESTARTS   AGE   IP              NODE       NOMINATED NODE   READINESS GATES
+ros2-listener-1-xxxxxxxxxx-xxxxx   1/1     Running   0          1m    192.168.1.248   cloud      <none>           <none>
+ros2-talker-1-xxxxxxxxxx-xxxxx     1/1     Running   0          1m    192.168.1.79    robot-01   <none>           <none>
+```
+
+### 6.5.1 hostNetwork를 쓰는 이유
+
+위 출력에서 talker 파드의 IP `192.168.1.79`는 6.4절에서 본 `robot-01`의 INTERNAL-IP와 같다. `hostNetwork: true`라서 파드가 로봇의 네트워크를 그대로 쓰기 때문이다. 이렇게 띄우는 이유는 KubeEdge의 터널이 무엇을 나르는지와 관련이 있다.
+
+```mermaid
+flowchart LR
+    subgraph Cloud["클라우드"]
+        CC["CloudCore"]
+        L["클라우드 앱 파드"]
+    end
+    subgraph Edge["엣지"]
+        EC["edgecore"]
+        T["엣지 앱 파드"]
+    end
+    EC == "제어 채널(터널): 파드 정의, 상태, 설정" ==> CC
+    T -. "데이터 경로: 앱끼리의 통신, 터널을 거치지 않음" .-> L
+```
+
+- 터널은 "이 파드를 띄워라", "상태는 이렇다" 같은 **Kubernetes 제어 정보 전용**이다. 앱끼리 주고받는 데이터(HTTP 요청, ROS 2 토픽 등)는 터널을 지나가지 않는다
+- 그래서 "엣지 노드가 클러스터에 붙었다"는 것과 "엣지 앱이 클라우드 앱과 통신할 수 있다"는 것은 **별개의 문제**다
+- 일반 노드에서는 CNI가 파드에 IP를 주고 노드 간 파드 네트워크를 만든다. 하지만 edgecore는 CNI 플러그인을 엣지에 배포해 주지 않는다. CNI 바이너리와 설정이 필요하면 엣지 노드에 직접 설치해야 한다
+- 그래서 이 예제는 CNI가 필요 없도록 ROS 2 파드를 `hostNetwork: true`로 띄운다
+
+**talker와 listener가 통신되는 것은 두 장비가 같은 LAN(192.168.1.x)에 있어서 ROS 2의 DDS discovery가 그대로 되기 때문이지 KubeEdge 덕분이 아니다.** 이 예제가 보여 주는 것은 "클라우드에서 로봇으로 ROS 2 앱을 배포하는 경로"다. 로봇이 다른 네트워크에 있을 때의 이야기는 7.2절에서 다룬다.
+
+마지막으로 `kubectl logs`와 `kubectl exec`다. 5.2절에서 본 것처럼 엣지 노드의 파드에는 CloudStream/EdgeStream 터널로 접근한다. Helm으로 설치한 CloudCore는 CloudStream이 기본으로 켜져 있고 스트림 인증서도 자동으로 만들어진다. 반면 edgecore의 EdgeStream은 기본값이 꺼짐이므로, 로봇의 `edgecore.yaml`에서 켜고 CloudCore의 10004 포트를 지정한 뒤 edgecore를 재시작한다([공식 문서](https://kubeedge.io/docs/advanced/debug/)).
+
+```yaml
+# /etc/kubeedge/config/edgecore.yaml
+modules:
+  edgeStream:
+    enable: true
+    server: <클라우드 IP>:10004
+```
+
+처음부터 켜려면 `keadm join`의 `--set` 옵션으로 넘긴다.
+
+```bash
+keadm join ... --set modules.edgeStream.enable=true,modules.edgeStream.server=<클라우드 IP>:10004
+```
+
 # 7. 장단점과 정리
 
 # 8. FAQ
