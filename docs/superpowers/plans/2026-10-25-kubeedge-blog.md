@@ -16,7 +16,7 @@
 
 | 별칭 | 절대 경로 |
 |------|----------|
-| BLOG_REPO | `/Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr` |
+| BLOG_REPO | `/Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge` |
 | SP | `/private/tmp/claude-501/-Users-user-src-workspace-blogv2/10eac8f3-0e71-414a-bce6-adf2341f31cc/scratchpad` |
 | NOTE | `SP/sources/kubeedge-note.md` (스터디 노트 사본, 비공개) |
 | SLIDES | `SP/sources/slides-19-32.md` (발표 자료 19~32번 슬라이드 텍스트와 발표자 노트, 비공개) |
@@ -24,7 +24,7 @@
 | ARTICLE | `BLOG_REPO/docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md` |
 | FACTS | `SP/research/fact-check.md` (사실 확인 결과표, 커밋하지 않음) |
 
-BLOG_REPO는 이미 `feat/kubeedge-입문` 브랜치에 있고 spec이 커밋되어 있다(`aba9667`).
+BLOG_REPO는 `feat/kubeedge-입문` 브랜치 전용 git worktree이고 spec이 커밋되어 있다(`aba9667`). 원래 저장소 폴더(`blog-v2.advenoh.pe.kr`)는 다른 작업이 쓰고 있으므로 그 폴더로 `cd`하거나 그 폴더에서 브랜치를 바꾸지 않는다. dev 서버도 겹치지 않게 3001 포트를 쓴다.
 
 **NOTE·SLIDES는 비공개 자료다.** 내용을 옮길 때 비공개 저장소 이름, 파일 경로, 사내 시스템 이름, 팀 내부 이야기는 ARTICLE·커밋 메시지·PR 본문에 쓰지 않는다. SLIDES의 발표자 노트 중 개인 소감 외의 팀 코멘트는 쓰지 않는다.
 
@@ -131,8 +131,8 @@ Expected: 첫 명령은 `18`. 두 번째 명령은 본문에서 고치거나 뺄
 - [ ] **Step 1: 파일 생성 (frontmatter + 절 제목 뼈대)**
 
 ```bash
-mkdir -p "/Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr/docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기"
-cat > "/Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr/docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md" <<'EOF'
+mkdir -p "/Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge/docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기"
+cat > "/Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge/docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md" <<'EOF'
 ---
 title: "KubeEdge 입문 - 로봇을 Kubernetes 엣지 노드로 관리하기"
 description: "로봇을 Kubernetes 노드로 붙이면 무엇이 문제인지, KubeEdge가 이를 어떻게 해결하는지 구조와 설치 흐름으로 정리한다"
@@ -205,7 +205,7 @@ EOF
 - [ ] **Step 4: 커밋**
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 git add "docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md"
 git commit -q -F - <<'EOF'
 docs: KubeEdge 입문 초안 뼈대와 1~2절 작성
@@ -278,7 +278,7 @@ EOF
 - [ ] **Step 3: 커밋**
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 git add "docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md"
 git commit -q -F - <<'EOF'
 docs: KubeEdge 입문 3~4절 작성
@@ -366,7 +366,7 @@ flowchart TB
 - [ ] **Step 6: 커밋**
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 git add "docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md"
 git commit -q -F - <<'EOF'
 docs: KubeEdge 입문 5절 구조 작성
@@ -666,7 +666,7 @@ flowchart LR
 - [ ] **Step 7: 커밋**
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 git add "docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md"
 git commit -q -F - <<'EOF'
 docs: KubeEdge 입문 6절 설치 작성
@@ -734,7 +734,7 @@ kind 사용법은 [맥에서 Kubernetes kind로 쉽고 빠르게 클러스터 �
 블로그 내부 링크 형식은 `](/{slug})`다(카테고리 없음, 기존 글들도 이 형식). kind 글 폴더는 `contents/database/맥에서-kubernetes-kind로-쉽고-빠르게-클러스터-구성하기/`에 있고 slug는 폴더 이름이다. 링크 전에 폴더가 있는지 확인한다:
 
 ```bash
-ls -d /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr/contents/*/맥에서-kubernetes-kind로-쉽고-빠르게-클러스터-구성하기
+ls -d /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge/contents/*/맥에서-kubernetes-kind로-쉽고-빠르게-클러스터-구성하기
 ```
 
 - [ ] **Step 5: 9절 마치며**
@@ -765,7 +765,7 @@ ls -d /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr/contents/*/맥에�
 - [ ] **Step 7: 커밋**
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 git add "docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md"
 git commit -q -F - <<'EOF'
 docs: KubeEdge 입문 7~10절 작성
@@ -787,7 +787,7 @@ EOF
 모든 명령은 BLOG_REPO에서 실행한다. `A` 변수를 먼저 잡는다:
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 A="docs/start/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/index.md"
 ```
 
@@ -893,7 +893,7 @@ EOF
 
 ```bash
 df -h /System/Volumes/Data | tail -1
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 [ -d node_modules ] || npm install --legacy-peer-deps
 ```
 
@@ -902,18 +902,18 @@ Expected: 여유 공간 5GB 이상, 설치 성공. 여유가 5GB 미만이면 �
 - [ ] **Step 2: 임시 복사 후 dev 서버 실행**
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 SLUG="kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기"
 mkdir -p "contents/cloud/$SLUG"
 cp "docs/start/$SLUG/index.md" "contents/cloud/$SLUG/index.md"
-npm run dev
+npm run dev -- -p 3001
 ```
 
 dev 서버는 `run_in_background`로 띄운다.
 
 - [ ] **Step 3: 브라우저에서 확인**
 
-chrome-devtools MCP로 `http://localhost:3000/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/`를 연다(404면 `http://localhost:3000/posts/`에서 글 링크를 찾아 들어간다). 다음을 확인한다:
+chrome-devtools MCP로 `http://localhost:3001/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기/`를 연다(404면 `http://localhost:3001/posts/`에서 글 링크를 찾아 들어간다). 다음을 확인한다:
 
 1. Mermaid 렌더 결과. `components/article/mermaid-renderer.tsx`는 성공한 블록을 `div.mermaid-diagram`으로 교체하고, 실패한 블록은 `pre.language-mermaid`에 `mermaid-error` 클래스를 붙인 채 남긴다. 렌더가 끝나도록 몇 초 기다린 뒤 `evaluate_script`로 확인:
 
@@ -936,7 +936,7 @@ Expected: `failed`와 `pending`이 0이고 `rendered`가 본문의 ```` ```merma
 - [ ] **Step 4: 임시 복사본 삭제와 dev 서버 종료**
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 rm -rf "contents/cloud/kubeedge-입문-로봇을-kubernetes-엣지-노드로-관리하기"
 git status --short
 ```
@@ -963,7 +963,7 @@ EOF
 - [ ] **Step 1: 커밋 목록 확인**
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 git log --oneline origin/main..HEAD
 git status --short
 ```
@@ -975,7 +975,7 @@ Expected: spec, plan, 본문 커밋들이 보이고 작업 트리가 깨끗하�
 리뷰어는 지정하지 않는다(`--reviewer` 금지). 본문의 "사실 확인" 절은 FACTS에서 `수정`·`뺌` 항목만 한 줄씩 요약해 채운다. 비공개 자료의 경로·이름은 쓰지 않는다.
 
 ```bash
-cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr
+cd /Users/user/src/workspace_blogv2/blog-v2.advenoh.pe.kr-kubeedge
 git push -u origin feat/kubeedge-입문
 gh pr create --base main --title "docs: KubeEdge 입문 초안 작성" --body "$(cat <<'EOF'
 ## 개요
