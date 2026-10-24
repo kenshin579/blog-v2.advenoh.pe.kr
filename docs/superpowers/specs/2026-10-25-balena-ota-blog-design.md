@@ -24,7 +24,7 @@ ROSCon 2026 1일차 balena 스폰서 드롭인 세션("Scaling ROS Deployments i
 | 시리즈 | 없음 (`series` frontmatter 넣지 않음) |
 | 부가물 | 슬라이드·퀴즈·이미지 없음. 도식은 Mermaid |
 | 독자 | 컨테이너·Kubernetes와 ROS 2 기본 개념(노드, 토픽, DDS)을 아는 개발자 |
-| 문체 | `~합니다`체 |
+| 문체 | `~다`체 (발행 글 전체가 `~다`체라 맞춤. 원본 노트·발표 자료는 `~합니다`체) |
 
 frontmatter:
 
