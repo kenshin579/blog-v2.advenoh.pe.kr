@@ -56,7 +56,7 @@ BLOG_REPO는 `feat/kubeedge-입문` 브랜치 전용 git worktree이고 spec이 
 2. **추측 금지**: 사실·수치·날짜·버전은 NOTE·SLIDES·ROSK8S에 있거나 FACTS에서 "확인"된 것만 쓴다. NOTE의 "(추론)", "(확인 필요)", "(구조상 추론)" 표시가 붙은 문장은 FACTS 결과에 따라 고쳐 쓰거나 뺀다. 표시 문구 자체는 본문에 남기지 않는다
 3. **Mermaid**: 노드 텍스트와 엣지 라벨 모두에 `<br/>`, `<br>` 등 HTML 태그를 쓰지 않는다. NOTE의 다이어그램을 옮길 때는 줄바꿈 대신 쉼표나 괄호로 한 줄로 만든다
 4. **상호참조**: NOTE의 "N장 참고", "FAQ N번" 같은 내부 참조는 이 글의 절 번호(예: "5.4절")로 바꾼다. `[[위키링크]]`는 남기지 않는다
-5. **heading**: 절은 `# N. 제목`, 하위 절은 `## N.M 제목`. heading에 수식·HTML을 쓰지 않는다
+5. **heading**: `content-heading-style` 스킬 규칙을 따른다. 절은 `# N. 제목`, 하위 절은 `## N.M 제목`, 그 아래는 `### N.M.K 제목`. 번호 없는 heading을 쓰지 않는다. H3는 내용이 길 때만 쓴다. heading에 수식·HTML을 쓰지 않는다
 
 ---
 
@@ -500,9 +500,9 @@ node/cloud untainted
 null
 ```
 
-이어서 `### taint를 지우는 이유` 소제목으로 SLIDES 25번 발표자 노트의 4개 항목을 해라체로 옮긴다. 핵심: 지우지 않으면 `keadm init`이 `Error: timed out waiting for the condition`으로 실패한다(ROSK8S Setup_KubeEdge.md). 프로덕션에서는 taint를 유지하고 CloudCore를 worker 노드에 두거나 CloudCore에만 toleration을 준다. "taint 제거는 문을 여는 것, toleration은 그 파드에만 통과증을 주는 것".
+이어서 `### 6.2.1 taint를 지우는 이유` 소제목으로 SLIDES 25번 발표자 노트의 4개 항목을 해라체로 옮긴다. 핵심: 지우지 않으면 `keadm init`이 `Error: timed out waiting for the condition`으로 실패한다(ROSK8S Setup_KubeEdge.md). 프로덕션에서는 taint를 유지하고 CloudCore를 worker 노드에 두거나 CloudCore에만 toleration을 준다. "taint 제거는 문을 여는 것, toleration은 그 파드에만 통과증을 주는 것".
 
-마지막으로 `### 엣지 노드에 DaemonSet이 뜨지 않게 하기` 소제목: NOTE 1232-1246행의 kube-proxy affinity patch와 설명. FACTS #12 결과에 맞춰 문장을 다듬는다. 로봇이 3단계에서 참여한 뒤 Cilium·kube-proxy DaemonSet이 엣지 노드로 가려 한다는 시점을 밝힌다.
+마지막으로 `### 6.2.2 엣지 노드에 DaemonSet이 뜨지 않게 하기` 소제목: NOTE 1232-1246행의 kube-proxy affinity patch와 설명. FACTS #12 결과에 맞춰 문장을 다듬는다. 로봇이 3단계에서 참여한 뒤 Cilium·kube-proxy DaemonSet이 엣지 노드로 가려 한다는 시점을 밝힌다.
 
 - [ ] **Step 4: 6.3 2단계: CloudCore 설치**
 
@@ -641,7 +641,7 @@ ros2-talker-1-xxxxxxxxxx-xxxxx     1/1     Running   0          1m    192.168.1.
 
 listener가 메시지를 받는 출력은 문서에 없으므로 만들지 않는다.
 
-이어서 `### hostNetwork를 쓰는 이유` 소제목:
+이어서 `### 6.5.1 hostNetwork를 쓰는 이유` 소제목:
 - 출력에서 talker 파드 IP `192.168.1.79`가 6.4절 `robot-01`의 INTERNAL-IP와 같다. hostNetwork라 파드가 장비의 네트워크를 그대로 쓴다
 - 제어 채널과 데이터 경로는 다르다(NOTE 580-598행). 다이어그램은 NOTE 582-594행을 HTML 태그 없이 옮긴다:
 
@@ -695,7 +695,7 @@ EOF
 
 - [ ] **Step 2: 7.2 주의할 점**
 
-출처: SLIDES 31번, NOTE 12.3(1175-1186행), 항목별 NOTE 위치는 아래. 항목마다 `### ` 소제목 + 한 단락.
+출처: SLIDES 31번, NOTE 12.3(1175-1186행), 항목별 NOTE 위치는 아래. 항목마다 `### 7.2.N` 소제목(7.2.1~7.2.7) + 한 단락.
 
 1. **다른 네트워크 간 DDS discovery** (NOTE 628-633행): DDS는 멀티캐스트로 서로를 찾는다. KubeEdge 터널은 제어 정보만 나른다. NAT 뒤·LTE라면 Fast-DDS Discovery Server, `ROS_STATIC_PEERS`, rmw_zenoh 같은 유니캐스트 방식과 VPN 같은 경로를 따로 구성해야 한다
 2. **엣지 CNI 없음과 EdgeMesh** (NOTE 608-626행): 선택지 표(NOTE 610-615행: hostNetwork / 엣지에 CNI 직접 설치 / EdgeMesh / Cilium 연동). EdgeMesh 설명(NOTE 621-624행). NOTE 626행(DDS를 대신하지 않음)은 FACTS #3 결과대로. hostNetwork 운영 시 포트·`ROS_DOMAIN_ID` 충돌을 직접 관리해야 한다
@@ -719,7 +719,7 @@ EOF
 
 - [ ] **Step 4: 8절 FAQ**
 
-출처: SLIDES 32번(+ 발표자 노트), NOTE FAQ 3·4·5·6(1248-1262행), FACTS #8·#9. 질문은 `## Q. ...` 형식.
+출처: SLIDES 32번(+ 발표자 노트), NOTE FAQ 3·4·5·6(1248-1262행), FACTS #8·#9. 질문은 `## 8.N 질문` 형식(8.1~8.5).
 
 1. **실제 production에서 Kubernetes·KubeEdge로 로봇을 운용했나요?** — ROSCon 모임에서 Tomoya Fujita에게 직접 물었지만 confidential이라 답을 듣지 못했다 (개인 목소리 예외 허용: 현장 일화)
 2. **CloudCore가 죽으면 엣지 앱도 멈추나요?** — 멈추지 않는다. 엣지 입장에서는 클라우드와 끊긴 것과 같아 5.4절처럼 앱은 계속 돌고 새 배포·상태 보고만 멈춘다. HA 구성 문장은 FACTS #8 결과대로
@@ -839,7 +839,7 @@ Expected: 출력 없음. 남아 있으면 이 글의 절 번호 참조로 바꾼
 grep -n -E '^#{1,2} ' "$A"
 ```
 
-Expected: `# 1. 들어가며`부터 `# 10. 참고`까지 순서대로, 하위 절은 `## 4.1`~`## 4.6`, `## 5.1`~`## 5.4`, `## 6.1`~`## 6.5`, `## 7.1`~`## 7.3`, 8절은 `## Q.` 5개
+Expected: `# 1. 들어가며`부터 `# 10. 참고`까지 순서대로, 하위 절은 `## 4.1`~`## 4.6`, `## 5.1`~`## 5.4`, `## 6.1`~`## 6.5`, `## 7.1`~`## 7.3`, 8절은 `## 8.1`~`## 8.5`, H3는 `### N.M.K` 번호 형식(6.2.1, 6.2.2, 6.5.1, 7.2.1~7.2.7 등)
 
 - [ ] **Step 7: 원문 노드 이름과 토큰 잔재**
 
