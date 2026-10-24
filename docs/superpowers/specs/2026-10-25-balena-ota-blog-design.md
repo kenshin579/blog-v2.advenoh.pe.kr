@@ -6,7 +6,7 @@
 
 ## 1. 목적
 
-ROSCon 2026 1일차 balena 스폰서 드롭인 세션("Scaling ROS 2 Deployments in Production with Secure OTA Updates")을
+ROSCon 2026 1일차 balena 스폰서 드롭인 세션("Scaling ROS Deployments in Production with Secure OTA Updates Using balena")을
 듣고 공부한 내용을 블로그 글 한 편으로 옮긴다. 시리즈로 나누지 않는다.
 
 뼈대는 발표 자료의 balena 파트이고, 발표에서 짧게 지나간 부분을 스터디 노트로 보강한다.
