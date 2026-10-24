@@ -187,6 +187,237 @@ KubeEdge는 2018년 11월 Huawei Cloud가 오픈소스로 공개했다. 2019년 
 
 # 5. KubeEdge 구조
 
+```mermaid
+flowchart TB
+    subgraph Cloud["클라우드 (기존 Kubernetes 클러스터)"]
+        API["kube-apiserver"]
+        CC["CloudCore (kubeedge 네임스페이스 파드)"]
+        CC -- "list-watch / 상태 반영" --> API
+    end
+    subgraph Edge["엣지 장비 (로봇, Raspberry Pi 등)"]
+        EC["edgecore (systemd 서비스)"]
+        DB[("SQLite")]
+        CRT["containerd"]
+        P1["앱 파드"]
+        P2["앱 파드"]
+        EC --- DB
+        EC --> CRT --> P1
+        CRT --> P2
+    end
+    EC == "WebSocket/QUIC 터널, 엣지가 먼저 접속" ==> CC
+```
+
+- **클라우드**: 기존 Kubernetes를 그대로 쓰고 **CloudCore**가 하나 추가된다. `keadm init`이 Helm chart로 `kubeedge` 네임스페이스에 배포한다
+- **엣지**: kubelet 대신 **edgecore**가 systemd 서비스로 돈다. 바이너리 하나이고, 컨테이너 런타임(containerd)은 따로 필요하다
+- **연결**: 엣지 → 클라우드 방향으로 **장기 연결 하나**를 맺는다. 클라우드에서 엣지로 새 연결을 열 일이 없으므로 엣지가 NAT 뒤에 있어도 된다. 필요한 것은 클라우드 쪽 포트 개방뿐이다
+- **클라우드에서 보이는 모습**: 엣지 장비도 `kubectl get nodes`에 일반 노드처럼 나타난다. ROLES가 `agent,edge`로 표시되고(6.4절), 배포는 평소처럼 `kubectl`이나 Helm으로 한다
+
+역할을 대리인 관계로 보면 이해가 쉽다.
+
+| | 상대방이 보기에 |
+|---|---|
+| **CloudCore** | 엣지 입장에서 "API 서버의 대리인" |
+| **edgecore** | 클라우드 입장에서 "kubelet의 대리인" |
+
+본사(클라우드)와 지점(엣지)에 비유할 수 있다. 지점이 본사에 전화를 걸어 회선을 열어 두고 지시를 받는다. 받은 지시서는 지점 캐비닛(SQLite)에 보관한다. 전화가 끊겨도 지점은 캐비닛을 보고 하던 일을 계속하고, 다시 연결되면 그동안의 일을 보고한다.
+
+## 5.1 `kubectl apply`부터 로봇에 파드가 뜨기까지
+
+1. `kubectl apply`로 Deployment를 저장하면 스케줄러가 엣지 노드를 지정한다
+2. CloudCore가 엣지 노드에 배정된 파드를 watch한다
+3. 엣지가 먼저 열어 둔 터널로 파드 정보를 엣지에 밀어 준다(push)
+4. edgecore가 받은 정보를 SQLite에 먼저 저장하고 ACK를 보낸다
+5. containerd로 이미지를 받고 컨테이너를 실행한다
+6. 상태(`Running`)를 터널로 보고하고, CloudCore가 API 서버에 반영한다
+
+모듈 단위로 펼치면 다음과 같다. 각 모듈은 5.2절과 5.3절에서 설명한다.
+
+```mermaid
+sequenceDiagram
+    actor U as 사용자
+    participant API as kube-apiserver
+    participant SCH as scheduler
+    participant ECtl as EdgeController
+    participant CH as CloudHub
+    participant EH as EdgeHub
+    participant MM as MetaManager (SQLite)
+    participant ED as Edged
+    participant CT as containerd
+
+    U->>API: kubectl apply (Deployment)
+    API->>API: 컨트롤러가 Pod 생성
+    SCH->>API: Pod.spec.nodeName = 엣지 노드
+    API-->>ECtl: watch: 엣지 노드에 배정된 Pod
+    ECtl->>CH: Pod (+ ConfigMap, Secret) 메시지
+    CH->>EH: 터널로 전송
+    EH->>MM: 메시지 전달
+    MM->>MM: SQLite 에 저장
+    MM-->>CH: ACK
+    MM->>ED: Pod 생성 요청
+    ED->>CT: CRI: 이미지 pull, 컨테이너 시작
+    ED->>MM: Pod 상태 (Running)
+    MM->>EH: 상태 메시지
+    EH->>CH: 터널로 전송
+    CH->>ECtl: 상태 전달
+    ECtl->>API: Pod status 갱신
+    U->>API: kubectl get pods → Running
+```
+
+일반 노드와 다른 점은 세 가지다.
+
+- 일반 노드는 **kubelet이 API 서버를 직접 watch**한다. KubeEdge는 **CloudCore가 대신 watch하다가 엣지로 밀어 준다**
+- 엣지는 받은 정보를 먼저 **SQLite에 저장**하고 ACK를 보낸 다음 실행한다. 그래서 이후 재부팅해도 같은 정보로 다시 띄울 수 있다
+- 엣지는 **자기 노드에 배정된 것만** 받는다. 클러스터 전체 정보를 받지 않으므로 회선 부담이 작다
+
+스케줄러는 엣지 노드를 일반 노드와 똑같이 취급한다. 그래서 의도한 로봇에 파드를 보내려면 라벨로 지정해야 한다.
+
+```yaml
+# 엣지 노드 중 하나에
+nodeSelector:
+  node-role.kubernetes.io/edge: ""
+
+# 특정 로봇 한 대에
+nodeSelector:
+  kubernetes.io/hostname: robot-01
+```
+
+## 5.2 CloudCore 모듈
+
+CloudCore와 edgecore는 각각 여러 모듈의 묶음이다. 모듈마다 기능이 하나씩 있고, 모듈끼리는 Beehive라는 프로세스 내부 메시지 프레임워크로 메시지를 주고받는다.
+
+| 모듈 | 하는 일 |
+|---|---|
+| **CloudHub** | edgecore가 접속하는 WebSocket/QUIC 서버. 엣지 노드별 메시지 큐를 두고 ACK를 받으며 순서대로 보낸다. 엣지 인증서 발급(10002)도 맡는다 |
+| **EdgeController** | 엣지 노드에 배정된 Pod와 그 파드가 쓰는 ConfigMap·Secret 등을 API 서버에서 watch해 해당 엣지로 보낸다. 엣지에서 올라온 노드·파드 상태를 API 서버에 반영한다 |
+| **DeviceController** | 장치 CRD(`Device`, `DeviceModel`)를 엣지의 DeviceTwin과 동기화한다 |
+| **SyncController** | 어느 엣지에 어떤 리소스가 어느 버전까지 전달됐는지 `ObjectSync` CRD로 기록하고, 빠진 메시지를 보충한다 |
+| **CloudStream** | `kubectl logs`/`exec` 요청을 엣지로 전달한다. 엣지의 EdgeStream과 짝을 이룬다 |
+
+이 밖에 선택 기능으로 클라우드와 엣지 사이 사용자 정의 메시지를 라우팅하는 Router, 엣지 앱의 list-watch를 지원하는 DynamicController가 있다.
+
+정리하면 **CloudHub가 통신**을 맡고, **EdgeController·DeviceController가 "무엇을 보낼지"** 정하고, **SyncController가 "제대로 갔는지"** 확인하는 구조다.
+
+엣지로 가는 길은 둘이다.
+
+```mermaid
+flowchart LR
+    U1["kubectl apply"] -->|"배포 1. Pod 생성"| API["kube-apiserver"]
+    U2["kubectl logs / exec"] -->|"로그 1. 요청"| API
+    subgraph CC["CloudCore"]
+        ECtl["EdgeController"]
+        CH["CloudHub"]
+        CS["CloudStream"]
+    end
+    API -->|"배포 2. 배정된 Pod 감지"| ECtl
+    ECtl -->|"배포 3. 메시지 전달"| CH
+    API -->|"로그 2. 전달 (10003)"| CS
+    ECtl ~~~ CS
+    CH <==>|"배포 4. 전송 / 배포 5. Running 보고 (터널 10000)"| EDGE["엣지 노드"]
+    CS <==>|"로그 3. 요청 / 로그 4. 로그 스트림 (터널 10004)"| EDGE
+```
+
+- **배포 경로**: EdgeController가 kubelet 대신 API 서버를 지켜보다가, 엣지로 보낼 Pod를 CloudHub에 넘긴다. 엣지가 보고한 상태는 같은 길을 거꾸로 올라가 API 서버의 Pod status에 반영된다
+- **로그 경로**: 일반 노드라면 API 서버가 kubelet(10250)에 직접 접속하지만, 엣지 노드에는 직접 닿을 수 없다. 그래서 CloudStream이 대신 받아 별도의 스트림 터널로 넘긴다. 켜는 방법은 6.5절에 있다
+
+Kubernetes 리소스와 상태는 CloudHub 터널로, `kubectl logs`/`exec` 같은 실시간 스트림은 CloudStream 터널로 간다.
+
+## 5.3 edgecore 모듈
+
+| 모듈 | 하는 일 |
+|---|---|
+| **EdgeHub** | CloudHub에 접속하는 클라이언트. 하트비트를 보내고, 끊기면 다시 접속한다. 받은 메시지를 내부 모듈로 나눠 준다 |
+| **MetaManager** | EdgeHub와 Edged 사이의 메시지 처리기. 받은 Pod·ConfigMap·Secret 등을 **SQLite에 저장**한 뒤 Edged에 넘긴다 |
+| **Edged** | **경량 kubelet**. kubelet을 최적화해 edgecore에 통합한 것으로, v1.11에서 Beta, v1.12에서 GA가 되었다. CRI로 containerd를 호출해 파드를 띄우고 probe·볼륨·상태 보고를 처리한다. API 서버 대신 MetaManager를 통해 정보를 주고받는다 |
+| **MetaServer** | 엣지 안의 작은 API 서버(기본 주소 `127.0.0.1:10550`). 엣지 파드가 Kubernetes API를 list-watch하면 클라우드 대신 SQLite의 데이터로 응답한다. 기본으로 꺼져 있다 |
+| **EventBus** | MQTT 클라이언트. 엣지의 MQTT 브로커(mosquitto)를 통해 장치·앱과 메시지를 주고받는다 |
+| **DeviceTwin** | 장치 상태를 SQLite에 저장하고 클라우드와 동기화한다 |
+| **ServiceBus** | 클라우드에서 엣지의 HTTP 서버를 호출할 때 쓰는 HTTP 클라이언트 |
+| **EdgeStream** | CloudStream과 짝. `kubectl logs`/`exec`를 엣지 파드로 연결한다 |
+
+**받은 Pod를 SQLite에 먼저 저장한 다음 Edged에 넘기는 것이 일반 kubelet과 다른 점이다.** 이 저장 덕분에 5.4절의 재부팅 복구가 가능하다.
+
+설정 파일은 `/etc/kubeedge/config/edgecore.yaml`에 있고, 모듈별로 `enable`을 켜고 끌 수 있다. 고친 뒤에는 `systemctl restart edgecore`로 반영한다.
+
+```yaml
+# /etc/kubeedge/config/edgecore.yaml 일부 (구조만 보기 위한 발췌, 값은 환경마다 다름)
+database:
+  dataSource: /var/lib/kubeedge/edgecore.db
+modules:
+  edgeHub:
+    heartbeat: 15
+    websocket:
+      enable: true
+      server: <클라우드 IP>:10000
+  edged:
+    tailoredKubeletConfig:
+      cgroupDriver: systemd
+  metaManager:
+    metaServer:
+      enable: true        # 필요할 때 켬 (기본값 false)
+  edgeStream:
+    enable: true          # kubectl logs/exec 를 쓰려면 켬 (기본값 false)
+    server: <클라우드 IP>:10004
+```
+
+## 5.4 끊겼을 때와 재부팅했을 때
+
+클라우드와 끊기거나 엣지가 재시작돼도 엣지의 앱이 정상 동작하도록 하는 것을 KubeEdge는 **엣지 자율성(Edge Autonomy)**이라고 부른다. KubeEdge의 가장 중요한 특징이다. 끊겼을 때 양쪽에서 각각 무슨 일이 일어나는지 나눠서 본다.
+
+### 5.4.1 끊겼을 때 엣지에서
+
+- 실행 중인 파드는 그대로 돈다
+- probe와 재시작 정책(`restartPolicy`)도 엣지에서 계속 동작한다. 컨테이너가 죽으면 엣지가 알아서 다시 띄운다
+- **edgecore가 재시작되거나 장비가 재부팅돼도 SQLite에 저장된 파드 정보로 다시 띄운다.** 일반 kubelet과 가장 크게 다른 점이다(4.3절)
+- MetaServer를 켜 두었다면 엣지 앱의 Kubernetes API 조회에도 로컬 데이터로 계속 응답한다
+
+재부팅 후 복구 흐름은 다음과 같다.
+
+```mermaid
+flowchart LR
+    R["장비 재부팅"] -->|"1. edgecore 시작"| ED["Edged"]
+    ED -->|"2. 저장된 Pod 정보 요청"| MM["MetaManager"]
+    MM -->|"3. 읽기"| DB[("SQLite")]
+    ED -->|"4. 컨테이너 다시 시작"| CT["containerd"]
+    EH["EdgeHub"] -.->|"5. 클라우드와 연결되면 상태 보고"| CLOUD["CloudCore"]
+```
+
+1~4번은 클라우드와 연결되지 않아도 엣지 혼자 진행된다.
+
+### 5.4.2 끊겼을 때 클라우드에서
+
+- 하트비트가 끊기므로 노드가 `NotReady`로 바뀐다
+- 일반 파드는 3.3절에서 본 규칙대로 기본 5분 뒤 **축출 대상**이 된다. 클라우드에서는 파드가 `Terminating`으로 보이지만, 그 결정이 엣지에 전달되지 못하므로 엣지에서는 계속 돈다
+- 끊긴 동안 클라우드에서 바뀐 것은 다시 연결된 뒤에 엣지로 내려간다. KubeEdge 설계 문서([reliable message delivery](https://github.com/kubeedge/kubeedge/blob/master/docs/proposals/sig-node/reliable-message-delivery.md))에 따르면, 엣지가 오프라인인 동안 CloudHub의 노드별 큐가 메시지를 쌓아 두었다가 다시 연결되면 보낸다. 삭제 이벤트를 놓친 경우에도 SyncController가 `ObjectSync` 기록과 실제 객체를 비교해 삭제 이벤트를 다시 만들어 보낸다. 설계대로라면 앞의 `Terminating` 파드도 다시 연결된 뒤 이 경로로 엣지에서 정리된다
+
+로봇처럼 파드가 그 장비에 묶여 있어야 하는 경우에는 이 축출이 오히려 문제를 만든다. 무슨 일이 생기고 어떻게 피하는지는 7.2절에서 다룬다.
+
+### 5.4.3 메시지 전달 보장
+
+불안정한 회선에서 메시지가 빠지지 않도록 다음 장치를 둔다.
+
+```mermaid
+sequenceDiagram
+    participant CH as CloudHub
+    participant OS as ObjectSync CRD
+    participant E as edgecore
+
+    CH->>E: 메시지 (resourceVersion 100)
+    E->>E: SQLite 저장
+    E-->>CH: ACK
+    CH->>OS: "이 노드에 100 까지 전달" 기록
+    CH-xE: 메시지 (101) — 회선 끊김
+    Note over CH: ACK 없음 → 재전송 대기
+    E->>CH: 재접속
+    CH->>OS: 마지막 전달 버전 확인 (100)
+    CH->>E: 101 부터 다시 전송
+    E-->>CH: ACK
+```
+
+- CloudHub는 엣지 노드마다 메시지 큐를 두고, 엣지가 **로컬에 저장한 뒤 보내는 ACK**를 받아야 다음 메시지를 보낸다
+- ACK가 오지 않으면 재전송한다. ACK만 유실돼 같은 메시지가 두 번 가도 엣지가 중복을 처리한다
+- 전달된 리소스 버전은 `ObjectSync` CRD(클러스터 범위 리소스는 `ClusterObjectSync`)에 기록되므로, CloudCore가 재시작해도 이미 보낸 것을 다시 보내지 않고 이어서 보낼 수 있다
+- 결과적으로 **최소 한 번(at-least-once)** 전달을 보장한다. 설계 문서는 정확히 한 번(exactly-once)이 비용이 커서 at-least-once를 택했다고 밝힌다
+
 # 6. KubeEdge 설치
 
 # 7. 장단점과 정리
