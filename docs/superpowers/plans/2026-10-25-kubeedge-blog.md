@@ -889,6 +889,8 @@ EOF
 
 `docs/start/`의 글은 사이트에 렌더되지 않는다. Mermaid는 빌드가 아니라 브라우저에서 렌더되므로, 초안을 잠시 `contents/cloud/`에 복사해 dev 서버에서 본다.
 
+> **실행 시 변경 (2026-10-25)**: dev 서버는 한글 slug 글을 500으로 내므로 아래 Step 2와 달리 ASCII 임시 폴더(`contents/cloud/kubeedge-preview-tmp/`)로 복사하고 `npm run generate:manifest` 후 `npx next dev -p 3001`로 띄웠다. chrome-devtools MCP 프로필은 다른 세션이 쓰고 있었고 playwright 브라우저는 설치되어 있지 않아, 별도 프로필의 headless Chrome(`--virtual-time-budget=20000 --dump-dom`)으로 렌더된 DOM을 덤프해 `div.mermaid-diagram`·`pre.mermaid-error` 개수와 TOC 링크를 셌다. 정리 시 `next-env.d.ts`를 `git restore`하고 manifest를 재생성했다.
+
 - [ ] **Step 1: 디스크 여유 확인과 의존성 설치**
 
 ```bash
