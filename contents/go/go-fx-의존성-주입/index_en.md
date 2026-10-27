@@ -2,7 +2,7 @@
 title: "Getting Started with Go Dependency Injection using uber/fx"
 description: "How to use uber/fx to automatically wire dependencies in a Go application and manage their lifecycle. Covers advanced patterns like fx.Module, fx.Decorate, and fx.Annotate, along with testing strategies, all through hands-on examples."
 date: 2026-05-24
-update: 2026-08-10
+update: 2026-10-27
 tags:
   - Golang
   - uber/fx
@@ -84,7 +84,7 @@ Before diving in, here is an at-a-glance summary of the fx methods covered in th
 | `group:` tag | Extension | collect implementations of the same interface into a slice | When you want to receive all implementations of the same interface at once as a slice, like plugins or handlers | — |
 | `fx.As` | Extension | register a concrete type under an interface type | When a constructor returns a concrete type but the injecting side requires an interface | `fx.Self` is v1.22+ |
 | `fx.Private` | Extension | encapsulate a dependency within a Module | When you want to hide a dependency used only inside a Module and not expose it to the outer graph | v1.20+ |
-| `fxtest.New` | Testing | create a test-only app | For spinning up an fx app in tests. Reports failures via `t` and helps with cleanup | — |
+| `fxtest.New` | Testing | create a test-only app | For spinning up an fx app in tests. Reports failures via `t` and routes fx logs to the test output | — |
 | `fx.Replace` | Testing | replace an existing Provide with a Mock | For injecting a Mock/Stub in place of the real dependency to isolate a test | — |
 | `fx.Populate` | Testing | extract an internal container instance into an external variable | For pulling out an assembled instance to verify it in a test (concisely, without an `Invoke` closure) | — |
 
@@ -107,7 +107,7 @@ It also helps to know what each method takes as arguments and what it returns. T
 
 The table above covers only the function-style API. `fx.Lifecycle` (an interface), `fx.In` / `fx.Out` (structs to embed), and `name:` / `group:` (struct tags) are not functions and are explained separately in later sections.
 
-In short, just remember two things: ① `Provide`, `Invoke`, `Supply`, `Module`, `Decorate`, `Replace`, and `Populate` all return an `fx.Option` that goes into `fx.New`'s arguments. ② `Annotate`, `ResultTags`, and `As` return an `Annotation` (or an annotated constructor) used inside `Provide` and `Supply`.
+In short, just remember two things: ① `Provide`, `Invoke`, `Supply`, `Module`, `Decorate`, `Replace`, and `Populate` all return an `fx.Option` that goes into `fx.New`'s arguments. ② `ResultTags` and `As` return an `Annotation` used inside `fx.Annotate`, and the annotated constructor that `Annotate` returns goes inside `Provide` or `Supply`.
 
 The following sections cover each method one by one with hands-on examples. First, let's look at the most basic building blocks: `fx.Provide`, `fx.Invoke`, `fx.Supply`, and `fx.New`.
 
@@ -547,7 +547,7 @@ fx.Provide(
 )
 ```
 
-The reason you pass `new(Cache)` (a `*Cache`) instead of a value is that in Go you can only get at an interface's type information through a nil pointer. fx dereferences that pointer and uses nothing but the type.
+The reason you pass `new(Cache)` (of type `*Cache`) instead of a `Cache` value is that an interface value passed as an `interface{}` argument loses its interface type information. fx takes the type of the pointer it receives and uses only the type it points to (`Cache`).
 
 There is one thing that is easy to miss here. **`fx.As` does not add an interface — it replaces the original return type.** Registered as above, `Cache` is injectable but `*RedisCache` disappears from the graph.
 
@@ -654,7 +654,7 @@ An app built with fx is tested with the `fxtest` package. We'll also look at moc
 
 ## 4.1 fxtest.New
 
-`fxtest.New()` creates a test-only app. It cleans up automatically on test failure, and fx logs are included in the test output.
+`fxtest.New()` creates a test-only app. If `fx.New` fails, it reports the error via `t` and stops the test immediately, and fx logs are included in the test output. Shutdown is not handled automatically, so clean up yourself with `defer app.RequireStop()`.
 
 ```go
 // fx_test.go
@@ -771,7 +771,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
 
 - type: mcq
   q: "How does fx decide the order in which constructors are called?"
-  choices: ["In the order they were registered with fx.Provide", "Alphabetically by constructor name", "By analyzing each constructor's parameter types and return type", "In the order they are listed in fx.Invoke"]
+  choices: ["In the order they were registered with fx.Provide", "In alphabetical order of the constructor functions", "By analyzing parameter and return types", "In the order they are listed in fx.Invoke"]
   answer: 2
   explain: "It looks only at each constructor's parameter types and return type. database.New(cfg *config.Config) requires *config.Config, so config.New(), which returns that type, is called first. Registration order does not matter, and a circular dependency is reported as an error at app startup. (2.3)"
 
@@ -797,7 +797,7 @@ If you've read this far, these are questions you can answer. Pick an answer and 
   explain: "Use fx.Annotate with fx.ResultTags to give each constructor a name tag (e.g. name:readDB), and on the receiving side match it with a name tag on a field of a struct that embeds fx.In. Even with identical types, the names keep them apart. (3.3)"
 
 - type: ox
-  q: "Injecting all three Notifier implementations at once is only possible with the group: tag and is entirely impossible with the name: tag."
+  q: "The group: tag is the only way to inject all three Notifier implementations at once."
   answer: false
   explain: "The name: tag can do it too. But you would have to name each implementation and receive them field by field, so every new implementation forces a change on the receiving side — the wrong tool. Register them with group:notifiers and receive a []Notifier slice field carrying the same tag; then adding an implementation leaves the receiving code untouched. (3.4)"
 

@@ -2,7 +2,7 @@
 title: "uber/fx로 시작하는 Go 의존성 주입"
 description: "uber/fx를 사용하여 Go 애플리케이션의 의존성을 자동으로 연결하고 수명주기를 관리하는 방법을 다룬다. fx.Module, fx.Decorate, fx.Annotate 등 고급 패턴과 테스트 전략까지 실전 예제로 설명한다."
 date: 2026-05-24
-update: 2026-08-10
+update: 2026-10-27
 tags:
   - Golang
   - uber/fx
@@ -57,9 +57,9 @@ article.NewArticleHandler(e, articleUsecase)
 e.Start(cfg.Server.Address)
 ```
 
-의존성이 늘어날수록 이 코드는 급격히 복잡해진다. 순서를 틀리면 컴파일 에러가 나고, 새로운 서비스를 추가할 때마다 main()을 수정해야 한다.
+의존성이 늘어날수록 이 코드는 급격히 복잡해진다. 생성자 호출 순서를 틀리면 컴파일 에러가 나고, 새로운 서비스를 추가할 때마다 main()을 수정해야 한다.
 
-uber/fx는 이 문제를 해결한다. 생성자 함수의 **매개변수와 반환 타입**을 분석하여 의존성 그래프를 자동으로 구성하고, 올바른 순서로 생성한다.
+uber/fx는 이 문제를 해결한다. 생성자 함수의 **매개변수와 반환 타입**을 분석하여 의존성 그래프를 자동으로 구성하고, 올바른 순서로 인스턴스를 생성한다.
 
 ```bash
 go get go.uber.org/fx
@@ -67,7 +67,7 @@ go get go.uber.org/fx
 
 ## 2.2 fx 기본 개념
 
-본격적으로 들어가기 전에, 이 글에서 다루는 fx 메서드를 한눈에 정리한다. fx는 메서드가 많아 매번 헷갈리기 쉬우므로, 아래 표를 지도 삼아 읽으면 좋다. 분류 순서는 글의 진행 순서(기초 → 확장 → 테스트)와 일치한다.
+각 메서드를 자세히 살펴보기 전에, 이 글에서 다루는 fx 메서드를 한눈에 정리한다. fx는 메서드가 많아 매번 헷갈리기 쉬우므로, 아래 표를 참고하면서 읽으면 이해하기 쉽다. 분류 순서는 글의 진행 순서(기초 → 확장 → 테스트)와 일치한다.
 
 | 메서드 | 분류 | 역할 | 언제/왜 쓰나 | 도입 버전 |
 |--------|------|------|--------------|-----------|
@@ -79,12 +79,12 @@ go get go.uber.org/fx
 | `fx.Module` | 확장 | 도메인별 의존성 그룹화 | 앱이 커져 `Provide`가 수십 개로 늘 때. 도메인별로 묶어 재사용·격리한다 | v1.17+ |
 | `fx.Decorate` | 확장 | 기존 의존성 래핑 (로깅·캐싱·메트릭) | 원본 코드를 안 건드리고 기존 의존성에 로깅/캐싱/메트릭 등 횡단 관심사를 덧씌울 때 | v1.18+ |
 | `fx.Annotate` | 확장 | 생성자에 메타데이터 부여 (name/group/As) | 일반 생성자를 그대로 두고 name/group/As 같은 부가 정보만 얹고 싶을 때 | — |
-| `fx.In` / `fx.Out` | 확장 | 파라미터·반환값을 구조체로 묶어 주입 (name/group 태그 매칭) | 주입받을 의존성이 많거나, name/group 태그로 특정 인스턴스를 지목해야 할 때 | — |
+| `fx.In` / `fx.Out` | 확장 | 매개변수·반환값을 구조체로 묶어 주입 (name/group 태그 매칭) | 주입받을 의존성이 많거나, name/group 태그로 특정 인스턴스를 지목해야 할 때 | — |
 | `fx.ResultTags` / `fx.ParamTags` | 확장 | 동일 타입을 개별 식별 (내보내는 쪽 / 받는 쪽) | 같은 타입 인스턴스가 여러 개일 때(예: read/write DB) 이름으로 구분해 주입. 둘의 차이는 6.1 참조 | — |
 | `group:` 태그 | 확장 | 동일 인터페이스 구현체를 슬라이스로 모음 | 플러그인·핸들러처럼 같은 인터페이스 구현체를 한꺼번에 슬라이스로 받고 싶을 때 | — |
 | `fx.As` | 확장 | 구체 타입을 인터페이스 타입으로 등록 | 생성자가 구체 타입을 반환하는데 주입받는 쪽은 인터페이스를 요구할 때 | `fx.Self`는 v1.22+ |
 | `fx.Private` | 확장 | Module 내부 의존성 캡슐화 | Module 내부에서만 쓰는 의존성을 바깥 그래프에 노출하지 않고 감추고 싶을 때 | v1.20+ |
-| `fxtest.New` | 테스트 | 테스트 전용 앱 생성 | 테스트에서 fx 앱을 띄울 때. 실패를 `t`로 리포트하고 정리를 도와준다 | — |
+| `fxtest.New` | 테스트 | 테스트 전용 앱 생성 | 테스트에서 fx 앱을 띄울 때. 실패를 `t`로 보고하고 fx 로그를 테스트 출력으로 보낸다 | — |
 | `fx.Replace` | 테스트 | 기존 Provide를 Mock으로 교체 | 실제 의존성 대신 Mock/Stub을 주입해 테스트를 격리할 때 | — |
 | `fx.Populate` | 테스트 | 컨테이너 내부 인스턴스를 외부 변수로 추출 | 테스트에서 조립된 인스턴스를 꺼내 검증할 때(`Invoke` 클로저 없이 간결하게) | — |
 
@@ -98,20 +98,20 @@ go get go.uber.org/fx
 | `fx.Supply` | `values ...interface{}` (이미 만든 값들) | `fx.Option` |
 | `fx.Module` | `name string, opts ...fx.Option` | `fx.Option` |
 | `fx.Decorate` | `decorators ...interface{}` (데코레이터 함수들) | `fx.Option` |
-| `fx.Annotate` | `f interface{}, anns ...fx.Annotation` | `interface{}` (주석 달린 생성자) |
+| `fx.Annotate` | `f interface{}, anns ...fx.Annotation` | `interface{}` (어노테이션을 적용한 생성자) |
 | `fx.ResultTags` / `fx.ParamTags` | `tags ...string` | `fx.Annotation` |
 | `fx.As` | `interfaces ...interface{}` (`new(Iface)` 형태의 포인터들) | `fx.Annotation` |
 | `fx.Replace` | `values ...interface{}` | `fx.Option` |
 | `fx.Populate` | `targets ...interface{}` (포인터들) | `fx.Option` |
 | `fxtest.New` | `tb fxtest.TB, opts ...fx.Option` | `*fxtest.App` |
 
-위 표는 함수형 API만 다뤘다. `fx.Lifecycle`(인터페이스), `fx.In` / `fx.Out`(임베드용 구조체), `name:` / `group:`(struct 태그)은 함수가 아니라 각각 뒤 섹션에서 따로 설명한다.
+위 표에는 함수로 제공되는 API만 넣었다. `fx.Lifecycle`(인터페이스), `fx.In` / `fx.Out`(임베드용 구조체), `name:` / `group:`(struct 태그)은 함수가 아니므로 표에서 제외했고, 뒤의 각 섹션에서 따로 설명한다.
 
-정리하면 두 가지만 기억하면 된다. ①`Provide`·`Invoke`·`Supply`·`Module`·`Decorate`·`Replace`·`Populate`는 전부 `fx.Option`을 반환해 `fx.New`의 인자로 들어간다. ②`Annotate`·`ResultTags`·`As`는 `Annotation`(또는 주석 달린 생성자)을 반환해 `Provide`·`Supply` 안에서 쓰인다.
+정리하면 두 가지만 기억하면 된다. ①`Provide`·`Invoke`·`Supply`·`Module`·`Decorate`·`Replace`·`Populate`는 전부 `fx.Option`을 반환해 `fx.New`의 인자로 들어간다. ②`ResultTags`·`As`는 `Annotation`을 반환해 `fx.Annotate` 안에서 쓰이고, `Annotate`가 반환한 생성자는 `Provide`·`Supply` 안에 들어간다.
 
 이후 섹션에서 각 메서드를 실전 예제로 하나씩 다룬다. 우선 가장 기초가 되는 `fx.Provide`, `fx.Invoke`, `fx.Supply`, `fx.New`부터 살펴보자.
 
-`fx.Provide()`에 등록된 생성자는 즉시 실행되지 않는다. 다른 곳에서 해당 타입이 필요할 때 **lazy**하게 생성된다.
+`fx.Provide()`에 등록된 생성자는 즉시 실행되지 않는다. 다른 곳에서 해당 타입을 요구하는 시점이 되어서야 호출된다(**lazy** 호출).
 
 ```go
 // fx_test.go
@@ -179,7 +179,7 @@ app := fx.New(
 )
 ```
 
-fx는 각 생성자의 매개변수 타입을 보고 의존성 순서를 자동으로 결정한다. 예를 들어 `database.New(cfg *config.Config)`는 `*config.Config`가 필요하므로 `config.New()`가 먼저 호출된다.
+fx는 각 생성자의 매개변수 타입을 보고 생성자 호출 순서를 자동으로 결정한다. 예를 들어 `database.New(cfg *config.Config)`는 `*config.Config`가 필요하므로 `config.New()`가 먼저 호출된다.
 
 각 생성자의 시그니처를 보면 의존성 관계가 명확하다.
 
@@ -225,7 +225,7 @@ app := fx.New(
 )
 ```
 
-fx는 named 생성자와 똑같이 익명 함수의 매개변수(`*config.Config`)와 반환 타입(`time.Duration`)을 분석해 의존성 그래프에 연결한다. 함수 형태만 다를 뿐, fx 입장에서는 동일한 생성자다.
+fx는 이름이 있는 생성자와 똑같이 익명 함수의 매개변수(`*config.Config`)와 반환 타입(`time.Duration`)을 분석해 의존성 그래프에 연결한다. 함수 형태만 다를 뿐, fx 입장에서는 동일한 생성자다.
 
 이렇게 등록한 생성자들로 fx가 구성하는 의존성 그래프를 시각화하면 다음과 같다.
 
@@ -268,7 +268,7 @@ func registerHooks(lifecycle fx.Lifecycle, e *echo.Echo, cfg *config.Config) {
 }
 ```
 
-`registerHooks`는 `fx.Invoke()`로 등록한다. 한 가지 주의할 점은 **실행 시점**이다. `fx.Invoke`(그리고 이를 내부적으로 사용하는 `fx.Populate`)는 `app.Start()`가 아니라 **`fx.New()` 호출 시점**에 즉시 실행된다. 따라서 위 `registerHooks`는 `fx.New()` 단계에서 호출되어 `Lifecycle`에 OnStart/OnStop 훅을 *등록*만 하고, 실제 서버 기동(`OnStart` 본문)은 이후 `app.Start(ctx)` 시점에 트리거된다. `fx.Lifecycle`이 이런 2단계 구조를 가지는 이유다 — Invoke로 일찍 훅을 등록해두고, 훅 본문 실행은 `Start`까지 미루는 것.
+`registerHooks`는 `fx.Invoke()`로 등록한다. 한 가지 주의할 점은 **실행 시점**이다. `fx.Invoke`(그리고 이를 내부적으로 사용하는 `fx.Populate`)는 `app.Start()`가 아니라 **`fx.New()` 호출 시점**에 즉시 실행된다. 따라서 위 `registerHooks`는 `fx.New()` 단계에서 호출되어 `Lifecycle`에 OnStart/OnStop 훅을 *등록*만 하고, 실제 서버 기동(`OnStart` 본문)은 이후 `app.Start(ctx)` 시점에 실행된다. `fx.Lifecycle`이 2단계로 나뉘는 이유가 여기에 있다. 훅은 Invoke 단계에서 미리 등록해 두고, 훅 본문은 `Start`가 호출될 때 실행한다.
 
 | 단계 | 시점 | 실행되는 것 |
 |------|------|------------|
@@ -306,11 +306,11 @@ func TestFx_Lifecycle(t *testing.T) {
 
 # 3. 확장 패턴
 
-fx.Module부터 fx.Private까지, fx 기초 위에 쌓이는 확장 도구들을 살펴본다.
+fx.Module부터 fx.Private까지, 기초 API를 바탕으로 사용하는 확장 기능들을 살펴본다.
 
 ## 3.1 fx.Module 패턴
 
-`fx.Module()`은 관련 의존성을 도메인별로 그룹화한다. 앱이 커질수록 `fx.Provide()`에 생성자가 한꺼번에 나열되면 가독성이 떨어진다. Module로 분리하면 관심사가 명확해진다.
+`fx.Module()`은 관련 의존성을 도메인별로 그룹화한다. 앱이 커질수록 `fx.Provide()` 하나에 나열되는 생성자가 늘어나서 가독성이 떨어진다. Module로 분리하면 관심사가 명확해진다.
 
 ```go
 // fx_test.go
@@ -351,7 +351,7 @@ app := fx.New(
 )
 ```
 
-> **fx.Module은 v1.17.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Options()`로 유사한 그룹화가 가능하지만, 모듈 이름과 스코프 격리는 지원하지 않는다.
+> **fx.Module은 v1.17.0부터 사용 가능**하다. 이전 버전에서는 `fx.Options()`로 유사한 그룹화가 가능하지만, 모듈 이름과 스코프 격리는 지원하지 않는다.
 
 ## 3.2 fx.Decorate 패턴
 
@@ -383,9 +383,9 @@ app := fxtest.New(t,
 )
 ```
 
-`fx.Decorate()`는 원본 의존성을 매개변수로 받아 래핑된 새 인스턴스를 반환한다. UserService는 변경 없이 자동으로 래핑된 Repository를 주입받는다.
+`fx.Decorate()`는 원본 의존성을 매개변수로 받아 래핑된 새 인스턴스를 반환한다. UserService는 코드를 고치지 않아도 래핑된 Repository를 자동으로 주입받는다.
 
-> **fx.Decorate는 v1.18.0+부터 사용 가능**하다.
+> **fx.Decorate는 v1.18.0부터 사용 가능**하다.
 
 ## 3.3 fx.Annotate + Named 의존성
 
@@ -418,7 +418,7 @@ fx.Provide(
 )
 ```
 
-수신 측에서는 `fx.In` 구조체에 `name` 태그로 매칭한다. `fx.In`은 여러 의존성을 하나의 파라미터 구조체로 묶어 주입받게 해주는 임베디드 마커다. 생성자 파라미터가 많거나, 지금처럼 `name`·`group` 태그로 특정 인스턴스를 지목해야 할 때 사용한다. 구조체에 `fx.In`을 임베드하면 fx가 각 필드를 개별 의존성으로 인식해 채워준다(반대로 반환값을 구조체로 묶을 때는 `fx.Out`을 쓴다).
+수신 측에서는 `fx.In` 구조체의 필드에 같은 `name` 태그를 붙여서 받을 인스턴스를 지정한다. `fx.In`은 여러 의존성을 하나의 매개변수 구조체로 묶어 주입받게 해주는 임베디드 마커다. 생성자 매개변수가 많거나, 지금처럼 `name`·`group` 태그로 특정 인스턴스를 지목해야 할 때 사용한다. 구조체에 `fx.In`을 임베드하면 fx가 각 필드를 개별 의존성으로 인식해 채워준다(반대로 반환값을 구조체로 묶을 때는 `fx.Out`을 쓴다).
 
 ```go
 // fx_test.go
@@ -438,7 +438,7 @@ func NewDBService(params DBParams) *DBService {
 
 ## 3.4 fx.Group으로 동일 인터페이스 여러 구현체 모으기
 
-`name:` 태그는 동일 타입을 **개별** 식별할 때 쓴다. 하지만 동일 인터페이스의 여러 구현체를 한꺼번에 주입받고 싶다면 — 예를 들어 모든 Notifier에게 알림을 발송하는 경우 — `name:`으로는 부족하다. 각 구현체에 다른 이름을 붙이고 수신 측에서 일일이 받아야 하기 때문이다.
+`name:` 태그는 동일 타입을 **개별** 식별할 때 쓴다. 하지만 모든 Notifier에게 알림을 발송하는 경우처럼 동일 인터페이스의 여러 구현체를 한꺼번에 주입받아야 한다면, `name:` 태그로는 부족하다. 각 구현체에 다른 이름을 붙이고 수신 측에서 일일이 받아야 하기 때문이다.
 
 `group:` 태그는 이 문제를 해결한다. 같은 그룹에 등록된 구현체들이 슬라이스로 한꺼번에 주입된다.
 
@@ -493,7 +493,7 @@ func NewNotifierService(p NotifierParams) *NotifierService {
 
 여러 외부 서비스 클라이언트를 단일 인터페이스 슬라이스로 모으는 패턴이 대표적인 실전 활용 예다. 새 구현체가 추가되어도 수신 측 코드는 변경되지 않는다.
 
-`name:` vs `group:` 차이를 정리하면:
+`name:` 태그와 `group:` 태그의 차이를 정리하면 다음과 같다.
 
 | 패턴 | 용도 | 수신 측 |
 |------|------|---------|
@@ -531,7 +531,7 @@ func NewCacheService(cache Cache) *CacheService {
 }
 ```
 
-이대로 `fx.Provide(NewRedisCache, NewCacheService)`로 등록하면 앱은 뜨지 않는다. 그래프에 `main.Cache`를 제공하는 생성자가 없기 때문이다. `*RedisCache`가 `Cache`를 구현하고 있어도 fx는 알아서 연결해주지 않는다.
+이대로 `fx.Provide(NewRedisCache, NewCacheService)`로 등록하면 앱이 시작되지 않는다. 그래프에 `main.Cache`를 제공하는 생성자가 없기 때문이다. `*RedisCache`가 `Cache`를 구현하고 있어도 fx는 알아서 연결해주지 않는다.
 
 ```
 missing type: main.Cache
@@ -547,7 +547,7 @@ fx.Provide(
 )
 ```
 
-`fx.As(new(Cache))`에 값이 아니라 `new(Cache)`(즉 `*Cache`)를 넘기는 이유는, Go에서 인터페이스 타입 정보를 얻으려면 nil 포인터를 거쳐야 하기 때문이다. `fx`는 이 포인터를 역참조해 타입만 가져다 쓴다.
+`fx.As()`에 `Cache` 값이 아니라 `new(Cache)`(타입은 `*Cache`)를 넘기는 이유는, 인터페이스 값을 `interface{}` 인자로 넘기면 인터페이스 타입 정보가 사라지기 때문이다. fx는 넘겨받은 포인터의 타입에서 가리키는 대상 타입(`Cache`)만 꺼내 쓴다.
 
 여기서 놓치기 쉬운 점이 하나 있다. **`fx.As`는 인터페이스를 추가하는 게 아니라 원래 반환 타입을 대체한다.** 위처럼 등록하면 `Cache`는 주입받을 수 있지만 `*RedisCache`는 그래프에서 사라진다.
 
@@ -563,7 +563,7 @@ app := fx.New(
 // app.Err() != nil  → missing type: *main.RedisCache
 ```
 
-원래 타입도 함께 남기고 싶다면 `fx.As(fx.Self())`를 같이 붙인다. 두 타입이 같은 인스턴스를 가리킨다.
+원래 타입도 함께 남기고 싶다면 `fx.As(fx.Self())`를 같이 붙인다. 어느 타입으로 주입받아도 같은 인스턴스를 받는다.
 
 ```go
 // fx_test.go
@@ -589,9 +589,9 @@ fx.Provide(fx.Annotate(NewRedisCache,
 // Cache와 Closer 모두 같은 *RedisCache 인스턴스
 ```
 
-> **`fx.Self`는 v1.22.0+부터 사용 가능**하다. 이전 버전에서는 구체 타입과 인터페이스를 모두 노출하려면 `fx.Provide(NewRedisCache, func(c *RedisCache) Cache { return c })`처럼 변환 생성자를 따로 등록해야 한다.
+> **`fx.Self`는 v1.22.0부터 사용 가능**하다. 이전 버전에서는 구체 타입과 인터페이스를 모두 노출하려면 `fx.Provide(NewRedisCache, func(c *RedisCache) Cache { return c })`처럼 변환 생성자를 따로 등록해야 한다.
 
-앞선 두 태그와 비교하면 각자의 자리는 이렇게 나뉜다.
+앞선 두 태그와 비교하면 세 방식의 용도는 다음과 같이 나뉜다.
 
 | 패턴 | 바꾸는 것 | 대표 상황 |
 |------|-----------|-----------|
@@ -601,9 +601,9 @@ fx.Provide(fx.Annotate(NewRedisCache,
 
 ## 3.6 fx.Private로 Module 캡슐화
 
-`fx.Module()`로 도메인을 분리해도 모든 `fx.Provide()`는 기본적으로 전역에 노출된다. Module 내부 전용으로만 쓰고 싶은 의존성은 `fx.Private`으로 막을 수 있다. 데이터베이스 핸들이나 외부 API 클라이언트 같은 인프라 의존성을 다른 Module이 우연히 같은 인스턴스를 공유하는 걸 막을 때 유용하다.
+`fx.Module()`로 도메인을 분리해도 `fx.Provide()`로 등록한 의존성은 기본적으로 앱 전체 그래프에 노출된다. Module 내부 전용으로만 쓰고 싶은 의존성은 `fx.Private`을 사용해 Module 밖에서 접근하지 못하게 막을 수 있다. 데이터베이스 핸들이나 외부 API 클라이언트 같은 인프라 의존성을 다른 Module이 의도치 않게 공유하지 못하도록 막을 때 유용하다.
 
-`fx.Private`은 같은 `fx.Provide()` 호출 안에 다른 생성자와 함께 넣으면 그 그룹 전체를 Module-private으로 만든다.
+`fx.Private`을 같은 `fx.Provide()` 호출 안에 다른 생성자와 함께 넣으면, 그 호출로 등록한 생성자 전체를 해당 Module 안에서만 쓸 수 있게 만든다.
 
 ```go
 // fx_test.go
@@ -632,7 +632,7 @@ PrivateModule := fx.Module("private",
 )
 ```
 
-`*internalDB`는 `PrivateModule` 안의 `newModuleService`만 주입받을 수 있다. Module 외부에서 `*internalDB`를 직접 요청하면 fx는 의존성 그래프 구성 시점에 에러를 반환한다(`fx.Populate`는 4.3에서 다룬다).
+`*internalDB`를 주입받을 수 있는 생성자는 `PrivateModule` 안에 있는 `newModuleService`뿐이다. Module 외부에서 `*internalDB`를 직접 요청하면 fx는 의존성 그래프 구성 시점에 에러를 반환한다(`fx.Populate`는 4.3에서 다룬다).
 
 ```go
 // fx_test.go
@@ -646,15 +646,15 @@ leakApp := fx.New(
 // leakApp.Err() != nil
 ```
 
-> **fx.Private은 v1.20.0+부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
+> **fx.Private은 v1.20.0부터 사용 가능**하다. 이전 버전에서는 `fx.Module`로 격리하더라도 모든 Provide가 전역 그래프에 등록된다.
 
 # 4. 테스트 전략
 
-fx로 구성한 앱은 `fxtest` 패키지로 테스트한다. mock 주입과 인스턴스 추출까지 살펴본다.
+fx로 구성한 앱은 `fxtest` 패키지로 테스트한다. Mock 주입과 인스턴스 추출까지 살펴본다.
 
 ## 4.1 fxtest.New
 
-`fxtest.New()`는 테스트 전용 앱을 생성한다. 테스트 실패 시 자동으로 정리되고, fx 로그가 테스트 출력에 포함된다.
+`fxtest.New()`는 테스트 전용 앱을 생성한다. `fx.New` 단계에서 에러가 나면 이를 `t`로 보고하고 테스트를 바로 중단하며, fx 로그는 테스트 출력에 포함된다. 앱 종료는 자동으로 처리되지 않으므로 `defer app.RequireStop()`으로 직접 정리해야 한다.
 
 ```go
 // fx_test.go
@@ -695,7 +695,7 @@ app := fxtest.New(t,
 
 지금까지는 `fx.Invoke(func(s *Svc) { svc = s })` 형태로 외부 변수에 인스턴스를 캡처했다. `fx.Populate`는 같은 일을 더 간결하게 한다.
 
-사실 `fx.Populate`는 내부적으로 `fx.Invoke`로 구현된 편의 함수다. `fx.Populate(&svc)`는 "주입받은 값을 `svc`에 대입하는 `fx.Invoke`"를 자동으로 생성하는 것과 같다. 즉 둘의 본질은 동일하다. 차이는 **목적**에 있다. `fx.Invoke`는 꺼낸 의존성으로 무언가를 *실행*하는 게 목적이라 클로저 본문에서 호출·검증 등 무엇이든 할 수 있고(추출은 그중 하나일 뿐), `fx.Populate`는 *추출 자체*가 목적이라 클로저가 군더더기일 때 이를 생략한 형태다.
+사실 `fx.Populate`는 내부적으로 `fx.Invoke`로 구현된 편의 함수다. `fx.Populate(&svc)`는 "주입받은 값을 `svc`에 대입하는 `fx.Invoke`"를 자동으로 생성하는 것과 같다. 즉 둘의 본질은 동일하다. 차이는 **목적**에 있다. `fx.Invoke`는 꺼낸 의존성으로 무언가를 *실행*하는 것이 목적이므로, 클로저 본문에서 호출·검증 등 무엇이든 할 수 있다(추출은 그중 하나일 뿐이다). 반면 `fx.Populate`는 *추출 자체*가 목적이므로, 클로저가 군더더기일 때 이를 생략한 형태다.
 
 두 메서드를 비교하면 다음과 같다.
 
@@ -703,7 +703,7 @@ app := fxtest.New(t,
 |------|-------------|---------------|
 | 본질 | 함수를 **실행**한다 | 변수에 값을 **채운다** |
 | 넘기는 것 | 함수(클로저) | 포인터 |
-| 본문 | 있음 — 대입·호출·검증 등 무엇이든 | 없음 — 추출만 |
+| 본문 | 있음: 대입·호출·검증 등 무엇이든 가능 | 없음: 추출만 수행 |
 | 추출 | 클로저 안에서 `svc = s`로 부수적으로 가능 | 그 자체가 유일한 목적 |
 
 ```go
@@ -748,7 +748,7 @@ app := fxtest.New(t,
 
 # 5. 퀴즈
 
-여기까지 읽었으면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
+아래는 여기까지 읽었다면 풀 수 있는 문제들이다. 답을 고르면 바로 해설이 나온다.
 
 ```quiz
 - type: code
@@ -771,13 +771,13 @@ app := fxtest.New(t,
 
 - type: mcq
   q: "fx는 생성자를 어떤 순서로 호출할지 어떻게 결정하나?"
-  choices: ["fx.Provide에 등록한 순서대로", "생성자 이름의 알파벳순으로", "각 생성자의 매개변수 타입과 반환 타입을 분석해서", "fx.Invoke에 나열한 순서대로"]
+  choices: ["fx.Provide에 등록한 순서대로", "생성자 이름의 알파벳순으로", "매개변수·반환 타입을 분석해서", "fx.Invoke에 나열한 순서대로"]
   answer: 2
   explain: "각 생성자의 매개변수 타입과 반환 타입만 본다. database.New(cfg *config.Config)는 *config.Config를 요구하므로 그 타입을 반환하는 config.New()가 먼저 호출된다. 등록 순서는 상관없고, 순환 의존성이 있으면 앱 시작 시점에 에러로 알려준다. (2.3)"
 
 - type: mcq
-  q: "registerHooks를 fx.Invoke로 등록했다. 서버는 정확히 언제 뜨나?"
-  choices: ["fx.New() 호출 즉시", "fx.Provide로 서버 생성자가 호출될 때", "registerHooks의 Invoke 본문이 실행되는 순간", "app.Start(ctx)가 호출되어 OnStart 훅이 실행될 때"]
+  q: "registerHooks를 fx.Invoke로 등록했다. 서버는 정확히 언제 시작되나?"
+  choices: ["fx.New() 호출 즉시", "fx.Provide로 서버 생성자가 호출될 때", "registerHooks의 Invoke 본문이 실행되는 순간", "app.Start(ctx)가 호출될 때"]
   answer: 3
   explain: "두 시점으로 나뉜다. Invoke 함수 본문은 fx.New() 호출 시점에 즉시 실행되지만, 거기서 하는 일은 Lifecycle에 훅을 등록하는 것뿐이다. OnStart 본문(실제 서버 기동)은 이후 app.Start(ctx)가 호출될 때 실행된다. fx.Lifecycle이 2단계 구조인 이유가 이것이다. (2.4)"
 
@@ -797,7 +797,7 @@ app := fxtest.New(t,
   explain: "fx.Annotate와 fx.ResultTags로 생성자마다 name 태그(예: name:readDB)를 붙이고, 수신 측은 fx.In을 임베드한 구조체의 필드에 name 태그를 달아 매칭한다. 타입이 같아도 이름으로 구분되므로 충돌하지 않는다. (3.3)"
 
 - type: ox
-  q: "Notifier 구현체 셋을 한꺼번에 주입받는 것은 group: 태그로만 가능하고, name: 태그로는 아예 불가능하다."
+  q: "Notifier 구현체 셋을 한꺼번에 주입받는 방법은 group: 태그 하나뿐이다."
   answer: false
   explain: "name: 태그로도 되긴 한다. 다만 구현체마다 다른 이름을 붙이고 수신 측에서 필드를 하나씩 받아야 해서, 구현체가 늘 때마다 수신 코드를 고쳐야 하는 나쁜 방법이다. group:notifiers로 등록하고 수신 측은 같은 태그를 붙인 []Notifier 슬라이스 필드로 받으면, 새 구현체를 추가해도 수신 코드는 그대로다. (3.4)"
 
@@ -809,16 +809,16 @@ app := fxtest.New(t,
 
 - type: mcq
   q: "조립된 인스턴스를 테스트로 꺼낼 때 fx.Invoke와 fx.Populate 중 무엇을 쓰나?"
-  choices: ["fx.Populate는 추출이 불가능해 추출엔 항상 fx.Invoke만 쓴다", "검증까지 할 거면 fx.Populate, 단순 추출이면 fx.Invoke를 쓴다", "추출만 목적이면 fx.Populate, 이후 호출·검증도 하려면 fx.Invoke", "성능이 더 좋은 fx.Populate를 어떤 경우든 항상 쓴다"]
+  choices: ["fx.Populate는 추출이 불가능해 추출엔 항상 fx.Invoke만 쓴다", "검증까지 할 거면 fx.Populate, 단순 추출이면 fx.Invoke를 쓴다", "추출만 할 거면 fx.Populate, 호출·검증도 하면 fx.Invoke를 쓴다", "성능이 더 좋은 fx.Populate를 어떤 경우든 항상 쓴다"]
   answer: 2
   explain: "fx.Populate는 내부적으로 fx.Invoke로 구현된 편의 함수라 본질은 같고, 차이는 목적이다. 변수에 담는 것만이 목적이면 클로저가 군더더기이므로 Populate, 꺼낸 뒤 같은 시점에 호출·검증까지 해야 하면 본문을 쓸 수 있는 Invoke가 낫다. (4.3)"
 ```
 
 # 6. FAQ
 
-## 6.1 Q. `fx.ResultTags`와 `fx.ParamTags`의 차이는?
+## 6.1 Q. `fx.ResultTags`와 `fx.ParamTags`는 무엇이 다른가?
 
-한 문장으로 줄이면 **`ResultTags`는 내보내는 쪽, `ParamTags`는 받는 쪽**에 태그를 붙인다. 태그 문법(`name:` / `group:`)은 완전히 같고, 붙는 대상이 생성자의 반환값이냐 매개변수냐만 다르다.
+한 문장으로 줄이면 **`ResultTags`는 값을 내보내는 쪽에, `ParamTags`는 값을 받는 쪽에** 태그를 붙인다. 태그 문법(`name:` / `group:`)은 완전히 같고, 붙는 대상이 생성자의 반환값이냐 매개변수냐만 다르다.
 
 | 구분 | `fx.ResultTags` | `fx.ParamTags` |
 |------|-----------------|----------------|
@@ -827,7 +827,7 @@ app := fxtest.New(t,
 | 매칭 기준 | 반환값 순서 | 매개변수 순서 |
 | 구조체 대안 | `fx.Out` | `fx.In` |
 
-3.3절에서는 `ResultTags`로 이름을 붙인 뒤 수신 측을 `fx.In` 구조체(`DBParams`)로 받았다. `ParamTags`는 그 수신 측을 구조체 없이 처리하는 방법이다. 같은 read/write DB 예제를 두 방식으로 나란히 놓으면 차이가 분명해진다.
+3.3절에서는 `ResultTags`로 이름을 붙인 뒤, 수신 측에서 `fx.In` 구조체(`DBParams`)로 값을 받았다. `ParamTags`를 사용하면 구조체 없이도 같은 값을 받을 수 있다. 같은 read/write DB 예제를 두 방식으로 나란히 놓으면 차이가 분명해진다.
 
 ```go
 // fx_test.go
@@ -880,7 +880,7 @@ fx.Provide(
 // missing type: *main.DBConnection[name="readDB"]
 ```
 
-둘째, **`ParamTags`는 매개변수 순서로 매칭한다.** 태그 순서를 뒤집어도 타입이 같으면 컴파일도 되고 앱도 정상적으로 뜨는데, 내용만 반대로 들어간다. 아래 코드는 아무 에러 없이 `readDB` 필드에 write 커넥션을 채운다.
+둘째, **`ParamTags`는 매개변수 순서로 매칭한다.** 태그 순서를 뒤집어도 타입이 같으면 컴파일도 되고 앱도 정상적으로 시작되는데, 두 매개변수에 들어가는 값만 서로 뒤바뀐다. 아래 코드는 아무 에러 없이 `readDB` 필드에 write 커넥션을 채운다.
 
 ```go
 // fx_test.go
@@ -896,7 +896,7 @@ fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 
 
 | 하고 싶은 일 | 메서드 | 선택 팁 |
 |------------|--------|--------|
-| 의존성을 그래프에 등록 (나중에 lazy 생성) | `fx.Provide` | 즉시 실행 아님 — 필요할 때 호출 |
+| 의존성을 그래프에 등록 (나중에 lazy 생성) | `fx.Provide` | 즉시 실행하지 않고 필요할 때 호출 |
 | 앱 시작 시 즉시 실행 (서버 기동·라우터 등록) | `fx.Invoke` | `Provide`와 헷갈리면 "부수 효과면 Invoke" |
 | 이미 만든 값·설정을 생성자 없이 주입 | `fx.Supply` | 상수·구성값에 적합 |
 | 시작/종료 훅 관리 (Graceful Shutdown) | `fx.Lifecycle` | `Invoke` 안에서 `Append`로 등록 |
@@ -905,12 +905,12 @@ fx는 메서드가 많아 헷갈리기 쉽다. 상황별로 무엇을 고르면 
 | 동일 타입을 **개별** 식별 (read/write DB) | `fx.Annotate` + `name:` | 수신 측은 단일 필드 |
 | 동일 인터페이스 구현체를 **모아서** 주입 | `group:` 태그 | 수신 측은 슬라이스 필드 |
 | 구체 타입 생성자를 인터페이스로 노출 | `fx.Annotate` + `fx.As` | 원래 타입도 남기려면 `fx.Self` |
-| 이름·그룹 의존성을 `fx.In` 없이 주입 | `fx.ParamTags` | 매개변수 순서로 매칭 — 순서 실수 주의 |
+| 이름·그룹 의존성을 `fx.In` 없이 주입 | `fx.ParamTags` | 매개변수 순서로 매칭하므로 순서 실수에 주의 |
 | Module 내부 의존성을 외부에 숨기기 | `fx.Private` | 인프라 핸들 격리 |
 | 테스트에서 실제 구현 대신 Mock | `fx.Replace` | `fx.As`로 인터페이스 매칭 |
 | 테스트에서 컨테이너 내부 인스턴스 꺼내기 | `fx.Populate` | 검증까지 같이 하면 `fx.Invoke` |
 
-한 가지만 기억하자. 모든 의존성을 fx로 관리할 필요는 없다. 단순한 값 객체나 유틸리티는 직접 생성하는 편이 명확하고, fx는 **수명주기 관리가 필요한 컴포넌트**(DB 연결·HTTP 서버·외부 클라이언트)에 집중할 때 가장 빛난다. 리플렉션 기반이라 컴파일 타임 타입 안전성은 일부 포기하지만, 상세한 런타임 에러 메시지와 실전 생산성이 이를 충분히 상쇄한다.
+한 가지만 기억하자. 모든 의존성을 fx로 관리할 필요는 없다. 단순한 값 객체나 유틸리티는 직접 생성하는 편이 명확하고, fx는 **수명주기 관리가 필요한 컴포넌트**(DB 연결·HTTP 서버·외부 클라이언트)에 집중할 때 가장 효과가 크다. fx는 리플렉션으로 동작하기 때문에 컴파일 타임 타입 안전성을 일부 포기하게 되지만, 상세한 런타임 에러 메시지와 실전 생산성이 이를 충분히 상쇄한다.
 
 전체 소스는 다음 두 곳에서 확인할 수 있다.
 
