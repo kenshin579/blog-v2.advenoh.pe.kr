@@ -42,7 +42,7 @@ seriesOrder: 2
 - Agent Injector 어노테이션과 sidecar 전용(proxy) 구성
 - Vault가 sealed일 때 생기는 부팅 블로킹을 재현하고 비동기 로드와 readinessProbe로 해결하기
 
-> 이 글에서 사용한 전체 코드는 [GitHub](https://github.com/kenshin579/argocd-charts-sample/tree/main/secret-management)에서 확인할 수 있다.
+> 이 글에서 사용한 전체 코드는 [GitHub](https://github.com/kenshin579/argocd-charts-sample/tree/main/secret-management)에서 확인할 수 있다. ArgoCD가 GitHub에서 chart를 가져오고 SealedSecret은 봉인한 클러스터의 키로만 풀리므로, 직접 따라 하려면 저장소를 fork해서 `make seal` 결과를 push해야 한다. 절차는 README에 정리했다.
 
 전체 구성은 다음과 같다.
 
@@ -72,12 +72,14 @@ flowchart LR
 
 HashiCorp 공식 문서는 Kubernetes 워크로드에 Vault 시크릿을 전달하는 방법으로 Agent Injector, CSI provider, Vault Secrets Operator(VSO)를 비교한다. 여기에 앱이 Vault API를 직접 호출하는 방법을 더하면 네 가지다.
 
-| 방법 | 시크릿이 놓이는 곳 | 앱 수정 | 공식 문서가 꼽는 적합한 경우 |
+| 방법 | 시크릿이 놓이는 곳 | 앱 수정 | 적합한 경우 |
 |---|---|---|---|
 | Agent Injector | Pod의 ephemeral volume 또는 Agent 메모리 | 필요(파일이나 localhost로 읽음) | 여러 시크릿을 템플릿으로 묶거나 다양한 auth method가 필요한 앱 |
 | CSI provider | ephemeral volume | Pod spec 수정 | Vault 외의 시크릿 저장소도 함께 쓰는 조직 |
 | VSO | Kubernetes Secret(기본은 etcd에 저장) | 없음 | Kubernetes 방식 그대로 쓰고 싶은 팀 |
 | 앱이 직접 호출 | 앱 메모리 | SDK 연동, token 관리 코드 필요 | 팀이 직접 소유한 앱 |
+
+위 세 방식의 "시크릿이 놓이는 곳"과 "적합한 경우"는 공식 비교 문서를 따랐고, "앱이 직접 호출" 행과 "앱 수정" 열은 이 글의 판단이다.
 
 공식 문서는 기본 권장 방식을 정하지 않는다. 선택을 가르는 질문은 "이 시크릿이 Kubernetes Secret(etcd)에 평문으로 남아도 되는가"다. DEK는 etcd에 남으면 안 되는 시크릿이고, 앱이 Transit API(`transit/decrypt`)를 직접 호출해야 하므로 이 글은 **Agent Injector를 API proxy로** 쓴다. 남아도 되는 설정 시크릿을 VSO로 다루는 방법은 3편에서 본다.
 
@@ -104,7 +106,7 @@ injector:
     tag: "2.2.1"
 ```
 
-chart 기본값은 TLS를 끈 상태(`tls_disable = 1`)다. 공식 문서는 단일 서버로 도는 standalone 모드가 운영 구성에 맞지 않는다고 명시하는데, 이 글의 replica 1 Raft도 같은 이유로 실습용이다. 운영에서는 TLS, 3대 이상의 Raft, auto-unseal을 함께 구성한다.
+chart 기본값은 TLS를 끈 상태(`tls_disable = 1`)다. 공식 문서는 단일 서버로 도는 standalone 모드가 운영 구성에 맞지 않는다고 명시하는데, 이 글의 replica 1 Raft도 같은 이유로 실습용이다. 운영에서는 3대 이상의 Raft와 auto-unseal을 구성하고, **TLS는 필수다.** TLS가 없으면 Agent와 Vault 사이에서 unwrap된 DEK, ServiceAccount token, Vault token이 평문 HTTP로 지나간다. 이 글에서 "DEK는 앱 메모리에만 남는다"는 말은 저장 위치에 대한 것이고, 전송 구간은 TLS로 보호해야 한다.
 
 Agent Injector는 실행 중에 MutatingWebhookConfiguration의 `caBundle`을 직접 채운다. ArgoCD의 selfHeal이 이 값을 원래대로 되돌리지 않도록 비교 대상에서 뺐다.
 
@@ -145,15 +147,20 @@ Sealed                  false
 Total Shares            3
 Threshold               2
 Version                 2.2.1
+...
 Storage Type            raft
+...
 HA Enabled              true
+...
 HA Mode                 active
+...
 ```
 
 1편의 dev 서버와 가장 크게 다른 점은 재시작했을 때 드러난다. `vault-0`을 지우면 Raft 데이터가 PVC에 남아 있으므로 초기화 상태는 그대로이고, Vault는 sealed 상태로 다시 시작한다.
 
 ```
-$ kubectl -n vault delete pod vault-0
+$ kubectl --context kind-argo-cluster -n vault delete pod vault-0
+$ kubectl --context kind-argo-cluster -n vault wait --for=jsonpath='{.status.phase}'=Running pod/vault-0 --timeout=120s
 $ make vault-status | grep -E "Initialized|Sealed"
 Initialized             true
 Sealed                  true
@@ -226,16 +233,20 @@ WARNING! The following warnings were returned from Vault:
 role에 묶인 ServiceAccount의 token으로 로그인하면 해당 policy를 가진 Vault token이 발급된다.
 
 ```
-$ JWT=$(kubectl -n member-api create token member-api)
-$ kubectl -n vault exec -i vault-0 -- vault write auth/kubernetes/login role=member-api jwt="$JWT"
+$ JWT=$(kubectl --context kind-argo-cluster -n member-api create token member-api)
+$ kubectl --context kind-argo-cluster -n vault exec -i vault-0 -- vault write auth/kubernetes/login role=member-api jwt="$JWT"
 Key                                       Value
 ---                                       -----
 token                                     hvs.****
+...
 token_duration                            1h
+...
 token_policies                            ["default" "member-api"]
+...
 token_meta_role                           member-api
 token_meta_service_account_name           member-api
 token_meta_service_account_namespace      member-api
+...
 ```
 
 다른 ServiceAccount의 token으로 같은 role에 로그인하면 거부된다.
@@ -318,12 +329,12 @@ client.ClearToken()
 
 ## 5.3 DEK 적재 Job과 sync-wave
 
-DEK는 앱이 뜨기 전에 있어야 한다. 처음에는 ArgoCD의 PreSync hook Job으로 적재하려고 했지만, 실습하면서 두 가지 문제를 만났다.
+DEK는 앱이 시작하기 전에 있어야 한다. 처음에는 ArgoCD의 PreSync hook Job으로 적재하려고 했지만 설계를 바꿨다.
 
-- **PreSync는 일반 리소스보다 먼저 실행된다.** Job이 쓰는 ServiceAccount가 일반 리소스면 첫 sync에서 아직 없다. ServiceAccount를 hook으로 만들어 보았지만, sync를 반복하자 ServiceAccount가 지워진 뒤 다시 만들어지지 않아 Job이 `serviceaccount "member-api-migration" not found`로 실패했다
-- **이름이 고정된 hook Job은 다시 실행되지 않는 경우가 있었다.** 수동 sync를 세 번 해 보니 두 번은 ArgoCD가 끝난 Job을 그대로 재사용했다
+- **PreSync는 일반 리소스보다 먼저 실행된다.** Job이 쓰는 ServiceAccount가 일반 리소스면 첫 sync에서 아직 없다. 이것이 바꾼 주된 이유다
+- **hook으로 만든 리소스는 실습 환경에서 기대와 다르게 동작했다.** ArgoCD v2.14.11에서 Application의 `operation` 필드로 sync를 요청했을 때(`make app-sync`), ServiceAccount를 hook으로 만들자 반복 sync 뒤 Job이 `serviceaccount "member-api-migration" not found`로 실패했고, 이름을 고정한 hook Job은 수동 sync 세 번 중 두 번 다시 만들어지지 않았다. 공식 문서상 `BeforeHookCreation`은 기존 hook을 지우고 새로 만들어야 하므로, sync를 요청한 방식이 영향을 줬을 수 있다. 원인은 확인하지 못했다
 
-그래서 Sync 단계 hook을 sync-wave로 정렬하고, Job 이름은 `generateName`으로 sync마다 새로 만들게 했다.
+그래서 ServiceAccount는 일반 리소스로 두고, Sync 단계 hook을 sync-wave로 정렬하고, Job 이름은 ArgoCD 문서 예제처럼 `generateName`으로 만들어 sync마다 새 Job이 생기게 했다.
 
 | wave | 리소스 |
 |---|---|
@@ -363,17 +374,18 @@ secret, err := client.Auth().Login(ctx, auth)
 
 DEK는 KV check-and-set(`cas=0`)으로 문서가 없을 때만 쓴다. Job이 sync마다 다시 실행되거나 두 Job이 동시에 실행되어도 DEK는 한 번만 만들어진다.
 
+처음 배포했을 때 Job 로그에는 `DEK v1 created`가 남고, 이후 sync에서는 건너뛴다.
+
 ```
-# 처음 배포할 때 Job 로그
-DEK v1 created
-# 이후 sync 때 Job 로그 (make init-dek-logs)
+$ make init-dek-logs
+job.batch/member-api-init-dek-5e557f8-sync-1793629183
 DEK already exists, skipped
 ```
 
 ## 5.4 배포 결과
 
 ```
-$ kubectl -n member-api logs deploy/member-api -c member-api
+$ kubectl --context kind-argo-cluster -n member-api logs deploy/member-api -c member-api
 time=2026-11-02T14:09:07.828Z level=INFO msg=listening addr=:8080 load_mode=async
 time=2026-11-02T14:09:08.998Z level=INFO msg="keyring loaded" attempt=1 dek_version=1
 
@@ -388,7 +400,7 @@ $ curl -s localhost:8081/config
 PVC에 저장된 파일에는 암호문만 있다.
 
 ```
-$ kubectl -n member-api exec deploy/member-api -c member-api -- cat /data/members.json
+$ kubectl --context kind-argo-cluster -n member-api exec deploy/member-api -c member-api -- cat /data/members.json
 {
   "members": [
     {
@@ -417,12 +429,12 @@ case "sync":
 	}
 ```
 
-Vault가 정상일 때는 문제가 없다. sidecar proxy 구성에서 문제가 되는 것은 **앱이 시작할 때 Agent가 아직 Vault에 로그인하지 못한 경우**다. Vault가 sealed이거나, 여러 Pod가 한꺼번에 로그인하느라 늦어지는 경우가 그렇다. 여기서는 Vault를 seal해서 이 상황을 매번 같은 결과가 나오게 재현했다.
+Vault가 정상일 때는 문제가 없다. sidecar proxy 구성에서 문제가 되는 것은 **앱이 시작할 때 Agent가 아직 Vault에 로그인하지 못한 경우**다. Vault가 sealed인 경우가 대표적이고, 여러 Pod가 한꺼번에 로그인을 시도해 응답이 늦어지는 경우에도 생길 수 있다. 여기서는 Vault를 seal해서 이 상황을 매번 같은 결과가 나오게 재현했다.
 
 ```bash
-make load-mode MODE=sync
+make load-mode MODE=sync     # Vault 가 unseal 된 상태에서 바꾼다(6.3절)
 make vault-seal
-kubectl -n member-api delete pod -l app=member-api
+kubectl --context kind-argo-cluster -n member-api delete pod -l app=member-api
 ```
 
 10초 간격으로 본 Pod 상태다.
@@ -431,9 +443,13 @@ kubectl -n member-api delete pod -l app=member-api
 t=10s 1/2 Running restarts=0
 t=20s 1/2 Running restarts=1
 t=30s 1/2 Running restarts=2
+t=40s 1/2 Running restarts=2
 t=50s 1/2 Running restarts=3
 t=60s 1/2 CrashLoopBackOff restarts=3
+t=70s 1/2 CrashLoopBackOff restarts=3
+t=80s 1/2 CrashLoopBackOff restarts=3
 t=90s 1/2 Running restarts=4
+t=100s 1/2 CrashLoopBackOff restarts=4
 t=110s 1/2 CrashLoopBackOff restarts=4
 ```
 
@@ -524,6 +540,13 @@ func (s *Server) LoadAsync(ctx context.Context, load Loader, r Retry) {
 
 같은 조건(Vault sealed 상태에서 Pod 재생성)으로 다시 해 보았다.
 
+```bash
+make load-mode MODE=async
+make vault-seal
+kubectl --context kind-argo-cluster -n member-api delete pod -l app=member-api
+make app-port-forward   # port-forward 는 시작할 때의 Pod 에 묶이므로 Pod 를 지운 뒤에는 다시 실행한다
+```
+
 ```
 NAME                        READY   STATUS    RESTARTS   AGE
 member-api-98c4f487-86vcv   1/2     Running   0          28s
@@ -550,7 +573,7 @@ level=INFO msg="keyring loaded" attempt=2 dek_version=1
 
 ## 6.3 비동기 로드의 대가
 
-비동기 로드에도 대가가 있다. DEK를 받기 전까지 회원 API는 503을 돌려준다. readinessProbe가 실패하는 동안 Service가 그 Pod로 트래픽을 보내지 않으므로, 다른 Pod가 정상이라면 사용자는 문제를 겪지 않는다. 하지만 모든 Pod가 같은 Vault에 의존하므로, Vault가 오래 sealed라면 결국 서비스 전체가 멈춘다. 앱 쪽에서 할 수 있는 일은 재시작되지 않고 기다리는 것까지이고, Vault 자체의 가용성(HA, auto-unseal)은 운영 구성으로 해결해야 한다.
+비동기 로드에도 대가가 있다. DEK를 받기 전까지 회원 API는 503을 돌려준다. readinessProbe가 실패하는 동안 Service가 그 Pod로 트래픽을 보내지 않으므로, 다른 Pod가 정상이라면 사용자는 문제를 겪지 않는다. 하지만 모든 Pod가 같은 Vault에 의존하므로, Vault가 오래 sealed라면 결국 서비스 전체가 멈춘다. 배포도 같은 영향을 받는다. Vault가 sealed인 동안에는 wave 0의 DEK 적재 Job이 로그인하지 못해 sync가 실패하므로, 이미지나 설정을 바꿔도 Deployment(wave 1)에 반영되지 않는다. 6.1절과 6.2절에서 로드 모드를 Vault를 seal하기 전에 바꾼 것도 이 때문이다. 앱 쪽에서 할 수 있는 일은 재시작되지 않고 기다리는 것까지이고, Vault 자체의 가용성(HA, auto-unseal)은 운영 구성으로 해결해야 한다.
 
 # 7. Vault 재시작과 키 보존
 
@@ -559,7 +582,8 @@ level=INFO msg="keyring loaded" attempt=2 dek_version=1
 데이터가 있는 상태에서 `vault-0`을 지워 보았다.
 
 ```
-$ kubectl -n vault delete pod vault-0
+$ kubectl --context kind-argo-cluster -n vault delete pod vault-0
+$ kubectl --context kind-argo-cluster -n vault wait --for=jsonpath='{.status.phase}'=Running pod/vault-0 --timeout=120s
 $ make vault-status | grep -E "Initialized|Sealed"
 Initialized             true
 Sealed                  true
@@ -572,7 +596,9 @@ Vault가 sealed여도 이미 실행 중인 앱은 메모리의 keyring으로 계
 ```
 $ make vault-unseal
 unsealed: sealed=false
-$ kubectl -n member-api delete pod -l app=member-api
+$ kubectl --context kind-argo-cluster -n member-api delete pod -l app=member-api
+$ kubectl --context kind-argo-cluster -n member-api wait --for=condition=Ready pod -l app=member-api --timeout=120s
+$ make app-port-forward     # port-forward 는 시작할 때의 Pod 에 묶이므로 다시 연결한다
 $ curl -s localhost:8081/members/alice
 {"id":"alice","email":"alice@example.com","phone":"010-1234-5678"}
 ```
@@ -585,7 +611,7 @@ Transit KEK는 기본 설정에서 Vault 밖으로 꺼낼 수 없으므로, Vaul
 
 ```bash
 make snapshot-save
-kubectl -n vault exec -i vault-0 -- env VAULT_TOKEN=... vault kv put secret/demo/after-snapshot note="snapshot 이후에 쓴 값"
+kubectl --context kind-argo-cluster -n vault exec -i vault-0 -- env VAULT_TOKEN=... vault kv put secret/demo/after-snapshot note="snapshot 이후에 쓴 값"
 make snapshot-restore SNAPSHOT=.vault/snapshots/vault-20261102232650.snap
 ```
 
@@ -598,7 +624,7 @@ Sealed                  false
 No value found at secret/data/demo/after-snapshot
 ```
 
-snapshot 이후에 쓴 값은 사라지고, 그 전에 있던 DEK와 회원 데이터는 그대로 남았다. 복구 명령은 Vault가 snapshot을 받아들이면 바로 끝나므로, 공식 문서 안내대로 로그에 `post-unseal setup complete`가 나올 때까지 기다린 뒤 사용한다. 같은 클러스터의 snapshot이라 복구한 뒤에도 unseal 상태가 그대로 유지됐다. 새 클러스터에 복구할 때는 원래 클러스터의 unseal key가 필요하므로 snapshot과 unseal key를 함께 보관해야 한다.
+snapshot 이후에 쓴 값은 사라지고, 그 전에 있던 DEK와 회원 데이터는 그대로 남았다. 복구 명령은 Vault가 snapshot을 받아들이면 바로 끝나므로, 공식 문서 안내대로 로그에 `post-unseal setup complete`와 `vault is unsealed`가 나온 것을 확인한 뒤 사용한다. 이 실습은 같은 클러스터의 snapshot이라 복구한 뒤에도 unseal 상태가 그대로 유지됐고, 로그에는 `post-unseal setup complete`만 다시 기록됐다. 새 클러스터에 복구할 때는 원래 클러스터의 unseal key가 필요하므로 snapshot과 unseal key를 함께 보관해야 한다.
 
 # 8. FAQ
 
@@ -627,7 +653,7 @@ Raft를 3대 이상으로 구성해서 한 대가 재시작해도 나머지가 �
 - Kubernetes auth는 ServiceAccount 단위로 역할을 나눈다. 앱은 DEK 읽기, Job은 DEK 적재, 관리자는 KEK와 policy를 맡는다
 - sidecar를 API proxy로만 쓰려면 `agent-pre-populate: "false"`, `agent-cache-enable`, `agent-cache-use-auto-auth-token`을 함께 설정하고 `VAULT_ADDR`는 앱에 직접 넣는다
 - 부팅할 때 DEK를 받는 앱은 동기 로드 대신 비동기 로드와 readinessProbe를 쓰고, Agent의 `auth-max-backoff`도 함께 조정한다
-- ArgoCD에서 DEK 적재처럼 순서가 중요한 작업은 고정 이름의 PreSync hook보다 sync-wave와 `generateName` Job이 안정적이었다
+- ArgoCD에서 DEK 적재처럼 순서가 중요한 작업은 ServiceAccount 같은 의존 리소스를 일반 리소스로 먼저 만들고, Sync hook과 sync-wave로 순서를 맞췄다
 
 3편에서는 SealedSecret으로 관리하던 설정 시크릿을 Vault Secrets Operator로 옮긴다. 두 방식을 비교하고, 앱을 고치지 않고 이전하는 절차를 다룬다.
 
