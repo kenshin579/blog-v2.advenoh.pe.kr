@@ -74,7 +74,7 @@ flowchart LR
 
 Vault 서버는 **sealed 상태로 시작한다.** 이 상태에서는 storage에 접근할 수는 있지만 데이터를 복호화하지 못한다. 할 수 있는 일은 unseal과 상태 확인뿐이다. unseal key로 root key를 복호화해야 비로소 데이터를 읽을 수 있다. 이 과정을 unseal이라고 한다.
 
-unseal key는 한 사람이 모두 보관하지 않도록 Shamir's Secret Sharing으로 여러 조각으로 나눈다. `vault operator init`의 기본값은 5개로 나누고(`-key-shares=5`) 그중 3개가 모여야(`-key-threshold=3`) root key를 복원할 수 있다. 사람이 unseal key 조각을 입력하는 대신 신뢰할 수 있는 장치나 클라우드 KMS 같은 서비스에 unseal을 맡기는 방식은 auto-unseal이라고 부른다.
+unseal key는 한 사람이 모두 보관하지 않도록 Shamir's Secret Sharing으로 여러 조각으로 나눈다. `vault operator init`의 기본값은 5개로 나누고(`-key-shares=5`) 그중 3개가 모여야(`-key-threshold=3`) unseal key를 복원할 수 있다. 복원한 unseal key로 root key를 복호화하는 것이다. 사람이 unseal key 조각을 입력하는 대신 신뢰할 수 있는 장치나 클라우드 KMS 같은 서비스에 unseal을 맡기는 방식은 auto-unseal이라고 부른다.
 
 참고로 Vault가 내부에서 쓰는 keyring과 이 글의 예제 코드에 있는 `Keyring` 타입은 이름만 같고 서로 다른 것이다.
 
@@ -133,7 +133,8 @@ services:
     # dev 모드: 메모리 스토리지, 자동 unseal, root token 고정. 학습용으로만 쓴다
     command: server -dev -dev-root-token-id=root -dev-listen-address=0.0.0.0:8200
     ports:
-      - "8200:8200"
+      # root token 이 고정이라 호스트의 loopback 에만 연다
+      - "127.0.0.1:8200:8200"
 ```
 
 ```bash
@@ -143,7 +144,7 @@ docker compose logs vault | grep -E "Unseal Key|Root Token"
 ```
 
 ```
-vault-envelope-demo  | Unseal Key: ri+uVsICdOC4WDE4/ZhY8z0r52vntcGHdok5Np7Z2dI=
+vault-envelope-demo  | Unseal Key: 1XnElF+AR06OWKysaOAYzQuOT1Cf3NE4yHgrn5UdPpg=
 vault-envelope-demo  | Root Token: root
 ```
 
@@ -209,6 +210,9 @@ root token은 이 초기 설정에만 쓰고, 이후 명령은 모두 역할별 
 export VAULT_ADDR=http://127.0.0.1:8200
 APP_TOKEN=$(cat .tokens/app.token)
 MIGRATION_TOKEN=$(cat .tokens/migration.token)
+
+# KV 내용을 확인할 때 쓰는 root 권한 vault CLI (컨테이너 안의 CLI를 호출한다)
+vault() { docker compose exec -T -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault vault "$@"; }
 ```
 
 # 4. Envelope Encryption 이해하기
@@ -437,7 +441,9 @@ DEK를 바꾸는 순서는 다음과 같다.
 
 1. `rotate-dek`로 DEK v2를 추가하고 `current_version`을 2로 올린다. v1은 그대로 남는다
 2. 앱이 keyring을 다시 로드하면 새 데이터는 v2로 암호화되고, 기존 데이터는 v1로 계속 읽힌다
-3. `reencrypt`로 v1 데이터를 v2로 다시 암호화한다
+3. **모든 앱 인스턴스가** keyring을 다시 로드한 뒤에 `reencrypt`로 v1 데이터를 v2로 다시 암호화한다
+
+3번의 순서가 중요하다. 아직 v1만 가진 인스턴스가 남아 있는데 데이터를 v2로 바꾸면, 그 인스턴스는 v2 데이터를 읽지 못한다.
 
 ```bash
 VAULT_TOKEN=$MIGRATION_TOKEN go run ./cmd/member-cli rotate-dek
@@ -522,7 +528,8 @@ Code: 403. Errors:
 migration token으로 KEK를 회전하려고 해도 마찬가지로 거부된다.
 
 ```bash
-vault write -f transit/keys/member-api-kek/rotate   # migration token
+docker compose exec -T -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN="$MIGRATION_TOKEN" \
+  vault vault write -f transit/keys/member-api-kek/rotate
 ```
 
 ```
