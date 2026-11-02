@@ -1,6 +1,6 @@
 ---
 title: "HashiCorp Vault 실전 가이드 1편 - 핵심 개념과 Transit으로 구현하는 Envelope Encryption"
-description: "DB에 저장하는 개인정보를 필드 단위로 암호화할 때 암호화 키를 코드 밖 Vault에서 관리하는 방법을 정리한다. seal/unseal, KV v2, Transit, policy를 익히고 Go로 envelope encryption과 키 회전을 구현한다."
+description: "DB에 저장하는 개인정보를 필드 단위로 암호화할 때 필요한 키를 Vault Transit과 KV v2로 관리하는 envelope encryption을 Vault 핵심 개념과 함께 정리하고 Go로 구현한다."
 date: 2026-11-02
 update: 2026-11-02
 tags:
@@ -582,16 +582,17 @@ error: decrypt email of alice: cipher: message authentication failed
 - 처음 한 번 `vault operator init`으로 초기화하면 unseal key 조각과 root token이 출력된다. 이 조각들을 안전하게 나눠 보관한다
 - 재시작한 Vault는 sealed 상태로 시작한다. unseal key 조각을 모아 unseal하거나 auto-unseal을 구성해야 다시 쓸 수 있다
 - Transit 키는 기본 설정에서 Vault 밖으로 꺼낼 수 없다. 그래서 Vault 스토리지를 백업하는 것이 곧 KEK를 백업하는 것이다
+- 다만 Raft snapshot을 새로 초기화한 클러스터에 복구하려면 `-force` 옵션과 함께 **원래 클러스터의 unseal key**가 필요하다. 스냅숏만 보관하고 unseal key를 잃으면 복구할 수 없다
 
 2편에서는 Kubernetes에 Raft 스토리지로 Vault를 띄우고 init과 unseal을 직접 해 본다.
 
 # 7. FAQ
 
-## 7.1 Transit encrypt API를 바로 쓰면 더 안전하지 않은가?
+## 7.1 Transit encrypt API를 바로 쓰면 더 안전하지 않나?
 
 그렇다. `transit/encrypt`와 `transit/decrypt`로 데이터를 직접 암복호화하면 평문 키가 Vault 밖으로 나오지 않는다(4.2절의 C). 대신 모든 암복호화에 Vault 호출이 필요해서 지연이 늘어나고, Vault가 멈추면 암복호화도 바로 멈춘다. 처리량이 적거나 키 노출을 특히 엄격하게 막아야 하는 데이터라면 C가 맞고, 요청이 많은 서비스라면 이 글의 B가 현실적인 선택이다.
 
-## 7.2 앱 메모리에 평문 DEK가 있어도 괜찮은가?
+## 7.2 앱 메모리에 평문 DEK가 있어도 괜찮나?
 
 이 구조가 막는 것은 DB나 백업 파일, 설정 파일이 유출되는 경우다. 실행 중인 앱 프로세스 자체를 공격자가 장악하는 경우는 막지 못한다. 그런 경우라면 공격자가 앱의 권한으로 데이터를 복호화할 수 있기 때문이다. 그래서 앱 token에는 5.5절처럼 필요한 최소 권한만 주고, DEK를 바꾸는 권한은 별도의 policy로 분리한다.
 
@@ -602,6 +603,12 @@ KEK도 회전할 수 있다. Transit의 `transit/keys/:name/rotate`는 KEK의 �
 ## 7.4 암호화한 이메일로 회원을 검색하려면 어떻게 하는가?
 
 이 예제의 암호문은 같은 이메일이라도 매번 달라서 `WHERE email = ?` 같은 검색을 할 수 없다. 검색이 필요하다면 암호문과 별도로 이메일의 HMAC 값을 저장해 두고 그 값으로 찾는 방법이 있다. Transit에는 지정한 키로 HMAC을 계산하는 `transit/hmac/:name` 엔드포인트가 있다. 다만 HMAC 값이 같으면 원문도 같다는 정보가 드러나므로, 어떤 컬럼에 적용할지는 신중하게 판단해야 한다.
+
+## 7.5 암호문을 다른 회원의 레코드로 옮겨 붙이면 어떻게 되는가?
+
+이 예제에서는 그대로 복호화된다. 같은 DEK로 암호화한 값이면 어느 레코드, 어느 필드에 있든 `Decrypt`가 성공하기 때문이다. 예를 들어 파일이나 DB에 쓰기 권한이 있는 공격자가 회원 A의 `email` 암호문을 회원 B의 `email` 자리에 복사하면, B를 조회했을 때 A의 이메일이 나온다.
+
+이 글이 다루는 위협은 데이터 유출(읽기)이라서 예제를 단순하게 두었다. 이런 암호문 교체까지 막으려면 AES-GCM의 AAD(Additional Authenticated Data)에 회원 ID와 필드 이름을 넣어 암호화하면 된다. AAD가 다르면 복호화가 인증 실패로 거부된다.
 
 # 8. 마무리
 
@@ -630,5 +637,6 @@ KEK도 회전할 수 있다. Transit의 `transit/keys/:name/rotate`는 KEK의 �
 - [Tokens](https://developer.hashicorp.com/vault/docs/concepts/tokens)
 - [Authentication](https://developer.hashicorp.com/vault/docs/concepts/auth)
 - [Kubernetes auth method](https://developer.hashicorp.com/vault/docs/auth/kubernetes)
+- [Restore a snapshot](https://developer.hashicorp.com/vault/docs/sysadmin/snapshots/restore)
 - [Kubernetes 환경에서 Secret 안전하게 관리하기](/kubernetes-환경에서-secret-안전하게-관리하기/)
 - [예제 코드: tutorials-go/cloud/vault](https://github.com/kenshin579/tutorials-go/tree/master/cloud/vault)
