@@ -79,7 +79,7 @@ HashiCorp 공식 문서는 Kubernetes 워크로드에 Vault 시크릿을 전달�
 | VSO | Kubernetes Secret(기본은 etcd에 저장) | 없음 | Kubernetes 방식 그대로 쓰고 싶은 팀 |
 | 앱이 직접 호출 | 앱 메모리 | SDK 연동, token 관리 코드 필요 | 팀이 직접 소유한 앱 |
 
-공식 문서는 기본 권장 방식을 정하지 않는다. 선택을 가르는 질문은 "이 시크릿이 Kubernetes Secret(etcd)에 평문으로 남아도 되는가"다. DEK는 남으면 안 되는 쪽이고, 앱이 Transit API(`transit/decrypt`)를 직접 불러야 하므로 이 글은 **Agent Injector를 API proxy로** 쓴다. 남아도 되는 설정 시크릿을 VSO로 다루는 방법은 3편에서 본다.
+공식 문서는 기본 권장 방식을 정하지 않는다. 선택을 가르는 질문은 "이 시크릿이 Kubernetes Secret(etcd)에 평문으로 남아도 되는가"다. DEK는 etcd에 남으면 안 되는 시크릿이고, 앱이 Transit API(`transit/decrypt`)를 직접 호출해야 하므로 이 글은 **Agent Injector를 API proxy로** 쓴다. 남아도 되는 설정 시크릿을 VSO로 다루는 방법은 3편에서 본다.
 
 # 3. Vault를 운영처럼 배포하기
 
@@ -150,7 +150,7 @@ HA Enabled              true
 HA Mode                 active
 ```
 
-1편의 dev 서버와 가장 크게 다른 점은 재시작했을 때다. `vault-0`을 지우면 Raft 데이터가 PVC에 남아 있으므로 초기화 상태는 그대로이고, sealed 상태로 다시 뜬다.
+1편의 dev 서버와 가장 크게 다른 점은 재시작했을 때 드러난다. `vault-0`을 지우면 Raft 데이터가 PVC에 남아 있으므로 초기화 상태는 그대로이고, Vault는 sealed 상태로 다시 시작한다.
 
 ```
 $ kubectl -n vault delete pod vault-0
@@ -223,7 +223,7 @@ WARNING! The following warnings were returned from Vault:
 
 `audience`는 필수가 아니다. 지정하면 ServiceAccount token의 `aud` claim까지 검증한다.
 
-role에 묶인 ServiceAccount의 token으로 로그인하면 해당 policy를 가진 Vault token이 나온다.
+role에 묶인 ServiceAccount의 token으로 로그인하면 해당 policy를 가진 Vault token이 발급된다.
 
 ```
 $ JWT=$(kubectl -n member-api create token member-api)
@@ -285,7 +285,7 @@ annotations:
 | `agent-cache-use-auto-auth-token` | token이 없는 요청에 Agent가 로그인해서 받은 token을 붙인다 |
 | `auth-max-backoff` | 로그인 재시도 간격의 최대값. 기본값은 5분이다 |
 
-`agent-cache-use-auto-auth-token`은 공식 문서에는 "기본 비활성"으로 되어 있지만, vault-k8s 소스의 기본값은 `"true"`다. 둘이 어긋나므로 값을 명시했다. `auth-max-backoff`를 줄인 이유는 6절에서 나온다.
+`agent-cache-use-auto-auth-token`은 공식 문서에는 "기본 비활성"으로 되어 있지만, vault-k8s 소스의 기본값은 `"true"`다. 문서와 소스의 기본값이 어긋나므로 값을 명시했다. `auth-max-backoff`를 줄인 이유는 6절에서 나온다.
 
 Injector는 앱 컨테이너에 `VAULT_ADDR`를 넣어 주지 않는다(vault-k8s 소스 기준). 그래서 앱 컨테이너에 직접 넣었다.
 
@@ -299,7 +299,7 @@ env:
 
 Injector가 넣는 Agent는 두 종류다. init container는 앱보다 먼저 떠서 시크릿을 파일로 렌더링한 뒤 종료하고, sidecar는 앱과 함께 떠서 시크릿을 갱신한다. 기본값은 둘 다 넣는 것이다.
 
-이 앱은 시크릿을 파일로 받지 않고 Vault API(KV 읽기, `transit/decrypt`)를 직접 부르므로 sidecar의 proxy만 있으면 된다. `agent-pre-populate: "false"`로 init container를 뺐다.
+이 앱은 시크릿을 파일로 받지 않고 Vault API(KV 읽기, `transit/decrypt`)를 직접 호출하므로 sidecar의 proxy만 있으면 된다. `agent-pre-populate: "false"`로 init container를 뺐다.
 
 ```
 init=[] containers=[member-api vault-agent]
@@ -361,7 +361,7 @@ if err != nil {
 secret, err := client.Auth().Login(ctx, auth)
 ```
 
-DEK는 KV check-and-set(`cas=0`)으로 문서가 없을 때만 쓴다. Job이 sync마다 다시 돌거나 두 개가 겹쳐도 DEK는 한 번만 만들어진다.
+DEK는 KV check-and-set(`cas=0`)으로 문서가 없을 때만 쓴다. Job이 sync마다 다시 실행되거나 두 Job이 동시에 실행되어도 DEK는 한 번만 만들어진다.
 
 ```
 # 처음 배포할 때 Job 로그
@@ -417,7 +417,7 @@ case "sync":
 	}
 ```
 
-Vault가 정상일 때는 문제가 없다. sidecar proxy 구성에서 문제가 되는 것은 **앱이 뜰 때 Agent가 아직 Vault에 로그인하지 못한 경우**다. Vault가 sealed이거나, 여러 Pod가 한꺼번에 로그인하느라 늦어지는 경우가 그렇다. 여기서는 Vault를 seal해서 이 상황을 매번 같은 결과가 나오게 재현했다.
+Vault가 정상일 때는 문제가 없다. sidecar proxy 구성에서 문제가 되는 것은 **앱이 시작할 때 Agent가 아직 Vault에 로그인하지 못한 경우**다. Vault가 sealed이거나, 여러 Pod가 한꺼번에 로그인하느라 늦어지는 경우가 그렇다. 여기서는 Vault를 seal해서 이 상황을 매번 같은 결과가 나오게 재현했다.
 
 ```bash
 make load-mode MODE=sync
@@ -437,7 +437,7 @@ t=90s 1/2 Running restarts=4
 t=110s 1/2 CrashLoopBackOff restarts=4
 ```
 
-HTTP 서버가 뜨지 않았으니 livenessProbe가 연결 거부로 실패하고, kubelet이 컨테이너를 재시작한다.
+HTTP 서버가 시작되지 않았으므로 livenessProbe가 연결 거부로 실패하고, kubelet이 컨테이너를 재시작한다.
 
 ```
 Warning Unhealthy ... Liveness probe failed: Get "http://10.244.0.32:8080/healthz": dial tcp 10.244.0.32:8080: connect: connection refused
@@ -452,7 +452,7 @@ Normal Killing ... Container member-api failed liveness probe, will be restarted
    backoff=8.3s
 ```
 
-앱 로그를 보면 첫 keyring 로드 요청이 약 12초 동안 돌아오지 않다가, 컨테이너가 종료되면서 `context canceled`로 끝났다.
+앱 로그를 보면 첫 keyring 로드 요청이 약 12초 동안 응답하지 않다가, 컨테이너가 종료되면서 `context canceled`로 끝났다.
 
 ```
 time=2026-11-02T14:23:15.548Z level=INFO msg="loading keyring before starting HTTP server" load_mode=sync
@@ -536,21 +536,21 @@ $ curl -s localhost:8081/healthz
 ok                                        # 200
 ```
 
-Pod는 재시작되지 않고, Service에서만 빠진 채로 기다린다. unseal하고 7초 뒤 `/readyz`가 200이 됐다.
+Pod는 재시작되지 않고, Service의 엔드포인트에서만 제외된 채로 기다린다. unseal하고 7초 뒤 `/readyz`가 200이 됐다.
 
 ```
 level=WARN msg="keyring load failed, will retry" attempt=1 retry_in=1s error="... GET http://127.0.0.1:8200/v1/secret/data/member-api/dek\nCode: 403. Errors:\n\n* permission denied"
 level=INFO msg="keyring loaded" attempt=2 dek_version=1
 ```
 
-첫 요청은 unseal 직후에 `403 permission denied`로 돌아왔다. Agent가 아직 로그인을 마치지 못해 token 없이 Vault로 전달된 것으로 보이고, 1초 뒤 재시도에서 성공했다. 여기서 두 가지를 알 수 있다.
+첫 요청은 unseal 직후에 `403 permission denied`로 실패했다. Agent가 아직 로그인을 마치지 못해 token 없이 Vault로 전달된 것으로 보이고, 1초 뒤 재시도에서 성공했다. 여기서 두 가지를 알 수 있다.
 
-- **로드 실패를 한 번으로 끝내면 안 된다.** Agent가 준비되기 전의 403이나 503은 잠시 뒤 사라지는 에러다
+- **로드 실패를 한 번으로 끝내면 안 된다.** Agent가 준비되기 전의 403이나 503은 잠시 뒤 해소되는 일시적인 에러다
 - **Agent의 재시도 간격도 함께 봐야 한다.** auto-auth 재시도 간격은 실패할 때마다 두 배로 늘어나고 기본 최대값은 5분이다. 그대로 두면 unseal한 뒤에도 Agent가 최대 5분 동안 로그인을 다시 시도하지 않을 수 있어서 `auth-max-backoff: "10s"`로 줄였다
 
 ## 6.3 비동기 로드의 대가
 
-비동기 로드에도 대가가 있다. DEK를 받기 전까지 회원 API는 503을 돌려준다. readinessProbe가 실패하는 동안 Service가 그 Pod로 트래픽을 보내지 않으므로, 다른 Pod가 정상이라면 사용자는 문제를 겪지 않는다. 하지만 모든 Pod가 같은 Vault에 의존하므로, Vault가 오래 sealed라면 결국 서비스 전체가 멈춘다. 앱 쪽에서 할 수 있는 일은 "죽지 않고 기다리기"까지이고, Vault 자체의 가용성(HA, auto-unseal)은 운영 구성으로 해결해야 한다.
+비동기 로드에도 대가가 있다. DEK를 받기 전까지 회원 API는 503을 돌려준다. readinessProbe가 실패하는 동안 Service가 그 Pod로 트래픽을 보내지 않으므로, 다른 Pod가 정상이라면 사용자는 문제를 겪지 않는다. 하지만 모든 Pod가 같은 Vault에 의존하므로, Vault가 오래 sealed라면 결국 서비스 전체가 멈춘다. 앱 쪽에서 할 수 있는 일은 재시작되지 않고 기다리는 것까지이고, Vault 자체의 가용성(HA, auto-unseal)은 운영 구성으로 해결해야 한다.
 
 # 7. Vault 재시작과 키 보존
 
@@ -567,7 +567,7 @@ $ curl -s localhost:8081/members/alice
 {"id":"alice","email":"alice@example.com","phone":"010-1234-5678"}
 ```
 
-Vault가 sealed여도 이미 떠 있는 앱은 메모리의 keyring으로 계속 동작한다. unseal한 뒤 앱 Pod를 새로 띄우면 같은 KEK와 DEK로 기존 데이터를 읽는다.
+Vault가 sealed여도 이미 실행 중인 앱은 메모리의 keyring으로 계속 동작한다. unseal한 뒤 앱 Pod를 새로 시작하면 같은 KEK와 DEK로 기존 데이터를 읽는다.
 
 ```
 $ make vault-unseal
@@ -616,7 +616,7 @@ Kubernetes Secret의 값은 etcd에 저장되고, Secret 읽기 권한이 있는
 
 ## 8.4 운영에서 Vault가 sealed인 시간을 줄이려면 어떻게 하는가?
 
-Raft를 3대 이상으로 구성해서 한 대가 재시작해도 나머지가 요청을 처리하게 하고, auto-unseal로 재시작한 노드가 사람 손을 거치지 않고 unseal되게 한다. auto-unseal은 클라우드 KMS 같은 외부 서비스가 필요해서 이 글에서는 구성하지 않았다.
+Raft를 3대 이상으로 구성해서 한 대가 재시작해도 나머지가 요청을 처리하게 하고, auto-unseal로 재시작한 노드가 운영자의 개입 없이 unseal되게 한다. auto-unseal은 클라우드 KMS 같은 외부 서비스가 필요해서 이 글에서는 구성하지 않았다.
 
 # 9. 마무리
 
