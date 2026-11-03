@@ -21,7 +21,7 @@ seriesOrder: 3
 
 # 1. 들어가며
 
-앱이 실행되려면 DB 접속 암호, 외부 API 키, OAuth client secret 같은 설정 시크릿이 필요하다. Kubernetes에서는 보통 이런 값을 Secret에 두고 env나 volume으로 넘긴다. 직접 만든 앱뿐 아니라 MySQL, Redis처럼 외부 Helm chart로 설치하는 앱도 Secret을 읽는 방식으로 만들어져 있어서, 앱이 Vault API를 직접 부르게 바꾸기는 어렵다.
+앱이 실행되려면 DB 접속 암호, 외부 API 키, OAuth client secret 같은 설정 시크릿이 필요하다. Kubernetes에서는 보통 이런 값을 Secret에 두고 env나 volume으로 넘긴다. 직접 만든 앱뿐 아니라 MySQL, Redis처럼 외부 Helm chart로 설치하는 앱도 Secret을 읽는 방식으로 만들어져 있어서, 앱이 Vault API를 직접 호출하도록 바꾸기는 어렵다.
 
 [2편](/hashicorp-vault-실전-가이드-2-kubernetes-agent-injector/)에서는 이 설정 시크릿을 SealedSecret으로 두었다. Sealed Secrets는 git에 암호문을 안전하게 두는 데는 충분하지만, 값을 바꾸려면 다시 봉인해 커밋해야 하고 누가 값을 읽었는지 남지 않는다. 이 글은 같은 설정 시크릿의 원본을 Vault로 옮긴다. 앱은 지금처럼 Kubernetes Secret을 읽고, 그 Secret의 내용을 Vault Secrets Operator(VSO)가 Vault에서 가져와 채운다.
 
@@ -229,7 +229,7 @@ $ kubectl --context kind-argo-cluster -n sealed-demo get secret demo-config
 Error from server (NotFound): secrets "demo-config" not found
 ```
 
-chart의 `secretSource`를 바로 `vault`로 바꾸면 ArgoCD가 SealedSecret을 prune하면서 Secret이 함께 지워질 수 있다. 그 사이에 새로 뜨는 Pod는 Secret을 찾지 못한다. 그래서 다음 두 단계로 옮겼다.
+chart의 `secretSource`를 바로 `vault`로 바꾸면 ArgoCD가 SealedSecret을 prune하면서 Secret이 함께 지워질 수 있다. 그 사이에 새로 시작하는 Pod는 Secret을 찾지 못한다. 그래서 다음 두 단계로 옮겼다.
 
 ```mermaid
 flowchart LR
@@ -326,7 +326,7 @@ member-api-config   Opaque   1      17h
 {"api_token":"de****","length":17}
 ```
 
-VSO는 Secret을 지우지 않고 마지막 값을 그대로 둔다. 앱도 계속 동작한다. unseal하고 5초 뒤 `SecretSynced=True`로 돌아왔다.
+VSO는 Secret을 지우지 않고 마지막 값을 그대로 둔다. 앱도 계속 동작한다. unseal하고 5초 뒤 `SecretSynced=True`로 복구됐다.
 
 주의할 점이 하나 있다. 이 동안 ArgoCD의 member-api는 계속 `Synced/Healthy`였다. ArgoCD v2.14.11에는 VaultStaticSecret의 health check가 내장되어 있지 않아서, 동기화가 실패해도 Application 상태에 드러나지 않는다. VaultStaticSecret의 이벤트나 status를 따로 지켜봐야 한다.
 
@@ -345,7 +345,7 @@ t=2s Secret 없음 | sealedsecret=0 vss=0
 t=5s uid=dbe2b3d5 owner= managedBy=- | sealedsecret=1 vss=0
 ```
 
-약 3초 동안 Secret이 없었다. 실행 중인 Pod는 env를 이미 읽었으므로 영향이 없었지만, 그 사이에 새로 뜨는 Pod는 Secret을 찾지 못한다. 롤백은 Pod가 새로 뜨지 않는 시점에 하는 것이 안전하다. 다시 `vault`로 바꾸자 VSO가 새 Secret(uid `dbe2b3d5`)을 그대로 넘겨받았다.
+약 3초 동안 Secret이 없었다. 실행 중인 Pod는 env를 이미 읽었으므로 영향이 없었지만, 그 사이에 새로 시작하는 Pod는 Secret을 찾지 못한다. 롤백은 Pod가 새로 시작하지 않는 시점에 하는 것이 안전하다. 다시 `vault`로 바꾸자 VSO가 새 Secret(uid `dbe2b3d5`)을 그대로 넘겨받았다.
 
 # 6. audit log로 "누가 읽었나" 확인하기
 
